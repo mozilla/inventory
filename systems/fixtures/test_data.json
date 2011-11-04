@@ -1,0 +1,98 @@
+[
+  {
+    "pk": 1, 
+    "model": "systems.allocation", 
+    "fields": {
+      "name": "testalloc"
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "systems.location", 
+    "fields": {
+      "note": "", 
+      "name": "Mountain View", 
+      "address": ""
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "systems.operatingsystem", 
+    "fields": {
+      "version": "2.33", 
+      "name": "Test OS"
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "systems.servermodel", 
+    "fields": {
+      "part_number": "", 
+      "model": "Proliant", 
+      "vendor": "HP", 
+      "description": ""
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "systems.systemrack", 
+    "fields": {
+      "name": "101.02", 
+      "location": 1
+    }
+  }, 
+  {
+    "pk": 1, 
+    "model": "systems.system", 
+    "fields": {
+      "allocation": 1, 
+      "operating_system": 1, 
+      "rack_order": "1.00", 
+      "oob_ip": "192.168.1.11", 
+      "system_status": null, 
+      "notes": "A bunch of notes.", 
+      "hostname": "test system 1", 
+      "oob_switch_port": "101.22", 
+      "patch_panel_port": "101", 
+      "server_model": 1, 
+      "asset_tag": "", 
+      "system_rack": 1, 
+      "created_on": null, 
+      "switch_ports": "101.02", 
+      "change_password": "2011-02-03 00:00:00", 
+      "licenses": "121-21-111-555-5555", 
+      "updated_on": null, 
+      "serial": "39993", 
+      "purchase_price": "$101.2", 
+      "ram": "", 
+      "purchase_date": "2011-04-04"
+    }
+  }, 
+  {
+    "pk": 2, 
+    "model": "systems.system", 
+    "fields": {
+      "allocation": 1, 
+      "operating_system": 1, 
+      "rack_order": "1.00", 
+      "oob_ip": "192.168.1.11", 
+      "system_status": null, 
+      "notes": "A bunch of notes.", 
+      "hostname": "test system 2", 
+      "oob_switch_port": "101.22", 
+      "patch_panel_port": "101", 
+      "server_model": 1, 
+      "asset_tag": "", 
+      "system_rack": 1, 
+      "created_on": null, 
+      "switch_ports": "101.02", 
+      "change_password": "2011-02-03 00:00:00", 
+      "licenses": "121-21-111-555-5555", 
+      "updated_on": null, 
+      "serial": "39993", 
+      "purchase_price": "$101.2", 
+      "ram": "", 
+      "purchase_date": "2011-04-04"
+    }
+  }
+]
