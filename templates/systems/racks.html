@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block subtitle %} - racks{% endblock %}
+{% block content %}
+<h2>Listing Racks</h2>
+{% if not read_only %}<a href="{% url system_rack-new %}">Create New</a>{% endif %}
+<form action="" method="get">
+Location: {{ filter_form.location }}
+Status: {{ filter_form.status }}
+Rack: {{ filter_form.rack }}
+Allocation: {{ filter_form.allocation }}
+<input type="submit" value="Filter" />
+</form>
+
+{% for rack, systems in racks %}
+<table class="racktable rack" id="rack-{{ rack.id }}" style="width: 72em; margin:auto;">
+    <tr>
+    <th colspan="6">{{ rack.location }} - <a href="?rack={{ rack.pk }}">{{ rack }}</a>{% if not read_only %} - <a href="{% url system_rack-edit rack.pk %}">Edit</a> - <a href="{% url rack-delete rack.pk %}">Delete</a>{% endif %}</th>
+    </tr>
+    <tr style="font-weight:bold;">
+        <td style="width:3em;">Order</td>
+        <td style="width:15em;">Host</td>
+        <td style="width:10em">Asset</td>
+        <td style="width:20em;">Model</td>
+        <td style="width:7em;">Allocated To</td>
+        {% if not read_only %}
+            <td style="width: 7em;">ILO</td>
+        {% endif %}
+    </tr>
+    {% for system in systems %}
+        {% include "systems/rack_row_partial.html" %}
+    {% endfor %}
+    {% if not read_only %}
+    <tr><td style="text-align: center" colspan="6"><a class="new-system" href="">Add New System To Rack</a></td></tr>
+    {% endif %}
+</table>
+<br />
+{% endfor %}
+<script type="text/javascript" src="/static/javascripts/application.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('.new-system').new_system_from_rack();
+    });
+</script>
+
+{% endblock %}

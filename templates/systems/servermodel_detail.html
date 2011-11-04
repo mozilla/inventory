@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<dl class="show">
+    <dt>Vendor:</dt>
+    <dd>{{ object.vendor }}</dd>
+    <div style="clear:both;"></div>
+    <dt>Model:</dt>
+    <dd>{{ object.model }}</dd>
+    <div style="clear:both;"></div>
+    <dt>Description:</dt>
+    <dd>{{ object.description }}</dd>
+    <div style="clear:both;"></div>
+    <dt>Part #:</dt>
+    <dd>{{ object.part_number }}</dd>   
+    <div style="clear:both;"></div>
+
+</dl>
+
+<div style="clear:both;"></div>
+<a href="{% url server_model-edit object.id %}">Edit</a>
+<a href="{% url server_model-list %}">Back</a>
+{% endblock %}

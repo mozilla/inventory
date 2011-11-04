@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<dl class="show">
+    <dt>Name:</dt>
+    <dd>{{ object.name }}</dd>
+    <div style="clear:both;"></div>
+</dl>
+
+<div style="clear:both;"></div>
+<a href="{% url allocation-edit object.id %}">Edit</a>
+<a href="{% url allocation-list %}">Back</a>
+{% endblock %}

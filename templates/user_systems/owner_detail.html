@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<dl class="show">
+    <dt>Name:</dt>
+    <dd>{{ owner.name }}</dd>
+    <div style="clear:both;"></div>
+    <dt>E-mail:</dt>
+    <dd>{{ owner.email|urlize }}</dd>
+    <div style="clear:both;"></div>
+    <dt>Location:</dt>
+    <dd>{{ owner.user_location }}</dd>
+    <div style="clear:both;"></div>
+    <dt>Notes:</dt>
+    <dd>{{ owner.note }}</dd>   
+    <div style="clear:both;"></div>
+
+</dl>
+
+<hr />
+<h2>Systems</h2>
+<ul>
+        {% for system in owner.unmanagedsystem_set.all %}     
+        <li>
+            <a href="{{system.get_absolute_url}}">{{ system.server_model}} - {{ system.asset_tag }} - {{ system.serial }}</a>
+        </li>
+        {% endfor %}
+</ul>
+
+
+
+<hr />
+<h2>Licenses</h2>
+<ul>
+        {% for l in owner.userlicense_set.all %} 
+        <li>
+            <a href="{{l.get_absolute_url}}">{{ l.license_type }} - {{ l.license_key }}</a>
+        </li>
+        {% endfor %}
+</ul>
+
+
+<div style="clear:both;"></div>
+<a href="{% url owner-edit owner.id %}">Edit</a>
+<a href="{% url owner-list %}">Back</a>
+{% endblock %}

@@ -1,0 +1,39 @@
+        <div class="formline">
+            <label for="id_owner">Owner:</label>
+            <input id="id_owner" type="text" name="owner_name" value="{{ system.owner }}" />
+        </div>
+
+        <div class="formline">
+            <label for="id_serial">Serial:</label>
+            {{ form.serial }}
+        </div>
+
+        <div class="formline">
+            <label for="id_asset_tag">Asset Tag:</label>
+            {{ form.asset_tag }}
+        </div>
+
+        <div class="formline">
+            <label for="id_date_purchased">Date Purchased:</label>
+            {{ form.date_purchased }}
+        </div>
+
+        <div class="formline">
+            <label for="id_cost">Cost:</label>
+            {{ form.cost }}
+        </div>
+
+        <div id="os_formline" class="formline">
+            <label for="id_operating_system">Operating System:</label>
+            {{ form.operating_system }} <span class="create_new"> or <a href="" id="new_os">(Create New)</a></span>
+        </div>
+
+        <div id="server_model_formline" class="formline">
+            <label for="id_server_model">Server Model:</label>
+            {{ form.server_model }} <span class="create_new"> or <a href="" id="new_server_model">(Create New)</a></span>
+        </div>
+
+        <div class="formline">
+            <label for="id_notes">Notes:</label>
+            {{ form.notes }}
+        </div>

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Other Sections:</h2>
+
+<ul>
+    <li><a href="{% url allocation-list %}">Allocations</a></li>
+    <li><a href="{% url location-list %}">Location</a></li>
+    <li><a href="{% url server_model-list %}">Server Models</a></li>
+    <li><a href="{% url system-csv-import %}">System CSV Import</a></li>
+</ul>
+{% endblock %}

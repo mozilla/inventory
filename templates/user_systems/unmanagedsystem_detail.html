@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+
+<dl class="show">
+<dt>Serial:</dt>
+<dd>{{ user_system.serial }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Asset Tag:</dt>
+<dd>{{ user_system.asset_tag }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Operating System:</dt>
+<dd>{{ user_system.operating_system }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Owner:</dt>
+<dd>{{ user_system.owner }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Server Model:</dt>
+<dd>{{ user_system.server_model }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Date Purchased:</dt>
+<dd>{{ user_system.date_purchased }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Cost:</dt>
+<dd>{{ user_system.cost }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Notes:</dt>
+<dd>{{ user_system.notes }}</dd>
+<div style="clear:both;"></div>
+</dl>
+
+</div>
+<h3>History</h3>
+<div class="show">
+    <table>
+        <th>Date</th>
+        <th>Info</th>
+        {% for history in user_system.history_set.all %}
+        <tr>
+            <td>{{ history.created }}</td>
+            <td>{{ history.change }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div style="clear:both;"></div>
+<a href="/user_systems/edit/{{user_system.id }}">Edit</a>
+<a href="/user_systems/">Back</a>
+{% endblock %}

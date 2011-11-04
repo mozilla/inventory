@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Bulk Editing</h3>
+<ul>
+	{% for s in systems %}
+		<li>{{ s }}</li>
+	{% endfor %}
+</ul>
+<form method="post" action="">
+<table>
+		{% for field in form %}
+        <tr>
+			<td><input type="checkbox" name="save_field" value="{{ field.html_name }}"/>
+			<th>{{ field.label_tag }}</th>
+			<td>{{ field }}</td>
+		</tr>
+		{% endfor %}
+</table>
+    <input type="submit" name="submit" value="Save" />
+</form>
+{% endblock %}

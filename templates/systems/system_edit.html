@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block subtitle %} - {{ system.hostname }} - edit{% endblock %}
+{% block head %}
+<script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>
+<!-- standalone page styling (can be removed) -->
+<link rel="stylesheet" type="text/css" href="http://static.flowplayer.org/tools/css/standalone.css"/>	
+
+
+	
+	<!-- tab styling -->
+<style type="text/css">
+   .error {
+        font: normal 11px Lucida Grande;
+        padding: 3px;
+        margin: 3px;
+        background-color: #ffc;
+        border: 1px solid #c00;
+        z-index: 500;
+    } 
+    input[type=text].error {
+        font: normal 11px Lucida Grande;
+        background-color: #FFFFFF;
+        border: 1px solid #BBBBBB;
+        line-height: 14px;
+        padding: 1px 0 1px 0;
+        color: #000000;
+
+    }
+.panes div {
+	min-height: 200px;
+	display:none;		
+	padding:15px 10px;
+	border:1px solid #999;
+	border-top:0;
+	font-size:14px;
+	background-color:#fff;
+}
+
+.releng_div, .network_adapters_div {
+	border: none;
+
+}
+/* root element for tabs  */
+ul.css-tabs {  
+	margin:0 !important; 
+	padding:0;
+	height:30px;
+	border-bottom:1px solid #666;	 	
+}
+
+/* single tab */
+ul.css-tabs li {  
+	float:left;	 
+	padding:0; 
+	margin:0;  
+	list-style-type:none;	
+}
+
+/* link inside the tab. uses a background image */
+ul.css-tabs a { 
+	float:left;
+	font-size:13px;
+	display:block;
+	padding:5px 30px;	
+	text-decoration:none;
+	border:1px solid #666;	
+	border-bottom:0px;
+	height:18px;
+	background-color:#efefef;
+	color:#777;
+	margin-right:2px;
+	position:relative;
+	top:1px;	
+	outline:0;
+	-moz-border-radius:4px 4px 0 0;	
+}
+
+ul.css-tabs a:hover {
+	background-color:#F7F7F7;
+	color:#333;
+}
+	
+/* selected tab */
+ul.css-tabs a.current {
+	background-color:#ddd;
+	border-bottom:1px solid #ddd;	
+	color:#000;	
+	cursor:default;
+}
+
+	
+/* tab pane */
+.css-panes div {
+	display:none;
+	border:1px solid #666;
+	border-width:0 1px 1px 1px;
+	min-height:150px;
+	padding:15px 20px;
+	background-color:#ddd;	
+}
+
+/* CSS Declarations for overlay */
+.simple_overlay {
+    
+    /* must be initially hidden */
+    display:none;
+    
+    /* place overlay on top of other elements */
+    z-index:10000;
+    
+    /* styling */
+    background-color:#333;
+    
+    width:675px;    
+    min-height:200px;
+    border:1px solid #666;
+    
+    /* CSS3 styling for latest browsers */
+    -moz-box-shadow:0 0 90px 5px #000;
+    -webkit-box-shadow: 0 0 90px #000;  
+}
+
+/* close button positioned on upper right corner */
+.simple_overlay .close {
+    background-image:url(/static/images/close.png);
+    position:absolute;
+    right:-15px;
+    top:-15px;
+    cursor:pointer;
+    height:35px;
+    width:35px;
+}
+.details {
+    position:absolute;
+    top:15px;
+    right:15px;
+    font-size:11px;
+    color:#fff;
+    width:150px;
+}
+    
+.details h3 {
+    color:#aba;
+    font-size:15px;
+    margin:0 0 -10px 0;
+}
+
+
+</style>
+<link rel="stylesheet" type="text/css" href="http://static.flowplayer.org/tools/css/tabs.css" />
+<script type="text/javascript">
+        var system_id = getURISegment(4);
+    $.validator.addMethod("checkForDupeNicName", function(value, element, param){
+
+        var regex_result = this.optional(element) || /^nic\d+$/.test(value);
+        if (regex_result == false){
+            return false;
+        }
+        var ajaxFunc = $.ajax({
+            async:false,   //we have to set it to false, it does not return a value before we even complete the request.
+            type:'POST',
+            url:'/systems/ajax_check_dupe_nic_name/' + system_id + '/' + value + '/',
+            dataType:'text',
+        });
+
+        //here we check the response
+        if(ajaxFunc.responseText == 'True'){
+            return false;
+        } else { 
+            return true;
+        }
+        },
+            "Adapter name is already taken" 
+        );
+
+    $.validator.addMethod("checkForDupeNic", function(value, element, param){
+
+        var regex_result = this.optional(element) || /^\d+$/.test(value);
+        if (regex_result == false){
+            return false;
+        }
+        var ajaxFunc = $.ajax({
+            async:false,   //we have to set it to false, it does not return a value before we even complete the request.
+            type:'POST',
+            url:'/systems/ajax_check_dupe_nic/' + system_id + '/' + value + '/',
+            dataType:'text',
+        });
+
+        //here we check the response
+        if(ajaxFunc.responseText == 'True'){
+            return false;
+        } else { 
+            return true;
+        }
+        },
+            "Adapter number is already taken" 
+        );
+
+        $.validator.addMethod(
+            "adapter_number",
+            function(value, element, regexp) {
+                var check = false;
+                return this.optional(element) || /^\d+$/.test(value);
+            },
+            "Please Enter a Valid Adapter Number."
+        );
+        $.validator.addMethod(
+            "ip_address",
+            function(value, element, regexp) {
+                var check = false;
+                return this.optional(element) || /\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/.test(value);
+            },
+            "Please Enter a Valid IP Address."
+        );
+        $.validator.addMethod(
+            "mac_address",
+            function(value, element, regexp) {
+                var check = false;
+                var the_regex = new RegExp(/^([0-9a-f]{2}([:-]|$)){6}$/i);
+                return this.optional(element) || the_regex.test(value);
+            },
+            "Please Enter a Valid MAC Address."
+        );
+    $(document).ready(function(){
+
+		function getURISegment(segment){
+			var query = document.location.href;
+			var split1 = query.split(/\/\//);
+			var ret = split1[1].split(/\//);
+			return (ret[segment - 1]);
+		}
+
+		function load_key_value_store(system_id){
+			$('#key_value_store_span').html('&nbsp;').load('/systems/get_key_value_store/' + system_id + '/');
+
+		}
+		load_key_value_store(system_id);
+        $("#add_adapter_form").validate({
+                            rules: {
+                                quick_add_adapter_number: {
+                                    required : true,
+                                    checkForDupeNic: true
+
+                                },
+                                quick_add_host_name: {
+                                    required : true,
+                                },
+                                quick_add_ip_address: {
+                                    required : true,
+                                    ip_address : true
+                                },
+                                quick_add_adapter_name: {
+                                    required : true,
+                                    checkForDupeNicName: true
+                                },
+                                quick_add_dhcp_scope: {
+                                    required : true
+                                },
+                                quick_add_mac_address: {
+                                    required : true,
+                                    mac_address : true
+                                }
+                            },
+                            messages: {
+                                        //quick_add_adapter_name: "Adapter name is required",
+                                        quick_add_dhcp_scope: "DHCP Scope is required",
+                                        quick_add_host_name: "Host Name is required"
+                            },
+                            submitHandler: function(data){
+                                    $.post("/systems/create_key_value/" + system_id + '/',
+                                        { 
+                                        key: 'nic.' + $('#quick_add_adapter_number').val() + '.ipv4_address.0', 
+                                        value: $('#quick_add_ip_address').val() 
+                                        }
+                                    );
+                                    $.post("/systems/create_key_value/" + system_id + '/',
+                                        { 
+                                        key: 'nic.' + $('#quick_add_adapter_number').val() + '.hostname.0', 
+                                        value: $('#quick_add_host_name').val() 
+                                        }
+                                    );
+                                    $.post("/systems/create_key_value/" + system_id + '/',
+                                        { 
+                                        key: 'nic.' + $('#quick_add_adapter_number').val() + '.mac_address.0', 
+                                        value: $('#quick_add_mac_address').val() 
+                                        }
+                                    );
+                                    $.post("/systems/create_key_value/" + system_id + '/',
+                                        { 
+                                        key: 'nic.' + $('#quick_add_adapter_number').val() + '.dhcp_scope.0', 
+                                        value: $('#quick_add_dhcp_scope').val() 
+                                        }
+                                    );
+                                    $.post("/systems/create_key_value/" + system_id + '/',
+                                        { 
+                                        key: 'nic.' + $('#quick_add_adapter_number').val() + '.name.0', 
+                                        value: $('#quick_add_adapter_name').val() 
+                                        }
+                                    );
+                                    $("#key_value_store_quick_add_adapter").data("overlay").close()
+                                    $('#key_value_store_span').html('&nbsp;').load('/systems/get_key_value_store/' + system_id + '/');
+                                return false;
+                            }
+
+            });
+        });
+		//load_network_adapters(system_id);
+
+		function getURISegment(segment){
+			var query = document.location.href;
+			var split1 = query.split(/\/\//);
+			var ret = split1[1].split(/\//);
+			return (ret[segment - 1]);
+		}
+
+
+		function load_network_adapters(system_id){
+			$('#network_adapters_div').html('&nbsp;').load('/systems/get_network_adapters/' + system_id + '/');
+
+		}
+        </script>
+{% endblock %}
+{% block content %}
+    <h2>Edit system - {{system}}</h2>
+    {{form.errors}}
+    <form class="editform" action="" method="post">
+        {% include "systems/system_form_snippet.html" %}
+        <input type="submit" name="Submit" value="Save" />
+    </form>
+
+    {% include "systems/system_form_snippet.js" %}
+
+<div class='simple_overlay' id="key_value_store_help_div">
+    <div class='details'>
+        Key Value Store Usage
+    </div>
+    <p>Inheriting Entire Key Store</p>
+    <p>This will inherit all key/value pairs from the defined parent</p>
+    <ul>
+        <li>key:parent.0 value:[host,truth]:keystore_name</li>
+    </ul>
+    <p>Inheriting Single Key/Value Pair</p>
+    <p>This will inherit all key/value pairs from the defined parent</p>
+    <ul>
+        <li>key:my_key_name value:[host,truth]:keystore_name:key</li>
+    </ul>
+    <p><b>NIC Formatting</b></p>
+    <p>The following attributes for a network adapter must be present to be in a generated DHCP scope.</p>
+    <p>The dhcp_scope option should match the name of the key/value store in the truth database. (phx-vlan100 etc)</p>
+    <ul>
+        <li>nic.X.ipv4_address.Y</li>
+        <li>nic.X.dhcp_scope.Y</li>
+        <li>nic.X.mac_address.Y</li>
+        <li>nic.X.name.Y</li>
+    </ul>
+
+</div>
+<div class='simple_overlay' id="expanded_keystore"><span id='expanded_keystore_inner'>asdfasdf</span></div>
+<div class='simple_overlay' id="key_value_store_quick_add_adapter_div">
+    <p>
+        <b>Add Network Adapter</b>
+        <hr />
+    </p>
+    <form id='add_adapter_form' method='post' action='.'>
+        <p>
+            <label for='adapter_number'>Adapter Number</label>
+            <input type='text' id='quick_add_adapter_number' name='quick_add_adapter_number' value='' />
+        </p>
+        <p>
+            <label for='quick_add_ip_address'>ip Address</label>
+            <input type='text' id='quick_add_ip_address' name='quick_add_ip_address' value='' />
+        </p>
+        <p>
+            <label for='mac_address'>Mac Address</label>
+            <input type='text' id='quick_add_mac_address' name='quick_add_mac_address' value='' />
+        </p>
+        <p>
+            <label for='adapter_number'>Adapter Name</label>
+            <input type='text' id='quick_add_adapter_name' name='quick_add_adapter_name' value='' />
+        </p>
+        <p>
+            <label for='host_name'>Host Name</label>
+            <input type='text' id='quick_add_host_name' name='quick_add_host_name' value='' />
+        </p>
+        <p>
+            <label for='dhcp_scope'>DHCP Scope</label>
+            <select id='quick_add_dhcp_scope' name='quick_add_dhcp_scope'>
+                <option value=''>...Select Scope...</option>
+                {% for scope in dhcp_scopes %}
+                <option value='{{ scope.name }}'>{{ scope.name }} ({{ scope.description }})</option>
+                {% endfor %}
+            </select>
+        </p>
+        <p>
+            <input id='batch_create_network_adapter' type='submit' name='submit' value='Create' />
+        </p>
+    </form>
+
+
+
+
+</div>
+{% endblock %}

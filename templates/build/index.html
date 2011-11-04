@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="margin-top: 1em; float:right;">
+    <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
+<form action="#" onSubmit="return false;">
+    <strong>Quick Search:</strong> <input id="quicksearch" type="text" name="quicksearch" /><input type='submit' value='go' name='search' />
+</form>
+</div>
+<h2>Listing systems</h2>
+
+<br />
+<div id="search_hits"></div>
+<form action="{% url build-bulk-edit %}" method="get">
+<table class="listtable tablesorter">
+	<thead>
+        <tr>
+            <th>Host Name</th> 
+            <th>Location</th>
+            <th>Support Tier</th> 
+            <th>Repo. Branch</th> 
+            <th>CPU Throttled</th> 
+            <th>Product Branch</th> 
+            <th>Product Series</th> 
+            <th>Closes Tree</th> 
+            <th>Purposes</th> 
+            <th>Support URL</th> 
+            <th colspan="2">Actions</th>
+        </tr>
+	</thead>
+	<tbody>
+        {% include "build/tablebody_snippet.html" %}
+	</tbody>
+</table>
+<input type="submit" name="submit" value="Bulk Edit" />
+</form>
+
+<br />
+<a href="{% url build-csv %}">Create CSV</a>
+<script>
+	$().ready(function(){
+        add_tablesorter($('.listtable')[0]);
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "{% url build-quicksearch %}");
+	});
+</script>
+{% endblock %}

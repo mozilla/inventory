@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block subtitle %}: system list{% endblock %}
+{% block content %}
+<script src="/static/javascripts/jquery.datatables.min.js"></script>
+<style type="text/css">
+@import "/static/css/smoothness/jquery-ui-1.8.11.custom.css";
+.production {
+	font-weight: bold;
+	text-decoration: underline;
+	font-color: #FFF;
+
+}
+.dataTables_length {
+	float: left;
+	padding: 0 0 0 5px;
+}
+.dataTables_filter {
+	float: right;
+	padding: 0 5px 0 0px;
+}
+.ui-icon {
+	float: right;
+
+}
+.ui-toolbar {
+	margin-bottom: none;
+	padding-bottom: none;
+
+}
+.DataTables_sort_wrapper {
+	min-width: 70px;
+	text-align: center;
+	font-weight: bold;
+	font-color: #000;
+	color: #000;
+	cursor: pointer;
+	background: url("/static/css/smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png");
+	margin: 0px;
+	padding: 0px;
+
+
+}
+
+th.ui-state-default {
+	margin: 0px;
+	padding: 0px;
+	background-color: none;
+	border: 1px solid #BBBBBB !important;
+	background: url("/static/css//smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png");
+}
+#example {
+	border-collapse:collapse;
+	margin-top: 0px;
+	border-top: none;
+	margin-bottom: 0px;
+	border-bottom: none;
+
+}
+#example_paginate {
+	font-color: #000;
+
+}
+#datagrid_processing {
+	padding: 5px 0 0 20px;
+	margin-left: 10px;
+	z-index: 400;
+}
+</style>
+<h2>Listing systems</h2>
+{% if not read_only %}<a href="{% url systems.views.system_new %}">Create New</a>{% endif %}
+
+<br />
+<div id="search_hits"></div>
+<table class="display" id="datagrid">
+	<thead>
+        <tr>
+            <th>Host Name</th> 
+            <th>Serial</th> 
+            <th>Asset</th> 
+            <th>Model</th> 
+            <th>Rack</th> 
+            <th>OOB IP</th> 
+            <th>Status</th> 
+            <th>Actions</th> 
+        </tr>
+	</thead>
+	<tbody>
+<tr>
+			<td colspan="5" class="dataTables_empty">Loading data from server</td>
+		</tr>
+	</tbody>
+</table>
+<script type="text/javascript">
+jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function ( oSettings, iDelay ) {
+	/*
+	 * Type:        Plugin for DataTables (www.datatables.net) JQuery plugin.
+	 * Name:        dataTableExt.oApi.fnSetFilteringDelay
+	 * Version:     2.2.1
+	 * Description: Enables filtration delay for keeping the browser more
+	 *              responsive while searching for a longer keyword.
+	 * Inputs:      object:oSettings - dataTables settings object
+	 *              integer:iDelay - delay in miliseconds
+	 * Returns:     JQuery
+	 * Usage:       $('#example').dataTable().fnSetFilteringDelay(250);
+	 * Requires:	  DataTables 1.6.0+
+	 *
+	 * Author:      Zygimantas Berziunas (www.zygimantas.com) and Allan Jardine (v2)
+	 * Created:     7/3/2009
+	 * Language:    Javascript
+	 * License:     GPL v2 or BSD 3 point style
+	 * Contact:     zygimantas.berziunas /AT\ hotmail.com
+	 */
+	var
+		_that = this,
+		iDelay = (typeof iDelay == 'undefined') ? 250 : iDelay;
+	
+	this.each( function ( i ) {
+		$.fn.dataTableExt.iApiIndex = i;
+		var
+			$this = this, 
+			oTimerId = null, 
+			sPreviousSearch = null,
+			anControl = $( 'input', _that.fnSettings().aanFeatures.f );
+		
+			anControl.unbind( 'keyup' ).bind( 'keyup', function() {
+			var $$this = $this;
+
+			if (sPreviousSearch === null || sPreviousSearch != anControl.val()) {
+				window.clearTimeout(oTimerId);
+				sPreviousSearch = anControl.val();	
+				oTimerId = window.setTimeout(function() {
+					$.fn.dataTableExt.iApiIndex = i;
+					_that.fnFilter( anControl.val() );
+				}, iDelay);
+			}
+		});
+		
+		return this;
+	} );
+	return this;
+}
+	//$().ready(function(){
+$(document).ready(function() {
+        //add_tablesorter($('.listtable')[0]);
+        //add_quicksearch($("#quicksearch"), $("#search_hits"), "/systems/quicksearch/");
+		$('#datagrid').dataTable( {
+"aoColumns": [
+{ "sSortDataType": "dom-text" },
+{ "sSortDataType": "dom-text" },
+{ "sSortDataType": "dom-text" },
+{ "sSortDataType": "dom-text" },
+{ "sSortDataType": "dom-text" },
+{ "sSortDataType": "dom-text" },
+{ "sSortDataType": "dom-text" },
+{ "asSorting": [], 'bSortable':false }
+],
+			"fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+						/* Append the grade to the default row class name */
+						if ( aData[0] > '' )
+						{
+							var arr = aData[0].split(/,/)
+							$('td:eq(0)', nRow).html('<a  href="/systems/show/' + arr[0] + '/">' + arr[1] + '</a>');
+						}
+						if ( aData[4] > '' )
+						{
+							var arr = aData[4].split(/,/)
+							$('td:eq(4)', nRow).html('<a  href="/systems/racks/?rack=' + arr[0] + '">' + arr[1] + '</a>');
+						}
+						if ( aData[6] == "production" )
+						{
+							$('td', nRow).addClass( 'production' );
+						}
+						if ( aData[5] > '' && aData[5].length > 1){
+							$('td:eq(5)', nRow).html('<a target="_blank" href="https://' + aData[5] + '/">' + aData[5] + '</a>');
+						} else {
+							$('td:eq(5)', nRow).html('');
+						}
+
+						if ( aData[7] > 0){
+						$('td:eq(7)', nRow).html('<a href="/systems/show/' + aData[7] + '">Show</a>&nbsp;&nbsp;<a href="/systems/edit/' + aData[7] + '">Edit</a>&nbsp;<a href="/systems/delete/' + aData[7]+ '/" onclick="return confirm(\'Are you sure?\');">Delete</a>');
+						} else {
+							$('td:eq(7)', nRow).html('');
+						}
+						return nRow;
+			},
+			"bJQueryUI": true,
+			"bProcessing": true,
+			"bServerSide": true,
+			"sAjaxSource": "/systems/list_all_systems_ajax/"
+		} ).fnSetFilteringDelay(500);
+$("#datagrid_filter > input").focus();
+	});
+</script>
+{% endblock %}

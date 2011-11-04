@@ -1,0 +1,98 @@
+<script src='/static/javascripts/key_value_validators.js'></script>
+<table cellpadding="2" border="0" align="center">
+{% for n in key_value_store %}
+
+    <tr>
+        <td>Key: <input class='input_key' type="text" id="{{n.id}}_key" name="{{n.id}}_key" value="{{n.key}}" size="30" /></td>
+        <td>Value: <input class='input_key' type="text" id="{{n.id}}_value" name="{{n.id}}_value" value="{{n.value}}" size="30" /><span id="{{n.id}}_error" class='error_span' style="margin-left: 5px; display:none;">&nbsp;</span></td>
+        <td><a href="#" id="{{n.id}}_save" style='display: none;' class="save_key_value">Save</a>&nbsp;<a href="#" id="{{n.id}}_save" class="delete_key_value">Delete</a></td>
+    </tr>
+    <tr>
+        <td colspan="5"><hr /></td>
+    </tr>
+{% endfor %}
+<tr><td><a href="" id='create_key_value'>Create Key/Value Pair</a></td></tr>
+</table>
+<style type='text/css'>
+.is-dirty{
+    background-color: #FFFF99;
+    border: 1px solid red;
+    border-left-width: 1px;
+    border-left-style: solid;
+    border-left-color: red;
+
+}
+
+.error_span {
+    background-color: #FFFF99;
+    border: none;
+}
+
+
+</style>
+
+<script type="text/javascript">
+		function getURISegment(segment){
+			var query = document.location.href;
+			var split1 = query.split(/\/\//);
+			var ret = split1[1].split(/\//);
+			return (ret[segment - 1]);
+		}
+
+
+		$('.save_key_value').click(function(){
+			var system_id = this.id.split('_')[0];
+			$.post("/systems/save_key_value/" + system_id + '/',
+				{ 
+				key: $('#' + system_id + '_key').val(), 
+				value: $('#' + system_id + '_value').val(), 
+				}
+			);
+            //$(this).parent().parent().contents('td').css({'border': 'none', 'border-left': 'none', 'border-right': 'none', 'background-color':'#FFFFFF'});
+            //$(this).parent().parent().contents('td:first').css('border-left', 'none');
+            //$(this).parent().parent().contents('td:last').css('border-right', 'none');
+            //$(this).parent().parent().contents('td:last').contents('span').css('display', 'none');
+            $(this).parent().parent().removeClass('is-dirty');
+            $(this).parent().parent().contents('td').css({'border': 'none', 'border-left': 'none', 'border-right': 'none', 'background-color':'#FFFFFF'});
+            $(this).parent().parent().contents('td:first').css('border-left', 'none');
+            $(this).parent().parent().contents('td:last').css('border-right', 'none');
+            $(this).parent().parent().contents('td:last').contents('a.save_key_value').css('display', 'none');
+            //$(this).parent().parent().contents('td:last').contents('span').css('display', 'none');
+			return false;
+
+		});
+		$('.delete_key_value').click(function(){
+			var key_value_store_id = this.id.split('_')[0];
+			var system_id = getURISegment(4);
+			$('#key_value_store_span').html('&nbsp;').load('/systems/delete_key_value/' + key_value_store_id + '/' + system_id + '/');
+			return false;
+
+		});
+		$('#create_key_value').click(function(){
+			var system_id = getURISegment(4);
+			$('#key_value_store_span').html('&nbsp;').load('/systems/create_key_value/' + system_id + '/');
+			return false;
+
+		});
+
+        $('.input_key').keyup(function() {
+            error_div = $(this).parent().parent().contents('td').contents('.error_span');
+            $(this).parent().parent().contents('td').css({'border': '1px solid red', 'border-left': 'none', 'border-right': 'none', 'background-color':'#FFFF99'});
+            $(this).parent().parent().contents('td:first').css('border-left', '1px solid red');
+            $(this).parent().parent().contents('td:last').css('border-right', '1px solid red');
+            show_save = validate_field_input(this)
+            if(show_save[0] == true){
+                error_div.hide();
+                $(this).parent().parent().contents('td:last').contents('a.save_key_value').css('display', 'inline');
+                $('#' + get_id(this.name) + '_value').css('border', '1px solid #BBBBBB');
+                //$(".tooltip").remove();
+                //$(this).attr('title','');
+            } else {
+                error_div.css('display','inline');
+                error_div.css('font-weight','bold');
+                error_div.text(show_save[1]);
+                $(this).parent().parent().contents('td:last').contents('a.save_key_value').css('display', 'none');
+                $('#' + get_id(this.name) + '_value').css('border', '1px solid red');
+            }
+        });
+</script>

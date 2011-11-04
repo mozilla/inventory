@@ -1,0 +1,64 @@
+<%= error_messages_for 'system' %>
+<div id="editform">
+<!--[form:system]-->
+<dt><label for="system_status_id">Support Tier</label></dt>
+<dd><%= select 'build_attribute', 'support_tier', ['1','2','3'].collect {|t| ["Tier " + t, "Tier " + t]}, { :include_blank => true } %></dd>
+
+<dt><label for="build_attribute_product_series">Product Series</label></dt>
+<dd><%= text_field 'build_attribute', 'product_series' %></dd>
+
+<dt><label for="build_attribute_tboxtree_url">TinderBox Tree URL</label></dt>
+<dd><%= text_field 'build_attribute', 'tboxtree_url'  %></dd>
+
+<dt><label for="build_attribute_cvsbranch">Repository Branch</label></dt>
+<dd><%= text_field 'build_attribute', 'cvsbranch'  %></dd>
+
+<dt><label for="build_attribute_cvsbranch">Cpu Throttled?</label></dt>
+<dd><%= check_box 'build_attribute', 'cpu_throttled'  %></dd>
+
+<dt><label for="build_attribute_product_branch">Product Branch</label></dt>
+<dd><%= text_field 'build_attribute', 'product_branch'  %></dd>
+<dt><label for="build_attribute_pool_name">Pool Name</label></dt>
+<dd><%= text_field 'build_attribute', 'pool_name' %></dd>
+<dt><label for='build_attribute_unittest'>Unit Test</label></dt>
+<dd><%= check_box 'build_attribute', 'unittest' %></dd>
+<dt><label for='build_attribute_talos'>Talos</label></dt>
+<dd><%= check_box 'build_attribute', 'talos' %></dd>
+<dt><label for='build_attribute_build'>Build</label></dt>
+<dd><%= check_box 'build_attribute', 'build_purpose' %></dd>
+<dt><label for='build_attribute_buildbot_master'>Buildbot Master</label></dt>
+<dd><%= check_box 'build_attribute', 'buildbot_master' %></dd>
+<dt><label for='build_attribute_staging'>Staging</label></dt>
+<dd><%= check_box 'build_attribute', 'staging' %></dd>
+<dt><label for='build_attribute_production'>Production</label></dt>
+<dd><%= check_box 'build_attribute', 'production' %></dd>
+<dt><label for='build_attribute_release'>Release</label></dt>
+<dd><%= check_box 'build_attribute', 'release' %></dd>
+<dt><label for='build_attribute_obsolete'>Obsolete</label></dt>
+<dd><%= check_box 'build_attribute', 'obsolete' %></dd>
+
+<dt><label for="build_attribute_cvsbranch">Closes Tree?</label></dt>
+<dd><%= check_box 'build_attribute', 'closes_tree'  %></dd>
+
+<dt><label for="build_attribute_support_doc">Support Doc URL</label></dt>
+<dd><%= text_field 'build_attribute', 'support_doc'  %></dd>
+
+
+<dt><label for="system_operating_system">Operating System</label></dt>
+<dd><span id="os_span"><%= select 'system', 'operating_system_id', OperatingSystem.find(:all).collect {|p| [p,p.id] }, {:include_blank => true} %></span>
+</dd>
+
+<dt><label for="system_ram">Ram</label></dt>
+<dd><%= text_field 'system', 'ram' %></dd>
+
+<div style="clear:both;">
+<dt><label for="system_notes">Notes</label></dt>
+<dd><%= text_area 'system', 'notes'  %></dd>
+</div>
+
+
+<div style="clear:both;">
+</div>
+
+<!--[eoform:system]-->
+</div>

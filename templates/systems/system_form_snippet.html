@@ -1,0 +1,147 @@
+        <div class="formline">
+            <label for="id_hostname">Hostname:</label>
+            {{ form.hostname }}
+        </div>
+
+        <div class="formline">
+            <label for="id_serial">Serial:</label>
+            {{ form.serial }}
+        </div>
+
+        <div class="formline">
+            <label for="id_switch_ports">Switch Ports:</label>
+            {{ form.switch_ports }}
+        </div>
+
+        <div class="formline">
+            <label for="id_patch_panel_port">Patch Panel Port:</label>
+            {{ form.patch_panel_port }}
+        </div>
+
+        <div class="formline">
+            <label for="id_oob_ip">Oob Ip:</label>
+            {{ form.oob_ip }}
+        </div>
+
+        <div class="formline">
+            <label for="id_oob_switch_port">Oob Switch Port:</label>
+            {{ form.oob_switch_port }}
+        </div>
+
+        <div class="formline">
+            <label for="id_system_status">System Status:</label>
+            {{ form.system_status }}
+        </div>
+
+        <div class="formline">
+            <label for="id_system_rack">System Rack:</label>
+            {{ form.system_rack }} Slot: {{ form.rack_order }}
+        </div>
+
+        <div class="formline">
+            <label for="id_asset_tag">Asset Tag:</label>
+            {{ form.asset_tag }}
+        </div>
+
+        <div class="formline">
+            <label for="id_purchase_date">Purchase Date:</label>
+            {{ form.purchase_date }}
+        </div>
+
+        <div class="formline">
+            <label for="id_change_password">Change Password:</label>
+            {{ form.change_password }}
+        </div>
+
+        <div class="formline">
+            <label for="id_purchase_price">Purchase Price:</label>
+            {{ form.purchase_price }}
+        </div>
+
+        <div id="os_formline" class="formline">
+            <label for="id_operating_system">Operating System:</label>
+            {{ form.operating_system }} <span class="create_new"> or <a href="" id="new_os">(Create New)</a></span>
+        </div>
+
+
+        <div id="server_model_formline" class="formline">
+            <label for="id_server_model">Server Model:</label>
+            {{ form.server_model }} <span class="create_new"> or <a href="" id="new_server_model">(Create New)</a></span>
+        </div>
+
+
+        <div id="allocation_formline" class="formline">
+            <label for="id_allocation">Allocated To:</label>
+            {{ form.allocation }} <span class="create_new"> or <a href="" id="new_allocation"> or (Create New)</a></span>
+        </div>
+
+
+<ul class="tabs">
+	<li><a href="#">Server Options</a></li>
+    <!--<li><a href="#">Network Adapters</a></li>-->
+	<li><a href="#">Notes</a></li>
+	<li><a href="#">Licenses</a></li>
+	<li><a href="#">Key/Value Store</a></li>
+	<li><a href="#">Revision History</a></li>
+</ul>
+
+<!-- tab "panes" -->
+<div class="panes">
+	<div style='min-height: 200px;'>
+	<ul style="list-style-type:none;">
+        <li class="formline">
+            <label for="id_is_dns_server">Is DNS Server?</label>
+            {{ form.is_dns_server }}
+        </li>
+        <li class="formline">
+            <label for="id_is_dhcp_server">Is DHCP Server?</label>
+            {{ form.is_dhcp_server }}
+        </li>
+        <li class="formline">
+            <label for="id_is_nagios_server">Is Nagios Server?</label>
+            {{ form.is_nagios_server }}
+        </li>
+        <li class="formline">
+            <label for="id_is_puppet_server">Is Puppet Server?</label>
+            {{ form.is_puppet_server }}
+        </li>
+        <li class="formline">
+            <label for="id_is_switch">Is Switch?</label>
+            {{ form.is_switch }}
+        </li>
+	</ul>
+	</div>
+	<!--<div>
+			<span id="network_adapters_div" class="network_adapters_div" > 
+			</span>
+		
+    </div>-->
+	<div style="height: 300px;">
+		    {{ form.notes }}
+	</div>
+	<div style="height: 300px;">
+		    {{ form.licenses }}
+	</div>
+	<div>
+        <span id="key_value_store_expansion_span"><a id="key_value_store_expansion" href="#"  rel="#expanded_keystore"/ style='padding-left: 5px;'>View Expanded Key/Value Store</a></span>
+        <span id="key_value_store_expansion_help_span"><a id="key_value_store_expansion_help" href="#"  rel="#key_value_store_help_div" style='padding-left: 5px;'>Usage Help</a></span>
+        <span id="key_value_store_quick_add_span"><a id="key_value_store_quick_add_adapter" href="#"  rel="#key_value_store_quick_add_adapter_div" style='padding-left: 5px;'>Add Adapter</a></span>
+		<span id="key_value_store_span"></span>
+	</div>
+	<div style="height: 300px;  width: 900px; overflow-y: scroll; overflow-x: hidden;">
+		<span id="revision_history_span" style='width: 650px;'>
+			<table style='width: 900px;' cellpadding='2' border='1' cellspacing='0'>
+			{% for r in revision_history %}
+			<tr>
+				<td style="width:200px;">{{r.changed_date}}</td>
+				<td style='width: 600px;'><pre style='width: 650px;'>{{r.changed_text}}</pre></td>
+			</tr>
+			<tr><td colspan='2' style='width: 650px;'><hr></td></tr>
+
+			{%endfor%}
+		</table>
+		
+		
+		</span>
+	</div>
+<br />

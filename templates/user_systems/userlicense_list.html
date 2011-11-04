@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
+<div style="margin-top: 1em; float:right;">
+    <form action="/licenses/quicksearch" onSubmit="return false;">
+        <strong>Quick Search:</strong> <input id="quicksearch" type="text" name="quicksearch" /><input type='submit' name='submit' value='Go' />
+    </form>
+</div>
+<h2>Listing Licenses</h2>
+<a href="{% url license-new %}">Create New</a>
+
+<br />
+<div id="search_hits"></div>
+<table class="listtable tablesorter">
+	<thead>
+        <tr>
+            <th>Type</th> 
+            <th>Key</th> 
+            <th>Username</th>
+            <th>Version</th>
+            <th>Belongs To</th> 
+            <th colspan="3">Actions</th>
+        </tr>
+	</thead>
+    <tbody>
+        {% for license in license_list %}
+        <tr>
+            <td>{{ license.license_type }}</td>
+            <td>{{ license.license_key }}</td>
+            <td>{{ license.username }}</td>
+            <td>{{ license.version }}</td>
+            <td><a href="{{ license.owner.get_absolute_url }}">{{ license.owner }}</a></td>
+            <td><a href="{% url license-show license.id %}">Show</a></td>
+            <td><a href="{% url license-edit license.id %}">Edit</a></td>
+            <td><a href="{% url license-delete license.id %}">Delete</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<script>
+	$().ready(function(){
+        add_tablesorter($('.listtable')[0]);
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "{% url license-quicksearch %}");
+	});
+</script>
+{% endblock %}

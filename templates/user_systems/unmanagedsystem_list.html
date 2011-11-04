@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
+<div style="margin-top: 1em; float:right;">
+    <form action="#" onSubmit="return false;">
+        <strong>Quick Search:</strong> <input id="quicksearch" type="text" name="quicksearch" /><input type='submit' name='submit' value='Go' />
+    </form>
+</div>
+
+<h2>Listing User Systems</h2>
+
+<a href="{% url user-system-new %}">Create New</a> | 
+<a href="{% url user-system-csv %}">Create CSV</a>
+<br />
+
+<div id="search_hits"></div>
+<table class="listtable tablesorter">
+	<thead>
+        <tr>
+            <th>Owner</th> 
+            <th>Serial</th> 
+            <th>Asset Tag</th> 
+            <th>Model</th>
+            <th>Notes</th>
+            <th colspan="3">Actions</th>
+        </tr>
+	</thead>
+    <tbody>
+        {% with user_system_list as systems %}
+        {% include "user_systems/unmanagedsystem_table_snippet.html" %}
+        {% endwith %}
+    </tbody>
+</table>
+<script>
+	$().ready(function(){
+        add_tablesorter($('.listtable')[0]);
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "{% url user-system-quicksearch %}");
+	});
+</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<dl class="show">
+    <dt>Name:</dt>
+    <dd>{{ object.name }}</dd>
+    <div style="clear:both;"></div>
+    <dt>Address:</dt>
+    <dd>{{ object.address }}</dd>
+    <div style="clear:both;"></div>
+    <dt>Note:</dt>
+    <dd>{{ object.note }}</dd>
+    <div style="clear:both;"></div>
+</dl>
+
+<div style="clear:both;"></div>
+<a href="{% url location-edit object.id %}">Edit</a>
+<a href="{% url location-list %}">Back</a>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "generic_listtable.html" %}
+{% block list_name %}Allocations{% endblock %}
+
+{% block create_new_url %}{% url allocation-new %}{% endblock %}
+{% block table_head %}
+        <tr>
+            <th>Name</th> 
+            <th colspan="3">Actions</th>
+        </tr>
+{% endblock %}
+{% block table_body %}
+        {% for o in object_list %}
+        <tr>
+            <td>{{ o.name }}</td>
+            <td><a href="{% url allocation-show o.id %}">Show</a></td>
+            <td><a href="{% url allocation-edit o.id %}">Edit</a></td>
+        </tr>
+        {% endfor %}
+{% endblock %}
