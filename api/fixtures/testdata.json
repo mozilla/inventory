@@ -1,0 +1,531 @@
+[
+    {
+      "pk": 1, 
+      "model": "systems.system", 
+      "fields": {
+            "allocation": 1, 
+            "operating_system": 1, 
+            "rack_order": "1.00", 
+            "oob_ip": "192.168.1.11", 
+            "system_status": null, 
+            "notes": "A bunch of notes.", 
+            "hostname": "fake-hostname2", 
+            "oob_switch_port": "101.22", 
+            "patch_panel_port": "101", 
+            "server_model": 1, 
+            "asset_tag": "65432", 
+            "system_rack": 1, 
+            "created_on": null, 
+            "switch_ports": "101.02", 
+            "change_password": "2011-02-03 00:00:00", 
+            "licenses": "121-21-111-555-5555", 
+            "updated_on": null, 
+            "serial": "39993", 
+            "purchase_price": "$101.2", 
+            "ram": "", 
+            "purchase_date": "2011-04-04"
+      }
+    },
+    {
+        "pk": 2, 
+        "model": "systems.system", 
+        "fields": {
+            "allocation": 1, 
+            "operating_system": 1, 
+            "rack_order": "1.00", 
+            "oob_ip": "192.168.1.11", 
+            "system_status": null, 
+            "notes": "A bunch of notes.", 
+            "hostname": "fake-hostname1", 
+            "oob_switch_port": "101.22", 
+            "patch_panel_port": "101", 
+            "server_model": 1, 
+            "asset_tag": "", 
+            "system_rack": 1, 
+            "created_on": null, 
+            "switch_ports": "101.02", 
+            "change_password": "2011-02-03 00:00:00", 
+            "licenses": "121-21-111-555-5555", 
+            "updated_on": null, 
+            "serial": "39993", 
+            "purchase_price": "$101.2", 
+            "ram": "", 
+            "purchase_date": "2011-04-04"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "systems.servermodel", 
+        "fields": {
+            "vendor":"HP",
+            "model":"DL360",
+            "description":"Server Description",
+            "model":"DL360"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "systems.allocation", 
+        "fields": {
+            "name": "The Allocation"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "systems.location", 
+        "fields": {
+            "address":"The Address",
+            "note":"The Note",
+            "name": "1-1-1"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "systems.systemrack", 
+        "fields": {
+            "name": "1-1-1",
+            "location": 1
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "systems.operatingsystem", 
+        "fields": {
+            "name": "RHEL",
+            "version": "6.0"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "truth.truth", 
+        "fields": {
+            "name": "test",
+            "description": "Test Cluster"
+        }
+    },
+    {
+        "pk": 2, 
+        "model": "truth.truth", 
+        "fields": {
+            "name": "phx-vlan73",
+            "description": "PHX Vlan 73 DHCP Scope"
+        }
+    },{
+        "pk": 3, 
+        "model": "truth.truth", 
+        "fields": {
+            "name": "phx1-32.8.10.in-addr.arpa",
+            "description": "10.99.32.0 reverse dns zone"
+        }
+    },{
+        "pk": 4, 
+        "model": "truth.truth", 
+        "fields": {
+            "name": "phx1-33.8.10.in-addr.arpa",
+            "description": "10.99.33.0 reverse dns zone"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "systems.ScheduledTask", 
+        "fields": {
+            "type": "reverse_dns",
+            "task": "phx1-32.8.10.in-addr.arpa"
+        }
+    },
+    {
+        "pk": 2, 
+        "model": "systems.ScheduledTask", 
+        "fields": {
+            "type": "reverse_dns",
+            "task": "phx1-33.8.10.in-addr.arpa"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 1,
+            "key": "cluster_name",
+            "value": "Test Cluster Name"
+        }
+    },
+    {
+        "pk": 2, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 2,
+            "key": "dhcp.is_scope",
+            "value": "True"
+        }
+    },
+    {
+        "pk": 3, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 1,
+            "key": "cluster_name",
+            "value": "Test Cluster Name"
+        }
+    },
+    {
+        "pk": 4, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 1,
+            "key": "cluster_owner",
+            "value": "The Cluster Owner"
+        }
+    },
+    {
+        "pk": 5, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 1,
+            "key": "is_dhcp_scope",
+            "value": "False"
+        }
+    },
+    {
+        "pk": 6, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 1,
+            "key": "dhcp.scope.name",
+            "value": "phx-vlan81"
+        }
+    },
+    {
+        "pk": 7, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 1,
+            "key": "dhcp.scope.start",
+            "value": "10.0.0.0"
+        }
+    },
+    {
+        "pk": 8, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 1,
+            "key": "dhcp.scope.end",
+            "value": "10.0.0.255"
+        }
+    },
+    {
+        "pk": 9, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 2,
+            "key": "dhcp.scope.start",
+            "value": "10.0.1.0"
+        }
+    },
+    {
+        "pk": 10, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 2,
+            "key": "dhcp.scope.end",
+            "value": "10.0.1.255"
+        }
+    },
+    {
+        "pk": 11, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 2,
+            "key": "dhcp.scope.name",
+            "value": "phx-vlan73"
+        }
+    },
+    {
+        "pk": 12, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 2,
+            "key": "is_dhcp_scope",
+            "value": "True"
+        }
+    },
+    {
+        "pk": 13, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 3,
+            "key": "is_reverse_dns_zone",
+            "value": "True"
+        }
+    },
+    {
+        "pk": 14, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 3,
+            "key": "soa.1",
+            "value": "noc.mozilla.com."
+        }
+    },
+    {
+        "pk": 15, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 3,
+            "key": "soa.0",
+            "value": "ns.mozilla.org."
+        }
+    },
+    {
+        "pk": 16, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 3,
+            "key": "serial",
+            "value": "2011032800"
+        }
+    },
+    {
+        "pk": 16, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 3,
+            "key": "ns.0",
+            "value": "ns1.mozilla.org."
+        }
+    },
+    {
+        "pk": 17, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 3,
+            "key": "ns.1",
+            "value": "ns2.mozilla.org."
+        }
+    },
+    {
+        "pk": 18, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 3,
+            "key": "ns.2",
+            "value": "ns3.mozilla.org."
+        }
+    },
+    {
+        "pk": 19, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 3,
+            "key": "mx.0",
+            "value": "dm-mail01.mozilla.org."
+        }
+    },
+    {
+        "pk": 20, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 3,
+            "key": "mx.1",
+            "value": "ns1.mozilla.org."
+        }
+    },
+    {
+        "pk": 21, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 4,
+            "key": "is_reverse_dns_zone",
+            "value": "True"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "ip_address",
+            "value": "10.99.32.1"
+        }
+    },
+    {
+        "pk": 2, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "parent.0",
+            "value": "${host:fake-hostname1:ip_address}"
+        }
+    },
+    {
+        "pk": 3, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "parent.0",
+            "value": "${host:fake-hostname1}"
+        }
+    },
+    {
+        "pk": 3, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "2",
+            "key": "nic.0.ipv4_address.0",
+            "value": "10.99.32.3"
+        }
+    },
+    {
+        "pk": 4, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "parent.1",
+            "value": "${truth:test:cluster_name}"
+        }
+    },
+    {
+        "pk": 5, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "2",
+            "key": "ip_address",
+            "value": "10.99.32.3"
+        }
+    },
+    {
+        "pk": 6, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.0.dhcp_scope.0",
+            "value": "phx-vlan73"
+        }
+    },
+    {
+        "pk": 7, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.0.mac_address.0",
+            "value": "00:00:00:00:00:AA"
+        }
+    },
+    {
+        "pk": 8, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.0.ipv4_address.0",
+            "value": "10.99.32.1"
+        }
+    },
+    {
+        "pk": 9, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.1.mac_address.0",
+            "value": "00:00:00:00:00:BB"
+        }
+    },
+    {
+        "pk": 10, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.1.ipv4_address.0",
+            "value": "10.99.32.2"
+        }
+    },
+    {
+        "pk": 11, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.0.adapter_name.0",
+            "value": "nic0"
+        }
+    },
+    {
+        "pk": 12, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.1.adapter_name.0",
+            "value": "nic1"
+        }
+    },
+    {
+        "pk": 13, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.1.dhcp_scope.0",
+            "value": "phx-vlan73"
+        }
+    },
+    {
+        "pk": 14, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.0.dhcp_hostname.0",
+            "value": "fake-hostname2_dhcp0"
+        }
+    },
+    {
+        "pk": 15, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.0.dhcp_filename.0",
+            "value": "the_filename.bz2"
+        }
+    },
+    {
+        "pk": 16, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.0.reverse_dns_zone_domain",
+            "value": "mozilla.com"
+        }
+    },
+    {
+        "pk": 17, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "nic.0.reverse_dns_zone.0",
+            "value": "phx1-32.8.10.in-addr.arpa"
+        }
+    },
+    {
+        "pk": 18, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "2",
+            "key": "nic.0.reverse_dns_zone_domain",
+            "value": "mozilla.com"
+        }
+    },
+    {
+        "pk": 19, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "2",
+            "key": "nic.0.reverse_dns_zone.0",
+            "value": "phx1-32.8.10.in-addr.arpa"
+        }
+    },
+    {
+        "pk": 20, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "Null",
+            "value": "Null"
+        }
+    }
+]
