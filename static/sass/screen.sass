@@ -1,0 +1,137 @@
+@import util.sass
+@import tablesorter.sass
+
+!background_color = #eee
+=border-radius(!topleft = 0px, !topright = 0px, !bottomleft = 0px, !bottomright = 0px)
+    -moz-border-radius:
+        topleft= !topleft
+        topright= !topright
+        bottomleft= !bottomleft
+        bottomright= !bottomright
+    -webkit-border:
+        top-left-radius= !topleft
+        top-right-radius= !topright
+        bottom-left-radius= !bottomleft 
+        bottom-right-radius= !bottomright
+        
+=linear-gradient(!pos, !start_color, !end_color)
+    background= "-moz-linear-gradient("!pos, !start_color, !end_color")"
+
+=box-shadow(!size = 1em)
+    -moz-box-shadow= 0 0 !size black
+    -webkit-box-shadow= 0 0 !size black
+        
+=bordered-table(!color)
+    border= 1px "solid" !color
+    td, td
+        border-right= 1px "solid" !color
+        border-bottom= 1px "solid" !color
+        &:last-child, &.last
+            border-right-width: 0px
+            
+=styled-button-list(!bg_color, !end_color = "white")
+    border-bottom: 1px solid #778
+    a
+        padding: 3px 0.5em
+        margin-left: 3px
+        +border-radius(5px, 5px)
+        border: 0px solid #778
+            bottom: none
+        background-color= !bg_color
+        +linear-gradient("top", !bg_color, !end_color)
+        +box-shadow(4px)
+        text-decoration: none
+        color: white
+        font-weight: bold
+        
+body
+    +linear-gradient("top", #eee, "white 400px")
+
+div#header
+    background-color: #222
+    height: 50px
+    h1
+        //float: right
+        a
+            text-decoration: none
+            color: white
+    
+#main
+    background-color= !background_color
+    border: 1px solid #999
+    padding: 1em
+    +box-shadow
+        
+ul#app-buttons
+    +horizontal-list(2px)
+    +styled-button-list(#608925, #98BA40)
+    padding-top: 4px
+
+table.tablesorter
+    +tablesorter
+    +bordered-table(#bbb)
+    
+table.racktable
+    +bordered-table(#000)
+    th
+        background-color= gray + #444
+        text-align: center
+
+    select
+        max-width: 220px
+
+.show
+    padding: 3em
+    margin: 3em
+    background-color= !background_color + #101010
+    +border-radius(5px, 5px, 5px, 5px)
+    +box-shadow(10px)
+//    background: -moz-linear-gradient(right, #DDD, white)
+
+dl.show
+    font-size: 11px
+    dt
+        clear: left
+        float: left
+        width: 120px
+        padding: 1px 0 3px
+    dd
+        float: left
+        width: 340px 
+        padding-left: 10px
+
+.editform
+    padding: 3em
+    margin: 3em
+    background-color= !background_color + #101010
+    +border-radius(5px, 5px, 5px, 5px)
+    +box-shadow(10px)
+    
+.formline
+    clear: left
+    margin-bottom: .75em
+
+    label
+        border-bottom: medium none
+        float: left
+        padding-right: 1em
+        text-align: right
+        width: 9em
+        font-weight: bold
+
+    textarea, input, select
+        margin: 0
+    
+    .sub_form
+        background-color: #f5f5f5
+        border: 2px solid #ccc
+        display: block
+        padding: 10px 20px 10px 10px
+        margin-bottom: 5px
+        width: 400px
+        float: left
+        label
+            width: 50px
+            clear: left
+            float: left
+            text-align: left
