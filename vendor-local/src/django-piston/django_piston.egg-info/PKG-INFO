@@ -1,0 +1,18 @@
+Metadata-Version: 1.0
+Name: django-piston
+Version: 0.2.3
+Summary: Piston is a Django mini-framework creating APIs.
+Home-page: http://bitbucket.org/jespern/django-piston/wiki/Home
+Author: Jesper Noehr
+Author-email: jesper@noehr.org
+License: BSD
+Download-URL: http://bitbucket.org/jespern/django-piston/downloads/
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Framework :: Django
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP
