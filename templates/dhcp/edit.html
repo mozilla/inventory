@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block subtitle %}: Edit DHCP Scope{% endblock %}
 {% block content %}
 <style type="text/css">
@@ -89,9 +89,9 @@
 <br />
 {{ form.errors }}
 <a href='/dhcp/override/{{dhcp_scope}}/'>DHCP Scope Manual Entries</a>
-<form id="dhcp_edit_form" class='editform' method="post">
+<form action='.' id="dhcp_edit_form" class='editform' method="post">
 <table style="min-width: 550px;">
-    {{ form.as_table }}
+    {{ form.as_table() }}
     <tr><td><input type="submit" value="Edit" id="submit"></td></tr>
 </table>
 </form>

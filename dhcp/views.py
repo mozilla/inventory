@@ -27,9 +27,6 @@ from jinja2.filters import contextfilter
 from django.utils import translation
 from libs.jinja import jinja_render_to_response
 
-
-
-
 def showall(request):
     dhcp_scopes = models.DHCP.objects.all()	
     client = Client()
@@ -65,11 +62,10 @@ def new(request):
     else:
         form = forms.AddDHCPScopeForm()
 
-    return render_to_response('dhcp/new.html', {
+    return jinja_render_to_response('dhcp/new.html', {
             "form": form ,
             "error_message":error_message
-           },
-           RequestContext(request))
+           })
 def override_file(request, dhcp_scope):
     if request.method == 'POST':
         form = forms.DHCPScopeOverrideForm(request.POST)
@@ -284,11 +280,10 @@ def edit(request, dhcp_scope):
     else:
         form = forms.EditDHCPScopeForm(initial=initial)
 
-    return render_to_response('dhcp/edit.html', {
+    return jinja_render_to_response('dhcp/edit.html', {
             "form": form,
             'dhcp_scope': dhcp_scope
-           },
-           RequestContext(request))
+           })
 def delete(request, dhcp_scope):
     try:
         scope = Truth.objects.get(name=dhcp_scope)
