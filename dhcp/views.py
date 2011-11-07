@@ -18,8 +18,18 @@ from truth.models import KeyValue as TruthKeyValue, Truth
 from systems.models import NetworkAdapter
 #import adapters.dhcp
 from middleware.restrict_to_remote import allow_anyone
+
 from DHCP import DHCP
 from django.test.client import Client
+from django.template.defaulttags import URLNode
+from django.conf import settings
+from jinja2.filters import contextfilter
+from django.utils import translation
+from libs.jinja import jinja_render_to_response
+
+
+
+
 def showall(request):
     dhcp_scopes = models.DHCP.objects.all()	
     client = Client()
@@ -29,10 +39,9 @@ def showall(request):
     for key in obj.iterkeys():
         dhcp_scopes.append(key.split(":")[1])
 
-    return render_to_response('dhcp/index.html', {
+    return jinja_render_to_response('dhcp/index.html', {
             'dhcp_scopes': dhcp_scopes,
-           },
-           RequestContext(request))
+           })
 
 def new(request):
     error_message = ''

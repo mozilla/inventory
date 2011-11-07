@@ -53,4 +53,4 @@ JINGO_EXCLUDE_APPS = [
 #    ('media/js/**.js', 'javascript'),
 # ]
 
-LOGGING = dict(loggers=dict(playdoh = {'level': logging.DEBUG}))
+LOGGING = dict(loggers=dict(playdoh = {'level': logging.INFO}))
