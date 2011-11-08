@@ -10,7 +10,7 @@
 
 <br />
 <div id="search_hits"></div>
-<form action="{{ "build-bulk-edit|"url() }}" method="get">
+<form action="{{ "build-bulk-edit"|url() }}" method="get">
 <table class="listtable tablesorter">
 	<thead>
         <tr>
@@ -35,7 +35,7 @@
 </form>
 
 <br />
-<a href="{{ "build-csv|"url() }}">Create CSV</a>
+<a href="{{ "build-csv"|url() }}">Create CSV</a>
 <script>
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);

@@ -2,7 +2,7 @@
 <tr>
     <td>
         <input type="checkbox" name="system_id" value="{{ system.pk }}" />
-        <a href="{{ "build-show|"url(system.id) }}">{{ system }}</a>
+        <a href="{{ "build-show"|url(system.id) }}">{{ system }}</a>
     </td>
     <td>{{ system.system_rack.location }}</td>
     {% if system.buildattribute %}
