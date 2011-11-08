@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block content %}
 <dl class="show">
 <dt>Host name:</dt>
@@ -65,70 +65,68 @@
 <dd>{{ system.ram }}</dd>
 <div style="clear:both;"></div>
 
-{% with system.buildattribute as ba %}
-{% if ba %}
+{% if system.buildattribute %}
   <dt>Pool Name: </dt> 
-  <dd>{{ ba.pool_name }}</dd>
+  <dd>{{ system.buildattribute.pool_name }}</dd>
   <div style="clear:both;"></div>
   <dt>Support Tier: </dt> 
-  <dd>{{ ba.support_tier }}</dd>
+  <dd>{{ system.buildattribute.support_tier }}</dd>
   <div style="clear:both;"></div>
   <dt>Tinderbox Tree URL: </dt> 
-  <dd>{{ ba.tboxtree_url|urlize }}</dd>
+  <dd>{{ system.buildattribute.tboxtree_url|urlize }}</dd>
   <div style="clear:both;"></div>
   <dt>Product Series</dt>
-  <dd>{{ ba.product_series }}</dd>
+  <dd>{{ system.buildattribute.product_series }}</dd>
   <div style="clear:both;"></div>
   <dt>Repository Branch: </dt> 
-  <dd>{{ ba.cvsbranch }}</dd>
+  <dd>{{ system.buildattribute.cvsbranch }}</dd>
   <div style="clear:both;"></div>
   <dt>Cpu Throttled?: </dt> 
-  <dd>{{ ba.cpu_throttled }}</dd>
+  <dd>{{ system.buildattribute.cpu_throttled }}</dd>
   <div style="clear:both;"></div>
   <dt>Product Branch: </dt> 
-  <dd>{{ ba.product_branch }}</dd>
+  <dd>{{ system.buildattribute.product_branch }}</dd>
   <div style="clear:both;"></div>
   <dt>Closes Tree?: </dt> 
-  <dd>{{ ba.closes_tree }}</dd>
+  <dd>{{ system.buildattribute.closes_tree }}</dd>
   <div style="clear:both;"></div>
   <dt>Support Doc: </dt> 
-  <dd>{{ ba.support_doc|urlize }}</dd>
+  <dd>{{ system.buildattribute.support_doc|urlize }}</dd>
   <div style="clear:both;"></div>
   
   <dt>Unit Test</dt>
-  <dd>{{ ba.unittest }}</dd>
+  <dd>{{ system.buildattribute.unittest }}</dd>
   <div style="clear:both;"></div>
 
   <dt>Talos:</dt>
-  <dd>{{ ba.talos }}</dd>
+  <dd>{{ system.buildattribute.talos }}</dd>
   <div style="clear:both;"></div>
 
   <dt>Build:</dt>
-  <dd>{{ ba.build_purpose }}</dd>
+  <dd>{{ system.buildattribute.build_purpose }}</dd>
   <div style="clear:both;"></div>
 
   <dt>Buildbot Master:</dt>
-  <dd>{{ ba.buildbot_master }}</dd>
+  <dd>{{ system.buildattribute.buildbot_master }}</dd>
   <div style="clear:both;"></div>
 
   <dt>Staging:</dt>
-  <dd>{{ ba.staging }}</dd>
+  <dd>{{ system.buildattribute.staging }}</dd>
   <div style="clear:both;"></div>
 
   <dt>Production:</dt>
-  <dd>{{ ba.production }}</dd>
+  <dd>{{ system.buildattribute.production }}</dd>
   <div style="clear:both;"></div>
 
   <dt>Release:</dt>
-  <dd>{{ ba.release }}</dd>
+  <dd>{{ system.buildattribute.release }}</dd>
   <div style="clear:both;"></div>
 
   <dt>Obsolete:</dt>
-  <dd>{{ ba.obsolete }}</dd>
+  <dd>{{ system.buildattribute.obsolete }}</dd>
   <div style="clear:both;"></div>
   
 {% endif %}
-{% endwith %}
 <dt>Notes: </dt>
 <dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.notes }}</pre></dd>
 <div style="clear:both;"></div>

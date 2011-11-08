@@ -11,6 +11,14 @@ from django.http import HttpResponse
 from middleware.restrict_to_remote import allow_build
 import models
 
+from django.template.defaulttags import URLNode
+from django.conf import settings
+from jinja2.filters import contextfilter
+from django.utils import translation
+from libs.jinja import jinja_render_to_response
+import commonware.log
+
+log = commonware.log.getLogger('inventory')
 
 def build_attribute_form_generator(show_fields):
     class f(forms.ModelForm):
@@ -52,22 +60,17 @@ def quicksearch_ajax(request):
     systems = models.System.build_objects.select_related().filter(
         hostname__icontains=request.POST['quicksearch']
     ).order_by('hostname')
-
-    return render_to_response('build/quicksearch.html', {
+    return jinja_render_to_response('build/quicksearch.html', {
             'systems': systems,
-           },
-           RequestContext(request)
-    )
+           })
 
 @allow_build
 def build_show(request, id):
     system = get_object_or_404(models.System, pk=id, allocation__name='release')
 
-    return render_to_response('build/show.html', {
+    return jinja_render_to_response('build/show.html', {
             'system': system,
-           },
-           RequestContext(request)
-    )
+           })
 
 @allow_build
 def build_edit(request, id):
@@ -92,13 +95,11 @@ def build_edit(request, id):
         form = BuildAttributeForm(instance=build_attribute) 
         system_form = BuildSystemForm(instance=system)
 
-    return render_to_response('build/edit.html', {
+    return jinja_render_to_response('build/edit.html', {
             'systems': system,
             'system_form': system_form,
             'form': form,
-        }, 
-        RequestContext(request)
-    )
+           })
 
 @allow_build
 def build_bulk(request):
@@ -122,22 +123,23 @@ def build_bulk(request):
             form = BuildAttributeForm(request.POST)
     else:
         form = BuildAttributeForm() 
-    return render_to_response('build/bulk.html', {
+    return jinja_render_to_response('build/bulk.html', {
             'systems': systems,
             'form': form,
-        }, 
-        RequestContext(request)
-    )
+           })
 
 @allow_build
 def build_list(request):
-    systems = models.System.build_objects.select_related().order_by('hostname')
-
-    return render_to_response('build/index.html', {
+    systems = models.System.objects.filter(allocation__name='release').select_related().order_by('hostname')
+    for s in systems:
+        try:
+            build_attribute = s.buildattribute
+        except:
+            tmp = models.BuildAttribute(id=999999999,system=s)
+            s.buildattribute = tmp
+    return jinja_render_to_response('build/index.html', {
             'systems': systems,
-        }, 
-        RequestContext(request)
-    )
+           })
 
 @allow_build
 def build_csv(request):

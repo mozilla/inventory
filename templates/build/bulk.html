@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block content %}
 <h3>Bulk Editing</h3>
 <ul>
@@ -11,7 +11,7 @@
 		{% for field in form %}
         <tr>
 			<td><input type="checkbox" name="save_field" value="{{ field.html_name }}"/>
-			<th>{{ field.label_tag }}</th>
+			<th>{{ field.label_tag() }}</th>
 			<td>{{ field }}</td>
 		</tr>
 		{% endfor %}
