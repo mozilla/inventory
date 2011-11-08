@@ -1,6 +1,7 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block subtitle %}: Key Value Store{% endblock %}
 {% block content %}
+{% block head %}
 <script src="{{ MEDIA_URL }}javascripts/jquery.datatables.min.js"></script>
 <style type="text/css">
     @import "{{ MEDIA_URL }}css/smoothness/jquery-ui-1.8.11.custom.css";
@@ -66,8 +67,9 @@ th.ui-state-default {
 	z-index: 400;
 }
 </style>
+{% endblock %}
 <h2>Listing systems</h2>
-{% if not read_only %}<a href="{% url truth.views.create %}">Create New</a>{% endif %}
+{% if not read_only %}<a href="{{ 'truth.views.create'|url() }}">Create New</a>{% endif %}
 
 <br />
 <div id="search_hits"></div>

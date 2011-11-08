@@ -10,6 +10,11 @@ from django.template.loader import render_to_string
 from django.utils import simplejson as json
 import models
 import forms
+from django.template.defaulttags import URLNode
+from django.conf import settings
+from jinja2.filters import contextfilter
+from django.utils import translation
+from libs.jinja import jinja_render_to_response
 
 
 import re
@@ -40,11 +45,10 @@ def create(request):
             return HttpResponseRedirect('/truth/')
     else:
         f = forms.TruthForm()
-    return render_to_response('truth/key_value_store_create.html', {
-            'form': f,
-           },
-           RequestContext(request))
 
+    return jinja_render_to_response('truth/key_value_store_create.html', {
+            'form': f
+           })
 
 def delete(request, id):
     t = models.Truth.objects.get(id=id) 
@@ -60,33 +64,31 @@ def edit(request, id):
             f.save()
     else:
         f = forms.TruthForm(instance=truth)
-    return render_to_response('truth/edit.html', {
+    return jinja_render_to_response('truth/edit.html', {
             'kv': truth,
             'form': f
-        },RequestContext(request))
+           })
 def index(request):
     
-    return render_to_response('truth/index.html', {
+    return jinja_render_to_response('truth/index.html', {
             'systems': models.Truth.objects.all(),
             'read_only': getattr(request, 'read_only', False),
-        },RequestContext(request))
+           })
         
 def get_key_value_store(request, id):
     truth = models.Truth.objects.get(id=id)
     key_value_store = models.KeyValue.objects.filter(truth=truth)
-    return render_to_response('truth/key_value_store.html', {
+    return jinja_render_to_response('truth/key_value_store.html', {
             'key_value_store': key_value_store,
-           },
-           RequestContext(request))
+           })
 def delete_key_value(request, id, kv_id):
     kv = models.KeyValue.objects.get(id=id)
     kv.delete()
     truth = models.Truth.objects.get(id=kv_id)
     key_value_store = models.KeyValue.objects.filter(truth=truth)
-    return render_to_response('truth/key_value_store.html', {
+    return jinja_render_to_response('truth/key_value_store.html', {
             'key_value_store': key_value_store,
-           },
-           RequestContext(request))
+           })
 def save_key_value(request, id):
     kv = models.KeyValue.objects.get(id=id)
     if kv is not None:
@@ -101,10 +103,9 @@ def create_key_value(request, id):
     kv = models.KeyValue(truth=truth)
     kv.save();
     key_value_store = models.KeyValue.objects.filter(truth=truth)
-    return render_to_response('truth/key_value_store.html', {
+    return jinja_render_to_response('truth/key_value_store.html', {
             'key_value_store': key_value_store,
-           },
-           RequestContext(request))
+           })
 
 def list_all_keys_ajax(request):
 #iSortCol_0 = which column is sorted
