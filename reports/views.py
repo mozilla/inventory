@@ -20,6 +20,11 @@ from django.test.client import Client
 from django.db.models import Q
 from forms import ReportForm
 import csv
+from django.template.defaulttags import URLNode
+from django.conf import settings
+from jinja2.filters import contextfilter
+from django.utils import translation
+from libs.jinja import jinja_render_to_response
 @allow_anyone
 def report_home(request):
     data = {}
@@ -66,4 +71,6 @@ def report_home(request):
         data['form'] = form
         template = 'reports/index.html'
 
-        return render_to_response(template, data, RequestContext(request))
+    return jinja_render_to_response(template, {
+            'form': form
+           })
