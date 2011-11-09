@@ -4,6 +4,12 @@
 # To extend any settings from settings/base.py here's an example:
 #from . import base
 #INSTALLED_APPS = base.INSTALLED_APPS + ['debug_toolbar']
+site_root = '<Path to manage.py here>' 
+sys.path.append(site_root)
+sys.path.append(site_root + '/adapters')
+sys.path.append(site_root + '/libs')
+sys.path.append(site_root + '/modules')
+
 INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.auth',
