@@ -4,6 +4,22 @@
 # To extend any settings from settings/base.py here's an example:
 #from . import base
 #INSTALLED_APPS = base.INSTALLED_APPS + ['debug_toolbar']
+INSTALLED_APPS = (
+    'django.contrib.sessions',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.admin',
+    'piston',
+    #'south',
+    'systems',
+    'user_systems',
+    'build',
+    'dhcp',
+    'truth',
+    'api',
+    'api_v2',
+    'reports',
+)
 
 
 DATABASES = {
