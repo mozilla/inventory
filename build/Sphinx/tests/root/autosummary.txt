@@ -1,0 +1,7 @@
+Autosummary test
+================
+
+.. autosummary::
+   :toctree: generated
+
+   sphinx.application.TemplateBridge

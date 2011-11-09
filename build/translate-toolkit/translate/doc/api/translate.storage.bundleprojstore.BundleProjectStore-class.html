@@ -1,0 +1,866 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>translate.storage.bundleprojstore.BundleProjectStore</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="translate-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://translate.sourceforge.net/wiki/toolkit/index">Translate Toolkit</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="translate-module.html">Package&nbsp;translate</a> ::
+        <a href="translate.storage-module.html">Package&nbsp;storage</a> ::
+        <a href="translate.storage.bundleprojstore-module.html">Module&nbsp;bundleprojstore</a> ::
+        Class&nbsp;BundleProjectStore
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="translate.storage.bundleprojstore.BundleProjectStore-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class BundleProjectStore</h1><p class="nomargin-top"><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_translat_170" name="uml_class_diagram_for_translat_170">
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#sourcefiles" title="Read&#45;only access to self._sourcefiles." alt="" coords="75,28,328,47"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#targetfiles" title="Read&#45;only access to self._targetfiles." alt="" coords="75,47,328,65"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#transfiles" title="Read&#45;only access to self._transfiles." alt="" coords="75,65,328,84"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#__del__" title="translate.storage.projstore.ProjectStore.__del__" alt="" coords="75,87,328,105"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#__in__" title="@returns True if lhs is a file name or file object in the project store." alt="" coords="75,105,328,124"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#append_sourcefile" title="translate.storage.projstore.ProjectStore.append_sourcefile" alt="" coords="75,124,328,143"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#append_targetfile" title="translate.storage.projstore.ProjectStore.append_targetfile" alt="" coords="75,143,328,161"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#append_transfile" title="translate.storage.projstore.ProjectStore.append_transfile" alt="" coords="75,161,328,180"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#get_filename_type" title="Get the type of file (&#39;src&#39;, &#39;trans&#39;, &#39;tgt&#39;) with the given name." alt="" coords="75,180,328,199"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#remove_sourcefile" title="translate.storage.projstore.ProjectStore.remove_sourcefile" alt="" coords="75,199,328,217"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#remove_targetfile" title="translate.storage.projstore.ProjectStore.remove_targetfile" alt="" coords="75,217,328,236"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html#remove_transfile" title="translate.storage.projstore.ProjectStore.remove_transfile" alt="" coords="75,236,328,255"/>
+<area shape="rect" href="translate.storage.projstore.ProjectStore&#45;class.html" title="Basic project file container." alt="" coords="73,11,329,256"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html#__init__" title="x.__init__(...) initializes x; see x.__class__.__doc__ for signature" alt="" coords="17,311,385,329"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html#from_project" title="translate.storage.bundleprojstore.BundleProjectStore.from_project" alt="" coords="17,329,385,348"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html#append_file" title="Append the given file to the project with the given filename, marked to be of type C{ftype} (&#39;src&#39;, &#39;trans&#39;, &#39;tgt&#39;)." alt="" coords="17,348,385,367"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html#remove_file" title="Remove the file with the given project name from the project." alt="" coords="17,367,385,385"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html#close" title="translate.storage.bundleprojstore.BundleProjectStore.close" alt="" coords="17,385,385,404"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html#cleanup" title="Clean up our mess: remove temporary files." alt="" coords="17,404,385,423"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html#get_file" title="Retrieve a project file (source, translation or target file) from the  project archive." alt="" coords="17,423,385,441"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html#get_proj_filename" title="Try and find a project file name for the given real file name." alt="" coords="17,441,385,460"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html#load" title="Load the bundle project from the zip file of the given name." alt="" coords="17,460,385,479"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html#save" title="Save all project files to the bundle zip file." alt="" coords="17,479,385,497"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html#update_file" title="Updates the file with the given project file name with the contents of  infile." alt="" coords="17,497,385,516"/>
+<area shape="rect" href="translate.storage.bundleprojstore.BundleProjectStore&#45;class.html" title="Represents a translate project bundle (zip archive)." alt="" coords="16,285,387,517"/>
+</map>
+  <img src="uml_class_diagram_for_translat_170.png" alt='' usemap="#uml_class_diagram_for_translat_170" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<p>Represents a translate project bundle (zip archive).</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.bundleprojstore.BundleProjectStore-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">fname</span>)</span><br />
+      x.__init__(...) initializes x; see x.__class__.__doc__ for signature</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.bundleprojstore.BundleProjectStore-class.html#append_file" class="summary-sig-name">append_file</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">afile</span>,
+        <span class="summary-sig-arg">fname</span>,
+        <span class="summary-sig-arg">ftype</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">trans</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">delete_orig</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Append the given file to the project with the given filename, marked
+to be of type C{ftype} ('src', 'trans', 'tgt').</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.append_file">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.bundleprojstore.BundleProjectStore-class.html#remove_file" class="summary-sig-name">remove_file</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">fname</span>,
+        <span class="summary-sig-arg">ftype</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Remove the file with the given project name from the project.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.remove_file">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.bundleprojstore.BundleProjectStore-class.html#close" class="summary-sig-name">close</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.close">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="cleanup"></a><span class="summary-sig-name">cleanup</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Clean up our mess: remove temporary files.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.cleanup">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.bundleprojstore.BundleProjectStore-class.html#get_file" class="summary-sig-name">get_file</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">fname</span>)</span><br />
+      Retrieve a project file (source, translation or target file) from the
+      project archive.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.get_file">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.bundleprojstore.BundleProjectStore-class.html#get_proj_filename" class="summary-sig-name">get_proj_filename</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">realfname</span>)</span><br />
+      Try and find a project file name for the given real file name.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.get_proj_filename">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.bundleprojstore.BundleProjectStore-class.html#load" class="summary-sig-name">load</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">zipname</span>)</span><br />
+      Load the bundle project from the zip file of the given name.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.load">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.bundleprojstore.BundleProjectStore-class.html#save" class="summary-sig-name">save</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">filename</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Save all project files to the bundle zip file.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.save">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.bundleprojstore.BundleProjectStore-class.html#update_file" class="summary-sig-name">update_file</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">pfname</span>,
+        <span class="summary-sig-arg">infile</span>)</span><br />
+      Updates the file with the given project file name with the contents 
+      of <code>infile</code>.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.update_file">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.bundleprojstore.BundleProjectStore-class.html#_load_settings" class="summary-sig-name" onclick="show_private();">_load_settings</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Grab the project.xtp file from the zip file and load it.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore._load_settings">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_create_temp_zipfile"></a><span class="summary-sig-name">_create_temp_zipfile</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Create a new zip file with a temporary file name (with mode 'w').</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore._create_temp_zipfile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.bundleprojstore.BundleProjectStore-class.html#_replace_project_zip" class="summary-sig-name" onclick="show_private();">_replace_project_zip</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">zfile</span>)</span><br />
+      Replace the currently used zip file (<code>self.zip</code>) with the 
+      given zip file.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore._replace_project_zip">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_update_from_tempfiles"></a><span class="summary-sig-name">_update_from_tempfiles</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Update project files from temporary files.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore._update_from_tempfiles">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_zip_add"></a><span class="summary-sig-name">_zip_add</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">pfname</span>,
+        <span class="summary-sig-arg">infile</span>)</span><br />
+      Add the contents of <code>infile</code> to the zip with file name 
+      <code>pfname</code>.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore._zip_add">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_zip_delete"></a><span class="summary-sig-name">_zip_delete</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">fnames</span>)</span><br />
+      Delete the files with the given names from the zip file 
+      (<code>self.zip</code>).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore._zip_delete">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.projstore.ProjectStore-class.html">projstore.ProjectStore</a></code></b>:
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#__del__">__del__</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#__in__">__in__</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#append_sourcefile">append_sourcefile</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#append_targetfile">append_targetfile</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#append_transfile">append_transfile</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#get_filename_type">get_filename_type</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#remove_sourcefile">remove_sourcefile</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#remove_targetfile">remove_targetfile</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#remove_transfile">remove_transfile</a></code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.projstore.ProjectStore-class.html">projstore.ProjectStore</a></code></b> (private):
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#_fix_type_filename" onclick="show_private();">_fix_type_filename</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#_generate_settings" onclick="show_private();">_generate_settings</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#_get_sourcefiles" onclick="show_private();">_get_sourcefiles</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#_get_targetfiles" onclick="show_private();">_get_targetfiles</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#_get_transfiles" onclick="show_private();">_get_transfiles</a></code>
+      </p></div>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__str__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS METHODS ==================== -->
+<a name="section-ClassMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="from_project"></a><span class="summary-sig-name">from_project</span>(<span class="summary-sig-arg">cls</span>,
+        <span class="summary-sig-arg">proj</span>,
+        <span class="summary-sig-arg">fname</span>=<span class="summary-sig-default">None</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.from_project">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.projstore.ProjectStore-class.html">projstore.ProjectStore</a></code></b>:
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#sourcefiles">sourcefiles</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#targetfiles">targetfiles</a></code>,
+      <code><a href="translate.storage.projstore.ProjectStore-class.html#transfiles">transfiles</a></code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">fname</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>x.__init__(...) initializes x; see x.__class__.__doc__ for 
+  signature</p>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="append_file"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">append_file</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">afile</span>,
+        <span class="sig-arg">fname</span>,
+        <span class="sig-arg">ftype</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">trans</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">delete_orig</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.append_file">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+Append the given file to the project with the given filename, marked
+to be of type C{ftype} ('src', 'trans', 'tgt').
+
+@param delete_orig: If C{True}, as set by
+                    L{project.convert_forward()}, C{afile} is
+                    deleted after appending, if possible.
+NOTE: For this implementation, the appended file will be deleted
+      from disk if C{delete_orig} is C{True}.
+
+</pre>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>delete_orig</code></strong> - Whether or not the original (given) file should be deleted after 
+          being appended. This is set to <code>True</code> by <code 
+          class="link">project.convert_forward()</code>. Not used in this 
+          class.</li>
+    </ul></dd>
+    <dt>Overrides:
+        <a href="translate.storage.projstore.ProjectStore-class.html#append_file">projstore.ProjectStore.append_file</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="remove_file"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">remove_file</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">fname</span>,
+        <span class="sig-arg">ftype</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.remove_file">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Remove the file with the given project name from the project.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.projstore.ProjectStore-class.html#remove_file">projstore.ProjectStore.remove_file</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="close"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">close</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.close">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.projstore.ProjectStore-class.html#close">projstore.ProjectStore.close</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_file"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_file</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">fname</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.get_file">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Retrieve a project file (source, translation or target file) from the 
+  project archive.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>mode</code></strong> - The mode in which to re-open the file (if it is closed) @see 
+          BundleProjectStore.get_file</li>
+    </ul></dd>
+    <dt>Overrides:
+        <a href="translate.storage.projstore.ProjectStore-class.html#get_file">projstore.ProjectStore.get_file</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_proj_filename"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_proj_filename</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">realfname</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.get_proj_filename">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Try and find a project file name for the given real file name.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.projstore.ProjectStore-class.html#get_proj_filename">projstore.ProjectStore.get_proj_filename</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="load"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">load</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">zipname</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.load">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Load the bundle project from the zip file of the given name.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.projstore.ProjectStore-class.html#load">projstore.ProjectStore.load</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="save"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">save</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">filename</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.save">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Save all project files to the bundle zip file.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.projstore.ProjectStore-class.html#save">projstore.ProjectStore.save</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="update_file"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">update_file</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">pfname</span>,
+        <span class="sig-arg">infile</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore.update_file">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Updates the file with the given project file name with the contents of
+  <code>infile</code>.</p>
+  <dl class="fields">
+    <dt>Returns:</dt>
+        <dd>the results from <a 
+          href="translate.storage.bundleprojstore.BundleProjectStore-class.html#append_file"
+          class="link">self.append_file</a>.</dd>
+    <dt>Overrides:
+        <a href="translate.storage.projstore.ProjectStore-class.html#update_file">projstore.ProjectStore.update_file</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_load_settings"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_load_settings</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore._load_settings">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Grab the project.xtp file from the zip file and load it.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.projstore.ProjectStore-class.html#_load_settings" onclick="show_private();">projstore.ProjectStore._load_settings</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_replace_project_zip"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_replace_project_zip</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">zfile</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.bundleprojstore-pysrc.html#BundleProjectStore._replace_project_zip">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Replace the currently used zip file (<code>self.zip</code>) with the 
+  given zip file. Basically, <code>os.rename(zfile.filename, 
+  self.zip.filename)</code>.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="translate-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://translate.sourceforge.net/wiki/toolkit/index">Translate Toolkit</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue Aug 17 15:48:30 2010
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

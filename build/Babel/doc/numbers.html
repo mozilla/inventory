@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="generator" content="Docutils 0.7: http://docutils.sourceforge.net/">
+<title>Babel: Number Formatting</title>
+<link rel="stylesheet" href="common/style/edgewall.css" type="text/css">
+</head>
+<body>
+<div class="document" id="number-formatting">
+    <div id="navigation">
+      <span class="projinfo">Babel 0.9.6</span>
+      <a href="index.html">Documentation Index</a>
+    </div>
+<h1 class="title">Number Formatting</h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="auto-toc simple">
+<li><a class="reference internal" href="#pattern-syntax" id="id1">1   Pattern Syntax</a></li>
+<li><a class="reference internal" href="#parsing-numbers" id="id2">2   Parsing Numbers</a></li>
+</ul>
+</div>
+<p>Support for locale-specific formatting and parsing of numbers is provided by
+the <tt class="docutils literal">babel.numbers</tt> module:</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">doc/numbers.txt</tt>, line 16)</p>
+<p>Unknown directive type "code-block".</p>
+<pre class="literal-block">
+.. code-block:: pycon
+
+    &gt;&gt;&gt; from babel.numbers import format_number, format_decimal, format_percent
+
+</pre>
+</div>
+<p>Examples:</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">doc/numbers.txt</tt>, line 22)</p>
+<p>Unknown directive type "code-block".</p>
+<pre class="literal-block">
+.. code-block:: pycon
+
+    &gt;&gt;&gt; format_decimal(1.2345, locale='en_US')
+    u'1.234'
+    &gt;&gt;&gt; format_decimal(1.2345, locale='sv_SE')
+    u'1,234'
+    &gt;&gt;&gt; format_decimal(12345, locale='de_DE')
+    u'12.345'
+
+
+</pre>
+</div>
+<div class="section" id="pattern-syntax">
+<h1>1   Pattern Syntax</h1>
+<p>While Babel makes it simple to use the appropriate number format for a given
+locale, you can also force it to use custom patterns. As with date/time
+formatting patterns, the patterns Babel supports for number formatting are
+based on the <a class="reference external" href="http://unicode.org/reports/tr35/#Number_Format_Patterns">Locale Data Markup Language specification</a> (LDML).</p>
+<p>Examples:</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">doc/numbers.txt</tt>, line 42)</p>
+<p>Unknown directive type "code-block".</p>
+<pre class="literal-block">
+.. code-block:: pycon
+
+    &gt;&gt;&gt; format_decimal(-1.2345, format='#,##0.##;-#', locale='en')
+    u'-1.23'
+    &gt;&gt;&gt; format_decimal(-1.2345, format='#,##0.##;(#)', locale='en')
+    u'(1.23)'
+
+</pre>
+</div>
+<p>The syntax for custom number format patterns is described in detail in the
+the specification. The following table is just a relatively brief overview.</p>
+<blockquote>
+<blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%">
+<col width="87%">
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Symbol</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><tt class="docutils literal">0</tt></td>
+<td>Digit</td>
+</tr>
+<tr><td><tt class="docutils literal"><span class="pre">1-9</span></tt></td>
+<td>'1' through '9' indicate rounding.</td>
+</tr>
+<tr><td><tt class="docutils literal">@</tt></td>
+<td>Significant digit</td>
+</tr>
+<tr><td><tt class="docutils literal">#</tt></td>
+<td>Digit, zero shows as absent</td>
+</tr>
+<tr><td><tt class="docutils literal">.</tt></td>
+<td>Decimal separator or monetary decimal separator</td>
+</tr>
+<tr><td><tt class="docutils literal">-</tt></td>
+<td>Minus sign</td>
+</tr>
+<tr><td><tt class="docutils literal">,</tt></td>
+<td>Grouping separator</td>
+</tr>
+<tr><td><tt class="docutils literal">E</tt></td>
+<td>Separates mantissa and exponent in scientific notation</td>
+</tr>
+<tr><td><tt class="docutils literal">+</tt></td>
+<td>Prefix positive exponents with localized plus sign</td>
+</tr>
+<tr><td><tt class="docutils literal">;</tt></td>
+<td>Separates positive and negative subpatterns</td>
+</tr>
+<tr><td><tt class="docutils literal">%</tt></td>
+<td>Multiply by 100 and show as percentage</td>
+</tr>
+<tr><td><tt class="docutils literal">‰</tt></td>
+<td>Multiply by 1000 and show as per mille</td>
+</tr>
+<tr><td><tt class="docutils literal">¤</tt></td>
+<td>Currency sign, replaced by currency symbol. If doubled,
+replaced by international currency symbol. If tripled, uses the
+long form of the decimal symbol.</td>
+</tr>
+<tr><td><tt class="docutils literal">'</tt></td>
+<td>Used to quote special characters in a prefix or suffix</td>
+</tr>
+<tr><td><tt class="docutils literal">*</tt></td>
+<td>Pad escape, precedes pad character</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+</blockquote>
+</div>
+<div class="section" id="parsing-numbers">
+<h1>2   Parsing Numbers</h1>
+<p>Babel can also parse numeric data in a locale-sensitive manner:</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">doc/numbers.txt</tt>, line 96)</p>
+<p>Unknown directive type "code-block".</p>
+<pre class="literal-block">
+.. code-block:: pycon
+
+    &gt;&gt;&gt; from babel.numbers import parse_decimal, parse_number
+
+</pre>
+</div>
+<p>Examples:</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">doc/numbers.txt</tt>, line 102)</p>
+<p>Unknown directive type "code-block".</p>
+<pre class="literal-block">
+.. code-block:: pycon
+
+    &gt;&gt;&gt; parse_decimal('1,099.98', locale='en_US')
+    1099.98
+    &gt;&gt;&gt; parse_decimal('1.099,98', locale='de')
+    1099.98
+    &gt;&gt;&gt; parse_decimal('2,109,998', locale='de')
+    Traceback (most recent call last):
+      ...
+    NumberFormatError: '2,109,998' is not a valid decimal number
+
+</pre>
+</div>
+<div class="note">
+<p class="first admonition-title">Note</p>
+<p class="last">Number parsing is not properly implemented yet</p>
+</div>
+</div>
+    <div id="footer">
+      Visit the Babel open source project at
+      <a href="http://babel.edgewall.org/">http://babel.edgewall.org/</a>
+    </div>
+  </div>
+</body>
+</html>

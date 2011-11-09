@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="generator" content="Docutils 0.7: http://docutils.sourceforge.net/">
+<title>Babel: Locale Display Names</title>
+<link rel="stylesheet" href="common/style/edgewall.css" type="text/css">
+</head>
+<body>
+<div class="document" id="locale-display-names">
+    <div id="navigation">
+      <span class="projinfo">Babel 0.9.6</span>
+      <a href="index.html">Documentation Index</a>
+    </div>
+<h1 class="title">Locale Display Names</h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="auto-toc simple">
+<li><a class="reference internal" href="#introduction" id="id1">1   Introduction</a></li>
+<li><a class="reference internal" href="#the-locale-class" id="id2">2   The <tt class="docutils literal">Locale</tt> Class</a></li>
+<li><a class="reference internal" href="#calender-display-names" id="id3">3   Calender Display Names</a></li>
+</ul>
+</div>
+<div class="section" id="introduction">
+<h1>1   Introduction</h1>
+<p>While <a class="reference external" href="messages.html">message catalogs</a> allow you to localize any messages
+in your application, there are a number of strings that are used in many
+applications for which translations are readily available.</p>
+<p>Imagine for example you have a list of countries that users can choose from,
+and you'd like to display the names of those countries in the language the
+user prefers. Instead of translating all those country names yourself in your
+application, you can make use of the translations provided by the locale data
+included with Babel, which is based on the <a class="reference external" href="http://unicode.org/cldr/">Common Locale Data Repository
+(CLDR)</a> developed and maintained by the <a class="reference external" href="http://unicode.org/">Unicode
+Consortium</a>.</p>
+</div>
+<div class="section" id="the-locale-class">
+<h1>2   The <tt class="docutils literal">Locale</tt> Class</h1>
+<p>You normally access such locale data through the <a class="reference external" href="api/babel.core.Locale-class.html">Locale</a> class provided
+by Babel:</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">doc/display.txt</tt>, line 34)</p>
+<p>Unknown directive type "code-block".</p>
+<pre class="literal-block">
+.. code-block:: pycon
+
+    &gt;&gt;&gt; from babel import Locale
+    &gt;&gt;&gt; locale = Locale('en', 'US')
+    &gt;&gt;&gt; locale.territories['US']
+    u'United States'
+    &gt;&gt;&gt; locale = Locale('es', 'MX')
+    &gt;&gt;&gt; locale.territories['US']
+    u'Estados Unidos'
+
+</pre>
+</div>
+<p>In addition to country/territory names, the locale data also provides access to
+names of languages, scripts, variants, time zones, and more. Some of the data
+is closely related to number and date formatting.</p>
+<p>Most of the corresponding <tt class="docutils literal">Locale</tt> properties return dictionaries, where the
+key is a code such as the ISO country and language codes. Consult the API
+documentation for references to the relevant specifications.</p>
+</div>
+<div class="section" id="calender-display-names">
+<h1>3   Calender Display Names</h1>
+<p>The <a class="reference external" href="api/babel.core.Locale-class.html">Locale</a> class provides access to many locale display names related to
+calendar display, such as the names of week days or months.</p>
+<p>These display names are of course used for date formatting, but can also be
+used, for example, to show a list of months to the user in their preferred
+language:</p>
+<div class="system-message">
+<p class="system-message-title">System Message: ERROR/3 (<tt class="docutils">doc/display.txt</tt>, line 65)</p>
+<p>Unknown directive type "code-block".</p>
+<pre class="literal-block">
+.. code-block:: pycon
+
+    &gt;&gt;&gt; locale = Locale('es')
+    &gt;&gt;&gt; month_names = locale.months['format']['wide'].items()
+    &gt;&gt;&gt; month_names.sort()
+    &gt;&gt;&gt; for idx, name in month_names:
+    ...     print name
+    enero
+    febrero
+    marzo
+    abril
+    mayo
+    junio
+    julio
+    agosto
+    septiembre
+    octubre
+    noviembre
+    diciembre
+</pre>
+</div>
+</div>
+    <div id="footer">
+      Visit the Babel open source project at
+      <a href="http://babel.edgewall.org/">http://babel.edgewall.org/</a>
+    </div>
+  </div>
+</body>
+</html>

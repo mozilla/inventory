@@ -1,0 +1,1008 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>translate.storage.pocommon.pounit</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="translate-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://translate.sourceforge.net/wiki/toolkit/index">Translate Toolkit</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="translate-module.html">Package&nbsp;translate</a> ::
+        <a href="translate.storage-module.html">Package&nbsp;storage</a> ::
+        <a href="translate.storage.pocommon-module.html">Module&nbsp;pocommon</a> ::
+        Class&nbsp;pounit
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="translate.storage.pocommon.pounit-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class pounit</h1><p class="nomargin-top"><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_translat_258" name="uml_class_diagram_for_translat_258">
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#rich_parsers" title="A list of functions to use for parsing a string into a rich string tree." alt="" coords="101,28,304,47"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#S_EMPTY" title="translate.storage.base.TranslationUnit.S_EMPTY" alt="" coords="101,47,304,65"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#S_NEEDS_WORK" title="translate.storage.base.TranslationUnit.S_NEEDS_WORK" alt="" coords="101,65,304,84"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#S_REJECTED" title="translate.storage.base.TranslationUnit.S_REJECTED" alt="" coords="101,84,304,103"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#S_NEEDS_REVIEW" title="translate.storage.base.TranslationUnit.S_NEEDS_REVIEW" alt="" coords="101,103,304,121"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#S_UNREVIEWED" title="translate.storage.base.TranslationUnit.S_UNREVIEWED" alt="" coords="101,121,304,140"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#S_FINAL" title="translate.storage.base.TranslationUnit.S_FINAL" alt="" coords="101,140,304,159"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#source" title="translate.storage.base.TranslationUnit.source" alt="" coords="101,159,304,177"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#target" title="translate.storage.base.TranslationUnit.target" alt="" coords="101,177,304,196"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#rich_source" title="translate.storage.base.TranslationUnit.rich_source" alt="" coords="101,196,304,215"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#rich_target" title="translate.storage.base.TranslationUnit.rich_target" alt="" coords="101,215,304,233"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#xid" title="translate.storage.base.TranslationUnit.xid" alt="" coords="101,233,304,252"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#rid" title="translate.storage.base.TranslationUnit.rid" alt="" coords="101,252,304,271"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#__init__" title="Constructs a TranslationUnit containing the given source string." alt="" coords="101,273,304,292"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#__eq__" title="Compares two TranslationUnits." alt="" coords="101,292,304,311"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#__str__" title="Converts to a string representation that can be parsed back using  parsestring()." alt="" coords="101,311,304,329"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#rich_to_multistring" title="Convert a &quot;rich&quot; string tree to a multistring:" alt="" coords="101,329,304,348"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#multistring_to_rich" title="Convert a multistring to a list of &quot;rich&quot; string trees:" alt="" coords="101,348,304,367"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#setsource" title="Sets the source string to the given value." alt="" coords="101,367,304,385"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#settarget" title="Sets the target string to the given value." alt="" coords="101,385,304,404"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#gettargetlen" title="Returns the length of the target string." alt="" coords="101,404,304,423"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#getid" title="A unique identifier for this unit." alt="" coords="101,423,304,441"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#setid" title="Sets the unique identified for this unit." alt="" coords="101,441,304,460"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#getlocations" title="A list of source code locations." alt="" coords="101,460,304,479"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#addlocation" title="Add one location to the list of locations." alt="" coords="101,479,304,497"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#addlocations" title="Add a location or a list of locations." alt="" coords="101,497,304,516"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html#infer_state" title="Empty method that should be overridden in sub&#45;classes to infer the current  state(_n) of the unit from its current state." alt="" coords="101,535,304,553"/>
+<area shape="rect" href="translate.storage.base.TranslationUnit&#45;class.html" title="Base class for translation units." alt="" coords="100,11,305,555"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#S_OBSOLETE" title="translate.storage.pocommon.pounit.S_OBSOLETE" alt="" coords="17,601,388,620"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#S_UNTRANSLATED" title="translate.storage.pocommon.pounit.S_UNTRANSLATED" alt="" coords="17,620,388,639"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#S_FUZZY" title="translate.storage.pocommon.pounit.S_FUZZY" alt="" coords="17,639,388,657"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#S_TRANSLATED" title="translate.storage.pocommon.pounit.S_TRANSLATED" alt="" coords="17,657,388,676"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#STATE" title="Default supported states:     * obsolete: The unit is not to be used." alt="" coords="17,676,388,695"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#adderror" title="Adds an error message to this unit." alt="" coords="17,697,388,716"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#geterrors" title="Get all error messages." alt="" coords="17,716,388,735"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#markreviewneeded" title="Marks the unit to indicate whether it needs review." alt="" coords="17,735,388,753"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#istranslated" title="Indicates whether this unit is translated." alt="" coords="17,753,388,772"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#istranslatable" title="Indicates whether this unit can be translated." alt="" coords="17,772,388,791"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#hasmarkedcomment" title="translate.storage.pocommon.pounit.hasmarkedcomment" alt="" coords="17,791,388,809"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#isreview" title="Indicates whether this unit needs review." alt="" coords="17,809,388,828"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#isobsolete" title="indicate whether a unit is obsolete" alt="" coords="17,828,388,847"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#isfuzzy" title="Indicates whether this unit is fuzzy." alt="" coords="17,847,388,865"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#markfuzzy" title="Marks the unit as fuzzy or not." alt="" coords="17,865,388,884"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#makeobsolete" title="Make a unit obsolete" alt="" coords="17,884,388,903"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#resurrect" title="translate.storage.pocommon.pounit.resurrect" alt="" coords="17,903,388,921"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html#set_state_n" title="translate.storage.pocommon.pounit.set_state_n" alt="" coords="17,921,388,940"/>
+<area shape="rect" href="translate.storage.pocommon.pounit&#45;class.html" title="translate.storage.pocommon.pounit" alt="" coords="16,584,389,941"/>
+</map>
+  <img src="uml_class_diagram_for_translat_258.png" alt='' usemap="#uml_class_diagram_for_translat_258" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.pocommon.pounit-class.html#markreviewneeded" class="summary-sig-name">markreviewneeded</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">needsreview</span>=<span class="summary-sig-default">True</span>,
+        <span class="summary-sig-arg">explanation</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Marks the unit to indicate whether it needs review.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.markreviewneeded">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.pocommon.pounit-class.html#istranslated" class="summary-sig-name">istranslated</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Indicates whether this unit is translated.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.istranslated">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.pocommon.pounit-class.html#istranslatable" class="summary-sig-name">istranslatable</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Indicates whether this unit can be translated.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.istranslatable">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="hasmarkedcomment"></a><span class="summary-sig-name">hasmarkedcomment</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">commentmarker</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.hasmarkedcomment">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.pocommon.pounit-class.html#isreview" class="summary-sig-name">isreview</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Indicates whether this unit needs review.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.isreview">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.pocommon.pounit-class.html#isobsolete" class="summary-sig-name">isobsolete</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      indicate whether a unit is obsolete</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.isobsolete">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.pocommon.pounit-class.html#isfuzzy" class="summary-sig-name">isfuzzy</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Indicates whether this unit is fuzzy.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.isfuzzy">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.pocommon.pounit-class.html#markfuzzy" class="summary-sig-name">markfuzzy</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">present</span>=<span class="summary-sig-default">True</span>)</span><br />
+      Marks the unit as fuzzy or not.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.markfuzzy">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.pocommon.pounit-class.html#makeobsolete" class="summary-sig-name">makeobsolete</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Make a unit obsolete</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.makeobsolete">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="resurrect"></a><span class="summary-sig-name">resurrect</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.resurrect">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_domarkfuzzy"></a><span class="summary-sig-name">_domarkfuzzy</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">present</span>=<span class="summary-sig-default">True</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit._domarkfuzzy">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.pocommon.pounit-class.html#set_state_n" class="summary-sig-name">set_state_n</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">value</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.set_state_n">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b>:
+      <code><a href="translate.storage.base.TranslationUnit-class.html#__eq__">__eq__</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#__init__">__init__</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#__str__">__str__</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#get_state_id">get_state_id</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#get_state_n">get_state_n</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#getcontext">getcontext</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#getid">getid</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#getunits">getunits</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#hasplural">hasplural</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#infer_state">infer_state</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#isblank">isblank</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#isheader">isheader</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#merge">merge</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#multistring_to_rich">multistring_to_rich</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#setcontext">setcontext</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#setid">setid</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#unit_iter">unit_iter</a></code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>
+      </p>
+    </td>
+  </tr>
+<tr bgcolor="#e8f0f8" >
+  <th colspan="2" class="group-header"
+    >&nbsp;&nbsp;&nbsp;&nbsp;Source</th></tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b>:
+      <code><a href="translate.storage.base.TranslationUnit-class.html#getsourcelanguage">getsourcelanguage</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#setsource">setsource</a></code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b> (private):
+      <code><a href="translate.storage.base.TranslationUnit-class.html#_get_rich_source" onclick="show_private();">_get_rich_source</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#_set_rich_source" onclick="show_private();">_set_rich_source</a></code>
+      </p></div>
+    </td>
+  </tr>
+<tr bgcolor="#e8f0f8" >
+  <th colspan="2" class="group-header"
+    >&nbsp;&nbsp;&nbsp;&nbsp;Target</th></tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b>:
+      <code><a href="translate.storage.base.TranslationUnit-class.html#gettargetlanguage">gettargetlanguage</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#gettargetlen">gettargetlen</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#settarget">settarget</a></code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b> (private):
+      <code><a href="translate.storage.base.TranslationUnit-class.html#_get_rich_target" onclick="show_private();">_get_rich_target</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#_set_rich_target" onclick="show_private();">_set_rich_target</a></code>
+      </p></div>
+    </td>
+  </tr>
+<tr bgcolor="#e8f0f8" >
+  <th colspan="2" class="group-header"
+    >&nbsp;&nbsp;&nbsp;&nbsp;Notes</th></tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b>:
+      <code><a href="translate.storage.base.TranslationUnit-class.html#addnote">addnote</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#getnotes">getnotes</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#removenotes">removenotes</a></code>
+      </p>
+    </td>
+  </tr>
+<tr bgcolor="#e8f0f8" >
+  <th colspan="2" class="group-header"
+    >&nbsp;&nbsp;&nbsp;&nbsp;Locations</th></tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b>:
+      <code><a href="translate.storage.base.TranslationUnit-class.html#addlocation">addlocation</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#addlocations">addlocations</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#getlocations">getlocations</a></code>
+      </p>
+    </td>
+  </tr>
+<tr bgcolor="#e8f0f8" >
+  <th colspan="2" class="group-header"
+    >&nbsp;&nbsp;&nbsp;&nbsp;Errors</th></tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.pocommon.pounit-class.html#adderror" class="summary-sig-name">adderror</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">errorname</span>,
+        <span class="summary-sig-arg">errortext</span>)</span><br />
+      Adds an error message to this unit.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.adderror">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">Dictionary</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="translate.storage.pocommon.pounit-class.html#geterrors" class="summary-sig-name">geterrors</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Get all error messages.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.geterrors">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS METHODS ==================== -->
+<a name="section-ClassMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b>:
+      <code><a href="translate.storage.base.TranslationUnit-class.html#buildfromunit">buildfromunit</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#rich_to_multistring">rich_to_multistring</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="S_OBSOLETE"></a><span class="summary-name">S_OBSOLETE</span> = <code title="-100">-100</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="S_UNTRANSLATED"></a><span class="summary-name">S_UNTRANSLATED</span> = <code title="0">0</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="S_FUZZY"></a><span class="summary-name">S_FUZZY</span> = <code title="30">30</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="S_TRANSLATED"></a><span class="summary-name">S_TRANSLATED</span> = <code title="100">100</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="translate.storage.pocommon.pounit-class.html#STATE" class="summary-name">STATE</a> = <code title="{S_OBSOLETE:(state.OBSOLETE, state.EMPTY), S_UNTRANSLATED:(state.EMPTY\
+, state.NEEDS_WORK), S_FUZZY:(state.NEEDS_WORK, state.UNREVIEWED), S_T\
+RANSLATED:(state.UNREVIEWED, state.MAX),}">{S_OBSOLETE:(state.OBSOLETE, state.EMPTY), S_UNTRANSLA<code class="variable-ellipsis">...</code></code><br />
+      Default supported states:
+    * obsolete: The unit is not to be used.
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b>:
+      <code><a href="translate.storage.base.TranslationUnit-class.html#S_EMPTY">S_EMPTY</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#S_FINAL">S_FINAL</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#S_NEEDS_REVIEW">S_NEEDS_REVIEW</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#S_NEEDS_WORK">S_NEEDS_WORK</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#S_REJECTED">S_REJECTED</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#S_UNREVIEWED">S_UNREVIEWED</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#rich_parsers">rich_parsers</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b>:
+      <code><a href="translate.storage.base.TranslationUnit-class.html#rid">rid</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#xid">xid</a></code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+<tr bgcolor="#e8f0f8" >
+  <th colspan="2" class="group-header"
+    >&nbsp;&nbsp;&nbsp;&nbsp;Source</th></tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b>:
+      <code><a href="translate.storage.base.TranslationUnit-class.html#rich_source">rich_source</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#source">source</a></code>
+      </p>
+    </td>
+  </tr>
+<tr bgcolor="#e8f0f8" >
+  <th colspan="2" class="group-header"
+    >&nbsp;&nbsp;&nbsp;&nbsp;Target</th></tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="translate.storage.base.TranslationUnit-class.html">base.TranslationUnit</a></code></b>:
+      <code><a href="translate.storage.base.TranslationUnit-class.html#rich_target">rich_target</a></code>,
+      <code><a href="translate.storage.base.TranslationUnit-class.html#target">target</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="adderror"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">adderror</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">errorname</span>,
+        <span class="sig-arg">errortext</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.adderror">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Adds an error message to this unit.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>errorname</code></strong> - A single word to id the error.</li>
+        <li><strong class="pname"><code>errortext</code></strong> - The text describing the error.</li>
+    </ul></dd>
+    <dt>Overrides:
+        <a href="translate.storage.base.TranslationUnit-class.html#adderror">base.TranslationUnit.adderror</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="geterrors"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">geterrors</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.geterrors">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Get all error messages.</p>
+  <dl class="fields">
+    <dt>Returns: Dictionary</dt>
+    <dt>Overrides:
+        <a href="translate.storage.base.TranslationUnit-class.html#geterrors">base.TranslationUnit.geterrors</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="markreviewneeded"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">markreviewneeded</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">needsreview</span>=<span class="sig-default">True</span>,
+        <span class="sig-arg">explanation</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.markreviewneeded">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Marks the unit to indicate whether it needs review. Adds an optional 
+  explanation as a note.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>needsreview</code></strong> - Defaults to True.</li>
+        <li><strong class="pname"><code>explanation</code></strong> - Adds an optional explanation as a note.</li>
+    </ul></dd>
+    <dt>Overrides:
+        <a href="translate.storage.base.TranslationUnit-class.html#markreviewneeded">base.TranslationUnit.markreviewneeded</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="istranslated"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">istranslated</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.istranslated">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Indicates whether this unit is translated.</p>
+  <p>This should be used rather than deducing it from .target, to ensure 
+  that other classes can implement more functionality (as XLIFF does).</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.base.TranslationUnit-class.html#istranslated">base.TranslationUnit.istranslated</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="istranslatable"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">istranslatable</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.istranslatable">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Indicates whether this unit can be translated.</p>
+  <p>This should be used to distinguish real units for translation from 
+  header, obsolete, binary or other blank units.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.base.TranslationUnit-class.html#istranslatable">base.TranslationUnit.istranslatable</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="isreview"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">isreview</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.isreview">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Indicates whether this unit needs review.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.base.TranslationUnit-class.html#isreview">base.TranslationUnit.isreview</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="isobsolete"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">isobsolete</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.isobsolete">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>indicate whether a unit is obsolete</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.base.TranslationUnit-class.html#isobsolete">base.TranslationUnit.isobsolete</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="isfuzzy"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">isfuzzy</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.isfuzzy">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Indicates whether this unit is fuzzy.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.base.TranslationUnit-class.html#isfuzzy">base.TranslationUnit.isfuzzy</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="markfuzzy"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">markfuzzy</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">present</span>=<span class="sig-default">True</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.markfuzzy">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Marks the unit as fuzzy or not.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.base.TranslationUnit-class.html#markfuzzy">base.TranslationUnit.markfuzzy</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="makeobsolete"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">makeobsolete</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.makeobsolete">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Make a unit obsolete</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.base.TranslationUnit-class.html#makeobsolete">base.TranslationUnit.makeobsolete</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="set_state_n"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">set_state_n</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">value</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="translate.storage.pocommon-pysrc.html#pounit.set_state_n">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="translate.storage.base.TranslationUnit-class.html#set_state_n">base.TranslationUnit.set_state_n</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== CLASS VARIABLE DETAILS ==================== -->
+<a name="section-ClassVariableDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variable Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariableDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="STATE"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">STATE</h3>
+  <pre class="literalblock">
+
+Default supported states:
+    * obsolete: The unit is not to be used.
+    * empty: The unit has not been translated before.
+    * needs work: Some translation has been done, but is not complete.
+    * rejected: The unit has been reviewed, but was rejected.
+    * needs review: The unit has been translated, but review was requested.
+    * unreviewed: The unit has been translated, but not reviewed.
+    * final: The unit is translated, reviewed and accepted.
+
+</pre>
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+{S_OBSOLETE:(state.OBSOLETE, state.EMPTY), S_UNTRANSLATED:(state.EMPTY<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+, state.NEEDS_WORK), S_FUZZY:(state.NEEDS_WORK, state.UNREVIEWED), S_T<span class="variable-linewrap"><img src="crarr.png" alt="\" /></span>
+RANSLATED:(state.UNREVIEWED, state.MAX),}
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="translate-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://translate.sourceforge.net/wiki/toolkit/index">Translate Toolkit</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue Aug 17 15:49:29 2010
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

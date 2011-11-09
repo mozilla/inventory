@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <title></title>
+  <link rel="stylesheet" media="screen" type="text/css" href="./style.css" />
+  <link rel="stylesheet" media="screen" type="text/css" href="./design.css" />
+  <link rel="stylesheet" media="print" type="text/css" href="./print.css" />
+
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+<a href=.>start</a></br>
+
+
+
+<h1><a name="contributing" id="contributing">Contributing</a></h1>
+<div class="level1">
+
+<p>
+
+We could use your help.  If you are interesting in contributing then please join us on <acronym title="Internet Relay Chat">IRC</acronym> on <a href="irc://irc.freenode.net/#pootle" class="urlextern" title="irc://irc.freenode.net/#pootle">#pootle</a>
+and on the <a href="mailto:&#x74;&#x72;&#x61;&#x6e;&#x73;&#x6c;&#x61;&#x74;&#x65;&#x2d;&#x64;&#x65;&#x76;&#x65;&#x6c;&#x40;&#x6c;&#x69;&#x73;&#x74;&#x73;&#x2e;&#x73;&#x6f;&#x75;&#x72;&#x63;&#x65;&#x66;&#x6f;&#x72;&#x67;&#x65;&#x2e;&#x6e;&#x65;&#x74;" class="mail JSnocheck" title="&#x74;&#x72;&#x61;&#x6e;&#x73;&#x6c;&#x61;&#x74;&#x65;&#x2d;&#x64;&#x65;&#x76;&#x65;&#x6c;&#x40;&#x6c;&#x69;&#x73;&#x74;&#x73;&#x2e;&#x73;&#x6f;&#x75;&#x72;&#x63;&#x65;&#x66;&#x6f;&#x72;&#x67;&#x65;&#x2e;&#x6e;&#x65;&#x74;">translate-devel</a> mailing list.
+</p>
+
+<p>
+Here are some idea of how you can contribute
+
+</p>
+<ol>
+<li class="level1"><div class="li"> <a href="toolkit-contributing.html#testing" class="wikilink1" title="toolkit-contributing.html">Test</a> - help us test new candidate releases before they are released</div>
+</li>
+<li class="level1"><div class="li"> <a href="toolkit-contributing.html#debugging" class="wikilink1" title="toolkit-contributing.html">Debug</a> - check bug reports, create tests to highlight problems</div>
+</li>
+<li class="level1"><div class="li"> <a href="toolkit-contributing.html#developing" class="wikilink1" title="toolkit-contributing.html">Develop</a> - add your Python developer skills to the mix</div>
+</li>
+<li class="level1"><div class="li"> <a href="toolkit-contributing.html#documenting" class="wikilink1" title="toolkit-contributing.html">Document</a> - help make our docs readable, useful and complete</div>
+</li>
+</ol>
+
+<p>
+
+Below we give you more detail on these:
+</p>
+
+</div>
+<!-- SECTION "Contributing" [1-707] -->
+<h2><a name="testing" id="testing">Testing</a></h2>
+<div class="level2">
+
+<p>
+
+Before we release new versions of the Toolkit we need people to check that they still work correctly.  If you are a frequent user
+you might want to start using the release candidate on your current work and report any errors before we release them.
+</p>
+
+<p>
+Compile and install the software to see if we have any platform issues
+
+</p>
+<pre class="code">./setup.py install</pre>
+
+<p>
+
+Check for any files that are missing, tools that were not installed, etc.
+</p>
+
+<p>
+Run unit tests to see if there are any issues.  You&#039;ll need the <a href="http://codespeak.net/py/dist/test.html" class="urlextern" title="http://codespeak.net/py/dist/test.html">py.test</a> unit test software 
+which you can install from your distribution. Alternatively you can install it with easy_install:
+
+</p>
+<pre class="code">easy_install py</pre>
+
+<p>
+
+To run the tests you do
+
+</p>
+<pre class="code">py.test</pre>
+
+<p>
+
+from the translate src directory, or
+
+</p>
+<pre class="code">py.test storage/test_dtd.py</pre>
+
+<p>
+
+to run a specific set of tests.
+</p>
+
+<p>
+Report any failures.
+</p>
+
+<p>
+Note: If your Pootle tests fail with an error along the lines of:
+</p>
+<pre class="code">URLError: &lt;urlopen error (-2, &#039;Name or service not known&#039;)&gt;</pre>
+
+<p>
+
+Check your http_proxy environment variable. Usually it helps just to unset it:
+</p>
+<pre class="code">unset http_proxy</pre>
+
+<p>
+
+Finally, simply work with the software.  Checking all your current usage patterns and report problems.
+</p>
+
+</div>
+<!-- SECTION "Testing" [708-1894] -->
+<h2><a name="debugging" id="debugging">Debugging</a></h2>
+<div class="level2">
+<ol>
+<li class="level1"><div class="li"> Make sure your familiar with the <a href="developers-reporting_bugs.html" class="wikilink1" title="developers-reporting_bugs.html">bug reporting guidelines</a>.</div>
+</li>
+<li class="level1"><div class="li"> Create a login for yourself at <a href="http://bugs.locamotion.org" class="urlextern" title="http://bugs.locamotion.org">http://bugs.locamotion.org</a></div>
+</li>
+<li class="level1"><div class="li"> Then choose a bug</div>
+</li>
+</ol>
+
+<p>
+
+Now you need to try and validate the bug.  Your aim is to confirm that the bug is either fixed, is invalid or still exists.
+</p>
+
+<p>
+If its fixed please close the bug and give details of 
+how when it was fixed or what version you used to validate it as corrected.
+</p>
+
+<p>
+If you find that the bug reporter has made the incorrect assumptions or their suggestion
+cannot work.  Then mark the bug as invalid and give reasons why.
+</p>
+
+<p>
+The last case, an existing bug is the most interesting.  Check through the bug and do the following:
+
+</p>
+<ol>
+<li class="level1"><div class="li"> Fix up the summary to make it clear what the bug is</div>
+</li>
+<li class="level1"><div class="li"> Create new bugs for separate issues</div>
+</li>
+<li class="level1"><div class="li"> Set severity level and classifications correctly</div>
+</li>
+<li class="level1"><div class="li"> Add examples to reproduce the bug, or make the supplied files simpler</div>
+</li>
+<li class="level1"><div class="li"> If you can identify the bug but not fix it then explain what needs fixing</div>
+</li>
+<li class="level1"><div class="li"> Move on to the next bug</div>
+</li>
+</ol>
+
+</div>
+<!-- SECTION "Debugging" [1895-2943] -->
+<h2><a name="developing" id="developing">Developing</a></h2>
+<div class="level2">
+
+<p>
+
+Don&#039;t ignore this area if you feel like you are not a hotshot coder!
+</p>
+
+<p>
+You will need some Python skills, this is a great way to learn.
+</p>
+
+<p>
+Here are some ideas to get you going:
+</p>
+<ul>
+<li class="level1"><div class="li"> Write a test to expose some bug</div>
+</li>
+<li class="level1"><div class="li"> Try to fix the actual code to fix your bug</div>
+</li>
+<li class="level1"><div class="li"> Add a small piece of functionality that helps you</div>
+</li>
+<li class="level1"><div class="li"> Document the methods in especially the base class and derived classes</div>
+</li>
+<li class="level1"><div class="li"> Add a <a href="toolkit-formats.html" class="wikilink1" title="toolkit-formats.html">format</a> type and converters</div>
+</li>
+<li class="level1"><div class="li"> Add more features to help our formats <a href="toolkit-conformance.html" class="wikilink1" title="toolkit-conformance.html">conform to the standards</a></div>
+</li>
+</ul>
+
+<p>
+
+You will definitely need to be on the <a href="http://lists.sourceforge.net/lists/listinfo/translate-devel" class="urlextern" title="http://lists.sourceforge.net/lists/listinfo/translate-devel">Development</a> and probably on the <a href="http://lists.sourceforge.net/lists/listinfo/translate-cvs" class="urlextern" title="http://lists.sourceforge.net/lists/listinfo/translate-cvs">Subversion checkin</a> lists.
+</p>
+
+<p>
+Now is the time to familiarise yourself with the <a href="toolkit-developers.html" class="wikilink1" title="toolkit-developers.html">developers guide</a>.
+</p>
+
+</div>
+<!-- SECTION "Developing" [2944-3798] -->
+<h2><a name="documenting" id="documenting">Documenting</a></h2>
+<div class="level2">
+
+<p>
+
+This is the easy one.  Login to the wiki and start!
+</p>
+
+<p>
+The key areas that need to be looked at are:
+
+</p>
+<ol>
+<li class="level1"><div class="li"> Do the guides to each tool cover all command line options</div>
+</li>
+<li class="level1"><div class="li"> Are the examples clear for the general cases</div>
+</li>
+<li class="level1"><div class="li"> Is the tools use clear</div>
+</li>
+<li class="level1"><div class="li"> In the Use cases, can we add more, do they need updating. Has upstream changed its approach</div>
+</li>
+</ol>
+
+<p>
+
+After that and always:
+
+</p>
+<ul>
+<li class="level1"><div class="li"> Grammar</div>
+</li>
+<li class="level1"><div class="li"> Spelling</div>
+</li>
+<li class="level1"><div class="li"> Layout</div>
+</li>
+</ul>
+
+</div>
+<!-- SECTION "Documenting" [3799-] --></body>
+</html>

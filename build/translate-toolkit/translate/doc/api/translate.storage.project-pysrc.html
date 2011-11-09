@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>translate.storage.project</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="translate-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://translate.sourceforge.net/wiki/toolkit/index">Translate Toolkit</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="translate-module.html">Package&nbsp;translate</a> ::
+        <a href="translate.storage-module.html">Package&nbsp;storage</a> ::
+        Module&nbsp;project
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="translate.storage.project-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="translate.storage.project-module.html">Module translate.storage.project</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment">#!/usr/bin/env python</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># -*- coding: utf-8 -*-</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># Copyright 2010 Zuza Software Foundation</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># This file is part of the Translate Toolkit.</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># This program is free software; you can redistribute it and/or modify</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># it under the terms of the GNU General Public License as published by</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># the Free Software Foundation; either version 2 of the License, or</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># (at your option) any later version.</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># This program is distributed in the hope that it will be useful,</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># but WITHOUT ANY WARRANTY; without even the implied warranty of</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># GNU General Public License for more details.</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#</tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># You should have received a copy of the GNU General Public License</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># along with this program; if not, see &lt;http://www.gnu.org/licenses/&gt;.</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-comment"></tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">shutil</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-0" class="py-name" targets="Package translate=translate-module.html,Method translate.storage.base.TranslationStore.translate()=translate.storage.base.TranslationStore-class.html#translate,Method translate.storage.placeables.strelem.StringElem.translate()=translate.storage.placeables.strelem.StringElem-class.html#translate,Method translate.storage.placeables.terminology.TerminologyPlaceable.translate()=translate.storage.placeables.terminology.TerminologyPlaceable-class.html#translate,Method translate.storage.tmx.tmxfile.translate()=translate.storage.tmx.tmxfile-class.html#translate"><a title="translate
+translate.storage.base.TranslationStore.translate
+translate.storage.placeables.strelem.StringElem.translate
+translate.storage.placeables.terminology.TerminologyPlaceable.translate
+translate.storage.tmx.tmxfile.translate" class="py-name" href="#" onclick="return doclink('link-0', 'translate', 'link-0');">translate</a></tt><tt class="py-op">.</tt><tt id="link-1" class="py-name" targets="Package translate.convert=translate.convert-module.html,Module translate.convert.convert=translate.convert.convert-module.html,Function translate.convert.factory.convert()=translate.convert.factory-module.html#convert"><a title="translate.convert
+translate.convert.convert
+translate.convert.factory.convert" class="py-name" href="#" onclick="return doclink('link-1', 'convert', 'link-1');">convert</a></tt> <tt class="py-keyword">import</tt> <tt id="link-2" class="py-name" targets="Module translate.convert.factory=translate.convert.factory-module.html,Module translate.lang.factory=translate.lang.factory-module.html,Module translate.storage.factory=translate.storage.factory-module.html"><a title="translate.convert.factory
+translate.lang.factory
+translate.storage.factory" class="py-name" href="#" onclick="return doclink('link-2', 'factory', 'link-2');">factory</a></tt> <tt class="py-keyword">as</tt> <tt class="py-name">convert_factory</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-3" class="py-name" targets="Module translate.storage.projstore=translate.storage.projstore-module.html"><a title="translate.storage.projstore" class="py-name" href="#" onclick="return doclink('link-3', 'projstore', 'link-3');">projstore</a></tt> <tt class="py-keyword">import</tt> <tt id="link-4" class="py-name" targets="Class translate.storage.projstore.ProjectStore=translate.storage.projstore.ProjectStore-class.html"><a title="translate.storage.projstore.ProjectStore" class="py-name" href="#" onclick="return doclink('link-4', 'ProjectStore', 'link-4');">ProjectStore</a></tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt class="py-name">__all__</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-string">'Project'</tt><tt class="py-op">]</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"><tt class="py-comment"># FIXME: Isn't there a better place for this function?</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment"># XXX: Make sure that all extensions supported in translate.convert.factory</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#      that are not 3 letters long are added to the first "if" statement in</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt class="py-comment"></tt><tt class="py-comment">#      split_extensions() below.</tt> </tt>
+<a name="split_extensions"></a><div id="split_extensions-def"><a name="L35"></a><tt class="py-lineno"> 35</tt> <a class="py-toggle" href="#" id="split_extensions-toggle" onclick="return toggle('split_extensions');">-</a><tt class="py-line"><tt class="py-comment"></tt><tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project-module.html#split_extensions">split_extensions</a><tt class="py-op">(</tt><tt class="py-param">filename</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="split_extensions-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="split_extensions-expanded"><a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">    <tt class="py-docstring">"""Split the given filename into a name and extensions part.</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"><tt class="py-docstring">        The extensions part is defined by any sequence of extensions, where an</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"><tt class="py-docstring">        extension is a 3-letter, .-separated string or one of "po" or</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"><tt class="py-docstring">        "properties". If the file name consists entirely out of extensions, the</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"><tt class="py-docstring">        first part is assumed to be the file name and the rest extensions."""</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">    <tt class="py-name">filename_parts</tt> <tt class="py-op">=</tt> <tt class="py-name">filename</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">extsep</tt><tt class="py-op">)</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">    <tt class="py-name">extensions</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">part</tt> <tt class="py-keyword">in</tt> <tt class="py-name">reversed</tt><tt class="py-op">(</tt><tt class="py-name">filename_parts</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">part</tt><tt class="py-op">)</tt> <tt class="py-op">!=</tt> <tt class="py-number">3</tt> <tt class="py-keyword">and</tt> <tt class="py-name">part</tt> <tt class="py-keyword">not</tt> <tt class="py-keyword">in</tt> <tt class="py-op">(</tt><tt class="py-string">'po'</tt><tt class="py-op">,</tt> <tt class="py-string">'properties'</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">            <tt class="py-keyword">break</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">        <tt class="py-name">extensions</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">part</tt><tt class="py-op">)</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">extensions</tt><tt class="py-op">:</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">filename</tt><tt class="py-op">,</tt> <tt class="py-string">''</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">    <tt class="py-name">extensions</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt id="link-5" class="py-name" targets="Variable translate.misc.textwrap.TextWrapper.x=translate.misc.textwrap.TextWrapper-class.html#x"><a title="translate.misc.textwrap.TextWrapper.x" class="py-name" href="#" onclick="return doclink('link-5', 'x', 'link-5');">x</a></tt> <tt class="py-keyword">for</tt> <tt id="link-6" class="py-name"><a title="translate.misc.textwrap.TextWrapper.x" class="py-name" href="#" onclick="return doclink('link-6', 'x', 'link-5');">x</a></tt> <tt class="py-keyword">in</tt> <tt class="py-name">reversed</tt><tt class="py-op">(</tt><tt class="py-name">extensions</tt><tt class="py-op">)</tt><tt class="py-op">]</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line"> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">extensions</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">filename_parts</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">        <tt class="py-name">extensions</tt> <tt class="py-op">=</tt> <tt class="py-name">extensions</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">:</tt><tt class="py-op">]</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">extsep</tt><tt class="py-op">.</tt><tt id="link-7" class="py-name" targets="Method translate.misc.autoencode.autoencode.join()=translate.misc.autoencode.autoencode-class.html#join"><a title="translate.misc.autoencode.autoencode.join" class="py-name" href="#" onclick="return doclink('link-7', 'join', 'link-7');">join</a></tt><tt class="py-op">(</tt><tt class="py-name">filename_parts</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-op">-</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">extensions</tt><tt class="py-op">)</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">extsep</tt><tt class="py-op">.</tt><tt id="link-8" class="py-name"><a title="translate.misc.autoencode.autoencode.join" class="py-name" href="#" onclick="return doclink('link-8', 'join', 'link-7');">join</a></tt><tt class="py-op">(</tt><tt class="py-name">extensions</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line"> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line"> </tt>
+<a name="Project"></a><div id="Project-def"><a name="L56"></a><tt class="py-lineno"> 56</tt> <a class="py-toggle" href="#" id="Project-toggle" onclick="return toggle('Project');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html">Project</a><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Project-expanded"><a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">    <tt class="py-docstring">"""Manages a project store as well as the processes involved in a project</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">        workflow."""</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line"> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">    <tt class="py-comment"># INITIALIZERS #</tt> </tt>
+<a name="Project.__init__"></a><div id="Project.__init__-def"><a name="L61"></a><tt class="py-lineno"> 61</tt> <a class="py-toggle" href="#" id="Project.__init__-toggle" onclick="return toggle('Project.__init__');">-</a><tt class="py-line"><tt class="py-comment"></tt>    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">projstore</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.__init__-expanded"><a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt id="link-9" class="py-name"><a title="translate.storage.projstore" class="py-name" href="#" onclick="return doclink('link-9', 'projstore', 'link-3');">projstore</a></tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">            <tt id="link-10" class="py-name"><a title="translate.storage.projstore" class="py-name" href="#" onclick="return doclink('link-10', 'projstore', 'link-3');">projstore</a></tt> <tt class="py-op">=</tt> <tt id="link-11" class="py-name"><a title="translate.storage.projstore.ProjectStore" class="py-name" href="#" onclick="return doclink('link-11', 'ProjectStore', 'link-4');">ProjectStore</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt> <tt class="py-op">=</tt> <tt id="link-12" class="py-name"><a title="translate.storage.projstore" class="py-name" href="#" onclick="return doclink('link-12', 'projstore', 'link-3');">projstore</a></tt> </tt>
+</div><a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line"> </tt>
+<a name="Project.__del__"></a><div id="Project.__del__-def"><a name="L66"></a><tt class="py-lineno"> 66</tt> <a class="py-toggle" href="#" id="Project.__del__-toggle" onclick="return toggle('Project.__del__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#__del__">__del__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.__del__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.__del__-expanded"><a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">:</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">            <tt class="py-keyword">del</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt> </tt>
+</div><a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line"> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">    <tt class="py-comment"># METHODS #</tt> </tt>
+<a name="Project.add_source"></a><div id="Project.add_source-def"><a name="L71"></a><tt class="py-lineno"> 71</tt> <a class="py-toggle" href="#" id="Project.add_source-toggle" onclick="return toggle('Project.add_source');">-</a><tt class="py-line"><tt class="py-comment"></tt>    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#add_source">add_source</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">srcfile</tt><tt class="py-op">,</tt> <tt class="py-param">src_fname</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.add_source-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.add_source-expanded"><a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">        <tt class="py-docstring">"""Proxy for C{self.store.append_sourcefile()}."""</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Method translate.storage.projstore.ProjectStore.append_sourcefile()=translate.storage.projstore.ProjectStore-class.html#append_sourcefile"><a title="translate.storage.projstore.ProjectStore.append_sourcefile" class="py-name" href="#" onclick="return doclink('link-13', 'append_sourcefile', 'link-13');">append_sourcefile</a></tt><tt class="py-op">(</tt><tt class="py-name">srcfile</tt><tt class="py-op">,</tt> <tt class="py-name">src_fname</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line"> </tt>
+<a name="Project.add_source_convert"></a><div id="Project.add_source_convert-def"><a name="L75"></a><tt class="py-lineno"> 75</tt> <a class="py-toggle" href="#" id="Project.add_source_convert-toggle" onclick="return toggle('Project.add_source_convert');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#add_source_convert">add_source_convert</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">srcfile</tt><tt class="py-op">,</tt> <tt class="py-param">src_fname</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">convert_options</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">extension</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.add_source_convert-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.add_source_convert-expanded"><a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">        <tt class="py-docstring">"""Convenience method that calls L{add_source} and L{convert_forward}</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line"><tt class="py-docstring">            and returns the results from both."""</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">        <tt class="py-name">srcfile</tt><tt class="py-op">,</tt> <tt class="py-name">srcfname</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name" targets="Method translate.storage.project.Project.add_source()=translate.storage.project.Project-class.html#add_source"><a title="translate.storage.project.Project.add_source" class="py-name" href="#" onclick="return doclink('link-14', 'add_source', 'link-14');">add_source</a></tt><tt class="py-op">(</tt><tt class="py-name">srcfile</tt><tt class="py-op">,</tt> <tt class="py-name">src_fname</tt><tt class="py-op">)</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">        <tt class="py-name">transfile</tt><tt class="py-op">,</tt> <tt class="py-name">transfname</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name" targets="Method translate.storage.project.Project.convert_forward()=translate.storage.project.Project-class.html#convert_forward"><a title="translate.storage.project.Project.convert_forward" class="py-name" href="#" onclick="return doclink('link-15', 'convert_forward', 'link-15');">convert_forward</a></tt><tt class="py-op">(</tt><tt class="py-name">srcfname</tt><tt class="py-op">,</tt> <tt class="py-name">convert_options</tt><tt class="py-op">=</tt><tt class="py-name">convert_options</tt><tt class="py-op">)</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">srcfile</tt><tt class="py-op">,</tt> <tt class="py-name">srcfname</tt><tt class="py-op">,</tt> <tt class="py-name">transfile</tt><tt class="py-op">,</tt> <tt class="py-name">transfname</tt> </tt>
+</div><a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line"> </tt>
+<a name="Project.close"></a><div id="Project.close-def"><a name="L82"></a><tt class="py-lineno"> 82</tt> <a class="py-toggle" href="#" id="Project.close-toggle" onclick="return toggle('Project.close');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#close">close</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.close-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.close-expanded"><a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">        <tt class="py-docstring">"""Proxy for C{self.store.close()}."""</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name" targets="Method translate.misc.progressbar.DotsProgressBar.close()=translate.misc.progressbar.DotsProgressBar-class.html#close,Method translate.misc.progressbar.HashProgressBar.close()=translate.misc.progressbar.HashProgressBar-class.html#close,Method translate.misc.progressbar.NoProgressBar.close()=translate.misc.progressbar.NoProgressBar-class.html#close,Method translate.misc.stdiotell.StdIOWrapper.close()=translate.misc.stdiotell.StdIOWrapper-class.html#close,Method translate.misc.wStringIO.CatchStringOutput.close()=translate.misc.wStringIO.CatchStringOutput-class.html#close,Method translate.misc.wStringIO.StringIO.close()=translate.misc.wStringIO.StringIO-class.html#close,Method translate.misc.zipfileext.ZipFileExt.close()=translate.misc.zipfileext.ZipFileExt-class.html#close,Method translate.storage.bundleprojstore.BundleProjectStore.close()=translate.storage.bundleprojstore.BundleProjectStore-class.html#close,Method translate.storage.project.Project.close()=translate.storage.project.Project-class.html#close,Method translate.storage.projstore.ProjectStore.close()=translate.storage.projstore.ProjectStore-class.html#close,Method translate.storage.xpi.CatchPotentialOutput.close()=translate.storage.xpi.CatchPotentialOutput-class.html#close,Method translate.storage.xpi.XpiFile.close()=translate.storage.xpi.XpiFile-class.html#close,Method translate.storage.xpi.ZipFileCatcher.close()=translate.storage.xpi.ZipFileCatcher-class.html#close"><a title="translate.misc.progressbar.DotsProgressBar.close
+translate.misc.progressbar.HashProgressBar.close
+translate.misc.progressbar.NoProgressBar.close
+translate.misc.stdiotell.StdIOWrapper.close
+translate.misc.wStringIO.CatchStringOutput.close
+translate.misc.wStringIO.StringIO.close
+translate.misc.zipfileext.ZipFileExt.close
+translate.storage.bundleprojstore.BundleProjectStore.close
+translate.storage.project.Project.close
+translate.storage.projstore.ProjectStore.close
+translate.storage.xpi.CatchPotentialOutput.close
+translate.storage.xpi.XpiFile.close
+translate.storage.xpi.ZipFileCatcher.close" class="py-name" href="#" onclick="return doclink('link-16', 'close', 'link-16');">close</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line"> </tt>
+<a name="Project.convert_forward"></a><div id="Project.convert_forward-def"><a name="L86"></a><tt class="py-lineno"> 86</tt> <a class="py-toggle" href="#" id="Project.convert_forward-toggle" onclick="return toggle('Project.convert_forward');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#convert_forward">convert_forward</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">input_fname</tt><tt class="py-op">,</tt> <tt class="py-param">template</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">output_fname</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-param">options</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.convert_forward-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.convert_forward-expanded"><a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">        <tt class="py-docstring">"""Convert the given input file to the next type in the process:</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line"><tt class="py-docstring">            Source document (eg. ODT) -&gt; Translation file (eg. XLIFF) -&gt;</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line"><tt class="py-docstring">            Translated document (eg. ODT).</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line"><tt class="py-docstring">            @type  input_fname: basestring</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line"><tt class="py-docstring">            @param input_fname: The project name of the file to convert</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line"><tt class="py-docstring">            @type  convert_options: dict (optional)</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line"><tt class="py-docstring">            @param convert_options: Passed as-is to</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line"><tt class="py-docstring">                                    C{translate.convert.factory.convert()}.</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line"><tt class="py-docstring">            @returns 2-tuple: the converted file object and it's project name."""</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">        <tt class="py-name">inputfile</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-17" class="py-name" targets="Method translate.storage.bundleprojstore.BundleProjectStore.get_file()=translate.storage.bundleprojstore.BundleProjectStore-class.html#get_file,Method translate.storage.project.Project.get_file()=translate.storage.project.Project-class.html#get_file,Method translate.storage.projstore.ProjectStore.get_file()=translate.storage.projstore.ProjectStore-class.html#get_file"><a title="translate.storage.bundleprojstore.BundleProjectStore.get_file
+translate.storage.project.Project.get_file
+translate.storage.projstore.ProjectStore.get_file" class="py-name" href="#" onclick="return doclink('link-17', 'get_file', 'link-17');">get_file</a></tt><tt class="py-op">(</tt><tt class="py-name">input_fname</tt><tt class="py-op">)</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">        <tt class="py-name">input_type</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Method translate.storage.projstore.ProjectStore.get_filename_type()=translate.storage.projstore.ProjectStore-class.html#get_filename_type"><a title="translate.storage.projstore.ProjectStore.get_filename_type" class="py-name" href="#" onclick="return doclink('link-18', 'get_filename_type', 'link-18');">get_filename_type</a></tt><tt class="py-op">(</tt><tt class="py-name">input_fname</tt><tt class="py-op">)</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line"> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">input_type</tt> <tt class="py-op">==</tt> <tt class="py-string">'tgt'</tt><tt class="py-op">:</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> <tt class="py-name">ValueError</tt><tt class="py-op">(</tt><tt class="py-string">'Cannot convert a target document further: %s'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">input_fname</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line"> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">        <tt class="py-name">templ_fname</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">template</tt><tt class="py-op">,</tt> <tt class="py-name">basestring</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">            <tt class="py-name">template</tt><tt class="py-op">,</tt> <tt class="py-name">templ_fname</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name"><a title="translate.storage.bundleprojstore.BundleProjectStore.get_file
+translate.storage.project.Project.get_file
+translate.storage.projstore.ProjectStore.get_file" class="py-name" href="#" onclick="return doclink('link-19', 'get_file', 'link-17');">get_file</a></tt><tt class="py-op">(</tt><tt class="py-name">template</tt><tt class="py-op">)</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line"> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">template</tt> <tt class="py-keyword">and</tt> <tt class="py-keyword">not</tt> <tt class="py-name">templ_fname</tt><tt class="py-op">:</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">            <tt class="py-name">templ_fname</tt> <tt class="py-op">=</tt> <tt class="py-name">template</tt><tt class="py-op">.</tt><tt id="link-20" class="py-name" targets="Variable translate.misc.ini.LineContainer.name=translate.misc.ini.LineContainer-class.html#name,Variable translate.misc.typecheck.And.name=translate.misc.typecheck.And-class.html#name,Variable translate.misc.typecheck.Any.name=translate.misc.typecheck.Any-class.html#name,Variable translate.misc.typecheck.Dict.name=translate.misc.typecheck.Dict-class.html#name,Variable translate.misc.typecheck.Empty.name=translate.misc.typecheck.Empty-class.html#name,Variable translate.misc.typecheck.List.name=translate.misc.typecheck.List-class.html#name,Variable translate.misc.typecheck.Not.name=translate.misc.typecheck.Not-class.html#name,Variable translate.misc.typecheck.Or.name=translate.misc.typecheck.Or-class.html#name,Variable translate.misc.typecheck.Single.name=translate.misc.typecheck.Single-class.html#name,Variable translate.misc.typecheck.Tuple.name=translate.misc.typecheck.Tuple-class.html#name,Variable translate.misc.typecheck.Xor.name=translate.misc.typecheck.Xor-class.html#name,Variable translate.storage.properties.Dialect.name=translate.storage.properties.Dialect-class.html#name,Variable translate.storage.properties.DialectFlex.name=translate.storage.properties.DialectFlex-class.html#name,Variable translate.storage.properties.DialectJava.name=translate.storage.properties.DialectJava-class.html#name,Variable translate.storage.properties.DialectMozilla.name=translate.storage.properties.DialectMozilla-class.html#name,Variable translate.storage.properties.DialectSkype.name=translate.storage.properties.DialectSkype-class.html#name,Variable translate.storage.properties.DialectStrings.name=translate.storage.properties.DialectStrings-class.html#name,Method translate.storage.xml_name.XmlNamer.name()=translate.storage.xml_name.XmlNamer-class.html#name,Method translate.storage.xml_name.XmlNamespace.name()=translate.storage.xml_name.XmlNamespace-class.html#name"><a title="translate.misc.ini.LineContainer.name
+translate.misc.typecheck.And.name
+translate.misc.typecheck.Any.name
+translate.misc.typecheck.Dict.name
+translate.misc.typecheck.Empty.name
+translate.misc.typecheck.List.name
+translate.misc.typecheck.Not.name
+translate.misc.typecheck.Or.name
+translate.misc.typecheck.Single.name
+translate.misc.typecheck.Tuple.name
+translate.misc.typecheck.Xor.name
+translate.storage.properties.Dialect.name
+translate.storage.properties.DialectFlex.name
+translate.storage.properties.DialectJava.name
+translate.storage.properties.DialectMozilla.name
+translate.storage.properties.DialectSkype.name
+translate.storage.properties.DialectStrings.name
+translate.storage.xml_name.XmlNamer.name
+translate.storage.xml_name.XmlNamespace.name" class="py-name" href="#" onclick="return doclink('link-20', 'name', 'link-20');">name</a></tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line"> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">        <tt class="py-comment"># Check if we can determine a template from the conversion map</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-keyword">if</tt> <tt class="py-name">template</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">            <tt class="py-name">convert_map</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt class="py-name">convert_map</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">input_fname</tt> <tt class="py-keyword">in</tt> <tt class="py-name">convert_map</tt><tt class="py-op">:</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">                <tt class="py-name">templ_fname</tt> <tt class="py-op">=</tt> <tt class="py-name">convert_map</tt><tt class="py-op">[</tt><tt class="py-name">input_fname</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">                <tt class="py-name">template</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name"><a title="translate.storage.bundleprojstore.BundleProjectStore.get_file
+translate.storage.project.Project.get_file
+translate.storage.projstore.ProjectStore.get_file" class="py-name" href="#" onclick="return doclink('link-21', 'get_file', 'link-17');">get_file</a></tt><tt class="py-op">(</tt><tt class="py-name">templ_fname</tt><tt class="py-op">)</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">            <tt class="py-keyword">elif</tt> <tt class="py-name">input_type</tt> <tt class="py-op">==</tt> <tt class="py-string">'trans'</tt><tt class="py-op">:</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">                <tt class="py-comment"># inputfile is a translatable file, so it needed to be converted</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line"><tt class="py-comment"></tt>                <tt class="py-comment"># from some input document. Let's try and use that document as a</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line"><tt class="py-comment"></tt>                <tt class="py-comment"># template for this conversion.</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line"><tt class="py-comment"></tt>                <tt class="py-keyword">for</tt> <tt class="py-name">in_name</tt><tt class="py-op">,</tt> <tt class="py-op">(</tt><tt class="py-name">out_name</tt><tt class="py-op">,</tt> <tt class="py-name">tmpl_name</tt><tt class="py-op">)</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt class="py-name">convert_map</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name" targets="Method translate.misc.dictutils.ordereddict.items()=translate.misc.dictutils.ordereddict-class.html#items"><a title="translate.misc.dictutils.ordereddict.items" class="py-name" href="#" onclick="return doclink('link-22', 'items', 'link-22');">items</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">                    <tt class="py-keyword">if</tt> <tt class="py-name">input_fname</tt> <tt class="py-op">==</tt> <tt class="py-name">out_name</tt><tt class="py-op">:</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">                        <tt class="py-name">template</tt><tt class="py-op">,</tt> <tt class="py-name">templ_fname</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-23" class="py-name"><a title="translate.storage.bundleprojstore.BundleProjectStore.get_file
+translate.storage.project.Project.get_file
+translate.storage.projstore.ProjectStore.get_file" class="py-name" href="#" onclick="return doclink('link-23', 'get_file', 'link-17');">get_file</a></tt><tt class="py-op">(</tt><tt class="py-name">in_name</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">in_name</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">                        <tt class="py-keyword">break</tt> </tt>
+<a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line"> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">        <tt class="py-comment"># Populate the conv_options dict with the options we can detect</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-name">conv_options</tt> <tt class="py-op">=</tt> <tt id="link-24" class="py-name" targets="Variable translate.storage.catkeys.CatkeysUnit.dict=translate.storage.catkeys.CatkeysUnit-class.html#dict,Variable translate.storage.omegat.OmegaTUnit.dict=translate.storage.omegat.OmegaTUnit-class.html#dict,Variable translate.storage.wordfast.WordfastUnit.dict=translate.storage.wordfast.WordfastUnit-class.html#dict"><a title="translate.storage.catkeys.CatkeysUnit.dict
+translate.storage.omegat.OmegaTUnit.dict
+translate.storage.wordfast.WordfastUnit.dict" class="py-name" href="#" onclick="return doclink('link-24', 'dict', 'link-24');">dict</a></tt><tt class="py-op">(</tt><tt class="py-name">in_fname</tt><tt class="py-op">=</tt><tt class="py-name">input_fname</tt><tt class="py-op">)</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line"> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">input_fname</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt class="py-name">convert_map</tt><tt class="py-op">:</tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line">            <tt class="py-name">out_name</tt><tt class="py-op">,</tt> <tt class="py-name">tmpl_name</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt class="py-name">convert_map</tt><tt class="py-op">[</tt><tt class="py-name">input_fname</tt><tt class="py-op">]</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">out_name</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt class="py-name">_files</tt> <tt class="py-keyword">and</tt> <tt id="link-25" class="py-name" targets="Variable translate.convert.po2oo.options=translate.convert.po2oo-module.html#options,Variable translate.convert.xliff2oo.options=translate.convert.xliff2oo-module.html#options,Method translate.filters.checks.StandardChecker.options()=translate.filters.checks.StandardChecker-class.html#options"><a title="translate.convert.po2oo.options
+translate.convert.xliff2oo.options
+translate.filters.checks.StandardChecker.options" class="py-name" href="#" onclick="return doclink('link-25', 'options', 'link-25');">options</a></tt><tt class="py-op">.</tt><tt id="link-26" class="py-name" targets="Method translate.misc.dictutils.cidict.get()=translate.misc.dictutils.cidict-class.html#get"><a title="translate.misc.dictutils.cidict.get" class="py-name" href="#" onclick="return doclink('link-26', 'get', 'link-26');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'overwrite_output'</tt><tt class="py-op">,</tt> <tt class="py-name">True</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name" targets="Method translate.storage.bundleprojstore.BundleProjectStore.remove_file()=translate.storage.bundleprojstore.BundleProjectStore-class.html#remove_file,Method translate.storage.project.Project.remove_file()=translate.storage.project.Project-class.html#remove_file,Method translate.storage.projstore.ProjectStore.remove_file()=translate.storage.projstore.ProjectStore-class.html#remove_file"><a title="translate.storage.bundleprojstore.BundleProjectStore.remove_file
+translate.storage.project.Project.remove_file
+translate.storage.projstore.ProjectStore.remove_file" class="py-name" href="#" onclick="return doclink('link-27', 'remove_file', 'link-27');">remove_file</a></tt><tt class="py-op">(</tt><tt class="py-name">out_name</tt><tt class="py-op">)</tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line"> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line">        <tt class="py-name">converted_file</tt><tt class="py-op">,</tt> <tt class="py-name">converted_ext</tt> <tt class="py-op">=</tt> <tt class="py-name">convert_factory</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="translate.convert
+translate.convert.convert
+translate.convert.factory.convert" class="py-name" href="#" onclick="return doclink('link-28', 'convert', 'link-1');">convert</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line">            <tt class="py-name">inputfile</tt><tt class="py-op">,</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">            <tt class="py-name">template</tt><tt class="py-op">=</tt><tt class="py-name">template</tt><tt class="py-op">,</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">            <tt id="link-29" class="py-name"><a title="translate.convert.po2oo.options
+translate.convert.xliff2oo.options
+translate.filters.checks.StandardChecker.options" class="py-name" href="#" onclick="return doclink('link-29', 'options', 'link-25');">options</a></tt><tt class="py-op">=</tt><tt class="py-name">conv_options</tt><tt class="py-op">,</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line">            <tt class="py-name">convert_options</tt><tt class="py-op">=</tt><tt id="link-30" class="py-name"><a title="translate.convert.po2oo.options
+translate.convert.xliff2oo.options
+translate.filters.checks.StandardChecker.options" class="py-name" href="#" onclick="return doclink('link-30', 'options', 'link-25');">options</a></tt><tt class="py-op">.</tt><tt id="link-31" class="py-name"><a title="translate.misc.dictutils.cidict.get" class="py-name" href="#" onclick="return doclink('link-31', 'get', 'link-26');">get</a></tt><tt class="py-op">(</tt><tt class="py-string">'convert_options'</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">        <tt class="py-op">)</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line"> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line">        <tt class="py-comment"># Determine the file name and path where the output should be moved.</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">output_fname</tt><tt class="py-op">:</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">            <tt class="py-name">_dir</tt><tt class="py-op">,</tt> <tt class="py-name">fname</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-name">input_fname</tt><tt class="py-op">)</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">            <tt id="link-32" class="py-name" targets="Module translate.storage.directory=translate.storage.directory-module.html"><a title="translate.storage.directory" class="py-name" href="#" onclick="return doclink('link-32', 'directory', 'link-32');">directory</a></tt> <tt class="py-op">=</tt> <tt class="py-string">''</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">hasattr</tt><tt class="py-op">(</tt><tt class="py-name">inputfile</tt><tt class="py-op">,</tt> <tt class="py-string">'name'</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">                <tt class="py-comment"># Prefer to put it in the same directory as the input file</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line"><tt class="py-comment"></tt>                <tt id="link-33" class="py-name"><a title="translate.storage.directory" class="py-name" href="#" onclick="return doclink('link-33', 'directory', 'link-32');">directory</a></tt><tt class="py-op">,</tt> <tt class="py-name">_fn</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-name">inputfile</tt><tt class="py-op">.</tt><tt id="link-34" class="py-name"><a title="translate.misc.ini.LineContainer.name
+translate.misc.typecheck.And.name
+translate.misc.typecheck.Any.name
+translate.misc.typecheck.Dict.name
+translate.misc.typecheck.Empty.name
+translate.misc.typecheck.List.name
+translate.misc.typecheck.Not.name
+translate.misc.typecheck.Or.name
+translate.misc.typecheck.Single.name
+translate.misc.typecheck.Tuple.name
+translate.misc.typecheck.Xor.name
+translate.storage.properties.Dialect.name
+translate.storage.properties.DialectFlex.name
+translate.storage.properties.DialectJava.name
+translate.storage.properties.DialectMozilla.name
+translate.storage.properties.DialectSkype.name
+translate.storage.properties.DialectStrings.name
+translate.storage.xml_name.XmlNamer.name
+translate.storage.xml_name.XmlNamespace.name" class="py-name" href="#" onclick="return doclink('link-34', 'name', 'link-20');">name</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">                <tt class="py-comment"># Otherwise put it in the current working directory</tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line"><tt class="py-comment"></tt>                <tt id="link-35" class="py-name"><a title="translate.storage.directory" class="py-name" href="#" onclick="return doclink('link-35', 'directory', 'link-32');">directory</a></tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">getcwd</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">            <tt class="py-name">output_fname</tt> <tt class="py-op">=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt id="link-36" class="py-name"><a title="translate.misc.autoencode.autoencode.join" class="py-name" href="#" onclick="return doclink('link-36', 'join', 'link-7');">join</a></tt><tt class="py-op">(</tt><tt id="link-37" class="py-name"><a title="translate.storage.directory" class="py-name" href="#" onclick="return doclink('link-37', 'directory', 'link-32');">directory</a></tt><tt class="py-op">,</tt> <tt class="py-name">fname</tt><tt class="py-op">)</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line">        <tt class="py-name">output_fname</tt><tt class="py-op">,</tt> <tt class="py-name">output_ext</tt> <tt class="py-op">=</tt> <tt id="link-38" class="py-name" targets="Function translate.storage.project.split_extensions()=translate.storage.project-module.html#split_extensions"><a title="translate.storage.project.split_extensions" class="py-name" href="#" onclick="return doclink('link-38', 'split_extensions', 'link-38');">split_extensions</a></tt><tt class="py-op">(</tt><tt class="py-name">output_fname</tt><tt class="py-op">)</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">        <tt class="py-name">output_ext_parts</tt> <tt class="py-op">=</tt> <tt class="py-name">output_ext</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">extsep</tt><tt class="py-op">)</tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line"> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">        <tt class="py-comment"># Add the output suffix, if supplied</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-keyword">if</tt> <tt class="py-string">'output_suffix'</tt> <tt class="py-keyword">in</tt> <tt id="link-39" class="py-name"><a title="translate.convert.po2oo.options
+translate.convert.xliff2oo.options
+translate.filters.checks.StandardChecker.options" class="py-name" href="#" onclick="return doclink('link-39', 'options', 'link-25');">options</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line">            <tt class="py-name">output_fname</tt> <tt class="py-op">+=</tt> <tt id="link-40" class="py-name"><a title="translate.convert.po2oo.options
+translate.convert.xliff2oo.options
+translate.filters.checks.StandardChecker.options" class="py-name" href="#" onclick="return doclink('link-40', 'options', 'link-25');">options</a></tt><tt class="py-op">[</tt><tt class="py-string">'output_suffix'</tt><tt class="py-op">]</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line"> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">        <tt class="py-comment"># Check if we are in the situation where the output has an extension</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-comment"># of, for example, .odt.xlf.odt. If so, we want to change that to only</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-comment"># .odt.</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line"><tt class="py-comment"></tt>        <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">output_ext_parts</tt><tt class="py-op">)</tt> <tt class="py-op">&gt;=</tt> <tt class="py-number">2</tt> <tt class="py-keyword">and</tt> <tt class="py-name">output_ext_parts</tt><tt class="py-op">[</tt><tt class="py-op">-</tt><tt class="py-number">2</tt><tt class="py-op">]</tt> <tt class="py-op">==</tt> <tt class="py-name">converted_ext</tt><tt class="py-op">:</tt> </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">            <tt class="py-name">output_ext_parts</tt> <tt class="py-op">=</tt> <tt class="py-name">output_ext_parts</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
+<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">            <tt class="py-name">output_ext_parts</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">converted_ext</tt><tt class="py-op">)</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line">        <tt class="py-name">output_fname</tt> <tt class="py-op">+=</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">extsep</tt><tt class="py-op">.</tt><tt id="link-41" class="py-name"><a title="translate.misc.autoencode.autoencode.join" class="py-name" href="#" onclick="return doclink('link-41', 'join', 'link-7');">join</a></tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-string">''</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt class="py-name">output_ext_parts</tt><tt class="py-op">)</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line"> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">isfile</tt><tt class="py-op">(</tt><tt class="py-name">output_fname</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line">            <tt class="py-comment"># If the output file already exist, we can't assume that it's safe</tt> </tt>
+<a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line"><tt class="py-comment"></tt>            <tt class="py-comment"># to overwrite it.</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line"><tt class="py-comment"></tt>            <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">unlink</tt><tt class="py-op">(</tt><tt class="py-name">converted_file</tt><tt class="py-op">.</tt><tt id="link-42" class="py-name"><a title="translate.misc.ini.LineContainer.name
+translate.misc.typecheck.And.name
+translate.misc.typecheck.Any.name
+translate.misc.typecheck.Dict.name
+translate.misc.typecheck.Empty.name
+translate.misc.typecheck.List.name
+translate.misc.typecheck.Not.name
+translate.misc.typecheck.Or.name
+translate.misc.typecheck.Single.name
+translate.misc.typecheck.Tuple.name
+translate.misc.typecheck.Xor.name
+translate.storage.properties.Dialect.name
+translate.storage.properties.DialectFlex.name
+translate.storage.properties.DialectJava.name
+translate.storage.properties.DialectMozilla.name
+translate.storage.properties.DialectSkype.name
+translate.storage.properties.DialectStrings.name
+translate.storage.xml_name.XmlNamer.name
+translate.storage.xml_name.XmlNamespace.name" class="py-name" href="#" onclick="return doclink('link-42', 'name', 'link-20');">name</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> <tt class="py-name">IOError</tt><tt class="py-op">(</tt><tt class="py-string">"Output file already exists: %s"</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">output_fname</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line"> </tt>
+<a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line">        <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">rename</tt><tt class="py-op">(</tt><tt class="py-name">converted_file</tt><tt class="py-op">.</tt><tt id="link-43" class="py-name"><a title="translate.misc.ini.LineContainer.name
+translate.misc.typecheck.And.name
+translate.misc.typecheck.Any.name
+translate.misc.typecheck.Dict.name
+translate.misc.typecheck.Empty.name
+translate.misc.typecheck.List.name
+translate.misc.typecheck.Not.name
+translate.misc.typecheck.Or.name
+translate.misc.typecheck.Single.name
+translate.misc.typecheck.Tuple.name
+translate.misc.typecheck.Xor.name
+translate.storage.properties.Dialect.name
+translate.storage.properties.DialectFlex.name
+translate.storage.properties.DialectJava.name
+translate.storage.properties.DialectMozilla.name
+translate.storage.properties.DialectSkype.name
+translate.storage.properties.DialectStrings.name
+translate.storage.xml_name.XmlNamer.name
+translate.storage.xml_name.XmlNamespace.name" class="py-name" href="#" onclick="return doclink('link-43', 'name', 'link-20');">name</a></tt><tt class="py-op">,</tt> <tt class="py-name">output_fname</tt><tt class="py-op">)</tt> </tt>
+<a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line"> </tt>
+<a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line">        <tt class="py-name">output_type</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt class="py-name">TYPE_INFO</tt><tt class="py-op">[</tt><tt class="py-string">'next_type'</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-name">input_type</tt><tt class="py-op">]</tt> </tt>
+<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line">        <tt class="py-name">outputfile</tt><tt class="py-op">,</tt> <tt class="py-name">output_fname</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt id="link-44" class="py-name" targets="Method translate.storage.bundleprojstore.BundleProjectStore.append_file()=translate.storage.bundleprojstore.BundleProjectStore-class.html#append_file,Method translate.storage.projstore.ProjectStore.append_file()=translate.storage.projstore.ProjectStore-class.html#append_file"><a title="translate.storage.bundleprojstore.BundleProjectStore.append_file
+translate.storage.projstore.ProjectStore.append_file" class="py-name" href="#" onclick="return doclink('link-44', 'append_file', 'link-44');">append_file</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line">            <tt class="py-name">output_fname</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-name">ftype</tt><tt class="py-op">=</tt><tt class="py-name">output_type</tt><tt class="py-op">,</tt> <tt class="py-name">delete_orig</tt><tt class="py-op">=</tt><tt class="py-name">True</tt> </tt>
+<a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line">        <tt class="py-op">)</tt> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt class="py-name">convert_map</tt><tt class="py-op">[</tt><tt class="py-name">input_fname</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-name">output_fname</tt><tt class="py-op">,</tt> <tt class="py-name">templ_fname</tt><tt class="py-op">)</tt> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line"> </tt>
+<a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">outputfile</tt><tt class="py-op">,</tt> <tt class="py-name">output_fname</tt> </tt>
+</div><a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line"> </tt>
+<a name="Project.export_file"></a><div id="Project.export_file-def"><a name="L183"></a><tt class="py-lineno">183</tt> <a class="py-toggle" href="#" id="Project.export_file-toggle" onclick="return toggle('Project.export_file');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#export_file">export_file</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">fname</tt><tt class="py-op">,</tt> <tt class="py-param">destfname</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.export_file-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.export_file-expanded"><a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line">        <tt class="py-docstring">"""Export the file with the specified filename to the given destination.</tt> </tt>
+<a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line"><tt class="py-docstring">            This method will raise L{FileNotInProjectError} via the call to</tt> </tt>
+<a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line"><tt class="py-docstring">            L{ProjectStore.get_file()} if C{fname} is not found in the project."""</tt> </tt>
+<a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line">        <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">destfname</tt><tt class="py-op">,</tt> <tt class="py-string">'w'</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-45" class="py-name" targets="Method translate.misc.stdiotell.StdIOWrapper.write()=translate.misc.stdiotell.StdIOWrapper-class.html#write,Method translate.misc.wStringIO.StringIO.write()=translate.misc.wStringIO.StringIO-class.html#write,Method translate.misc.xmlwrapper.XMLWrapper.write()=translate.misc.xmlwrapper.XMLWrapper-class.html#write"><a title="translate.misc.stdiotell.StdIOWrapper.write
+translate.misc.wStringIO.StringIO.write
+translate.misc.xmlwrapper.XMLWrapper.write" class="py-name" href="#" onclick="return doclink('link-45', 'write', 'link-45');">write</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt id="link-46" class="py-name"><a title="translate.storage.bundleprojstore.BundleProjectStore.get_file
+translate.storage.project.Project.get_file
+translate.storage.projstore.ProjectStore.get_file" class="py-name" href="#" onclick="return doclink('link-46', 'get_file', 'link-17');">get_file</a></tt><tt class="py-op">(</tt><tt class="py-name">fname</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-47" class="py-name" targets="Method translate.misc.wStringIO.StringIO.read()=translate.misc.wStringIO.StringIO-class.html#read"><a title="translate.misc.wStringIO.StringIO.read" class="py-name" href="#" onclick="return doclink('link-47', 'read', 'link-47');">read</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line"> </tt>
+<a name="Project.get_file"></a><div id="Project.get_file-def"><a name="L189"></a><tt class="py-lineno">189</tt> <a class="py-toggle" href="#" id="Project.get_file-toggle" onclick="return toggle('Project.get_file');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#get_file">get_file</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">fname</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.get_file-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.get_file-expanded"><a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line">        <tt class="py-docstring">"""Proxy for C{self.store.get_file()}."""</tt> </tt>
+<a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt id="link-48" class="py-name"><a title="translate.storage.bundleprojstore.BundleProjectStore.get_file
+translate.storage.project.Project.get_file
+translate.storage.projstore.ProjectStore.get_file" class="py-name" href="#" onclick="return doclink('link-48', 'get_file', 'link-17');">get_file</a></tt><tt class="py-op">(</tt><tt class="py-name">fname</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line"> </tt>
+<a name="Project.get_proj_filename"></a><div id="Project.get_proj_filename-def"><a name="L193"></a><tt class="py-lineno">193</tt> <a class="py-toggle" href="#" id="Project.get_proj_filename-toggle" onclick="return toggle('Project.get_proj_filename');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#get_proj_filename">get_proj_filename</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">realfname</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.get_proj_filename-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.get_proj_filename-expanded"><a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line">        <tt class="py-docstring">"""Proxy for C{self.store.get_proj_filename()}."""</tt> </tt>
+<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt id="link-49" class="py-name" targets="Method translate.storage.bundleprojstore.BundleProjectStore.get_proj_filename()=translate.storage.bundleprojstore.BundleProjectStore-class.html#get_proj_filename,Method translate.storage.project.Project.get_proj_filename()=translate.storage.project.Project-class.html#get_proj_filename,Method translate.storage.projstore.ProjectStore.get_proj_filename()=translate.storage.projstore.ProjectStore-class.html#get_proj_filename"><a title="translate.storage.bundleprojstore.BundleProjectStore.get_proj_filename
+translate.storage.project.Project.get_proj_filename
+translate.storage.projstore.ProjectStore.get_proj_filename" class="py-name" href="#" onclick="return doclink('link-49', 'get_proj_filename', 'link-49');">get_proj_filename</a></tt><tt class="py-op">(</tt><tt class="py-name">realfname</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line"> </tt>
+<a name="Project.get_real_filename"></a><div id="Project.get_real_filename-def"><a name="L197"></a><tt class="py-lineno">197</tt> <a class="py-toggle" href="#" id="Project.get_real_filename-toggle" onclick="return toggle('Project.get_real_filename');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#get_real_filename">get_real_filename</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">projfname</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.get_real_filename-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.get_real_filename-expanded"><a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">        <tt class="py-docstring">"""Try and find a real file name for the given project file name."""</tt> </tt>
+<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">        <tt class="py-name">projfile</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-50" class="py-name"><a title="translate.storage.bundleprojstore.BundleProjectStore.get_file
+translate.storage.project.Project.get_file
+translate.storage.projstore.ProjectStore.get_file" class="py-name" href="#" onclick="return doclink('link-50', 'get_file', 'link-17');">get_file</a></tt><tt class="py-op">(</tt><tt class="py-name">projfname</tt><tt class="py-op">)</tt> </tt>
+<a name="L200"></a><tt class="py-lineno">200</tt>  <tt class="py-line">        <tt class="py-name">rfname</tt> <tt class="py-op">=</tt> <tt id="link-51" class="py-name" targets="Method translate.misc.xmlwrapper.XMLWrapper.getattr()=translate.misc.xmlwrapper.XMLWrapper-class.html#getattr"><a title="translate.misc.xmlwrapper.XMLWrapper.getattr" class="py-name" href="#" onclick="return doclink('link-51', 'getattr', 'link-51');">getattr</a></tt><tt class="py-op">(</tt><tt class="py-name">projfile</tt><tt class="py-op">,</tt> <tt class="py-string">'name'</tt><tt class="py-op">,</tt> <tt id="link-52" class="py-name"><a title="translate.misc.xmlwrapper.XMLWrapper.getattr" class="py-name" href="#" onclick="return doclink('link-52', 'getattr', 'link-51');">getattr</a></tt><tt class="py-op">(</tt><tt class="py-name">projfile</tt><tt class="py-op">,</tt> <tt class="py-string">'filename'</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">rfname</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L202"></a><tt class="py-lineno">202</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> <tt class="py-name">ValueError</tt><tt class="py-op">(</tt><tt class="py-string">'Project file has no real file: %s'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">projfname</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L203"></a><tt class="py-lineno">203</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">rfname</tt> </tt>
+</div><a name="L204"></a><tt class="py-lineno">204</tt>  <tt class="py-line"> </tt>
+<a name="Project.remove_file"></a><div id="Project.remove_file-def"><a name="L205"></a><tt class="py-lineno">205</tt> <a class="py-toggle" href="#" id="Project.remove_file-toggle" onclick="return toggle('Project.remove_file');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#remove_file">remove_file</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">projfname</tt><tt class="py-op">,</tt> <tt class="py-param">ftype</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.remove_file-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.remove_file-expanded"><a name="L206"></a><tt class="py-lineno">206</tt>  <tt class="py-line">        <tt class="py-docstring">"""Proxy for C{self.store.remove_file()}."""</tt> </tt>
+<a name="L207"></a><tt class="py-lineno">207</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt id="link-53" class="py-name"><a title="translate.storage.bundleprojstore.BundleProjectStore.remove_file
+translate.storage.project.Project.remove_file
+translate.storage.projstore.ProjectStore.remove_file" class="py-name" href="#" onclick="return doclink('link-53', 'remove_file', 'link-27');">remove_file</a></tt><tt class="py-op">(</tt><tt class="py-name">projfname</tt><tt class="py-op">,</tt> <tt class="py-name">ftype</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L208"></a><tt class="py-lineno">208</tt>  <tt class="py-line"> </tt>
+<a name="Project.save"></a><div id="Project.save-def"><a name="L209"></a><tt class="py-lineno">209</tt> <a class="py-toggle" href="#" id="Project.save-toggle" onclick="return toggle('Project.save');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#save">save</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">filename</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.save-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.save-expanded"><a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line">        <tt class="py-docstring">"""Proxy for C{self.store.save()}."""</tt> </tt>
+<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt id="link-54" class="py-name" targets="Method translate.lang.ngram.Generate.save()=translate.lang.ngram.Generate-class.html#save,Method translate.storage.base.TranslationStore.save()=translate.storage.base.TranslationStore-class.html#save,Method translate.storage.bundleprojstore.BundleProjectStore.save()=translate.storage.bundleprojstore.BundleProjectStore-class.html#save,Method translate.storage.project.Project.save()=translate.storage.project.Project-class.html#save,Method translate.storage.projstore.ProjectStore.save()=translate.storage.projstore.ProjectStore-class.html#save"><a title="translate.lang.ngram.Generate.save
+translate.storage.base.TranslationStore.save
+translate.storage.bundleprojstore.BundleProjectStore.save
+translate.storage.project.Project.save
+translate.storage.projstore.ProjectStore.save" class="py-name" href="#" onclick="return doclink('link-54', 'save', 'link-54');">save</a></tt><tt class="py-op">(</tt><tt class="py-name">filename</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L212"></a><tt class="py-lineno">212</tt>  <tt class="py-line"> </tt>
+<a name="Project.update_file"></a><div id="Project.update_file-def"><a name="L213"></a><tt class="py-lineno">213</tt> <a class="py-toggle" href="#" id="Project.update_file-toggle" onclick="return toggle('Project.update_file');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="translate.storage.project.Project-class.html#update_file">update_file</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">proj_fname</tt><tt class="py-op">,</tt> <tt class="py-param">infile</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="Project.update_file-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Project.update_file-expanded"><a name="L214"></a><tt class="py-lineno">214</tt>  <tt class="py-line">        <tt class="py-docstring">"""Proxy for C{self.store.update_file()}."""</tt> </tt>
+<a name="L215"></a><tt class="py-lineno">215</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">store</tt><tt class="py-op">.</tt><tt id="link-55" class="py-name" targets="Method translate.storage.bundleprojstore.BundleProjectStore.update_file()=translate.storage.bundleprojstore.BundleProjectStore-class.html#update_file,Method translate.storage.project.Project.update_file()=translate.storage.project.Project-class.html#update_file,Method translate.storage.projstore.ProjectStore.update_file()=translate.storage.projstore.ProjectStore-class.html#update_file"><a title="translate.storage.bundleprojstore.BundleProjectStore.update_file
+translate.storage.project.Project.update_file
+translate.storage.projstore.ProjectStore.update_file" class="py-name" href="#" onclick="return doclink('link-55', 'update_file', 'link-55');">update_file</a></tt><tt class="py-op">(</tt><tt class="py-name">proj_fname</tt><tt class="py-op">,</tt> <tt class="py-name">infile</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L216"></a><tt class="py-lineno">216</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="translate-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://translate.sourceforge.net/wiki/toolkit/index">Translate Toolkit</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue Aug 17 15:51:49 2010
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

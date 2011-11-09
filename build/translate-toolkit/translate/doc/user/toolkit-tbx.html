@@ -1,0 +1,630 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+  <title></title>
+  <link rel="stylesheet" media="screen" type="text/css" href="./style.css" />
+  <link rel="stylesheet" media="screen" type="text/css" href="./design.css" />
+  <link rel="stylesheet" media="print" type="text/css" href="./print.css" />
+
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+<a href=.>start</a></br>
+
+
+
+<h1><a name="tbx" id="tbx">TBX</a></h1>
+<div class="level1">
+
+<p>
+<acronym title="TermBase eXchange">TBX</acronym> is the LISA standard for terminology and term exchange.
+</p>
+
+<p>
+For information on more file formats, see <a href="toolkit-conformance.html" class="wikilink1" title="toolkit-conformance.html">conformance</a>.
+</p>
+
+</div>
+<!-- SECTION "TBX" [1-139] -->
+<h2><a name="references" id="references">References</a></h2>
+<div class="level2">
+<ul>
+<li class="level1"><div class="li"> <a href="http://www.lisa.org/Term-Base-eXchange.32.0.html" class="urlextern" title="http://www.lisa.org/Term-Base-eXchange.32.0.html">Standard home page</a></div>
+</li>
+<li class="level1"><div class="li"> <a href="http://www.lisa.org/TBX-Specification.33.0.html" class="urlextern" title="http://www.lisa.org/TBX-Specification.33.0.html">Specification</a></div>
+</li>
+<li class="level1"><div class="li"> <a href="http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=45797" class="urlextern" title="http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=45797">ISO 30042</a> - <acronym title="TermBase eXchange">TBX</acronym> is an approved <acronym title="International Organization for Standardization">ISO</acronym> standard</div>
+</li>
+</ul>
+
+<p>
+
+You might also be interested in reading about <a href="http://www.lisa.org/TBX-Basic.926.0.html" class="urlextern" title="http://www.lisa.org/TBX-Basic.926.0.html">TBX-Basic</a> - a simpler, reduced version of <acronym title="TermBase eXchange">TBX</acronym> with most of the useful features included.
+</p>
+
+</div>
+<!-- SECTION "References" [140-629] -->
+<h2><a name="standard_conformance" id="standard_conformance">Standard conformance</a></h2>
+<div class="level2">
+
+</div>
+<!-- SECTION "Standard conformance" [630-662] -->
+<h3><a name="done" id="done">Done</a></h3>
+<div class="level3">
+<ul>
+<li class="level1"><div class="li"> Basic file creation</div>
+</li>
+<li class="level1"><div class="li"> Creating a bilingual list from <acronym title="Comma Separated Value">CSV</acronym> with <a href="toolkit-csv2tbx.html" class="wikilink1" title="toolkit-csv2tbx.html">csv2tbx</a></div>
+</li>
+<li class="level1"><div class="li"> Using &lt;tig&gt; tags, not ntig</div>
+</li>
+</ul>
+
+</div>
+<!-- SECTION "Done" [663-789] -->
+<h3><a name="todo" id="todo">Todo</a></h3>
+<div class="level3">
+<ul>
+<li class="level1"><div class="li"> id attributes for termEntry tags</div>
+</li>
+<li class="level1"><div class="li"> ntig, read and write</div>
+</li>
+<li class="level1"><div class="li"> multiple languages</div>
+</li>
+<li class="level1"><div class="li"> synonyms</div>
+</li>
+<li class="level1"><div class="li"> cross references</div>
+</li>
+<li class="level1"><div class="li"> abbreviations</div>
+</li>
+<li class="level1"><div class="li"> definitions</div>
+</li>
+<li class="level1"><div class="li"> context</div>
+</li>
+<li class="level1"><div class="li"> parts of speech</div>
+</li>
+</ul>
+
+</div>
+<!-- SECTION "Todo" [790-990] -->
+<h2><a name="implementation_notes_for_missing_features" id="implementation_notes_for_missing_features">Implementation notes for missing features</a></h2>
+<div class="level2">
+
+<p>
+
+Note here:
+
+</p>
+<ul>
+<li class="level1"><div class="li"> NLS - South African National Language Services - Multilingual Maths Dictionary</div>
+</li>
+</ul>
+
+</div>
+<!-- SECTION "Implementation notes for missing features" [991-1141] -->
+<h3><a name="synonyms" id="synonyms">Synonyms</a></h3>
+<div class="level3">
+
+<p>
+NLS: Extra listing<br/>
+
+<acronym title="TermBase eXchange">TBX</acronym>:
+
+</p>
+<pre class="code xml"><span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;termNote&quot;</span><span class="re2">&gt;</span></span>synonym<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span></pre>
+<p>
+according to this <acronym title="TermBase eXchange">TBX</acronym> documentation. In another place:
+</p>
+<pre class="code xml"><span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;termType&quot;</span><span class="re2">&gt;</span></span>synonym<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span></pre>
+<p>
+inside a &lt;termGrp&gt;, following &lt;term&gt;
+</p>
+
+</div>
+<!-- SECTION "Synonyms" [1142-1410] -->
+<h3><a name="definition" id="definition">Definition</a></h3>
+<div class="level3">
+
+<p>
+NLS: term {definition/contextual information}<br/>
+
+<acronym title="TermBase eXchange">TBX</acronym>
+
+</p>
+<pre class="code xml"><span class="sc3"><span class="re1">&lt;descripGrp<span class="re2">&gt;</span></span></span>
+   <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;definition&quot;</span><span class="re2">&gt;</span></span>The longish definition of the term<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span>
+<span class="sc3"><span class="re1">&lt;/descripGrp<span class="re2">&gt;</span></span></span></pre>
+<p>
+inside langSet
+&lt;descript&gt; can probably be used directly under langSet
+</p>
+
+</div>
+<!-- SECTION "Definition" [1411-1676] -->
+<h3><a name="context" id="context">Context</a></h3>
+<div class="level3">
+
+<p>
+NLS: term {definition/contextual information} (see above)<br/>
+
+<acronym title="TermBase eXchange">TBX</acronym>:
+
+</p>
+<pre class="code xml"><span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;context&quot;</span><span class="re2">&gt;</span></span>A usually somewhat longer contextual sentence.<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span></pre>
+<p>
+inside &lt;ntig&gt;
+</p>
+
+</div>
+<!-- SECTION "Context" [1677-1875] -->
+<h3><a name="parts_of_speech" id="parts_of_speech">Parts of speech</a></h3>
+<div class="level3">
+
+<p>
+NLS: term v.  (or adj, or n.)<br/>
+
+<acronym title="TermBase eXchange">TBX</acronym>:
+
+</p>
+<pre class="code xml"><span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;partOfSpeech&quot;</span> <span class="re2">&gt;</span></span>noun<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span></pre>
+<p>
+following &lt;term&gt;
+</p>
+
+</div>
+<!-- SECTION "Parts of speech" [1876-2023] -->
+<h3><a name="cross_reference" id="cross_reference">Cross reference</a></h3>
+<div class="level3">
+
+<p>
+NLS: alternate term → real lemma<br/>
+
+<acronym title="TermBase eXchange">TBX</acronym>: &lt;ref&gt; TODO
+</p>
+
+</div>
+<!-- SECTION "Cross reference" [2024-2102] -->
+<h3><a name="abbreviations" id="abbreviations">Abbreviations</a></h3>
+<div class="level3">
+
+<p>
+NLS: same as alternate term: a.m. → before noon<br/>
+
+<acronym title="TermBase eXchange">TBX</acronym>: TODO
+</p>
+
+</div>
+<!-- SECTION "Abbreviations" [2103-2189] -->
+<h2><a name="tbx_cheat_sheet" id="tbx_cheat_sheet">TBX cheat sheet</a></h2>
+<div class="level2">
+<ol>
+<li class="level1"><div class="li"> source word in English</div>
+</li>
+<li class="level1"><div class="li"> definition in English</div>
+</li>
+<li class="level1"><div class="li"> translation of source word to XX</div>
+</li>
+<li class="level1"><div class="li"> definition in XX</div>
+</li>
+<li class="level1"><div class="li"> comment</div>
+</li>
+<li class="level1"><div class="li"> syntactic group</div>
+</li>
+<li class="level1"><div class="li"> one or more tags</div>
+</li>
+<li class="level1"><div class="li"> a reference number</div>
+</li>
+</ol>
+<pre class="code xml"><span class="sc3"><span class="re1">&lt;termEntry</span> <span class="re0">id</span>=<span class="st0">&quot;4324 (8)&quot;</span><span class="re2">&gt;</span></span>
+    <span class="sc3"><span class="re1">&lt;note<span class="re2">&gt;</span></span></span>tag1, tag2, tag3 (7) -
+(Actually not clear what the best mapping to TBX is in this case.)<span class="sc3"><span class="re1">&lt;/note<span class="re2">&gt;</span></span></span>
+    <span class="sc3"><span class="re1">&lt;langSet</span> <span class="re0">xml:lang</span>=<span class="st0">&quot;en&quot;</span><span class="re2">&gt;</span></span>
+        <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>sound (1)<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;partOfSpeech&quot;</span><span class="re2">&gt;</span></span>noun (6)<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;descripGrp<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;definition&quot;</span><span class="re2">&gt;</span></span>Something you can hear (2) -
+definition with an associated external source)<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;xref</span> <span class="re0">type</span>=<span class="st0">&quot;xSource&quot;</span> <span class="re0">target</span>=<span class="st0">&quot;http://www.something.org/?id=234&quot;</span><span class="re2">&gt;</span></span>Glossmaster<span class="sc3"><span class="re1">&lt;/xref<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;/descripGrp<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;note<span class="re2">&gt;</span></span></span>Any random note about the term. (5)
+(Actually there are ways of storing pretty specific stuff in specific spaces,
+but while it seems the comment could be a more verbose definition, examples,
+usage notes or anything else, we'll use this generic way.)
+        <span class="sc3"><span class="re1">&lt;/note<span class="re2">&gt;</span></span></span>
+    <span class="sc3"><span class="re1">&lt;/langSet<span class="re2">&gt;</span></span></span>
+    <span class="sc3"><span class="re1">&lt;langSet</span> <span class="re0">xml:lang</span>=<span class="st0">&quot;af&quot;</span><span class="re2">&gt;</span></span>
+        <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>klank (3)<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;definition&quot;</span><span class="re2">&gt;</span></span>Iets wat jy kan hoor (4) -
+definition without an external source)<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;note<span class="re2">&gt;</span></span></span>A note in the target language (5).<span class="sc3"><span class="re1">&lt;/note<span class="re2">&gt;</span></span></span>
+    <span class="sc3"><span class="re1">&lt;/langSet<span class="re2">&gt;</span></span></span>
+<span class="sc3"><span class="re1">&lt;/termEntry<span class="re2">&gt;</span></span></span></pre>
+<p>
+Note that the &lt;xref&gt; tags are optional (as are just about everything except termEntry, langSet and tig). They allow to link to an external source. An internal source can also be specified, or the definition can be specified without a source as shown for the term “klank”.
+</p>
+
+</div>
+<!-- SECTION "TBX cheat sheet" [2190-3833] -->
+<h1><a name="tbx_requirements_by_galician_translation_team_proxecto_trasno" id="tbx_requirements_by_galician_translation_team_proxecto_trasno">TBX requirements by Galician translation team (Proxecto Trasno)</a></h1>
+<div class="level1">
+
+<p>
+
+Here you have a list of <a href="http://www.certima.net/glosima/?28-xustificacion-das-escollas-de" class="urlextern" title="http://www.certima.net/glosima/?28-xustificacion-das-escollas-de">TBX requirements</a> needed by the <a href="http://www.trasno.net" class="urlextern" title="http://www.trasno.net">Galician translation team (Proxecto Trasno)</a>. Its translation to english is below. You can see a terminology management system software specification draft in <a href="http://translate.sourceforge.net/wiki/developers/terminology_management_system" class="urlextern" title="http://translate.sourceforge.net/wiki/developers/terminology_management_system">http://translate.sourceforge.net/wiki/developers/terminology_management_system</a>
+</p>
+
+<p>
+A very important feature is to allow the exporting using pretty printing (like in the first example below) since the exported glossaries should be able to be read both by humans and software.
+</p>
+
+<p>
+Before the example you can see a list priorizing the features from more interesting and needed to less interesting and needed.
+</p>
+
+<p>
+The chosen <acronym title="TermBase eXchange">TBX</acronym> tags are determined by the needs of our terminology management system (the galician translation team one). That terminology management system needs several glossaries, each glossary has several concepts, and each concept can have several definitions (only one definition per language in a given concept), and also can have several translations for each concept (several translations per language in a given concept). The concepts will also have associated some links to get more information (several links per language in a given concept). Also is needed to have defined several languages. Now we have a list of all the needed entities lets go with the list of attributes for each of that entities:
+</p>
+
+<p>
+Each glossary has a name and a description.
+</p>
+
+<p>
+Each concept has an unique id, a subject field (which is another concept in the same glossary), it can have several concepts that people may wish to see (lets call it related concepts), and it can also have a parent concept (broader concept).
+</p>
+
+<p>
+Each link has a type (image, Wikipedia page,…), the address of the link, and a tiny description.
+</p>
+
+<p>
+Each definition has a definition text.
+</p>
+
+<p>
+We want to save the <acronym title="International Organization for Standardization">ISO</acronym> 639 code of each language.
+</p>
+
+<p>
+Each translation can have a translation text, it has an unique id, the part of speech, the grammatical genre (if applicable), the grammatical number (if applicable), a field that indicates if the translation is an abbreviation or an acronym, an explaining note, examples of use (created by the people that make the terminology), links to examples of real use (a corpus or translation database), a field that indicates if the translation is completed or if it is still incomplete (completion status), and we also need to save the translation administrative status (if it is a recommedend translation, a not recommended one, or if it is a forbidden translation) and the reason why the translation has the actual administrative status (a simple text string) that only applies when the administrative status is other than “recommended”.
+</p>
+
+<p>
+Once listed the needs we proceeded with reading the <acronym title="TermBase eXchange">TBX</acronym> <acronym title="International Organization for Standardization">ISO</acronym> 300042 standard in search of the elements that support these needs, and we found at least one tag (or attribute) for every need, except for only a few that doesn&#039;t have. We should comment that <acronym title="TermBase eXchange">TBX</acronym> stores the information grouping it by concepts, and within each concept part of the information is stored at the beginning of the concept and other part of that information (the language-dependant information) is splited between the different languages, and within every language section it is splited another time between the translations of that language. This way it has a three level structure: concept level, language level and translation level (also called term level).
+</p>
+
+<p>
+Next we list the needs and the tag chosen for that need, indicating the level in which the tag goes:
+
+</p>
+<ul>
+<li class="level1"><div class="li"> <strong>Glossary name:</strong> if we match glossary with <acronym title="TermBase eXchange">TBX</acronym> file, then the glossary name is the <acronym title="TermBase eXchange">TBX</acronym> file title, the label &lt;title&gt;. It goes on the file header.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Glossary description:</strong> if we match glossary with <acronym title="TermBase eXchange">TBX</acronym> file then we can use a &lt;p&gt; tag inside &lt;sourceDesc&gt; tag. It goes on the file header.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Concept:</strong> the &lt;termEntry&gt; tag from <acronym title="TermBase eXchange">TBX</acronym> standard represents a concept. This tag encloses the concept level.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Concept identifier:</strong> the &lt;termEntry&gt; tag has an attribute named “id”.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Concept subject field:</strong> the <acronym title="TermBase eXchange">TBX</acronym> standard defines the &lt;descrip&gt; tag with “subjectField” in its “type” attribute to represent the concept subject field (<em><strong>&lt;descrip type=“subjectField”&gt;subject field name&lt;/descrip&gt;</strong></em>). Since there is no way to refer to another concept we should use some of the translations of the subject field concept (the concept that is the subject field of the current concept) to put inside the subject field tag. It goes in concept level. <strong>The lack of a way in <acronym title="TermBase eXchange">TBX</acronym> standard to refer to another concept within the same glossary as subject field to make self-contained glossaries is a real lack or we haven&#039;t identified the way to do this using <acronym title="TermBase eXchange">TBX</acronym>??</strong></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Related concepts:</strong> the <acronym title="TermBase eXchange">TBX</acronym> standard suggest the use of the tag <em><strong>&lt;ref type=“crossReference” target=“cid­23”&gt;some text…&lt;/ref&gt;</strong></em> where “cid­23” is the value of the related concept id, and “some text…” is one of the related concept translations (the first english recommended one, for example). It goes on concept level.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Broader concept:</strong> <acronym title="TermBase eXchange">TBX</acronym> defines the use of the tag &lt;descrip&gt; with the value “broaderConceptGeneric” in its “type” attribute and a text between its opening and closing tags. Also it allows the use of the “target” attribute to refer to the broader concept. It goes on concept level. Example <em><strong>&lt;descrip type=“broaderConceptGeneric” target=“cid­23”&gt;broader concept name&lt;/descrip&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Link:</strong> according to <acronym title="TermBase eXchange">TBX</acronym> standard the tag that defines external links to outside the current file is the &lt;xref&gt; tag. This tag has the following structure: <em><strong>&lt;xref type=“xGraphic” target=“sports/cricket/bat.jpg”&gt;cricket bat&lt;/xref&gt;</strong></em> where “type” is the link type, “target” is the link address and the text between the opening and closing tags is a short description. It goes on language level.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Link type:</strong> the &lt;xref&gt; tag has an attribute named “type” that defines the link type. This attribute can have the values “xGraphic” if it is an image, “externalCrossReference” if it is a link to an external resource (for example a link to Wikipedia). It can have other values, but for now they are considered not important.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Link address:</strong> the &lt;xref&gt; tag has an attribute named “target” which is the link address.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Link description:</strong> the link description can go between the opening and closing tags</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Definition:</strong> to save the definitions it should be used the &lt;descrip&gt; tag with the value “definition” in its “type” attribute. It goes on the language level. Example: <em><strong>&lt;descrip type=“definition”&gt;alternate name for a person…&lt;/descrip&gt;</strong></em> can be the definition for “nickname”.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Definition text:</strong> the definition text goes between the opening and closing &lt;descrip&gt; tags.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Language:</strong> in <acronym title="TermBase eXchange">TBX</acronym> the &lt;langSet&gt; tag represents a language, but no language list is stored inside the <acronym title="TermBase eXchange">TBX</acronym> file. So if there is a &lt;langSet&gt; tag for a given language somewhere inside the <acronym title="TermBase eXchange">TBX</acronym> file, then this particular language is defined in that <acronym title="TermBase eXchange">TBX</acronym> file. Inside each concept only can exist one &lt;langSet&gt; per language, but a given language can have a &lt;langSet&gt; in each &lt;termEntry&gt;. It is essential that at least one &lt;langSet&gt; tag is present in every &lt;termEntry&gt; tag. The &lt;langSet&gt; tag encloses the language level. It goes on concept level.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Language code:</strong> the &lt;langSet&gt; tag has an attribute named “xml:lang” which stores some <acronym title="International Organization for Standardization">ISO</acronym> 639 code value. Example: <em><strong>&lt;langSet xml:lang=“gl”&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Translation:</strong> the <acronym title="TermBase eXchange">TBX</acronym> standard defines two different tags to enclose the translation level: &lt;tig&gt; and &lt;ntig&gt;. The &lt;tig&gt; tag provides all the needed functionalities, like also the &lt;ntig&gt; tag does, but the &lt;ntig&gt; also has a lot of undesired and unnecessary functionalities that complicate the <acronym title="TermBase eXchange">TBX</acronym> file structure in an unnecessary way making its size grow and making dificult to a person read the file with a text editor. Besides the <acronym title="TermBase eXchange">TBX</acronym>-Basic standard only uses the &lt;tig&gt; tag. So we decided to only use the &lt;tig&gt; tag.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Translation text:</strong> the translation text goes between the opening and closing of the &lt;term&gt; tag that goes on the translation level (under the &lt;tig&gt; tag). Example: <em><strong>&lt;term&gt;nickname&lt;/term&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Translation identifier:</strong> the &lt;tig&gt; tag has an attribute named “id” in which we put the identifier. Example: <em><strong>&lt;tig id=“tid­59”&gt;…&lt;/tig&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Part of speech:</strong> for storing the part of speech <acronym title="TermBase eXchange">TBX</acronym> suggests the use of the &lt;termNote&gt; tag indicating in the “type” attribute the value “partOfSpeech”. The <acronym title="TermBase eXchange">TBX</acronym> standard doesn&#039;t defines a part of speech values list (like noun, verb…), but the <acronym title="TermBase eXchange">TBX</acronym>-Basic standard (a simplified subset of <acronym title="TermBase eXchange">TBX</acronym>) defines a short list of part of speech values which we can reuse and that can be completed if necessary. It goes on translation level. Example: <em><strong>&lt;termNote type=“partOfSpeech”&gt;noun&lt;/termNote&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Grammatical gender:</strong> <acronym title="TermBase eXchange">TBX</acronym> specifies that the grammatical gender should be specified using the &lt;termNote&gt; tag indicating the value “grammaticalGender” in the “type” attribute. Like in the previous point, <acronym title="TermBase eXchange">TBX</acronym> doesn&#039;t define a gender list so we will have to use the defined in <acronym title="TermBase eXchange">TBX</acronym>-Basic. It goes on the translation level. Example: <em><strong>&lt;termNote type=“grammaticalGender”&gt;masculine&lt;/termNote&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Grammatical number:</strong> <acronym title="TermBase eXchange">TBX</acronym> says that for saving the grammatical number it should be used a &lt;termNote&gt; tag with the value “grammaticalNumber” in its “type” attribute. For the grammatical number we are going to use the list defined in <acronym title="TermBase eXchange">TBX</acronym>-Basic. The grammatical should only be put when not putting it could lead to misunderstanding. It goes on the translation level. Example: <em><strong>&lt;termNote type=“grammaticalNumber”&gt;plural&lt;/termNote&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Acronym:</strong> to indicate that a translation is an acronym we can use the &lt;termNote&gt; tag with the “termType” value on its attribute “type” and the text “acronym” between its opening and closing tags. It goes on the translation level. Example: <em><strong>&lt;termNote type=“termType”&gt;acronym&lt;/termNote&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Abbreviation:</strong> Like in the previous point but putting now “abbreviation” between the opening and the closing tags. It goes on the translation level.</div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Translation explaining note:</strong> for the notes <acronym title="TermBase eXchange">TBX</acronym> defines the use of the &lt;termNote&gt; tag with the value “usageNote” on its “type” attribute with the explanatory note text between its opening and closing tags. It goes on the translation level. Example: <em><strong>&lt;termNote type=“usageNote”&gt;Don&#039;t abuse of that translation…&lt;/termNote&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Example of use:</strong> for the examples of use made ad hoc we are going to use the &lt;descrip&gt; tag with the value “context” on its “type” attribute and the example text between its opening and closing tags. It goes on the translation level. We are not going to use &lt;descrip type=“sampleSentence”&gt; since it doesn&#039;t appear both in <acronym title="TermBase eXchange">TBX</acronym> and in <acronym title="TermBase eXchange">TBX</acronym>-Basic, and also we are not going to use &lt;descrip type=“example”&gt; since in it is not mandatory to include the translation text in the example. Example: <em><strong>&lt;descrip type=“context”&gt;example text&lt;/descrip&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Link to real use example:</strong> it is used for references to corpus (translations databases, like open-tran.eu). <acronym title="TermBase eXchange">TBX</acronym> says that such references should be indicated using the &lt;xref&gt; tag with the value “corpusTrace” on its “type” attribute. It goes on the translation level. Example: <em><strong>&lt;xref type=“corpusTrace” target=“<a href="http://en.gl.open-tran.eu/suggest/window" class="urlextern" title="http://en.gl.open-tran.eu/suggest/window">http://en.gl.open-tran.eu/suggest/window</a>”&gt;Window on open-tran.eu&lt;/xref&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Completion status:</strong> we are going to use the &lt;termNote&gt; tag with the value “processStatus” in its “type” attribute and the text “provisionallyProcessed” between its opening and closing tags to indicate that not all the translation information is not approved or that some of that information are not included on the system yet. In case being completed this tag shouldn&#039;t appear, despite <acronym title="TermBase eXchange">TBX</acronym> defines the values “unprocessed” and “finalized”. It goes on the translation level. Example: <em><strong>&lt;termNote type=“processStatus”&gt;provisionallyProcessed&lt;/termNote&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Administrative status:</strong> to indicate the administrative status of the translation we are going to do the way <acronym title="TermBase eXchange">TBX</acronym> specifies and not how <acronym title="TermBase eXchange">TBX</acronym>-Basic does since we are using a superset of <acronym title="TermBase eXchange">TBX</acronym>-Basic. <acronym title="TermBase eXchange">TBX</acronym> specifies the use of the &lt;termNote&gt; tag with the value “administrativeStatus” on its “type” attribute and the text that indicates the status between its opening and closing tags. <acronym title="TermBase eXchange">TBX</acronym> defines a list of several states but we are only going to use three of them: “preferredTerm­admn­sts” to indicate that this is a recommended translation, “admittedTerm­admn­sts” to indicate that it is a valid translation but that be prefer not to use it since there is another one that is recommended, and “deprecatedTerm­admn­sts” to indicate that this translation is forbidden (for not being a valid translation for a given language for some reasons: false friend,…). It goes on the translation level. Example: <em><strong>&lt;termNote type=“administrativeStatus”&gt;preferredTerm­admn­sts&lt;/termNote&gt;</strong></em></div>
+</li>
+</ul>
+<ul>
+<li class="level1"><div class="li"> <strong>Administrative status reason:</strong> <acronym title="TermBase eXchange">TBX</acronym> doesn&#039;t define any way to save the reason why a translation has a given administrative status. Due to that we decided to use the &lt;note&gt; tag for specifying the reason. Since this tag is also used for saving notes we are considering to use the &lt;termNoteGrp&gt; to group it together with the administrative status tag. Maybe some languages are not going to use that, but in galician it is very very important. Note that the reason is not specified if the administrative status is “preferredTerm­admn­sts”. It goes on the translation level. Example: <em><strong>&lt;note&gt;galicism&lt;/note&gt;</strong></em></div>
+</li>
+</ul>
+
+<p>
+Below you can see a diagram that shows the levels and the data that goes in each level. Click on the image to enlarge.
+</p>
+
+<p>
+<a href="media/toolkit/tbx_levels_structure.png" class="media" target="_blank" title="toolkit:tbx_levels_structure.png"><img src="media/toolkit/tbx_levels_structure.png" class="media" title="" alt="" width="560" /></a>
+</p>
+
+</div>
+<!-- SECTION "TBX requirements by Galician translation team (Proxecto Trasno)" [3834-17735] -->
+<h2><a name="features_priorization" id="features_priorization">Features priorization</a></h2>
+<div class="level2">
+
+<p>
+
+The upper ones are the most needed and interesting:
+
+</p>
+<ul>
+<li class="level1"><div class="li"> Definition</div>
+</li>
+<li class="level1"><div class="li"> Several translations in the same language for the same concept</div>
+</li>
+<li class="level1"><div class="li"> Part of speech</div>
+</li>
+<li class="level1"><div class="li"> Grammatical gender</div>
+</li>
+<li class="level1"><div class="li"> Grammatical number</div>
+</li>
+<li class="level1"><div class="li"> Concept subject field</div>
+</li>
+<li class="level1"><div class="li"> Pretty printing</div>
+</li>
+<li class="level1"><div class="li"> Use of tig tag by default</div>
+</li>
+<li class="level1"><div class="li"> Link to external resources (including its type, address and description)</div>
+</li>
+<li class="level1"><div class="li"> Completion status</div>
+</li>
+<li class="level1"><div class="li"> Administrative status</div>
+</li>
+<li class="level1"><div class="li"> Administrative status reason</div>
+</li>
+<li class="level1"><div class="li"> Translation explaining note</div>
+</li>
+<li class="level1"><div class="li"> Translation identifier</div>
+</li>
+<li class="level1"><div class="li"> Related concepts</div>
+</li>
+<li class="level1"><div class="li"> Broader concept</div>
+</li>
+<li class="level1"><div class="li"> Acronym</div>
+</li>
+<li class="level1"><div class="li"> Abbreviation</div>
+</li>
+<li class="level1"><div class="li"> Example of use</div>
+</li>
+<li class="level1"><div class="li"> Link to real use example</div>
+</li>
+</ul>
+
+</div>
+<!-- SECTION "Features priorization" [17736-18387] -->
+<h2><a name="example_for_galician_tbx_requirements" id="example_for_galician_tbx_requirements">Example for galician TBX requirements</a></h2>
+<div class="level2">
+<pre class="code xml">&nbsp;
+&nbsp;
+<span class="sc3"><span class="re1">&lt;?xml</span> <span class="re0">version</span>=<span class="st0">'1.0'</span> <span class="re0">encoding</span>=<span class="st0">'UTF-8'</span><span class="re2">?&gt;</span></span>
+<span class="sc0">&lt;!DOCTYPE martif SYSTEM 'TBXcoreStructV02.dtd'&gt;</span>
+<span class="sc3"><span class="re1">&lt;martif</span> <span class="re0">type</span>=<span class="st0">'TBX'</span> <span class="re0">xml:lang</span>=<span class="st0">'en'</span><span class="re2">&gt;</span></span>
+    <span class="sc3"><span class="re1">&lt;martifHeader<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;fileDesc<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;titleStmt<span class="re2">&gt;</span></span></span>
+                <span class="sc3"><span class="re1">&lt;title<span class="re2">&gt;</span></span></span>Localization glossary<span class="sc3"><span class="re1">&lt;/title<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;/titleStmt<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;sourceDesc<span class="re2">&gt;</span></span></span>
+                <span class="sc3"><span class="re1">&lt;p<span class="re2">&gt;</span></span></span>Test glossary with concepts from software localization...<span class="sc3"><span class="re1">&lt;/p<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;/sourceDesc<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;/fileDesc<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;encodingDesc<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;p</span> <span class="re0">type</span>=<span class="st0">'XCSURI'</span><span class="re2">&gt;</span></span>http://www.lisa.org/fileadmin/standards/tbx/TBXXCSV02.xcs<span class="sc3"><span class="re1">&lt;/p<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;/encodingDesc<span class="re2">&gt;</span></span></span>
+    <span class="sc3"><span class="re1">&lt;/martifHeader<span class="re2">&gt;</span></span></span>
+    <span class="sc3"><span class="re1">&lt;text<span class="re2">&gt;</span></span></span>
+        <span class="sc3"><span class="re1">&lt;body<span class="re2">&gt;</span></span></span>
+&nbsp;
+&nbsp;
+            <span class="sc3"><span class="re1">&lt;termEntry</span> <span class="re0">id</span>=<span class="st0">&quot;cid-23&quot;</span><span class="re2">&gt;</span></span>
+                <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;subjectField&quot;</span><span class="re2">&gt;</span></span>computer science<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- enclosed text in english since it is the glossary 
+                language (see martif opening tag) --&gt;</span></span>
+                <span class="sc3"><span class="re1">&lt;ref</span> <span class="re0">type</span>=<span class="st0">&quot;crossReference&quot;</span> <span class="re0">target</span>=<span class="st0">&quot;cid-12&quot;</span><span class="re2">&gt;</span></span>microprocessor<span class="sc3"><span class="re1">&lt;/ref<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- enclosed text in english since it is the 
+                glossary language (see martif opening tag) --&gt;</span></span>
+                <span class="sc3"><span class="re1">&lt;ref</span> <span class="re0">type</span>=<span class="st0">&quot;crossReference&quot;</span> <span class="re0">target</span>=<span class="st0">&quot;cid-16&quot;</span><span class="re2">&gt;</span></span>keyboard<span class="sc3"><span class="re1">&lt;/ref<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- enclosed text in english since it is the glossary 
+                language (see martif opening tag) --&gt;</span></span>
+                <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;broaderConceptGeneric&quot;</span> <span class="re0">target</span>=<span class="st0">&quot;cid-7&quot;</span><span class="re2">&gt;</span></span>hardware<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- enclosed text in english since it is 
+                the glossary language (see martif opening tag) --&gt;</span></span>
+&nbsp;
+                <span class="sc3"><span class="re1">&lt;langSet</span> <span class="re0">xml:lang</span>=<span class="st0">&quot;en&quot;</span><span class="re2">&gt;</span></span>
+                    <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;definition&quot;</span><span class="re2">&gt;</span></span>A computer is a programmable machine that receives input, stores and manipulates 
+data, and provides output in a useful format.<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;xref</span> <span class="re0">type</span>=<span class="st0">&quot;xGraphic&quot;</span> <span class="re0">target</span>=<span class="st0">&quot;http://en.wikipedia.org/wiki/File:HPLaptopzv6000series.jpg&quot;</span><span class="re2">&gt;</span></span>computer image<span class="sc3"><span class="re1">&lt;/xref<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;xref</span> <span class="re0">type</span>=<span class="st0">&quot;externalCrossReference&quot;</span> <span class="re0">target</span>=<span class="st0">&quot;http://en.wikipedia.org/wiki/Computer&quot;</span><span class="re2">&gt;</span></span>English Wikipedia computer page<span class="sc3"><span class="re1">&lt;/xref<span class="re2">&gt;</span></span></span>
+&nbsp;
+                    <span class="sc3"><span class="re1">&lt;tig</span> <span class="re0">id</span>=<span class="st0">&quot;tid-59&quot;</span><span class="re2">&gt;</span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>computer<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>PC<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;termType&quot;</span><span class="re2">&gt;</span></span>acronym<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- &quot;PC&quot; is an acronym of &quot;Personal Computer&quot; --&gt;</span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;administrativeStatus&quot;</span><span class="re2">&gt;</span></span>admittedTerm-admn-sts<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;usageNote&quot;</span><span class="re2">&gt;</span></span>Do not abuse of using this translation.<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>comp.<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;termType&quot;</span><span class="re2">&gt;</span></span>abbreviation<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- &quot;comp.&quot; is an abbreviation of &quot;computer&quot; --&gt;</span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;administrativeStatus&quot;</span><span class="re2">&gt;</span></span>admittedTerm-admn-sts<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+                <span class="sc3"><span class="re1">&lt;/langSet<span class="re2">&gt;</span></span></span>
+&nbsp;
+                <span class="sc3"><span class="re1">&lt;langSet</span> <span class="re0">xml:lang</span>=<span class="st0">&quot;es&quot;</span><span class="re2">&gt;</span></span>
+                    <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;definition&quot;</span><span class="re2">&gt;</span></span>Máquina  electrónica que recibe y procesa datos para convertirlos en información 
+útil<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- definition text in spanish --&gt;</span></span>
+&nbsp;
+                    <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>sistema<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;administrativeStatus&quot;</span><span class="re2">&gt;</span></span>admittedTerm-admn-sts<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>equipo<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;administrativeStatus&quot;</span><span class="re2">&gt;</span></span>deprecatedTerm-admn-sts<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;processStatus&quot;</span><span class="re2">&gt;</span></span>provisionallyProcessed<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>ordenador<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;partOfSpeech&quot;</span><span class="re2">&gt;</span></span>noun<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;grammaticalGender&quot;</span><span class="re2">&gt;</span></span>masculine<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;grammaticalNumber&quot;</span><span class="re2">&gt;</span></span>singular<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;administrativeStatus&quot;</span><span class="re2">&gt;</span></span>preferredTerm-admn-sts<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;context&quot;</span><span class="re2">&gt;</span></span>El ordenador personal ha supuesto la generalización de la informática.<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- example phrase --&gt;</span></span>
+                        <span class="sc3"><span class="re1">&lt;xref</span> <span class="re0">type</span>=<span class="st0">&quot;corpusTrace&quot;</span> <span class="re0">target</span>=<span class="st0">&quot;http://es.en.open-tran.eu/suggest/ordenador&quot;</span><span class="re2">&gt;</span></span>ordenador en open-tran.eu<span class="sc3"><span class="re1">&lt;/xref<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- enclosed text in spanish --&gt;</span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>computador<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;administrativeStatus&quot;</span><span class="re2">&gt;</span></span>deprecatedTerm-admn-sts<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>computadora<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;administrativeStatus&quot;</span><span class="re2">&gt;</span></span>deprecatedTerm-admn-sts<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+                <span class="sc3"><span class="re1">&lt;/langSet<span class="re2">&gt;</span></span></span>
+&nbsp;
+                <span class="sc3"><span class="re1">&lt;langSet</span> <span class="re0">xml:lang</span>=<span class="st0">&quot;fr&quot;</span><span class="re2">&gt;</span></span>
+                    <span class="sc3"><span class="re1">&lt;descripGrp<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- Using descripGrp tags for enclosing the definition and its source --&gt;</span></span>
+                        <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;definition&quot;</span><span class="re2">&gt;</span></span>Un ordinateur est une machine dotée d'une unité de traitement lui permettant 
+d'exécuter des programmes enregistrés. C'est un ensemble de circuits électroniques permettant de manipuler des données sous forme 
+binaire, ou bits. Cette machine permet de traiter automatiquement les données, ou informations, selon des séquences d'instructions 
+prédéfinies appelées aussi programmes.
+                        Elle interagit avec l'environnement grâce à des périphériques comme le moniteur, le clavier, la souris, 
+l'imprimante, le modem, le lecteur de CD (liste non-exhaustive). Les ordinateurs peuvent être classés selon plusieurs critères 
+(domaine d'application, taille ou architecture).<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;xref</span> <span class="re0">type</span>=<span class="st0">&quot;xSource&quot;</span> <span class="re0">target</span>=<span class="st0">&quot;http://fr.wikipedia.org/wiki/Ordinateur&quot;</span><span class="re2">&gt;</span></span>Wikipedia: ordinateur<span class="sc3"><span class="re1">&lt;/xref<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/descripGrp<span class="re2">&gt;</span></span></span>
+&nbsp;
+                    <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>ordinateur<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+                <span class="sc3"><span class="re1">&lt;/langSet<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;/termEntry<span class="re2">&gt;</span></span></span>
+&nbsp;
+&nbsp;
+            <span class="sc3"><span class="re1">&lt;termEntry</span> <span class="re0">id</span>=<span class="st0">&quot;cid-27&quot;</span><span class="re2">&gt;</span></span><span class="sc3"><span class="coMULTI">&lt;!-- Another concept --&gt;</span></span>
+                <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;subjectField&quot;</span><span class="re2">&gt;</span></span>computer science<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span>
+&nbsp;
+                <span class="sc3"><span class="re1">&lt;langSet</span> <span class="re0">xml:lang</span>=<span class="st0">&quot;en&quot;</span><span class="re2">&gt;</span></span>
+                    <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;definition&quot;</span><span class="re2">&gt;</span></span>A technical standard is an established norm or requirement. It is usually a formal 
+document that establishes uniform engineering or technical criteria, methods, processes and practices. In contrast, a custom, 
+convention, company product, corporate standard, etc. which becomes generally accepted and dominant is often called a de facto standard.<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span>
+&nbsp;
+                    <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>standard<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;partOfSpeech&quot;</span><span class="re2">&gt;</span></span>noun<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;administrativeStatus&quot;</span><span class="re2">&gt;</span></span>preferredTerm-admn-sts<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+                <span class="sc3"><span class="re1">&lt;/langSet<span class="re2">&gt;</span></span></span>
+&nbsp;
+                <span class="sc3"><span class="re1">&lt;langSet</span> <span class="re0">xml:lang</span>=<span class="st0">&quot;gl&quot;</span><span class="re2">&gt;</span></span>
+                    <span class="sc3"><span class="re1">&lt;descrip</span> <span class="re0">type</span>=<span class="st0">&quot;definition&quot;</span><span class="re2">&gt;</span></span>Norma que mediante documentos técnicos fixa a especificación de determinado tema.<span class="sc3"><span class="re1">&lt;/descrip<span class="re2">&gt;</span></span></span>
+&nbsp;
+                    <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>estándar<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;administrativeStatus&quot;</span><span class="re2">&gt;</span></span>preferredTerm-admn-sts<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+&nbsp;
+                    <span class="sc3"><span class="re1">&lt;tig<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;term<span class="re2">&gt;</span></span></span>standard<span class="sc3"><span class="re1">&lt;/term<span class="re2">&gt;</span></span></span>
+                        <span class="sc3"><span class="re1">&lt;termGrp<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- Example of administrative status along with its reason --&gt;</span></span>
+                            <span class="sc3"><span class="re1">&lt;termNote</span> <span class="re0">type</span>=<span class="st0">&quot;administrativeStatus&quot;</span><span class="re2">&gt;</span></span>deprecatedTerm­admn­sts<span class="sc3"><span class="re1">&lt;/termNote<span class="re2">&gt;</span></span></span>
+                            <span class="sc3"><span class="re1">&lt;note<span class="re2">&gt;</span></span></span>Razón: anglicismo<span class="sc3"><span class="re1">&lt;/note<span class="re2">&gt;</span></span></span><span class="sc3"><span class="coMULTI">&lt;!-- the translation of the enclosed text is: &quot;Reason: anglicism&quot; --&gt;</span></span>
+                        <span class="sc3"><span class="re1">&lt;/termGrp<span class="re2">&gt;</span></span></span>
+                    <span class="sc3"><span class="re1">&lt;/tig<span class="re2">&gt;</span></span></span>
+                <span class="sc3"><span class="re1">&lt;/langSet<span class="re2">&gt;</span></span></span>
+            <span class="sc3"><span class="re1">&lt;/termEntry<span class="re2">&gt;</span></span></span>
+&nbsp;
+        <span class="sc3"><span class="re1">&lt;/body<span class="re2">&gt;</span></span></span>
+    <span class="sc3"><span class="re1">&lt;/text<span class="re2">&gt;</span></span></span>
+<span class="sc3"><span class="re1">&lt;/martif<span class="re2">&gt;</span></span></span></pre>
+</div>
+<!-- SECTION "Example for galician TBX requirements" [18388-] --></body>
+</html>

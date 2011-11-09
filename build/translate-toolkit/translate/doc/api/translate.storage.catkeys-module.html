@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>translate.storage.catkeys</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="translate-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://translate.sourceforge.net/wiki/toolkit/index">Translate Toolkit</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="translate-module.html">Package&nbsp;translate</a> ::
+        <a href="translate.storage-module.html">Package&nbsp;storage</a> ::
+        Module&nbsp;catkeys
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="translate.storage.catkeys-module.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== MODULE DESCRIPTION ==================== -->
+<h1 class="epydoc">Module catkeys</h1><p class="nomargin-top"><span class="codelink"><a href="translate.storage.catkeys-pysrc.html">source&nbsp;code</a></span></p>
+<p>Manage the Haiku catkeys translation format</p>
+  <p>The Haiku catkeys format is the translation format used for 
+  localisation of the <a href="http://www.haiku-os.org/" 
+  target="_top">Haiku</a> operating system.</p>
+  <p>It is a bilingual base class derived format with <a 
+  href="translate.storage.catkeys.CatkeysFile-class.html" 
+  class="link">CatkeysFile</a> and <a 
+  href="translate.storage.catkeys.CatkeysUnit-class.html" 
+  class="link">CatkeysUnit</a> providing file and unit level access.  The 
+  file format is described here: 
+  http://www.haiku-os.org/blog/pulkomandy/2009-09-24_haiku_locale_kit_translator_handbook</p>
+  <h1 class="heading">Implementation</h1>
+    <p>The implementation covers the full requirements of a catkeys file. 
+    The files are simple Tab Separated Value (TSV) files that can be read 
+    by Microsoft Excel and other spreadsheet programs. They use the .txt 
+    extension which does make it more difficult to automatically identify 
+    such files.</p>
+    <p>The dialect of the TSV files is specified by <a 
+    href="translate.storage.catkeys.CatkeysDialect-class.html" 
+    class="link">CatkeysDialect</a>.</p>
+    <h2 class="heading">Encoding</h2>
+      <p>The files are UTF-8 encoded.</p>
+    <h2 class="heading">Header</h2>
+      <p><a href="translate.storage.catkeys.CatkeysHeader-class.html" 
+      class="link">CatkeysHeader</a> provides header management 
+      support.</p>
+    <h2 class="heading">Escaping</h2>
+      <p>catkeys seem to escape things like in C++ (strings are just 
+      extracted from the source code unchanged, it seems.</p>
+      <p>Functions allow for <a 
+      href="translate.storage.catkeys-module.html#_escape" class="link" 
+      onclick="show_private();">escaping</a> and <a 
+      href="translate.storage.catkeys-module.html#_unescape" class="link" 
+      onclick="show_private();">unescaping</a>.</p>
+
+<!-- ==================== CLASSES ==================== -->
+<a name="section-Classes"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Classes</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Classes"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="translate.storage.catkeys.CatkeysDialect-class.html" class="summary-name">CatkeysDialect</a><br />
+      Describe the properties of a catkeys generated TAB-delimited file.
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="translate.storage.catkeys.CatkeysHeader-class.html" class="summary-name">CatkeysHeader</a><br />
+      A catkeys translation memory header
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="translate.storage.catkeys.CatkeysUnit-class.html" class="summary-name">CatkeysUnit</a><br />
+      A catkeys translation memory unit
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="translate.storage.catkeys.CatkeysFile-class.html" class="summary-name">CatkeysFile</a><br />
+      A catkeys translation memory file
+    </td>
+  </tr>
+</table>
+<!-- ==================== FUNCTIONS ==================== -->
+<a name="section-Functions"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Functions</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Functions"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_escape"></a><span class="summary-sig-name">_escape</span>(<span class="summary-sig-arg">string</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.catkeys-pysrc.html#_escape">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_unescape"></a><span class="summary-sig-name">_unescape</span>(<span class="summary-sig-arg">string</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="translate.storage.catkeys-pysrc.html#_unescape">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== VARIABLES ==================== -->
+<a name="section-Variables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Variables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="translate.storage.catkeys-module.html#FIELDNAMES_HEADER" class="summary-name">FIELDNAMES_HEADER</a> = <code title="[&quot;version&quot;, &quot;language&quot;, &quot;mimetype&quot;, &quot;checksum&quot;]">[&quot;version&quot;, &quot;language&quot;, &quot;mimetype&quot;, &quot;check<code class="variable-ellipsis">...</code></code><br />
+      Field names for the catkeys header
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="FIELDNAMES"></a><span class="summary-name">FIELDNAMES</span> = <code title="[&quot;source&quot;, &quot;context&quot;, &quot;comment&quot;, &quot;target&quot;]">[&quot;source&quot;, &quot;context&quot;, &quot;comment&quot;, &quot;target&quot;]</code><br />
+      Field names for a catkeys TU
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="translate.storage.catkeys-module.html#FIELDNAMES_HEADER_DEFAULTS" class="summary-name">FIELDNAMES_HEADER_DEFAULTS</a> = <code title="{&quot;version&quot;: &quot;1&quot;, &quot;language&quot;: &quot;&quot;, &quot;mimetype&quot;: &quot;&quot;, &quot;checksum&quot;: &quot;&quot;,}">{&quot;version&quot;: &quot;1&quot;, &quot;language&quot;: &quot;&quot;, <code class="variable-ellipsis">...</code></code><br />
+      Default or minimum header entries for a catkeys file
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="translate.storage.catkeys-module.html#_unescape_map" class="summary-name" onclick="show_private();">_unescape_map</a> = <code title="{&quot;\\r&quot;: &quot;\r&quot;, &quot;\\t&quot;: &quot;\t&quot;, '\\n': '\n', '\\\\': '\\'}">{&quot;\\r&quot;: &quot;\r&quot;, &quot;\\t&quot;: &quot;\t&quot;, '\\n': '\n', '\\\\'<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="translate.storage.catkeys-module.html#_escape_map" class="summary-name" onclick="show_private();">_escape_map</a> = <code title="dict([(value, key) for(key, value) in _unescape_map.items()])">dict([(value, key) for(key, value) in _unescape_<code class="variable-ellipsis">...</code></code>
+    </td>
+  </tr>
+</table>
+<p class="indent-wrapped-lines"><b>Imports:</b>
+  <span title="csv">csv</span>,
+  <span title="sys">sys</span>,
+  <a href="translate.storage.base-module.html" title="translate.storage.base">base</a>,
+  <span title="translate.lang.data.tr_lang">tr_lang</span>
+</p><br />
+<!-- ==================== VARIABLES DETAILS ==================== -->
+<a name="section-VariablesDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Variables Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-VariablesDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="FIELDNAMES_HEADER"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">FIELDNAMES_HEADER</h3>
+  <p>Field names for the catkeys header</p>
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+[&quot;version&quot;, &quot;language&quot;, &quot;mimetype&quot;, &quot;checksum&quot;]
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="FIELDNAMES_HEADER_DEFAULTS"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">FIELDNAMES_HEADER_DEFAULTS</h3>
+  <p>Default or minimum header entries for a catkeys file</p>
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+{&quot;version&quot;: &quot;1&quot;, &quot;language&quot;: &quot;&quot;, &quot;mimetype&quot;: &quot;&quot;, &quot;checksum&quot;: &quot;&quot;,}
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_unescape_map"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">_unescape_map</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+{&quot;\\r&quot;: &quot;\r&quot;, &quot;\\t&quot;: &quot;\t&quot;, '\\n': '\n', '\\\\': '\\'}
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_escape_map"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">_escape_map</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+dict([(value, key) for(key, value) in _unescape_map.items()])
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="translate-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://translate.sourceforge.net/wiki/toolkit/index">Translate Toolkit</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue Aug 17 15:47:19 2010
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
