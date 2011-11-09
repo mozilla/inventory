@@ -4,6 +4,9 @@
 # To extend any settings from settings/base.py here's an example:
 #from . import base
 #INSTALLED_APPS = base.INSTALLED_APPS + ['debug_toolbar']
+import sys
+import os
+_base = os.path.dirname(__file__)
 site_root = '<Path to manage.py here>' 
 sys.path.append(site_root)
 sys.path.append(site_root + '/adapters')
