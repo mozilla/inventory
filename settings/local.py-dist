@@ -101,6 +101,10 @@ def jinja_url(view_name, *args, **kwargs):
         except NoReverseMatch:
             return ''
 
+TEMPLATE_DIRS = (
+    os.path.join(_base, 'templates'),
+    site_root + '/templates'
+)
 env.filters['url'] = jinja_url
 env.globals['MEDIA_URL'] = MEDIA_URL
 MEDIA_URL = '/static/'
