@@ -65,3 +65,34 @@ SECRET_KEY = ''
 
 # SYSLOG_TAG = "http_app_playdoh"  # Make this unique to your project.
 # LOGGING = dict(loggers=dict(playdoh = {'level': logging.DEBUG}))
+from jinja2 import FileSystemLoader, Environment
+env = Environment(loader=FileSystemLoader(TEMPLATE_DIRS))
+def jinja_url(view_name, *args, **kwargs):
+    from django.core.urlresolvers import reverse, NoReverseMatch
+    try:
+        return reverse(view_name, args=args, kwargs=kwargs)
+    except NoReverseMatch:
+        try:
+            project_name = settings.SETTINGS_MODULE.split('.')[0]
+            return reverse(project_name + '.' + view_name,
+                           args=args, kwargs=kwargs)
+        except NoReverseMatch:
+            return ''
+
+env.filters['url'] = jinja_url
+env.globals['MEDIA_URL'] = MEDIA_URL
+MEDIA_URL = '/static/'
+import logging
+error = dict(level=logging.ERROR)
+info = dict(level=logging.INFO)
+debug = dict(level=logging.DEBUG)
+
+LOGGING = {
+    'loggers': {
+        'product_details': error,
+        'nose.plugins.manager': error,
+        'django.db.backends': error,
+        'elasticsearch': info,
+        'inventory': debug,
+    },
+}
