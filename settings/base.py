@@ -54,3 +54,4 @@ JINGO_EXCLUDE_APPS = [
 # ]
 
 LOGGING = dict(loggers=dict(playdoh = {'level': logging.INFO}))
+AUTH_PROFILE_MODULE = 'systems.UserProfile'

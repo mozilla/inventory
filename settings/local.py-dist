@@ -126,3 +126,4 @@ LOGGING = {
         'inventory': debug,
     },
 }
+API_ACCESS = ('GET','POST','PUT','DELETE')
