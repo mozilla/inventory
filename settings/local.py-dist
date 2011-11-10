@@ -1,19 +1,27 @@
-# This is an example settings/local.py file.
-# These settings overrides what's in settings/base.py
-
-# To extend any settings from settings/base.py here's an example:
-#from . import base
-#INSTALLED_APPS = base.INSTALLED_APPS + ['debug_toolbar']
+#filename is settings_local.py
 import sys
 import os
 _base = os.path.dirname(__file__)
-site_root = '<Path to manage.py here>' 
+site_root = ''                                                                
 sys.path.append(site_root)
 sys.path.append(site_root + '/adapters')
 sys.path.append(site_root + '/libs')
 sys.path.append(site_root + '/modules')
+sys.path.append(site_root + '/vendor')
+DEBUG = False
+TEMPLATE_DEBUG = DEBUG
 
-INSTALLED_APPS = (
+STATIC_DOC_ROOT=os.path.join(_base, site_root + '/static')
+
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
+ADMINS = (
+    # ('Your Name', 'your_email@domain.com'),
+)
+
+MANAGERS = ADMINS
+INSTALLED_APPS = (                                                       
     'django.contrib.sessions',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -30,14 +38,13 @@ INSTALLED_APPS = (
     'reports',
 )
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'playdoh_app',
-        'USER': 'root',
+        'NAME': '',
+        'USER': '',
         'PASSWORD': '',
-        'HOST': '',
+        'HOST': 'localhost',
         'PORT': '',
         'OPTIONS': {
             'init_command': 'SET storage_engine=InnoDB',
@@ -52,45 +59,44 @@ DATABASES = {
     # },
 }
 
-# Recipients of traceback emails and other notifications.
-ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
-)
-MANAGERS = ADMINS
-
-# Debugging displays nice error messages, but leaks memory. Set this to False
-# on all server instances and True only for development.
-DEBUG = TEMPLATE_DEBUG = True
-
-# Is this a development instance? Set this to True on development/master
-# instances and False on stage/prod.
-DEV = True
-
-# # Playdoh ships with sha512 password hashing by default. Bcrypt+HMAC is safer,
-# # so it is recommended. Please read <https://github.com/fwenzel/django-sha2#readme>,
-# # then switch this to bcrypt and pick a secret HMAC key for your application.
-# PWD_ALGORITHM = 'bcrypt'
-# HMAC_KEYS = {  # for bcrypt only
-#     '2011-01-01': 'cheesecake',
-# }
-
-# Make this unique, and don't share it with anybody.  It cannot be blank.
+# Make this unique, and don't share it with anybody.
 SECRET_KEY = ''
 
-# Uncomment these to activate and customize Celery:
-# CELERY_ALWAYS_EAGER = False  # required to activate celeryd
-# BROKER_HOST = 'localhost'
-# BROKER_PORT = 5672
-# BROKER_USER = 'playdoh'
-# BROKER_PASSWORD = 'playdoh'
-# BROKER_VHOST = 'playdoh'
-# CELERY_RESULT_BACKEND = 'amqp'
+REMOTE_LOGINS_ON = True
 
-## Log settings
 
-# SYSLOG_TAG = "http_app_playdoh"  # Make this unique to your project.
-# LOGGING = dict(loggers=dict(playdoh = {'level': logging.DEBUG}))
+SYSADMINS = (
+                'you@domain.com',
+            )
+
+BUILD_TEAM = (
+                'you@domain.com',
+              )
+
+
+WIKI_USER = ''
+WIKI_PASSWORD = ''
+
+LDAP_HOST = 'localhost'
+LDAP_USER = ''
+LDAP_PASS = ''
+#import mysite.monitor
+#mysite.monitor.start(interval=1.0)
+# Specify your custom test runner to use
+#TEST_RUNNER='test_runner_with_coverage'
+ 
+ # List of modules to enable for code coverage
+#COVERAGE_MODULES = ['api.views']
+#TEST_RUNNER = 'django_coverage.coverage_runner.CoverageRunner'
+USER_SYSTEM_ALLOWED_DELETE = ('')
 from jinja2 import FileSystemLoader, Environment
+TEMPLATE_DIRS = (                                          
+    os.path.join(_base, 'templates'),
+    site_root + '/templates'
+)
+MEDIA_URL = '/static/'
+DEV = True
+
 env = Environment(loader=FileSystemLoader(TEMPLATE_DIRS))
 def jinja_url(view_name, *args, **kwargs):
     from django.core.urlresolvers import reverse, NoReverseMatch
@@ -104,14 +110,8 @@ def jinja_url(view_name, *args, **kwargs):
         except NoReverseMatch:
             return ''
 
-TEMPLATE_DIRS = (
-    os.path.join(_base, 'templates'),
-    site_root + '/templates'
-)
-ROOT_URLCONF = 'urls'
 env.filters['url'] = jinja_url
 env.globals['MEDIA_URL'] = MEDIA_URL
-MEDIA_URL = '/static/'
 import logging
 error = dict(level=logging.ERROR)
 info = dict(level=logging.INFO)
@@ -126,3 +126,5 @@ LOGGING = {
         'inventory': debug,
     },
 }
+#CACHE_BACKEND = 'memcached://127.0.0.1:11211/'
+API_ACCESS = ('GET','POST','PUT','DELETE')

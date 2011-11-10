@@ -13,6 +13,10 @@ from django.db.models.signals import post_save
 from django.db.models.query import QuerySet
 import datetime
 import re
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin
+from admin import InvUserAdmin
+
 class QuerySetManager(models.Manager):
     def get_query_set(self):
         return self.model.QuerySet(self.model)
@@ -356,3 +360,8 @@ class SystemChangeLog(models.Model):
     system = models.ForeignKey(System)
     class Meta:
         db_table = u'systems_change_log'
+#class UserProfile(models.Model):
+#    api_key = models.CharField(max_length=255, blank=True, null=True)
+#    user = models.ForeignKey(User, unique=True)
+#    class Meta:
+##        db_table = u'user_profiles'

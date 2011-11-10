@@ -15,6 +15,11 @@ import models
 from systems import models as system_models
 from libs import ldap_lib
 from settings.local import USER_SYSTEM_ALLOWED_DELETE
+from django.template.defaulttags import URLNode
+from django.conf import settings
+from jinja2.filters import contextfilter
+from django.utils import translation
+from libs.jinja import jinja_render_to_response
 def license_quicksearch_ajax(request):
     """Returns systems sort table"""
     search = request.POST['quicksearch']
@@ -24,10 +29,9 @@ def license_quicksearch_ajax(request):
     licenses = models.UserLicense.objects.filter(
                 reduce(operator.or_, filters))
 
-    return render_to_response('user_systems/license_quicksearch.html', {
+    return jinja_render_to_response('user_systems/license_quicksearch.html', {
             'licenses': licenses,
-           },
-           RequestContext(request))
+           })
 def user_system_quicksearch_ajax(request):
     """Returns systems sort table"""
     search = request.POST['quicksearch']

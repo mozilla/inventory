@@ -17,6 +17,9 @@ from middleware.restrict_to_remote import allow_anyone
 
 import re
 from django.test.client import Client
+from jinja2.filters import contextfilter
+from django.utils import translation
+from libs.jinja import jinja_render_to_response
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
 def tryint(s):
@@ -195,12 +198,11 @@ def home(request):
     except (EmptyPage, InvalidPage):
         systems = paginator.page(paginator.num_pages)
 
-    return render_to_response('systems/index.html', {
+
+    return jinja_render_to_response('systems/index.html', {
             'systems': systems,
             'read_only': getattr(request, 'read_only', False),
-        },
-        RequestContext(request))
-
+           })
 
 @allow_anyone
 def system_quicksearch_ajax(request):
