@@ -287,17 +287,20 @@ def save_key_value(request, id):
 
     return HttpResponseRedirect('/systems/get_key_value_store/' + system_id + '/')
 
+@csrf_exempt
 def create_key_value(request, id):
     system = models.System.objects.get(id=id)
     key = 'None'
     value = 'None'
+    print request.POST
     if 'key' in request.POST:
         key = request.POST['key'].strip()
     if 'value' in request.POST:
         value = request.POST['value'].strip()
     kv = models.KeyValue(system=system,key=key,value=value)
+    print "Key is %s: Value is %s." % (key, value)
     kv.save();
-    matches = re.search('^nic\.(\d+)', kv.key)
+    matches = re.search('^nic\.(\d+)', str(kv.key) )
     if matches:
         try:
             existing_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
@@ -376,7 +379,7 @@ def system_show(request, id):
     is_release = False
     try:
         client = Client()
-        adapters = json.loads(client.get('/api/v2/keyvalue/3/', {'key_type':'adapters_by_system','system':system.hostname}).content)
+        adapters = json.loads(client.get('/api/v2/keyvalue/3/', {'key_type':'adapters_by_system','system':system.hostname}, follow=True).content)
     except:
         adapters = []
     if system.allocation is 'release':
@@ -436,6 +439,7 @@ def system_new(request):
     return system_view(request, 'systems/system_new.html', {})
 
 
+@csrf_exempt
 def system_edit(request, id):
     system = get_object_or_404(models.System, pk=id)
     client = Client()
@@ -495,7 +499,7 @@ def get_expanded_key_value_store(request, system_id):
         from django.test.client import Client
         client = Client()
         system = models.System.objects.get(id=system_id)
-        resp = client.get('/api/keyvalue/?keystore=%s' % (system.hostname))
+        resp = client.get('/api/keyvalue/?keystore=%s' % (system.hostname), follow=True)
         return_obj = resp.content.replace("\n","<br />")
     except:
         return_obj = 'This failed'
