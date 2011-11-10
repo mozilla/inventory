@@ -5,7 +5,7 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response, redirect, get_object_or_404
+from django.shortcuts import  redirect, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils import simplejson as json
@@ -19,7 +19,8 @@ import re
 from django.test.client import Client
 from jinja2.filters import contextfilter
 from django.utils import translation
-from libs.jinja import jinja_render_to_response
+from libs.jinja import render_to_response
+from django.views.decorators.csrf import csrf_exempt
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
 def tryint(s):
@@ -199,7 +200,7 @@ def home(request):
         systems = paginator.page(paginator.num_pages)
 
 
-    return jinja_render_to_response('systems/index.html', {
+    return render_to_response('systems/index.html', {
             'systems': systems,
             'read_only': getattr(request, 'read_only', False),
            })
@@ -425,9 +426,11 @@ def system_view(request, template, data, instance=None):
 
     data['form'] = form
 
-    return render_to_response(template, data, RequestContext(request))
-
-
+    return render_to_response(template, 
+                data,
+                request
+            )
+@csrf_exempt
 def system_new(request):
     return system_view(request, 'systems/system_new.html', {})
 
