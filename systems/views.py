@@ -234,7 +234,7 @@ def get_key_value_store(request, id):
            RequestContext(request))
 def delete_key_value(request, id, system_id):
     kv = models.KeyValue.objects.get(id=id)
-    matches = re.search('^nic\.(\d+)', kv.key)
+    matches = re.search('^nic\.(\d+)', str(kv.key) )
     if matches:
         try:
             existing_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
@@ -248,11 +248,12 @@ def delete_key_value(request, id, system_id):
             'key_value_store': key_value_store,
            },
            RequestContext(request))
+@csrf_exempt
 def save_key_value(request, id):
     kv = models.KeyValue.objects.get(id=id)
     if kv is not None:
         ##Here we eant to check if the existing key is a network adapter. If so we want to find out if it has a dhcp scope. If so then we want to add it to ScheduledTasks so that the dhcp file gets regenerated
-        matches = re.search('^nic\.(\d+)', kv.key)
+        matches = re.search('^nic\.(\d+)', str(kv.key) )
         if matches:
             try:
                 existing_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
@@ -438,10 +439,12 @@ def system_new(request):
 def system_edit(request, id):
     system = get_object_or_404(models.System, pk=id)
     client = Client()
+    print client
     dhcp_scopes = None
     try:
-        dhcp_scopes = json.loads(client.get('/api/v2/dhcp/phx-vlan73/get_scopes_with_names/').content)
-    except:
+        dhcp_scopes = json.loads(client.get('/api/v2/dhcp/phx-vlan73/get_scopes_with_names/', follow=True).content)
+    except Exception, e:
+        print e
         pass
 
     return system_view(request, 'systems/system_edit.html', {

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block subtitle %} - {{ system.hostname }} - edit{% endblock %}
 {% block head %}
 <script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>
@@ -149,7 +149,7 @@ ul.css-tabs a.current {
 </style>
 <link rel="stylesheet" type="text/css" href="http://static.flowplayer.org/tools/css/tabs.css" />
 <script type="text/javascript">
-        var system_id = getURISegment(4);
+        var system_id = getURISegment(5);
     $.validator.addMethod("checkForDupeNicName", function(value, element, param){
 
         var regex_result = this.optional(element) || /^nic\d+$/.test(value);
