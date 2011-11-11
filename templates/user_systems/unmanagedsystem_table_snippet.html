@@ -5,5 +5,8 @@
             <td>{{ system.asset_tag }}</td>
             <td>{{ system.server_model }}</td>
             <td>{{ system.notes }}</td>
+            <td><a href="{% url user-system-show system.id %}">Show</a></td>
+            <td><a href="{% url user-system-edit system.id %}">Edit</a></td>
+            <td><a href="{% url user-system-delete system.id %}">Delete</a></td>
         </tr>
         {% endfor %}
