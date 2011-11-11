@@ -20,6 +20,7 @@ class UnmanagedSystem(models.Model):
             'asset_tag',
             'owner__name',
             'server_model__vendor',
+            'notes',
             'server_model__model'
         )
 
