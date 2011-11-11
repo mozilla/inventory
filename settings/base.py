@@ -28,6 +28,20 @@ MINIFY_BUNDLES = {
 INSTALLED_APPS = list(INSTALLED_APPS) + [
     # Example code. Can (and should) be removed for actual projects.
     #'examples',
+    'django.contrib.sessions',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.admin',
+    'piston',
+    #'south',
+    'systems',
+    'user_systems',
+    'build',
+    'dhcp',
+    'truth',
+    'api',
+    'api_v2',
+    'reports',
 ]
 
 
@@ -35,6 +49,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
 # apps here:
 JINGO_EXCLUDE_APPS = [
     'admin',
+    'user_systems',
 ]
 
 # Tells the extract script what files to look for L10n in and what function

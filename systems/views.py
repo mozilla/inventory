@@ -19,7 +19,7 @@ import re
 from django.test.client import Client
 from jinja2.filters import contextfilter
 from django.utils import translation
-from libs.jinja import render_to_response
+from libs.jinja import jinja_render_to_response as render_to_response
 from django.views.decorators.csrf import csrf_exempt
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
