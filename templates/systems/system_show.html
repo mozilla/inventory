@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block subtitle %} - {{ system.hostname }} - show{% endblock %}
 {% block content %}
 <div>
@@ -163,7 +163,7 @@
 
 <div style="clear:both;"></div>
 {% if not read_only %}
-<a href="{% url systems.views.system_edit system.id %}">Edit</a>
+<a href="{{ "systems.views.system_edit"|url(system.id) }}">Edit</a>
 {% endif %}
-<a href="{% url systems.views.home %}">Back</a>
+<a href="{{ "systems.views.home"|url() }}">Back</a>
 {% endblock %}

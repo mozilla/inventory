@@ -42,7 +42,7 @@
 
 		$('.save_key_value').click(function(){
 			var system_id = this.id.split('_')[0];
-			$.post("/systems/save_key_value/" + system_id + '/',
+			$.post("/en-US/systems/save_key_value/" + system_id + '/',
 				{ 
 				key: $('#' + system_id + '_key').val(), 
 				value: $('#' + system_id + '_value').val(), 
@@ -63,13 +63,13 @@
 		});
 		$('.delete_key_value').click(function(){
 			var key_value_store_id = this.id.split('_')[0];
-			var system_id = getURISegment(4);
+			var system_id = getURISegment(5);
 			$('#key_value_store_span').html('&nbsp;').load('/systems/delete_key_value/' + key_value_store_id + '/' + system_id + '/');
 			return false;
 
 		});
 		$('#create_key_value').click(function(){
-			var system_id = getURISegment(4);
+			var system_id = getURISegment(5);
 			$('#key_value_store_span').html('&nbsp;').load('/systems/create_key_value/' + system_id + '/');
 			return false;
 
