@@ -11,10 +11,22 @@ def render_to_string(filename, context={}):
     return rendered
  
 default_mimetype = 'text/html'
+def render_to_response(filename, context={}, request=None, mimetype=default_mimetype):
+    if request:
+        context['request'] = request
+    try:
+        context['user'] = request.user
+    except:
+        pass
+    rendered = render_to_string(filename, context)
+    return HttpResponse(rendered,mimetype=mimetype)
 def jinja_render_to_response(filename, context={}, request=None, mimetype=default_mimetype):
     if request:
         context['request'] = request
+    try:
         context['user'] = request.user
+    except:
+        pass
     rendered = render_to_string(filename, context)
     return HttpResponse(rendered,mimetype=mimetype)
 
