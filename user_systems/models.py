@@ -55,6 +55,12 @@ class Owner(models.Model):
     user_location = models.ForeignKey('UserLocation', blank=True, null=True)
     email = models.CharField(max_length=255, blank=True)
 
+    search_fields = (
+            'name',
+            'note',
+            'email',
+            )
+
     def __unicode__(self):
         return self.name
 

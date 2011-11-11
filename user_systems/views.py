@@ -15,6 +15,24 @@ from systems import models as system_models
 from libs import ldap_lib
 from settings.local import USER_SYSTEM_ALLOWED_DELETE
 from django.shortcuts import render_to_response, redirect, get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def owners_quicksearch_ajax(request):
+    """Returns systems sort table"""
+    search = request.POST['quicksearch']
+    filters = [Q(**{"%s__icontains" % t: search})
+                    for t in models.Owner.search_fields]
+
+    owners = models.Owner.objects.filter(
+                reduce(operator.or_, filters))
+
+    return render_to_response('user_systems/owners_quicksearch.html', {
+            'owners': owners,
+           },
+           RequestContext(request))
+
+@csrf_exempt
 def license_quicksearch_ajax(request):
     """Returns systems sort table"""
     search = request.POST['quicksearch']
@@ -28,9 +46,11 @@ def license_quicksearch_ajax(request):
             'licenses': licenses,
            },
            RequestContext(request))
+@csrf_exempt
 def user_system_quicksearch_ajax(request):
     """Returns systems sort table"""
     search = request.POST['quicksearch']
+    print request.POST
     filters = [Q(**{"%s__icontains" % t: search})
                     for t in models.UnmanagedSystem.search_fields]
 

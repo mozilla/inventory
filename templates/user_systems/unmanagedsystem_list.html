@@ -3,7 +3,7 @@
 
     <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
 <div style="margin-top: 1em; float:right;">
-    <form action="#" onSubmit="return false;">
+    <form action="/en-US/user_systems/quicksearch/" onSubmit="return false;">
         <strong>Quick Search:</strong> <input id="quicksearch" type="text" name="quicksearch" /><input type='submit' name='submit' value='Go' />
     </form>
 </div>
@@ -35,7 +35,7 @@
 <script>
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "{% url user-system-quicksearch %}");
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{% url user-system-quicksearch %}");
 	});
 </script>
 {% endblock %}

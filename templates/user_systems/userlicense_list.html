@@ -41,7 +41,7 @@
 <script>
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "{% url license-quicksearch %}");
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{% url license-quicksearch %}");
 	});
 </script>
 {% endblock %}

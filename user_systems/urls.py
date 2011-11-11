@@ -85,6 +85,7 @@ urlpatterns = patterns('user_systems',
     url(r'^owners/show/(?P<object_id>\d+)/$', object_detail, owner_info_dict, name="owner-show"),
     url(r'^owners/delete/(?P<object_id>\d+)/$', delete_object, owner_del_dict, name='owner-delete'),
     url(r'^owners/upgradeable/$', object_list, owner_upgrade_info_dict, name="owner-upgradeable"),
+    url(r'^owners/quicksearch/$', 'views.owners_quicksearch_ajax', name='owners-quicksearch'),
 
     url(r'^licenses/quicksearch/$', 'views.license_quicksearch_ajax', name='license-quicksearch'),
     url(r'^licenses/new/$', create_object, license_mod_dict, name="license-new"),
