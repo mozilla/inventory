@@ -52,8 +52,9 @@ JINGO_EXCLUDE_APPS = [
     'user_systems',
 ]
 
-print JINGO_EXCLUDE_APPS
-
+DJANGO_TEMPLATE_APPS = [
+    'user_systems',
+    ]
 # Tells the extract script what files to look for L10n in and what function
 # handles the extraction. The Tower library expects this.
 
