@@ -79,9 +79,12 @@ BUILD_TEAM = (
 WIKI_USER = ''
 WIKI_PASSWORD = ''
 
-LDAP_HOST = 'localhost'
-LDAP_USER = ''
-LDAP_PASS = ''
+USE_LDAP = False
+if USE_LDAP:
+    LDAP_HOST = 'localhost'
+    LDAP_USER = ''
+    LDAP_PASS = ''
+BUG_URL = ''
 #import mysite.monitor
 #mysite.monitor.start(interval=1.0)
 # Specify your custom test runner to use

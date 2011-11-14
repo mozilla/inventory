@@ -21,6 +21,7 @@ class UserSystemForm(forms.ModelForm):
                   'cost',
                   'is_loaned',
                   'is_loaner',
+                  'bug_number',
                   'operating_system',
                   'server_model',
                   'notes')

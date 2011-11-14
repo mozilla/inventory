@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-from django.conf import settings
+import settings
 from django.views.generic.list_detail import object_detail, object_list
 
 from misc.generic_views import create_object, update_object, delete_object
@@ -12,6 +12,7 @@ info_dict = {
     'queryset': models.UnmanagedSystem.objects.select_related(
                     'owner', 'server_model', 'operating_system'
                 ).order_by('owner__name'),
+    'extra_context':{'BUG_URL':settings.BUG_URL},
     'template_object_name': 'user_system'
 }
 info_dict_by_asset_tag = {

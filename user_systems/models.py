@@ -17,6 +17,7 @@ class UnmanagedSystem(models.Model):
     updated_on = models.DateTimeField(null=True, blank=True)
     date_purchased = models.DateField(null=True, blank=True)
     cost = models.CharField(max_length=50, blank=True)
+    bug_number = models.CharField(max_length=255, blank=True)
     notes = models.TextField(blank=True)
     is_loaned = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     is_loaner = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
