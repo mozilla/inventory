@@ -21,6 +21,7 @@ class UnmanagedSystem(models.Model):
     notes = models.TextField(blank=True)
     is_loaned = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     is_loaner = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
+    loaner_return_date = models.DateTimeField(null=True, blank=True)
 
     search_fields = (
             'serial', 

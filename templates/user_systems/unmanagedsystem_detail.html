@@ -29,6 +29,12 @@
 <div style="clear:both;"></div>
 {% endif %}
 
+{% if user_system.loaner_return_date %}
+<dt>Loaner Return Date:</dt>
+<dd>{{ user_system.loaner_return_date }}</dd>
+<div style="clear:both;"></div>
+{% endif %}
+
 <dt>Date Purchased:</dt>
 <dd>{{ user_system.date_purchased }}</dd>
 <div style="clear:both;"></div>

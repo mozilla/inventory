@@ -11,6 +11,7 @@ class CSVForm(forms.Form):
 class UserSystemForm(forms.ModelForm):
 
     date_purchased = forms.DateField(widget=SelectDateWidget(years=range(1999,datetime.today().year + 2)), initial=datetime.now())
+    loaner_return_date = forms.DateField(widget=SelectDateWidget(), initial=datetime.now())
 
     class Meta:
         model = UnmanagedSystem
@@ -22,6 +23,7 @@ class UserSystemForm(forms.ModelForm):
                   'is_loaned',
                   'is_loaner',
                   'bug_number',
+                  'loaner_return_date',
                   'operating_system',
                   'server_model',
                   'notes')
