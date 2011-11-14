@@ -13,6 +13,7 @@ import forms
 import models
 from systems import models as system_models
 from libs import ldap_lib
+import settings
 from settings.local import USER_SYSTEM_ALLOWED_DELETE
 from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -62,7 +63,7 @@ def user_system_quicksearch_ajax(request):
            },
            RequestContext(request))
 
-
+@csrf_exempt
 def user_system_view(request, template, data, instance=None):
     if request.method == 'POST':
         post_data = request.POST.copy()
@@ -159,7 +160,11 @@ def user_system_view(request, template, data, instance=None):
         form = forms.UserSystemForm(instance=instance)
 
     data['form'] = form
-    the_owner_list = ldap_lib.get_all_names()
+    if settings.USE_LDAP:
+        the_owner_list = ldap_lib.get_all_names()
+    else:
+        print "Not using ldap"
+        the_owner_list = []
     the_owner_list.append("STOCK")
     the_owner_list.append("STOCK-SFO")
     the_owner_list.append("STOCK-MTV")
@@ -215,6 +220,7 @@ def user_system_new(request):
         {})
 
 
+@csrf_exempt
 def user_system_edit(request, id):
     system = get_object_or_404(models.UnmanagedSystem, pk=id)
 

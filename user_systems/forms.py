@@ -19,6 +19,8 @@ class UserSystemForm(forms.ModelForm):
                   'asset_tag',
                   'date_purchased',
                   'cost',
+                  'is_loaned',
+                  'is_loaner',
                   'operating_system',
                   'server_model',
                   'notes')

@@ -3,6 +3,10 @@ from systems.models import OperatingSystem, ServerModel
 from datetime import datetime, timedelta
 
 # Create your models here.
+YES_NO_CHOICES = (
+        (0, 'No'),
+        (1, 'Yes'),
+    )
 class UnmanagedSystem(models.Model):
     serial = models.CharField(max_length=255, blank=True)
     asset_tag = models.CharField(max_length=255, blank=True)
@@ -14,6 +18,8 @@ class UnmanagedSystem(models.Model):
     date_purchased = models.DateField(null=True, blank=True)
     cost = models.CharField(max_length=50, blank=True)
     notes = models.TextField(blank=True)
+    is_loaned = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
+    is_loaner = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
 
     search_fields = (
             'serial', 

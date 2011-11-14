@@ -1,1 +1,1 @@
--- Example database migration for schematic. Remove this, if you like.
+alter table unmanaged_systems add column is_loaned int;
