@@ -50,7 +50,7 @@ class SystemWithRelatedManager(models.Manager):
             'operating_system', 
             'server_model',
             'allocation',
-            'system_rack'
+            'system_rack',
         )
 
 
@@ -223,13 +223,14 @@ class SystemStatus(models.Model):
     status = models.CharField(max_length=255, blank=True)
     color = models.CharField(max_length=255, blank=True)
     color_code = models.CharField(max_length=255, blank=True)
-
     def __unicode__(self):
         return self.status
 
     class Meta:
         db_table = u'system_statuses'
         ordering = ['status']
+
+
 
 class System(DirtyFieldsMixin, models.Model):
 
@@ -349,7 +350,7 @@ class System(DirtyFieldsMixin, models.Model):
     
     def get_adapter_count(self):
         return len(self.get_adapter_numbers())
-        
+       
     class Meta:
         db_table = u'systems'
 

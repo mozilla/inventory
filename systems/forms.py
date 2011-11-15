@@ -66,7 +66,6 @@ class SystemForm(forms.ModelForm):
     def clean_operating_system(self):
         name = self.data.get('js_os_name')
         version = self.data.get('js_os_version')
-
         if name is not None and version is not None:
             os, c = models.OperatingSystem.objects.get_or_create(
                 name=name,
@@ -79,7 +78,6 @@ class SystemForm(forms.ModelForm):
     def clean_server_model(self):
         vendor = self.data.get('js_server_model_vendor')
         model = self.data.get('js_server_model_model')
-
         if vendor is not None and model is not None:
             server_model, c = models.ServerModel.objects.get_or_create(
                 vendor=vendor,
@@ -99,6 +97,23 @@ class SystemForm(forms.ModelForm):
             return allocation
 
         return None
+
+    @return_data_if_true
+    def clean_status_system(self):
+	name_status = self.data.get('js_status_name')
+	color_status = self.data.get('js_status_color')
+	code_color_status = self.data.get('js_status_code')
+	if name_status is not None and code_status is not None:
+		status_model, c= models.SystemStatus.objects.get_or_create(
+			status=name_status,
+		        status_color = color_status,	
+			status_code= code_color_status,
+					
+		)
+		return status_model
+	
+	return None
+
 
     class Meta:
         model = models.System
