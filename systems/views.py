@@ -443,7 +443,6 @@ def system_new(request):
 def system_edit(request, id):
     system = get_object_or_404(models.System, pk=id)
     client = Client()
-    print client
     dhcp_scopes = None
     try:
         dhcp_scopes = json.loads(client.get('/api/v2/dhcp/phx-vlan73/get_scopes_with_names/', follow=True).content)

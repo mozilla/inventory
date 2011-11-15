@@ -99,15 +99,15 @@ class SystemForm(forms.ModelForm):
         return None
 
     @return_data_if_true
-    def clean_status_system(self):
+    def clean_system_status(self):
 	name_status = self.data.get('js_status_name')
 	color_status = self.data.get('js_status_color')
 	code_color_status = self.data.get('js_status_code')
-	if name_status is not None and code_status is not None:
+	if name_status is not None and code_color_status is not None and color_status is not None:
 		status_model, c= models.SystemStatus.objects.get_or_create(
 			status=name_status,
-		        status_color = color_status,	
-			status_code= code_color_status,
+		        color = color_status,	
+			color_code= code_color_status,
 					
 		)
 		return status_model
