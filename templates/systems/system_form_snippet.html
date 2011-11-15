@@ -28,9 +28,9 @@
             {{ form.oob_switch_port }}
         </div>
 
-        <div class="formline">
+        <div class="formline" id="status_formline">
             <label for="id_system_status">System Status:</label>
-            {{ form.system_status }}
+            {{ form.system_status }} <span class="create_new"> or <a href="" id="new_status">(Create New)</a></span>
         </div>
 
         <div class="formline">

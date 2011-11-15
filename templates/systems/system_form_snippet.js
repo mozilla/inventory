@@ -91,7 +91,28 @@
                 $('#id_operating_system').replaceWith(form);
                 return false;
             });
-        });
+       
+            
+	$('#new_status').click(function() {
+                var old_content = $(this).parent().parent().clone(true);
+                $(this).parent().remove();
+                var form = $('<div class="sub_form">' +
+                                        '<label>Name:</label> <input type="text" name="js_status_name" /> <br />' + 
+                                        '<label>Color:</label> <input type="text" name="js_status_color" /> <br />' + 
+                                        '<label>Code:</label> <input type="text" name="js_status_code" /> <br />' + 
+                                        ' <a class="cancel" href="">Cancel</a>' + 
+                                        '</div>');
+
+                form.find('a.cancel').click(function() {
+                    $('#status_formline').replaceWith(old_content); 
+                    return false;
+                });
+
+                $('#id_system_status').replaceWith(form);
+                return false;
+            });
+	});
+
 	$(".container").css("width","1100px");
 
     </script>
