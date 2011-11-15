@@ -73,3 +73,7 @@ DJANGO_TEMPLATE_APPS = [
 
 LOGGING = dict(loggers=dict(playdoh = {'level': logging.INFO}))
 AUTH_PROFILE_MODULE = 'systems.UserProfile'
+AUTHENTICATION_BACKENDS = (
+        'middleware.restrict_by_api_token.RestrictByToken',  
+    )
+print AUTHENTICATION_BACKENDS

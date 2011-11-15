@@ -35,3 +35,11 @@ class RestrictByToken:
                 return User.objects.get(pk=user_id)
             except User.DoesNotExist:
                 return None
+def authenticated_api(function):
+  def wrap(request, *args, **kwargs):
+        print "Into Decorator"
+        return request
+
+  wrap.__doc__=function.__doc__
+  wrap.__name__=function.__name__
+  return wrap

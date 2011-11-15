@@ -163,13 +163,13 @@ def user_system_view(request, template, data, instance=None):
     if settings.USE_LDAP:
         the_owner_list = ldap_lib.get_all_names()
     else:
-        print "Not using ldap"
         the_owner_list = []
     the_owner_list.append("STOCK")
     the_owner_list.append("STOCK-SFO")
     the_owner_list.append("STOCK-MTV")
     the_owner_list.append("STOCK-TOR")
     data['owner_json'] = json.dumps(the_owner_list)
+
     #data['owner_json'] = json.dumps(ldap_lib.get_all_names())
     #data['owner_json'].append("Stock")
 

@@ -33,6 +33,7 @@ urlpatterns = patterns('',
     (r'^api/', include('api_v1.urls')),
     (r'^api/v1/', include('api_v1.urls')),
     (r'^api/v2/', include('api_v2.urls')),
+    (r'^tokenapi/', include('api_v2.urls')),
 )
 
 if settings.DEBUG:
