@@ -13,8 +13,6 @@ except:
 from django.test.client import Client
 from django.db.models import Q
 from settings import API_ACCESS
-import base64
-from django.http import HttpResponseForbidden
 from middleware.restrict_by_api_token import AuthenticatedAPI
 
 class SystemHandler(BaseHandler):
@@ -22,10 +20,8 @@ class SystemHandler(BaseHandler):
     model = System
     #fields = ('id', 'asset_tag', 'oob_ip', 'hostname', 'operating_system', ('system_status',('status', 'id')))
     exclude = ()
+    @AuthenticatedAPI
     def read(self, request, system_id=None):
-        #'HTTP_AUTHORIZATION': 'Basic dGVzdHVzZXI6MTIz'
-        #'REMOTE_USER': 'testuser'
-        #authenticate(username=request.user, password=ddk)
         model = System
         base = model.objects
         #return base.get(id=453)
@@ -72,14 +68,16 @@ class SystemHandler(BaseHandler):
                 try:
                     s = System.objects.get(id=system_id)
                 except:
+                    s = None
                     pass
-                try:
-                    s = System.objects.get(hostname=system_id)
-                except:
-                    pass
+                if s is None:
+                    try:
+                        s = System.objects.get(hostname=system_id)
+                    except:
+                        pass
                 if s is not None:
                     return s
-            except:
+            except Exception, e:
                 resp = rc.NOT_FOUND
                 return resp
         else:

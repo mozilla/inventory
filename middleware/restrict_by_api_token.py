@@ -2,7 +2,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseForbidden
 import base64
-
+from django.contrib.auth.models import User
 
 
 class RestrictByToken:
@@ -39,14 +39,12 @@ class RestrictByToken:
 class AuthenticatedAPI(object):
     def __init__(self, orig_func):
 
-        print "Init called"
         self.orig_func = orig_func
         self.object = object
         self._using_token = False
 
     def _get_is_using_token(self, request):
         split = request.path.split("/")
-        print split
         if split[1] == 'tokenapi' or split[2] == 'tokenapi':
             return True
         else:
@@ -55,6 +53,25 @@ class AuthenticatedAPI(object):
     def __call__(self, request, *args, **kwargs):
         self._using_token = self._get_is_using_token(request)
         if self._using_token is True:
+            try:
+                the_part = base64.b64decode(request.META['HTTP_AUTHORIZATION'].split()[1]).split(':',1)
+            except Exception, e:
+                print e
+            try:
+                part1 = base64.b64decode(request.META['HTTP_AUTHORIZATION'].split()[1])
+                username = part1.split(":")[0]
+                password = part1.split(":")[1]
+                user = User.objects.get(username__exact=username)
+                user_profile = user.get_profile()
+                api_key = user_profile.api_key
+                if password == api_key:
+                    return self.orig_func(self, request, *args, **kwargs)
+                else:
+                    return HttpResponseForbidden('You are not authorized to view this resource')
+            except Exception, e:
+                print e
+                return HttpResponseForbidden('You are not authorized to view this resource')
+
             return HttpResponseForbidden('You are not authorized to view this resource')
         else:
             #the_part = base64.b64decode(request.META['HTTP_AUTHORIZATION'].split()[1]).split(':',1)

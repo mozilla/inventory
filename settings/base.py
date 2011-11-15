@@ -53,6 +53,7 @@ JINGO_EXCLUDE_APPS = [
 ]
 
 DJANGO_TEMPLATE_APPS = [
+    'admin',
     'user_systems',
     ]
 # Tells the extract script what files to look for L10n in and what function
@@ -75,5 +76,6 @@ LOGGING = dict(loggers=dict(playdoh = {'level': logging.INFO}))
 AUTH_PROFILE_MODULE = 'systems.UserProfile'
 AUTHENTICATION_BACKENDS = (
         'middleware.restrict_by_api_token.RestrictByToken',  
+        'django.contrib.auth.backends.RemoteUserBackend',
     )
-print AUTHENTICATION_BACKENDS
+AUTH_PROFILE_MODULE = "systems.UserProfile"

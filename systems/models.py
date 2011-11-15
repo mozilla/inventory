@@ -14,8 +14,6 @@ from django.db.models.query import QuerySet
 import datetime
 import re
 from django.contrib.auth.models import User
-from django.contrib.auth.admin import UserAdmin
-from admin import InvUserAdmin
 
 class QuerySetManager(models.Manager):
     def get_query_set(self):
@@ -366,3 +364,9 @@ class SystemChangeLog(models.Model):
 #    user = models.ForeignKey(User, unique=True)
 #    class Meta:
 ##        db_table = u'user_profiles'
+class UserProfile(models.Model):
+    user = models.ForeignKey(User, unique=True)
+    api_key = models.CharField(max_length=255)
+
+    class Meta:
+        db_table = u'user_profiles'

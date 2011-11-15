@@ -25,9 +25,19 @@ class RestrictToRemoteMiddleware:
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         request.MOBILE = False
-        if request.META['REMOTE_ADDR'] == '127.0.0.1':
+        
+        ## Check if connecting to /tokenapi.
+        ## IF so then we don't need to check the rest of this stuff. The API will validate credentials
+
+        path_list = request.path.split('/')
+        if path_list[1] == 'tokenapi' or path_list[2] == 'tokenapi':
             return None
 
+        try:
+            if request.META['REMOTE_ADDR'] == '127.0.0.1':
+                return None
+        except:
+            pass
         if not settings.REMOTE_LOGINS_ON:
             return None
 
