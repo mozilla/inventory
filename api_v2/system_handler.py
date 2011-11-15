@@ -13,17 +13,15 @@ except:
 from django.test.client import Client
 from django.db.models import Q
 from settings import API_ACCESS
-from django.contrib.auth import authenticate
 import base64
 from django.http import HttpResponseForbidden
-from middleware.restrict_by_api_token import authenticated_api
+from middleware.restrict_by_api_token import AuthenticatedAPI
 
 class SystemHandler(BaseHandler):
     allowed_methods = API_ACCESS
     model = System
     #fields = ('id', 'asset_tag', 'oob_ip', 'hostname', 'operating_system', ('system_status',('status', 'id')))
     exclude = ()
-    @authenticated_api
     def read(self, request, system_id=None):
         #'HTTP_AUTHORIZATION': 'Basic dGVzdHVzZXI6MTIz'
         #'REMOTE_USER': 'testuser'
