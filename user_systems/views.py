@@ -175,6 +175,10 @@ def user_system_view(request, template, data, instance=None):
 
     return render_to_response(template, data, RequestContext(request))
 
+
+def license_new(request):
+	return render_to_response('user_systems/userlicense_new.html')
+
 def license_delete(request, object_id):
     from misc.generic_views import delete_object
     license = get_object_or_404(models.UserLicense, pk=object_id)
