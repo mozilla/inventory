@@ -50,6 +50,7 @@ owner_del_dict = {
 
 owner_mod_dict = {
     'form_class': forms.OwnerForm,
+    'template_name': 'user_systems/owner_form.html',
     'post_save_redirect': 'owner-list'
 }
 
@@ -65,6 +66,7 @@ license_del_dict = {
 
 license_mod_dict = {
     'form_class': forms.UserLicenseForm,
+    'template_name': 'user_systems/userlicense_form.html',
     'post_save_redirect': 'license-list'
 }
 
@@ -89,8 +91,8 @@ urlpatterns = patterns('user_systems',
     url(r'^owners/quicksearch/$', 'views.owners_quicksearch_ajax', name='owners-quicksearch'),
 
     url(r'^licenses/quicksearch/$', 'views.license_quicksearch_ajax', name='license-quicksearch'),
-    #url(r'^licenses/new/$', create_object, license_mod_dict, name="license-new"),
-    url(r'^licenses/new/$', 'views.license_new', name='license-new'),
+    #url(r'^licenses/new/$', 'views.license_new', name='license-new'),
+    url(r'^licenses/new/$', create_object, license_mod_dict, name="license-new"),
     url(r'^licenses/edit/(?P<object_id>\d+)/$', update_object, license_mod_dict, name="license-edit"),
     url(r'^licenses/$', object_list, license_info_dict, name="license-list"),
     url(r'^licenses/show/(?P<object_id>\d+)/$', object_detail, license_info_dict, name="license-show"),
