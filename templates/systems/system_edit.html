@@ -3,7 +3,7 @@
 {% block head %}
 <script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>
 <!-- standalone page styling (can be removed) -->
-<link rel="stylesheet" type="text/css" href="http://static.flowplayer.org/tools/css/standalone.css"/>	
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/standalone.css"/>	
 
 
 	
@@ -147,7 +147,7 @@ ul.css-tabs a.current {
 
 
 </style>
-<link rel="stylesheet" type="text/css" href="http://static.flowplayer.org/tools/css/tabs.css" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/tabs.css" />
 <script type="text/javascript">
         var system_id = getURISegment(5);
     $.validator.addMethod("checkForDupeNicName", function(value, element, param){

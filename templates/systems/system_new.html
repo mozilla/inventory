@@ -2,7 +2,7 @@
 {% block head %}
 <script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>
 <!-- standalone page styling (can be removed) -->
-<link rel="stylesheet" type="text/css" href="http://static.flowplayer.org/tools/css/standalone.css"/>	
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/standalone.css"/>	
 
 
 	
@@ -146,7 +146,7 @@ ul.css-tabs a.current {
 
 
 </style>
-<link rel="stylesheet" type="text/css" href="http://static.flowplayer.org/tools/css/tabs.css" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/tabs.css" />
 <script type="text/javascript">
             $('#batch_create_network_adapter_asdf').click(function(){
                 var is_dirty = false;
