@@ -31,18 +31,18 @@
     <div id="hd">
         <div id="toptabs">
             <ul id="app-buttons">
-
-                <li><a href="{% url system-home %}">Systems</a></li>
-                <li><a href="{% url system_rack-list %}">Racks</a></li>
+<!-- @TODO Implement Reverses -->
+                <li><a href="/">Systems</a></li>
+                <li><a href="/systems/racks/">Racks</a></li>
                 {% if not read_only %}
-                <li><a href="{% url user-system-list %}">Unmanaged</a></li>
-                <li><a href="{% url owner-list %}">Owners</a></li>
-                <li><a href="{% url license-list %}">User Licenses</a></li>
-                <li><a href="{% url build-list %}">Release</a></li>
-                <li><a href="{% url misc-list %}">Misc</a></li>
-                <li><a href="{% url dhcp-list %}">DHCP</a></li>
-                <li><a href="{% url truth-list %}">Truth Database</a></li>
-                <li><a href="{% url report-home %}">Reporting</a></li>
+                <li><a href="/user_systems/">Unmanaged</a></li>
+                <li><a href="/user_systems/owners/">Owners</a></li>
+                <li><a href="/user_systems/licenses/">User Licenses</a></li>
+                <li><a href="/build/">Release</a></li>
+                <li><a href="/misc/">Misc</a></li>
+                <li><a href="/dhcp/show/">DHCP</a></li>
+                <li><a href="/truth/">Truth Database</a></li>
+                <li><a href="/reports/">Reporting</a></li>
                 {% endif %}
             </ul>
         </div>
@@ -51,11 +51,6 @@
         {% block content %}{% endblock %}
     </div>
     <div id="ft">
-<pre>
-{% for s in sql_queries %}
-    {{ s.sql|wordwrap:140 }} 
-{% endfor %}
-</pre>
     </div>
 </div>
 </body>

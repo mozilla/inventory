@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-import settings
+from django.conf import settings
 from django.views.generic.list_detail import object_detail, object_list
 
 from misc.generic_views import create_object, update_object, delete_object
