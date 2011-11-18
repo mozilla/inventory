@@ -94,7 +94,7 @@ def showfile(request, dhcp_scope):
     #truth = Truth.objects.get(name='phx-vlan73')
     #scope = TruthKeyValue(truth=truth)
     client = Client()
-    resp = client.get('/api/keyvalue/?keystore=%s' % dhcp_scope)
+    resp = client.get('/en-US/api/keyvalue/?keystore=%s' % dhcp_scope, follow=True)
     scope=json.loads(resp.content)
     scope_options = {}
     if 'dhcp.scope.start' in scope:
@@ -152,12 +152,12 @@ def showfile(request, dhcp_scope):
     
 
     #hostsAll = NetworkAdapter.objects.filter(dhcp_scope = id)
-    hosts = json.loads(client.get('/api/keyvalue/?key_type=system_by_scope&scope=%s' % dhcp_scope).content)
+    hosts = json.loads(client.get('/api/keyvalue/?key_type=system_by_scope&scope=%s' % dhcp_scope, follow=True).content)
     #print hosts
     adapter_list = []
     for host in hosts:
         the_url = '/api/keyvalue/?key_type=adapters_by_system_and_scope&dhcp_scope=%s&system=%s' % (dhcp_scope, host['hostname'])
-        adapter_list.append(json.loads(client.get(the_url).content))
+        adapter_list.append(json.loads(client.get(the_url, follow=True).content))
 
     #print adapter_list
 
