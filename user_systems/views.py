@@ -204,6 +204,18 @@ def unmanaged_system_delete(request, object_id):
             },
             RequestContext(request))
 
+def show_by_model(request, object_id):
+    systems = models.UnmanagedSystem.objects.filter(server_model=models.ServerModel.objects.get(id=object_id))
+    #system = models.UnmanagedSystem.objects.select_related(
+    #                'owner', 'server_model', 'operating_system'
+    #                 ).filter(asset_tag=id).order_by('owner__name')
+
+    #system = get_object_or_404(models.UnmanagedSystem
+    return render_to_response('user_systems/unmanagedsystem_list.html', {
+            'user_system_list': systems,
+           },
+           RequestContext(request))
+
 def user_system_show_by_asset_tag(request, id):
     system = get_object_or_404(models.UnmanagedSystem, asset_tag=id)
     #system = models.UnmanagedSystem.objects.select_related(
