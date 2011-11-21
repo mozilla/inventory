@@ -1,8 +1,8 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block subtitle %} - racks{% endblock %}
 {% block content %}
 <h2>Listing Racks</h2>
-{% if not read_only %}<a href="{% url system_rack-new %}">Create New</a>{% endif %}
+{% if not read_only %}<a href="{{ "system_rack-new"|url() }}">Create New</a>{% endif %}
 <form action="" method="get">
 Location: {{ filter_form.location }}
 Status: {{ filter_form.status }}
@@ -14,7 +14,7 @@ Allocation: {{ filter_form.allocation }}
 {% for rack, systems in racks %}
 <table class="racktable rack" id="rack-{{ rack.id }}" style="width: 72em; margin:auto;">
     <tr>
-    <th colspan="6">{{ rack.location }} - <a href="?rack={{ rack.pk }}">{{ rack }}</a>{% if not read_only %} - <a href="{% url system_rack-edit rack.pk %}">Edit</a> - <a href="{% url rack-delete rack.pk %}">Delete</a>{% endif %}</th>
+    <th colspan="6">{{ rack.location }} - <a href="?rack={{ rack.pk }}">{{ rack }}</a>{% if not read_only %} - <a href="{{ "system_rack-edit"|url(rack.pk) }}">Edit</a> - <a href="{{ "rack-delete"|url(rack.pk) }}">Delete</a>{% endif %}</th>
     </tr>
     <tr style="font-weight:bold;">
         <td style="width:3em;">Order</td>

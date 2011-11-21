@@ -1,6 +1,6 @@
     <tr{% if system.system_status %} style="background-color: {{ system.system_status.color_code }}"{% endif %}>
     <td>{{ system.rack_order }}</td>
-    <td><a href="{% url systems.views.system_show system.id %}">{{ system.hostname }}</a></td>	
+    <td><a href="/system/show/{{ system.id }}/">{{ system.hostname }}</a></td>	
     <td>{{ system.asset_tag }}</td>
     <td>{{ system.server_model }}
     <td>{{ system.allocation }}</td>

@@ -40,7 +40,7 @@
         this.click(function() {
             var rack_table = $(this).closest('.rack');
             var rack_id = rack_table.attr('id').split('-')[1];
-            var form_url = '/systems/racks/system/new/' + rack_id + '/';
+            var form_url = '/en-US/systems/racks/system/new/' + rack_id + '/';
 
             // Load rack row form
             $.get(form_url, {}, function(data) {
