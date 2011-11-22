@@ -1,4 +1,4 @@
-{% extends "jinja_base.html" %}
+{% extends "base.html" %}
 {% block content %}
 <div style="margin-top: 1em; float:right;">
     <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
@@ -10,7 +10,7 @@
 
 <br />
 <div id="search_hits"></div>
-<form action="{{ "build-bulk-edit"|url() }}" method="get">
+<form action="{% url build-bulk-edit %}" method="get">
 <table class="listtable tablesorter">
 	<thead>
         <tr>
@@ -35,11 +35,11 @@
 </form>
 
 <br />
-<a href="{{ "build-csv"|url() }}">Create CSV</a>
+<a href="{{ url build-csv %}">Create CSV</a>
 <script>
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "{{ "build-quicksearch"|url() }}");
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "{% url build-quicksearch %}");
 	});
 </script>
 {% endblock %}

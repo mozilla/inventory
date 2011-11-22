@@ -2,20 +2,21 @@
 <tr>
     <td>
         <input type="checkbox" name="system_id" value="{{ system.pk }}" />
-        <a href="{{ "build-show"|url(system.id) }}">{{ system }}</a>
+        <a href="{% url build-show system.id %}">{{ system }}</a>
     </td>
     <td>{{ system.system_rack.location }}</td>
-    {% if system.buildattribute %}
-	<td>{{ system.buildattribute.support_tier }}</td>
-	<td>{{ system.buildattribute.cvsbranch }}</td>
-	<td>{{ system.buildattribute.cpu_throttled }}</td>
-	<td>{{ system.buildattribute.product_branch }}</td>
-	<td>{{ system.buildattribute.product_series }}</td>
-	<td>{{ system.buildattribute.closes_tree }}</td>
-	<td>{{ system.buildattribute.purposes.all()|join(",") }}</td>
-	<td>{{ system.buildattribute.support_doc|urlize() }}</td>
-    <td><a href="{{ "build-show"|url(system.id) }}">Show</a></td>
-    <td><a href="{{ "build-edit"|url(system.id) }}">Edit</a></td>
-    {% endif %}
+{% with system.buildattribute as ba %}
+<td>{{ ba.support_tier }}</td>
+<td>{{ ba.cvsbranch }}</td>
+<td>{{ ba.cpu_throttled }}</td>
+<td>{{ ba.product_branch }}</td>
+<td>{{ ba.product_series }}</td>
+<td>{{ ba.closes_tree }}</td>
+<td>{{ ba.purposes.all|join:"," }}</td>
+<td>{{ ba.support_doc|urlize }}</td>
+<td><a href="{% url build-show system.id %}">Show</a></td>
+<td><a href="{% url build-edit system.id %}">Edit</a></td>
+{% endwith %}
+
 </tr>
 {% endfor %}

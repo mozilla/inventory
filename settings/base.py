@@ -48,12 +48,14 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
 # Because Jinja2 is the default template loader, add any non-Jinja templated
 # apps here:
 JINGO_EXCLUDE_APPS = [
+    'build',
     'admin',
     'user_systems',
 ]
 
 DJANGO_TEMPLATE_APPS = [
     'admin',
+    'build',
     'user_systems',
     ]
 # Tells the extract script what files to look for L10n in and what function
