@@ -15,23 +15,22 @@
 <table class="listtable tablesorter">
 	<thead>
         <tr>
-            <th>Type</th> 
             <th>Key</th> 
             <th>Username</th>
+            <th>Type</th> 
             <th>Version</th>
-            <th>Belongs To</th>
             <th>Operating system</th>
+            <th>Belongs To</th>
             <th colspan="3">Actions</th>
         </tr>
 	</thead>
     <tbody>
         {% for license in license_list %}
         <tr>
-            <td>{{ license.license_type }}</td>
             <td>{{ license.license_key }}</td>
             <td>{{ license.username }}</td>
+            <td>{{ license.license_type }}</td>
             <td>{{ license.version }}</td>
-            <td><a href="{{ license.owner.get_absolute_url }}">{{ license.owner }}</a></td>
             {% ifequal license.user_operating_system  0 %}
 		<td> Windows </td>
 	    {% else %}
@@ -41,7 +40,7 @@
 			<td>Not specified</td>
 		 {% endifequal %}
 	    {% endifequal %}
-	
+	    <td><a href="{{ license.owner.get_absolute_url }}">{{ license.owner }}</a></td>
             <td><a href="{% url license-show license.id %}">Show</a></td>
             <td><a href="{% url license-edit license.id %}">Edit</a></td>
             <td><a href="{% url license-delete license.id %}">Delete</a></td>
