@@ -7,6 +7,15 @@ YES_NO_CHOICES = (
         (0, 'No'),
         (1, 'Yes'),
     )
+
+
+OS_CHOICES = (
+	('0', 'Windows'),
+	('1', 'Mac OS'),
+	)
+
+
+
 class UnmanagedSystem(models.Model):
     serial = models.CharField(max_length=255, blank=True)
     asset_tag = models.CharField(max_length=255, blank=True)
@@ -96,13 +105,15 @@ class UserLicense(models.Model):
     license_type = models.CharField(max_length=255, blank=True)
     license_key = models.CharField(max_length=255, blank=True)
     owner = models.ForeignKey('Owner', blank=True, null=True)
+    user_operating_system = models.IntegerField(choices=OS_CHOICES, blank=True, null=True)
     search_fields = (
             'username', 
             'version',
             'license_type',
             'license_key',
-            'owner__name'
-        )
+            'owner__name',
+            'user_operating_system',
+	)
 
     def __unicode__(self):
         return "%s - %s" % (self.license_type, self.license_key)

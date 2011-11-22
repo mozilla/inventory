@@ -39,4 +39,4 @@ class UserLicenseForm(forms.ModelForm):
 
     class Meta:
         model = UserLicense
-        fields = ['username', 'version', 'license_type', 'license_key', 'owner']
+        fields = ['username', 'version', 'license_type', 'license_key', 'owner', 'user_operating_system']
