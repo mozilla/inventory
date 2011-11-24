@@ -1,9 +1,17 @@
 {% extends "base.html" %}
+{% block head %}
+    <script src="{{ MEDIA_URL }}javascripts/jquery.autocomplete.min.js" type="text/javascript"></script>
+
+    <link href="{{ MEDIA_URL }}stylesheets/jquery.autocomplete.css" media="screen" rel="stylesheet" type="text/css" />
+{% endblock %}
 {% block content %}
-    <form method="post">
-    <table>
-    {{ form }}
-    </table>
+    <h2> New User License </h2>
+    {{ form.errors }}
+    <form method="post" action="" class = "editform">
+        {% include "user_systems/userlicense_form_snippet.html" %}
+    <br \> 
     <input type="submit" name="submit" value="Save" />
     </form>
+    
+    {% include "user_systems/userlicense_form_snippet.js" %}
 {% endblock %}
