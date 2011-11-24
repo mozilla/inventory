@@ -1,0 +1,24 @@
+	<div class="formline">
+            <label for="id_key">Key:</label>
+            {{ form.license_key }}
+        </div>
+        <div class="formline">
+            <label for="id_username">Username:</label>
+            {{ form.username }}
+        </div>
+        <div class="formline">
+            <label for="id_type">Type:</label>
+            {{ form.license_type }}
+        </div>
+        <div class="formline">
+            <label for="id_version">Version:</label>
+            {{ form.version }}
+        </div>
+        <div class="formline">
+            <label for="id_operating_system">Operating system:</label>
+            {{ form.user_operating_system }}
+        </div>
+        <div class="formline" id="owner_formline">
+            <label for="id_owner">Owner:</label>
+            {{ form.owner }} <span class="create_new"> or <a href="" id="new_owner">(Create New)</a></span>
+        </div>
