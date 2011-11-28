@@ -2,7 +2,6 @@
 {% block subtitle %}: system list{% endblock %}
 {% block content %}
 <script src="/static/javascripts/jquery.dataTables.js"></script>
-<script src="/static/javascripts/jquery.history.js"></script>
 <style type="text/css">
 @import "/static/css/smoothness/jquery-ui-1.8.11.custom.css";
 .production {
@@ -70,6 +69,9 @@ th.ui-state-default {
     cursor: pointer;
     padding-left: 5px;
 
+}
+.paginate_enabled_next, .paginate_enabled_previous, .paginate_disabled_previous{
+    padding-left: 5px;
 }
 </style>
 <h2>Listing systems</h2>
@@ -148,7 +150,9 @@ jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function ( oSettings, iDelay )
 	//$().ready(function(){
 $(document).ready(function() {
 the_state = serialize([{'iDisplayStart':0, 'iDisplayEnd':0}]);
-history.pushState(the_state, "settings", "#inventory");
+if (history.pushState) {
+    history.pushState(the_state, "settings", "#inventory");
+}
 
 function serialize(_obj)
 {
@@ -233,36 +237,53 @@ $.fn.dataTableExt.oPagination.four_button = {
         nPaging.appendChild( nLast );
          
         $(nFirst).click( function () {
-            var stateObj = { state: serialize(otable) };
-            history.pushState(stateObj, "settings", "#inventory");
+            if (history.pushState) {
+                iDisplayLength = otable.dataTableSettings[0]._iDisplayLength;
+                search = otable.dataTableSettings[0].oPreviousSearch.search;
+                iDisplayStart = otable.dataTableSettings[0]._iDisplayStart + iDisplayLength;
+                iDisplayEnd = otable.dataTableSettings[0]._iDisplayEnd + iDisplayLength;
+                the_state = {'iDisplayStart':iDisplayStart, 'iDisplayEnd':iDisplayEnd, 'iDisplayLength':iDisplayLength};
+                history.pushState(the_state, "settings", "#inventory?start=" + iDisplayStart + "&end=" + iDisplayEnd + "&iDisplayLength=" + iDisplayLength + "&search=" + search);
+            }
             oSettings.oApi._fnPageChange( oSettings, "first" );
             fnCallbackDraw( oSettings );
         } );
          
         $(nPrevious).click( function() {
-            var stateObj = { state: serialize(otable.dataTableSettings) };
-            history.pushState(stateObj, "settings", "#inventory");
+            if (history.pushState) {
+                iDisplayLength = otable.dataTableSettings[0]._iDisplayLength;
+                search = otable.dataTableSettings[0].oPreviousSearch.search;
+                iDisplayStart = otable.dataTableSettings[0]._iDisplayStart - iDisplayLength;
+                iDisplayEnd = otable.dataTableSettings[0]._iDisplayEnd + iDisplayLength;
+                the_state = {'iDisplayStart':iDisplayStart, 'iDisplayEnd':iDisplayEnd, 'iDisplayLength':iDisplayLength};
+                history.pushState(the_state, "settings", "#inventory?start=" + iDisplayStart + "&end=" + iDisplayEnd + "&iDisplayLength=" + iDisplayLength + "&search=" + search);
+            }
             oSettings.oApi._fnPageChange( oSettings, "previous" );
             fnCallbackDraw( oSettings );
         } );
          
         $(nNext).click( function() {
-            
-            iDisplayLength = otable.dataTableSettings[0]._iDisplayLength;
-            search = otable.dataTableSettings[0].oPreviousSearch.search;
-            iDisplayStart = otable.dataTableSettings[0]._iDisplayStart + iDisplayLength;
-            iDisplayEnd = otable.dataTableSettings[0]._iDisplayEnd + iDisplayLength;
-            the_state = {'iDisplayStart':iDisplayStart, 'iDisplayEnd':iDisplayEnd, 'iDisplayLength':iDisplayLength};
-            //the_state = serialize(otable.fnSettings());
-            //console.log(otable.fnSettings());
-            history.pushState(the_state, "settings", "#inventory?start=" + iDisplayStart + "&end=" + iDisplayEnd + "&iDisplayLength=" + iDisplayLength + "&search=" + search);
+            if (history.pushState) {
+                iDisplayLength = otable.dataTableSettings[0]._iDisplayLength;
+                search = otable.dataTableSettings[0].oPreviousSearch.search;
+                iDisplayStart = otable.dataTableSettings[0]._iDisplayStart + iDisplayLength;
+                iDisplayEnd = otable.dataTableSettings[0]._iDisplayEnd + iDisplayLength;
+                the_state = {'iDisplayStart':iDisplayStart, 'iDisplayEnd':iDisplayEnd, 'iDisplayLength':iDisplayLength};
+                history.pushState(the_state, "settings", "#inventory?start=" + iDisplayStart + "&end=" + iDisplayEnd + "&iDisplayLength=" + iDisplayLength + "&search=" + search);
+            }
             oSettings.oApi._fnPageChange( oSettings, "next" );
             fnCallbackDraw( oSettings );
         } );
          
         $(nLast).click( function() {
-            var stateObj = { settings: serialize(otable) };
-            history.pushState(stateObj, "settings", "#inventory");
+            if (history.pushState) {
+                iDisplayLength = otable.dataTableSettings[0]._iDisplayLength;
+                search = otable.dataTableSettings[0].oPreviousSearch.search;
+                iDisplayStart = otable.dataTableSettings[0]._iDisplayStart + iDisplayLength;
+                iDisplayEnd = otable.dataTableSettings[0]._iDisplayEnd + iDisplayLength;
+                the_state = {'iDisplayStart':iDisplayStart, 'iDisplayEnd':iDisplayEnd, 'iDisplayLength':iDisplayLength};
+                history.pushState(the_state, "settings", "#inventory?start=" + iDisplayStart + "&end=" + iDisplayEnd + "&iDisplayLength=" + iDisplayLength + "&search=" + search);
+            }
             oSettings.oApi._fnPageChange( oSettings, "last" );
             fnCallbackDraw( oSettings );
         } );
