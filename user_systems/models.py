@@ -1,6 +1,7 @@
 from django.db import models
 from systems.models import OperatingSystem, ServerModel
 from datetime import datetime, timedelta
+from django.db.models.query import QuerySet
 
 # Create your models here.
 YES_NO_CHOICES = (
@@ -15,6 +16,12 @@ OS_CHOICES = (
 	)
 
 
+
+class QuerySetManager(models.Manager):
+    def get_query_set(self):
+        return self.model.QuerySet(self.model)
+    def __getattr__(self, attr, *args):
+        return getattr(self.get_query_set(), attr, *args)
 
 class UnmanagedSystem(models.Model):
     serial = models.CharField(max_length=255, blank=True)
@@ -31,6 +38,7 @@ class UnmanagedSystem(models.Model):
     is_loaned = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     is_loaner = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     loaner_return_date = models.DateTimeField(null=True, blank=True)
+    objects = QuerySetManager()
 
     search_fields = (
             'serial', 
@@ -47,6 +55,13 @@ class UnmanagedSystem(models.Model):
         except ServerModel.DoesNotExist:
             server_model = ""
         return "%s - %s - %s" % (server_model, self.asset_tag, self.serial) 
+
+    class QuerySet(QuerySet):
+        def get_all_loaner(self):
+            return self.filter(is_loaner=1)
+
+        def get_loaners_due_before(self, return_date):
+            return self.filter(loaner_return_date<return_date)
 
     @models.permalink
     def get_absolute_url(self):
