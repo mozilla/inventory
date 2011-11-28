@@ -4,7 +4,7 @@ import os
 
 
 _base = os.path.dirname(__file__)
-site_root = 'test'                                                                
+site_root = os.path.realpath(os.path.join(_base, '../'))
 sys.path.append(site_root)
 sys.path.append(site_root + '/adapters')
 sys.path.append(site_root + '/libs')
