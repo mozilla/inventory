@@ -1,6 +1,6 @@
 from django.db import models
 from systems.models import OperatingSystem, ServerModel
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.db.models.query import QuerySet
 
 # Create your models here.
@@ -57,11 +57,12 @@ class UnmanagedSystem(models.Model):
         return "%s - %s - %s" % (server_model, self.asset_tag, self.serial) 
 
     class QuerySet(QuerySet):
-        def get_all_loaner(self):
+        def get_all_loaners(self):
             return self.filter(is_loaner=1)
 
-        def get_loaners_due_before(self, return_date):
-            return self.filter(loaner_return_date<return_date)
+        def get_loaners_due(self):
+            return_date = date.today()
+            return self.filter(loaner_return_date__lte=return_date)
 
     @models.permalink
     def get_absolute_url(self):
