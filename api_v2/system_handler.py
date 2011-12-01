@@ -186,6 +186,10 @@ class SystemHandler(BaseHandler):
 
                 if 'notes' in request.POST:
                     s.notes = request.POST['notes']
+
+                if 'oob_switch_port' in request.POST:
+                    s.oob_switch_port = request.POST['oob_switch_port']
+
                 s.save()
                 resp = rc.ALL_OK
                 resp.write('json = {"id":%i, "hostname":"%s"}' % (s.id, s.hostname))
