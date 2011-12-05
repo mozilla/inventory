@@ -12,7 +12,6 @@ from django.utils import simplejson as json
 import _mysql_exceptions
 
 import models
-from forms import RackFilterForm, SystemForm, RackSystemForm, CSVImportForm
 from middleware.restrict_to_remote import allow_anyone
 
 import re
@@ -186,22 +185,8 @@ def build_json(request, systems, sEcho, total_records, display_count, sort_col, 
 @allow_anyone
 def home(request):
     """Index page"""
-    system_list = models.System.with_related.order_by('hostname')
-    paginator = Paginator(system_list, 100)
-
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
-
-    try:
-        systems = paginator.page(page)
-    except (EmptyPage, InvalidPage):
-        systems = paginator.page(paginator.num_pages)
-
 
     return render_to_response('systems/index.html', {
-            'systems': systems,
             'read_only': getattr(request, 'read_only', False),
            })
 
@@ -420,6 +405,7 @@ def system_show_by_asset_tag(request, id):
            RequestContext(request))
 
 def system_view(request, template, data, instance=None):
+    from forms import SystemForm
     if request.method == 'POST':
         form = SystemForm(request.POST, instance=instance)
         if form.is_valid():
@@ -437,7 +423,6 @@ def system_view(request, template, data, instance=None):
 @csrf_exempt
 def system_new(request):
     return system_view(request, 'systems/system_new.html', {})
-
 
 @csrf_exempt
 def system_edit(request, id):
@@ -507,6 +492,7 @@ def get_expanded_key_value_store(request, system_id):
 
     
 def new_rack_system_ajax(request, rack_id):
+    from forms import RackSystemForm
     rack = get_object_or_404(models.SystemRack, pk=rack_id)
 
     data = {}
@@ -537,6 +523,7 @@ def new_rack_system_ajax(request, rack_id):
 
 @allow_anyone
 def racks(request):
+    from forms import RackFilterForm
     filter_form = RackFilterForm(request.GET)
 
     racks = models.SystemRack.objects.select_related('location')
@@ -569,6 +556,7 @@ def racks(request):
 
 
 def csv_import(request):
+    from forms import CSVImportForm
     def generic_getter(field):
         return field
 
