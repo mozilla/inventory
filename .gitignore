@@ -15,4 +15,5 @@ build.py
 tmp/*
 *~
 *.mo
-^src/
+src/
+.vagrant
