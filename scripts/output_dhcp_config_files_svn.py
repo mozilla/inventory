@@ -11,12 +11,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardi
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
 
 from django.test.client import Client
-
+from settings import DHCP_CONFIG_OUTPUT_DIRECTORY
 def main():
     client = Client()
     dhcp_scopes = []
-    dhcp_scopes = json.loads(client.get('/api/dhcp/1/get_scopes/').content)
-    output_dir = "/etc/dhcpconfig-autodeploy";
+    dhcp_scopes = json.loads(client.get('/api/dhcp/1/get_scopes/', follow=True).content)
+    output_dir = DHCP_CONFIG_OUTPUT_DIRECTORY
     for dhcp_scope in dhcp_scopes:
         dir = dhcp_scope.split("-")[0]
         output_file = dhcp_scope.split("-")[1]

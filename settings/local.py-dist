@@ -133,6 +133,7 @@ LOGGING = {
 }
 #CACHE_BACKEND = 'memcached://127.0.0.1:11211/'
 API_ACCESS = ('GET','POST','PUT','DELETE')
-SCRIPT_URL = ''
-DESKTOP_EMAIL_ADDRESS = ''
-FROM_EMAIL_ADDRESS = ''
+SCRIPT_URL = 'https://localhost.com'
+DESKTOP_EMAIL_ADDRESS = 'desktop@example.com'
+FROM_EMAIL_ADDRESS = 'inventory@example.com'
+DHCP_CONFIG_OUTPUT_DIRECTORY = '/data/dhcpconfig-autodeploy'
