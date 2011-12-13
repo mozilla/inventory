@@ -31,14 +31,14 @@ class ReverseDNSHandler(BaseHandler):
         elif reverse_dns_zone and reverse_dns_action == 'view_hosts':
             scope_options = []
             client = Client()
-            hosts = json.loads(client.get('/api/keyvalue/?key_type=system_by_zone&zone=%s' % reverse_dns_zone).content)
+            hosts = json.loads(client.get('/api/keyvalue/?key_type=system_by_zone&zone=%s' % reverse_dns_zone, follow=True).content)
             #print hosts
             adapter_list = []
             for host in hosts:
                 if 'hostname' in host:
                     the_url = '/api/keyvalue/?key_type=adapters_by_system_and_zone&reverse_dns_zone=%s&system=%s' % (reverse_dns_zone, host['hostname'])
                     try:
-                        adapter_list.append(json.loads(client.get(the_url).content))
+                        adapter_list.append(json.loads(client.get(the_url, follow=True).content))
                     except:
                         pass
             #d = DHCPInterface(scope_options, adapter_list)
