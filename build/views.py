@@ -7,6 +7,7 @@ from django.forms.extras.widgets import SelectDateWidget
 from django.forms.widgets import CheckboxSelectMultiple
 from django.db import connection
 from django.http import HttpResponse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from middleware.restrict_to_remote import allow_build
 import models
@@ -131,7 +132,22 @@ def build_bulk(request):
 
 @allow_build
 def build_list(request):
-    systems = models.System.build_objects.select_related().order_by('hostname')
+    system_list = models.System.build_objects.select_related().order_by('hostname')
+    paginator = Paginator(system_list, 25)
+
+    if 'page' in request.GET:
+        page = request.GET.get('page')
+    else:
+        page = 1
+
+    try:
+        systems = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        systems = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        systems = paginator.page(paginator.num_pages)
 
     return render_to_response('build/index.html', {
             'systems': systems,

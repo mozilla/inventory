@@ -1,4 +1,4 @@
-{% for system in systems %}
+{% for system in systems.object_list %}
 <tr>
     <td>
         <input type="checkbox" name="system_id" value="{{ system.pk }}" />
