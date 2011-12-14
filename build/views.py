@@ -50,6 +50,12 @@ class BuildSystemForm(forms.ModelForm):
 
 @allow_build
 def quicksearch_ajax(request):
+    quicksearch = None
+    if 'quicksearch' in request.GET:
+        quicksearch = request.GET.get('quicksearch')
+    if quicksearch is None:
+        quicksearch = request.POST.get('quicksearch')
+
     systems = models.System.build_objects.select_related().filter(
         hostname__icontains=request.POST['quicksearch']
     ).order_by('hostname')

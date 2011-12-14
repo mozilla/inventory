@@ -30,6 +30,21 @@
 	<tbody>
         {% include "build/tablebody_snippet.html" %}
 	</tbody>
+<tr><td colspan="12">
+    <span class="step-links">
+        {% if systems.has_previous %}
+            <a href="?page={{ systems.previous_page_number }}">Previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ systems.number }} of {{ systems.paginator.num_pages }}.
+        </span>
+
+        {% if systems.has_next %}
+            <a href="?page={{ systems.next_page_number }}">Next</a>
+        {% endif %}
+    </span>
+</td></tr>
 </table>
 <input type="submit" name="submit" value="Bulk Edit" />
 </form>
@@ -39,7 +54,7 @@
 <script>
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "{% url build-quicksearch %}");
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{% url build-quicksearch %}");
 	});
 </script>
 {% endblock %}

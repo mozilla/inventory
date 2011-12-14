@@ -1,4 +1,4 @@
-<form action="{{ "build-bulk-edit"|url() }}" method="get">
+<form action="{% url build-bulk-edit %}" method="get">
 <table id="quicksearch" class="listtable tablesorter">
 	<thead>
         <tr>
@@ -15,7 +15,7 @@
         </tr>
 	</thead>
 	<tbody>
-        {% include "build/tablebody_snippet.html" %}
+        {% include "build/quicksearch_tablebody_snippet.html" %}
 	</tbody>
 </table>
 <input type="submit" name="submit" value="Bulk Edit" />
