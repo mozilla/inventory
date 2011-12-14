@@ -526,10 +526,12 @@ def racks(request):
     from forms import RackFilterForm
     filter_form = RackFilterForm(request.GET)
 
-    racks = models.SystemRack.objects.select_related('location')
+    #racks = models.SystemRack.objects.select_related('location')
+    racks = []
 
     system_query = Q()
     if filter_form.is_valid():
+        racks = models.SystemRack.objects.select_related('location')
         if filter_form.cleaned_data['location']:
             racks = racks.filter(location=filter_form.cleaned_data['location'])
         if filter_form.cleaned_data['rack']:
