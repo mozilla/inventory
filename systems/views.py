@@ -557,9 +557,15 @@ def racks(request):
 def getoncall(request, type):
     from django.contrib.auth.models import User
     if type == 'desktop':
-        return_irc_nick = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].get_profile().irc_nick
+        try:
+            return_irc_nick = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].get_profile().irc_nick
+        except:
+            return_irc_nick = ''
     if type == 'sysadmin':
-        return_irc_nick = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].get_profile().irc_nick
+        try:
+            return_irc_nick = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].get_profile().irc_nick
+        except:
+            return_irc_nick = ''
     return HttpResponse(return_irc_nick)
 def oncall(request):
     from forms import OncallForm
