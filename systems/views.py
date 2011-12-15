@@ -554,6 +554,92 @@ def racks(request):
            },
            RequestContext(request))
 
+def getoncall(request, type):
+    from django.contrib.auth.models import User
+    if type == 'desktop':
+        return_irc_nick = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].get_profile().irc_nick
+    if type == 'sysadmin':
+        return_irc_nick = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].get_profile().irc_nick
+    return HttpResponse(return_irc_nick)
+def oncall(request):
+    from forms import OncallForm
+    from django.contrib.auth.models import User
+    #current_desktop_oncall = models.UserProfile.objects.get_current_desktop_oncall
+    try:
+        current_desktop_oncall = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].username
+    except IndexError:
+        current_desktop_oncall = ''
+    try:
+        current_sysadmin_oncall = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].username
+    except IndexError:
+        current_sysadmin_oncall = ''
+    initial = {
+        'desktop_support':current_desktop_oncall,
+        'sysadmin_support':current_sysadmin_oncall,
+            }
+    if request.method == 'POST':
+        form = OncallForm(request.POST, initial=initial)
+        if form.is_valid():
+            """
+               Couldn't get the ORM to update properly so running a manual transaction. For some reason, the model refuses to refresh
+            """
+            from django.db import connection, transaction
+            cursor = connection.cursor()
+            cursor.execute("UPDATE `user_profiles` set `current_desktop_oncall` = 0, `current_sysadmin_oncall` = 0")
+            transaction.commit_unless_managed()
+
+            ## There should only be one set oncall, but just in case it's cheap to loop through
+            ## @TODO Figure out why the orm won't update correctly after this transaction
+            """current_sysadmin_oncalls = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)
+            for c in current_sysadmin_oncalls:
+                c.get_profile().current_sysadmin_oncall = 0
+                c.get_profile().current_desktop_oncall = 0
+                c.get_profile().save()
+                c.save()
+            User.objects.update()
+            ## There should only be one set oncall, but just in case it's cheap to loop through
+            current_desktop_oncalls = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)
+            for c in current_desktop_oncalls:
+                c.get_profile().current_desktop_oncall = 0
+                c.get_profile().save()
+                c.save()
+            User.objects.update()"""
+
+            current_desktop_oncall = form.cleaned_data['desktop_support']
+            current_sysadmin_oncall = form.cleaned_data['sysadmin_support']
+            if current_desktop_oncall == current_sysadmin_oncall:
+                # Set the new desktop oncall
+                new_desktop_oncall = User.objects.get(username=current_desktop_oncall)
+                new_desktop_oncall.get_profile().current_desktop_oncall = 1
+                new_desktop_oncall.get_profile().current_sysadmin_oncall = 1
+                new_desktop_oncall.get_profile().save()
+                new_desktop_oncall.save()
+                print "==================================================== Saved Desktop and SysAdmin"
+                # Set the new desktop oncall
+            else:
+                new_desktop_oncall = User.objects.get(username=current_desktop_oncall)
+                new_desktop_oncall.get_profile().current_desktop_oncall = 1
+                new_desktop_oncall.get_profile().current_sysadmin_oncall = 0
+                new_desktop_oncall.get_profile().save()
+                new_desktop_oncall.save()
+                print "==================================================== Saved Desktop"
+                from django.contrib.auth.models import User
+                User.objects.update()
+
+                # Set the new sysadmin oncall
+                new_sysadmin_oncall = User.objects.get(username=current_sysadmin_oncall)
+                new_sysadmin_oncall.get_profile().current_sysadmin_oncall = 1
+                new_desktop_oncall.get_profile().current_desktop_oncall = 0
+                new_sysadmin_oncall.get_profile().save()
+                new_sysadmin_oncall.save()
+                print "==================================================== Saved Sysadmin"
+    else:
+        form = OncallForm(initial = initial)
+
+    return render_to_response('systems/generic_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
 
 def csv_import(request):
     from forms import CSVImportForm

@@ -8,6 +8,17 @@ except ImportError:
 import models
 from datetime import datetime, timedelta
 
+from django.contrib.auth.models import User
+
+class OncallForm(forms.Form):
+    desktop_support = forms.ChoiceField(label='Desktop Oncall',
+        choices=[('', 'None')] + [(m, m.get_profile().irc_nick)
+                    for m in User.objects.select_related().filter(userprofile__is_desktop_oncall=1)])
+    sysadmin_support = forms.ChoiceField(label='Sysadmin Oncall',
+        choices=[('', 'None')] + [(m, m.get_profile().irc_nick)
+                    for m in User.objects.select_related().filter(userprofile__is_sysadmin_oncall=1)])
+    class meta:
+        model = User
 
 class RackFilterForm(forms.Form):
 
