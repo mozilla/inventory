@@ -8,13 +8,6 @@ import forms
 
 from datetime import datetime, timedelta
 
-info_dict = {
-    'queryset': models.UnmanagedSystem.objects.select_related(
-                    'owner', 'server_model', 'operating_system'
-                ).order_by('owner__name'),
-    'extra_context':{'BUG_URL':settings.BUG_URL},
-    'template_object_name': 'user_system'
-}
 info_dict_by_asset_tag = {
     'queryset': models.UnmanagedSystem.objects.filter(id=6).select_related(
                     'owner', 'server_model', 'operating_system'
