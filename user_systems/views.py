@@ -241,6 +241,17 @@ def show_by_model(request, object_id):
            },
            RequestContext(request))
 
+def user_system_show(request, object_id):
+    system = get_object_or_404(models.UnmanagedSystem, id=object_id)
+    #system = models.UnmanagedSystem.objects.select_related(
+    #                'owner', 'server_model', 'operating_system'
+    #                 ).filter(asset_tag=id).order_by('owner__name')
+
+    #system = get_object_or_404(models.UnmanagedSystem
+    return render_to_response('user_systems/unmanagedsystem_detail.html', {
+            'user_system': system,
+           },
+           RequestContext(request))
 def user_system_show_by_asset_tag(request, id):
     system = get_object_or_404(models.UnmanagedSystem, asset_tag=id)
     #system = models.UnmanagedSystem.objects.select_related(
