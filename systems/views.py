@@ -613,32 +613,8 @@ def oncall(request):
 
             current_desktop_oncall = form.cleaned_data['desktop_support']
             current_sysadmin_oncall = form.cleaned_data['sysadmin_support']
-            if current_desktop_oncall == current_sysadmin_oncall:
-                # Set the new desktop oncall
-                new_desktop_oncall = User.objects.get(username=current_desktop_oncall)
-                new_desktop_oncall.get_profile().current_desktop_oncall = 1
-                new_desktop_oncall.get_profile().current_sysadmin_oncall = 1
-                new_desktop_oncall.get_profile().save()
-                new_desktop_oncall.save()
-                print "==================================================== Saved Desktop and SysAdmin"
-                # Set the new desktop oncall
-            else:
-                new_desktop_oncall = User.objects.get(username=current_desktop_oncall)
-                new_desktop_oncall.get_profile().current_desktop_oncall = 1
-                new_desktop_oncall.get_profile().current_sysadmin_oncall = 0
-                new_desktop_oncall.get_profile().save()
-                new_desktop_oncall.save()
-                print "==================================================== Saved Desktop"
-                from django.contrib.auth.models import User
-                User.objects.update()
-
-                # Set the new sysadmin oncall
-                new_sysadmin_oncall = User.objects.get(username=current_sysadmin_oncall)
-                new_sysadmin_oncall.get_profile().current_sysadmin_oncall = 1
-                new_desktop_oncall.get_profile().current_desktop_oncall = 0
-                new_sysadmin_oncall.get_profile().save()
-                new_sysadmin_oncall.save()
-                print "==================================================== Saved Sysadmin"
+            set_oncall('desktop', current_desktop_oncall)
+            set_oncall('sysadmin', current_sysadmin_oncall)
     else:
         form = OncallForm(initial = initial)
 
@@ -646,6 +622,18 @@ def oncall(request):
             'form': form,
            },
            RequestContext(request))
+def set_oncall(type, username):
+    from django.contrib.auth.models import User
+    try:
+        new_oncall = User.objects.get(username=username)
+        if type=='desktop':
+            new_oncall.get_profile().current_desktop_oncall = 0
+        if type=='sysadmin':
+            new_oncall.get_profile().current_sysadmin_oncall = 1
+        new_oncall.get_profile().save()
+        new_oncall.save()
+    except:
+        pass
 
 def csv_import(request):
     from forms import CSVImportForm

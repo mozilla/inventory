@@ -17,7 +17,7 @@ import settings
 from settings.local import USER_SYSTEM_ALLOWED_DELETE
 from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 @csrf_exempt
 def owners_quicksearch_ajax(request):
     """Returns systems sort table"""
@@ -178,6 +178,31 @@ def user_system_view(request, template, data, instance=None):
 
 def license_new(request):
 	return render_to_response('user_systems/userlicense_new.html')
+
+def user_system_index(request):
+    from settings import BUG_URL as BUG_URL
+    system_list = models.UnmanagedSystem.objects.select_related('owner', 'server_model', 'operating_system').order_by('owner__name')
+    paginator = Paginator(system_list, 25)                                                                        
+                    
+    if 'page' in request.GET:
+        page = request.GET.get('page')
+    else:   
+        page = 1
+        
+    try:
+        systems = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        systems = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        systems = paginator.page(paginator.num_pages)
+
+    return render_to_response('user_systems/unmanagedsystem_list.html', {
+            'user_system_list': systems,
+            'BUG_URL': BUG_URL
+            },RequestContext(request) )
+        
 
 def license_delete(request, object_id):
     from misc.generic_views import delete_object
