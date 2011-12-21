@@ -627,13 +627,13 @@ def set_oncall(type, username):
     try:
         new_oncall = User.objects.get(username=username)
         if type=='desktop':
-            new_oncall.get_profile().current_desktop_oncall = 0
+            new_oncall.get_profile().current_desktop_oncall = 1
         if type=='sysadmin':
             new_oncall.get_profile().current_sysadmin_oncall = 1
         new_oncall.get_profile().save()
         new_oncall.save()
-    except:
-        pass
+    except Exception, e:
+        print e
 
 def csv_import(request):
     from forms import CSVImportForm
