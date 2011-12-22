@@ -179,6 +179,12 @@ def user_system_view(request, template, data, instance=None):
 def license_new(request):
 	return render_to_response('user_systems/userlicense_new.html')
 
+def license_show(request, object_id):
+    license = get_object_or_404(models.UserLicense, pk=object_id)
+
+    return render_to_response('user_systems/userlicense_detail.html', {
+            'license': license,
+            },RequestContext(request) )
 def license_index(request):
     from settings import BUG_URL as BUG_URL
     system_list = models.UserLicense.objects.select_related('owner').all()
@@ -233,7 +239,7 @@ def license_delete(request, object_id):
     if request.user.username in USER_SYSTEM_ALLOWED_DELETE:
         return delete_object(request, model=models.UserLicense, object_id=object_id,post_delete_redirect='license-list')
     else:
-        send_mail('Unauthorized Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (license, request.user.username), settings.local.FROM_EMAIL_ADDRESS,settings.local.UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
+        send_mail('Unauthorized Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (license, request.user.username), settings.local.FROM_EMAIL_ADDRESS,settings.local.UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=True)
                     
         return render_to_response('user_systems/unauthorized_delete.html', {
                 'content': "You're not authorized to delete",
