@@ -55,17 +55,17 @@ class OwnerForm(forms.ModelForm):
 class UserLicenseForm(forms.ModelForm):
     @return_data_if_true
     def clean_owner(self):
-	name = self.data.get('js_owner_name')
-	#user_location = self.data.get('js_owner_user_location')
-	email = self.data.get('js_owner_email')
-	note = self.data.get('js_owner_note')
-	if name is not None:
-		owner, c = Owner.objects.get_or_create(
-			name = name,
-			#user_location=user_location,
-			email = email,
-			note = note)
-		return owner
+        name = self.data.get('js_owner_name')
+        #user_location = self.data.get('js_owner_user_location')
+        email = self.data.get('js_owner_email')
+        note = self.data.get('js_owner_note')
+        if name is not none:
+            owner, c = owner.objects.get_or_create(
+                    name = name,
+                    #user_location=user_location,
+                    email = email,
+                    note = note)
+            return owner
     class Meta:
         model = UserLicense
         fields = ['username', 'version', 'license_type', 'license_key', 'owner', 'user_operating_system']

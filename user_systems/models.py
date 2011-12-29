@@ -11,8 +11,8 @@ YES_NO_CHOICES = (
 
 
 OS_CHOICES = (
-	('2', 'Windows'),
-	('1', 'Mac OS'),
+	(1, 'Mac OS'),
+	(2, 'Windows'),
 	)
 
 

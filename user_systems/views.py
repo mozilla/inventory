@@ -14,7 +14,7 @@ import models
 from systems import models as system_models
 from libs import ldap_lib
 import settings
-from settings.local import USER_SYSTEM_ALLOWED_DELETE
+from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS
 from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -251,7 +251,7 @@ def unmanaged_system_delete(request, object_id):
     if request.user.username in USER_SYSTEM_ALLOWED_DELETE:
         return delete_object(request, model=models.UnmanagedSystem, object_id=object_id,post_delete_redirect='user-system-list')
     else:
-        send_mail('Unauthorized Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (user_system, request.user.username), settings.local.FROM_EMAIL_ADDRESS,settings.local.UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
+        send_mail('Unauthorized Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
                     
         return render_to_response('user_systems/unauthorized_delete.html', {
                 'content': "You're not authorized to delete",
