@@ -57,7 +57,7 @@ def owner_list(request):
            },
            RequestContext(request))
 def owner_show(request, object_id):
-    owner = get_object_or_404(models.UserLicense, pk=object_id)
+    owner = get_object_or_404(models.Owner, pk=object_id)
 
     return render_to_response('user_systems/owner_detail.html', {
             'owner': owner,
