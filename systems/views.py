@@ -106,10 +106,10 @@ def list_all_systems_ajax(request):
         search_q |= Q(notes__contains=search_term)
         search_q |= Q(asset_tag=search_term)
         search_q |= Q(oob_ip__contains=search_term)
-        #search_q |= Q(keyvalue__key__contains='ipv4_address', keyvalue__value__contains=search_term)
+        search_q |= Q(keyvalue__value__contains=search_term)
         total_count = models.System.with_related.filter(search_q).count()
         end_display = int(iDisplayStart) + int(iDisplayLength)
-        systems = models.System.with_related.filter(search_q).order_by('hostname')[iDisplayStart:end_display]
+        systems = models.System.with_related.filter(search_q).order_by('hostname').distinct('hostname')[iDisplayStart:end_display]
         the_data = build_json(request, systems, sEcho, total_count, iDisplayLength, sort_col, sort_dir)
     return HttpResponse(the_data)
 
