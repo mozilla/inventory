@@ -119,7 +119,7 @@ class UserLicense(models.Model):
     username = models.CharField(max_length=255, blank=True)
     version = models.CharField(max_length=255, blank=True)
     license_type = models.CharField(max_length=255, blank=True)
-    license_key = models.CharField(max_length=255, blank=True)
+    license_key = models.CharField(max_length=255, blank=False)
     owner = models.ForeignKey('Owner', blank=True, null=True)
     user_operating_system = models.IntegerField(choices=OS_CHOICES, blank=True, null=True)
     search_fields = (

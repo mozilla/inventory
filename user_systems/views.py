@@ -6,7 +6,7 @@ from django.forms.extras.widgets import SelectDateWidget
 from django.db import connection
 from django.db.models import Q
 from django.utils import simplejson as json
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.core.mail import send_mail
 
 import forms
@@ -32,7 +32,21 @@ def owners_quicksearch_ajax(request):
             'owners': owners,
            },
            RequestContext(request))
+@csrf_exempt
+def license_new(request):
+    initial = {}
+    if request.method == 'POST':
+        form = forms.UserLicenseForm(request.POST, initial=initial)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/user_systems/licenses/')
+    else:
+        form = forms.UserLicenseForm(initial=initial)
 
+    return render_to_response('user_systems/userlicense_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
 @csrf_exempt
 def license_quicksearch_ajax(request):
     """Returns systems sort table"""
@@ -176,8 +190,8 @@ def user_system_view(request, template, data, instance=None):
     return render_to_response(template, data, RequestContext(request))
 
 
-def license_new(request):
-	return render_to_response('user_systems/userlicense_new.html')
+#def license_new(request):
+#	return render_to_response('user_systems/userlicense_new.html')
 
 def license_show(request, object_id):
     license = get_object_or_404(models.UserLicense, pk=object_id)

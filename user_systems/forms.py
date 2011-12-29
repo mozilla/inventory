@@ -59,8 +59,8 @@ class UserLicenseForm(forms.ModelForm):
         #user_location = self.data.get('js_owner_user_location')
         email = self.data.get('js_owner_email')
         note = self.data.get('js_owner_note')
-        if name is not none:
-            owner, c = owner.objects.get_or_create(
+        if name is not None:
+            owner, c = Owner.objects.get_or_create(
                     name = name,
                     #user_location=user_location,
                     email = email,
