@@ -15,18 +15,7 @@ info_dict_by_asset_tag = {
     'template_object_name': 'user_system'
 }
 
-mod_dict = {
-    'model': models.UnmanagedSystem,
-    'post_delete_redirect': 'user-system-list'
-}
 
-owner_info_dict = {
-    'queryset': models.Owner.objects.select_related('user_location').all(),
-    'extra_context': {'upgradeable_users': models.Owner.objects.filter(
-        unmanagedsystem__date_purchased__lt=datetime.now() - timedelta(days=730)
-        ).distinct().count()},
-    'template_object_name': 'owner'
-}
 
 owner_upgrade_info_dict = {
     'queryset': models.Owner.objects.filter(
@@ -36,16 +25,7 @@ owner_upgrade_info_dict = {
     'template_name': 'user_systems/owner_upgradeable_list.html'
 }
 
-owner_del_dict = {
-    'model': models.Owner,
-    'post_delete_redirect': 'owner-list',
-}
 
-owner_mod_dict = {
-    'form_class': forms.OwnerForm,
-    'template_name': 'user_systems/owner_form.html',
-    'post_save_redirect': 'owner-list'
-}
 
 
 urlpatterns = patterns('user_systems',
@@ -58,24 +38,20 @@ urlpatterns = patterns('user_systems',
     url(r'^show/a(\d+)/$', 'views.user_system_show_by_asset_tag', name="user-system-show-by-asset-tag"),
     #url(r'^show/(?P<object_id>\d+)/$', object_detail, info_dict, name="user-system-show"),
     url(r'^show/(?P<object_id>\d+)/$', 'views.user_system_show', name="user-system-show"),
-    #url(r'^delete/(?P<object_id>\d+)/$', delete_object, mod_dict, name='user-system-delete'),
     url(r'^delete/(?P<object_id>\d+)/$', 'views.unmanaged_system_delete', name='user-system-delete'),
     url(r'^csv/$', 'views.user_system_csv', name="user-system-csv"),
     url(r'^fillincsv/$', 'views.fillin_csv', name="user-system-fillin-csv"),
 
     url(r'^owners/new/$', 'views.owner_create', name="owner-new"),
-    url(r'^owners/edit/(?P<object_id>\d+)/$', update_object, owner_mod_dict, name="owner-edit"),
-    #url(r'^owners/$', object_list, owner_info_dict, name="owner-list"),
+    url(r'^owners/edit/(?P<object_id>\d+)/$', 'views.owner_edit', name="owner-edit"),
     url(r'^owners/$', 'views.owner_list', name="owner-list"),
     url(r'^owners/show/(?P<object_id>\d+)/$', 'views.owner_show', name="owner-show"),
-    #url(r'^owners/show/(?P<object_id>\d+)/$', object_detail, owner_info_dict, name="owner-show"),
-    url(r'^owners/delete/(?P<object_id>\d+)/$', delete_object, owner_del_dict, name='owner-delete'),
+    url(r'^owners/delete/(?P<object_id>\d+)/$', 'views.owner_delete', name='owner-delete'),
     url(r'^owners/upgradeable/$', object_list, owner_upgrade_info_dict, name="owner-upgradeable"),
     url(r'^owners/quicksearch/$', 'views.owners_quicksearch_ajax', name='owners-quicksearch'),
 
     url(r'^licenses/quicksearch/$', 'views.license_quicksearch_ajax', name='license-quicksearch'),
     #url(r'^licenses/new/$', 'views.license_new', name='license-new'),
-    #url(r'^licenses/new/$', create_object, license_mod_dict, name="license-new"),
     url(r'^licenses/new[/]$', 'views.license_new', name="license-new"),
     url(r'^licenses/edit/(?P<object_id>\d+)[/]$', 'views.license_edit', name="license-edit"),
     #url(r'^licenses/$', object_list, license_info_dict, name="license-list"),

@@ -63,7 +63,33 @@ def owner_show(request, object_id):
             'owner': owner,
            },
            RequestContext(request))
+
+def owner_delete(request, object_id):
+    owner = get_object_or_404(models.Owner, pk=object_id)
+    if request.method == "POST":
+        owner.delete()
+        return HttpResponseRedirect('/user_systems/owners/')
+    else:
+        return render_to_response('user_systems/owner_confirm_delete.html', {
+                'owner': owner,
+            },
+            RequestContext(request))
 @csrf_exempt
+def owner_edit(request, object_id):
+    owner = get_object_or_404(models.Owner, pk=object_id)
+    initial = {}
+    if request.method == 'POST':
+        form = forms.OwnerForm(request.POST, instance=owner)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/user_systems/owners/')
+    else:
+        form = forms.OwnerForm(instance=owner)
+
+    return render_to_response('user_systems/owner_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
 def owner_create(request):
     initial = {}
     if request.method == 'POST':
