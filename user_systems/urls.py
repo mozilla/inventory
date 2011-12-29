@@ -47,21 +47,6 @@ owner_mod_dict = {
     'post_save_redirect': 'owner-list'
 }
 
-license_info_dict = {
-    'queryset': models.UserLicense.objects.select_related('owner').all(),
-    'template_object_name': 'license'
-}
-
-license_del_dict = {
-    'model': models.UserLicense,
-    'post_delete_redirect': 'license-list',
-}
-
-license_mod_dict = {
-    'form_class': forms.UserLicenseForm,
-    'template_name': 'user_systems/userlicense_form.html',
-    'post_save_redirect': 'license-list'
-}
 
 urlpatterns = patterns('user_systems',
     url(r'^quicksearch/$', 'views.user_system_quicksearch_ajax', name='user-system-quicksearch'),
@@ -78,10 +63,12 @@ urlpatterns = patterns('user_systems',
     url(r'^csv/$', 'views.user_system_csv', name="user-system-csv"),
     url(r'^fillincsv/$', 'views.fillin_csv', name="user-system-fillin-csv"),
 
-    url(r'^owners/new/$', create_object, owner_mod_dict, name="owner-new"),
+    url(r'^owners/new/$', 'views.owner_create', name="owner-new"),
     url(r'^owners/edit/(?P<object_id>\d+)/$', update_object, owner_mod_dict, name="owner-edit"),
-    url(r'^owners/$', object_list, owner_info_dict, name="owner-list"),
-    url(r'^owners/show/(?P<object_id>\d+)/$', object_detail, owner_info_dict, name="owner-show"),
+    #url(r'^owners/$', object_list, owner_info_dict, name="owner-list"),
+    url(r'^owners/$', 'views.owner_list', owner_info_dict, name="owner-list"),
+    url(r'^owners/show/(?P<object_id>\d+)/$', 'views.owner_show', name="owner-show"),
+    #url(r'^owners/show/(?P<object_id>\d+)/$', object_detail, owner_info_dict, name="owner-show"),
     url(r'^owners/delete/(?P<object_id>\d+)/$', delete_object, owner_del_dict, name='owner-delete'),
     url(r'^owners/upgradeable/$', object_list, owner_upgrade_info_dict, name="owner-upgradeable"),
     url(r'^owners/quicksearch/$', 'views.owners_quicksearch_ajax', name='owners-quicksearch'),
@@ -90,7 +77,7 @@ urlpatterns = patterns('user_systems',
     #url(r'^licenses/new/$', 'views.license_new', name='license-new'),
     #url(r'^licenses/new/$', create_object, license_mod_dict, name="license-new"),
     url(r'^licenses/new[/]$', 'views.license_new', name="license-new"),
-    url(r'^licenses/edit/(?P<object_id>\d+)/$', update_object, license_mod_dict, name="license-edit"),
+    url(r'^licenses/edit/(?P<object_id>\d+)[/]$', 'views.license_edit', name="license-edit"),
     #url(r'^licenses/$', object_list, license_info_dict, name="license-list"),
     url(r'^licenses/$', 'views.license_index', name="license-list"),
     #url(r'^licenses/show/(?P<object_id>\d+)/$', object_detail, license_info_dict, name="license-show"),

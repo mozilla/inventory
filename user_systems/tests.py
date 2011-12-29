@@ -7,17 +7,18 @@ Replace these with more appropriate tests for your application.
 
 from django.test import TestCase
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
+from django.test.client import Client
 
-__test__ = {"doctest": """
-Another way to test that 1 + 1 is equal to 2.
-
->>> 1 + 1 == 2
-True
-"""}
-
+class OwnerTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+    def test_owner_list(self):
+        resp = self.client.get('/user_systems/owners/', follow=True)
+        self.assertEqual(resp.status_code,200)
+        print resp.context[0]['owner_list']
+        self.assertTrue(len(resp.context[0]['owner_list']) > 0)
+    def test_owner_show(self):
+        resp = self.client.get('/user_systems/owners/show/1/', follow=True)
+        self.assertEqual(resp.status_code,200)
+        print resp.context[0]['owner_list']
+        self.assertTrue(len(resp.context[0]['owner_list']) > 0)

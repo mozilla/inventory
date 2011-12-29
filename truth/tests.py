@@ -19,14 +19,14 @@ class TruthTest(TestCase):
         self.new_key_description = 'Updated New Test Description'
 
     def test_index(self):
-        resp = self.client.get('/truth/')
+        resp = self.client.get('/truth/', follow=True)
         self.assertEqual(200, resp.status_code)
 
     def test_create(self):
 
-        resp = self.client.get('/truth/create/')
+        resp = self.client.get('/truth/create/', follow=True)
         self.assertEqual(200, resp.status_code)
-        resp = self.client.post('/truth/create/', {'name':self.key_name, 'description':self.key_description})
+        resp = self.client.post('/truth/create/', {'name':self.key_name, 'description':self.key_description}, follow=True)
         self.assertEqual(302, resp.status_code)
         kv = Truth.objects.get(name=self.key_name)
         self.assertEqual(kv.name, self.key_name)
@@ -34,16 +34,16 @@ class TruthTest(TestCase):
 
     def test_update(self):
         update_url = '/truth/edit/1/'
-        resp = self.client.post(update_url, {'name':self.new_key_name, 'description':self.new_key_description})
+        resp = self.client.post(update_url, {'name':self.new_key_name, 'description':self.new_key_description}, follow=True)
         self.assertEqual(200, resp.status_code)
         kv = Truth.objects.get(id=1)
         self.assertEqual(kv.name, self.new_key_name)
         self.assertEqual(kv.description, self.new_key_description)
 
     def test_delete(self):
-        resp = self.client.post('/truth/delete/1/')
+        resp = self.client.post('/truth/delete/1/', follow=True)
         self.assertEqual(302, resp.status_code)
-        resp = self.client.get('/truth/create/1/', {'name':self.key_name, 'description':self.key_description})
+        resp = self.client.get('/truth/create/1/', {'name':self.key_name, 'description':self.key_description}, follow=True)
         self.assertEqual(404, resp.status_code)
         try:
             kv = Truth.objects.get(id=1)

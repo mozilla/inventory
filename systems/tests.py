@@ -8,6 +8,7 @@ Replace these with more appropriate tests for your application.
 
 from django.test import TestCase
 from django.test.client import Client
+import manage
 from models import KeyValue, System
 try:
     import json

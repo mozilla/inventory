@@ -12,6 +12,7 @@ from django.core.mail import send_mail
 import forms
 import models
 from systems import models as system_models
+from datetime import datetime, timedelta
 from libs import ldap_lib
 import settings
 from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS
@@ -33,6 +34,43 @@ def owners_quicksearch_ajax(request):
            },
            RequestContext(request))
 @csrf_exempt
+def license_edit(request, object_id):
+    license = get_object_or_404(models.UserLicense, pk=object_id)
+    if request.method == 'POST':
+        form = forms.UserLicenseForm(request.POST, instance=license)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/user_systems/licenses/')
+    else:
+        form = forms.UserLicenseForm(instance=license)
+
+    return render_to_response('user_systems/userlicense_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
+def owner_list(request):
+    owners = models.Owner.objects.select_related('user_location').all()
+    upgradeable_users = models.Owner.objects.filter(unmanagedsystem__date_purchased__lt=datetime.now() - timedelta(days=730)).distinct().count()
+    return render_to_response('user_systems/owner_list.html', {
+            'owner_list': owners,
+            'upgradeable_users':upgradeable_users,
+           },
+           RequestContext(request))
+@csrf_exempt
+def owner_create(request):
+    initial = {}
+    if request.method == 'POST':
+        form = forms.OwnerForm(request.POST, initial=initial)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/user_systems/owners/')
+    else:
+        form = forms.OwnerForm(initial=initial)
+
+    return render_to_response('user_systems/owner_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
 def license_new(request):
     initial = {}
     if request.method == 'POST':

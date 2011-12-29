@@ -30,7 +30,7 @@ class TestMacroExpansion(TestCase):
 #TODO Add checks for setting every property of a sytem through the api
 class SystemApi(TestCase):
     fixtures = ['testdata.json']
-    new_hostname = 'new_hostname999'
+    new_hostname = 'new_hostname999asdf'
     new_host_id = 3
 
     def setup(self):
@@ -61,7 +61,9 @@ class SystemApi(TestCase):
 
     def test_update_system(self):
         resp = self.client.post('/api/v2/system/%s/' % self.new_hostname, follow=True)
-        self.assertEqual(201, resp.status_code)
+        print "The hostname is: %s" % self.new_hostname
+        print "The response is: %s" % resp.content
+        self.assertEqual(200, resp.status_code)
         resp = self.client.put('/api/v2/system/%i/' % (5), {'hostname':'updated_hostname'}, follow=True)
         self.assertEqual(200, resp.status_code)
         resp = self.client.get('/api/v2/system/%i/' % (5), follow=True)

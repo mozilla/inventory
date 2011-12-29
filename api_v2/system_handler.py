@@ -77,6 +77,9 @@ class SystemHandler(BaseHandler):
                         pass
                 if s is not None:
                     return s
+                else:
+                    resp = rc.NOT_FOUND
+                    return resp
             except Exception, e:
                 resp = rc.NOT_FOUND
                 return resp
@@ -118,7 +121,7 @@ class SystemHandler(BaseHandler):
         return resp
     def update(self, request, system_id=None):
         model = System
-    	if request.method == 'PUT':
+    	if request.method == 'PUT' or request.method == 'POST':
             try:
                 try:
                     s = System.objects.get(id=system_id)
