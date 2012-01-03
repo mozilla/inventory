@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block content %}
 <dl class="show">
     <dt>Name:</dt>
@@ -13,6 +13,6 @@
 </dl>
 
 <div style="clear:both;"></div>
-<a href="{% url location-edit object.id %}">Edit</a>
-<a href="{% url location-list %}">Back</a>
+<a href="{{ "location-edit"|url(object.id) }}">Edit</a>
+<a href="{{ "location-list"|url() }}">Back</a>
 {% endblock %}

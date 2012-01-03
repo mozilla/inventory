@@ -678,6 +678,13 @@ def rack_new(request):
             'form': form,
            },
            RequestContext(request))
+def location_show(request, object_id):
+    object = get_object_or_404(models.Location, pk=object_id)
+
+    return render_to_response('systems/location_detail.html', {
+            'object': object,
+           },
+           RequestContext(request))
 def location_new(request):
     from forms import LocationForm
     initial = {}
