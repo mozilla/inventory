@@ -693,6 +693,12 @@ def location_new(request):
             'form': form,
            },
            RequestContext(request))
+def location_list(request):
+    object_list = models.Location.objects.all()
+    return render_to_response('systems/location_list.html', {
+            'object_list': object_list,
+           },
+           RequestContext(request))
 def csv_import(request):
     from forms import CSVImportForm
     def generic_getter(field):
