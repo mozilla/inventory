@@ -24,6 +24,10 @@ class SystemRackForm(forms.ModelForm):
     class Meta:
         model = models.SystemRack
 
+class LocationForm(forms.ModelForm):
+    class Meta:
+        model = models.Location
+
 class RackFilterForm(forms.Form):
 
     location = forms.ChoiceField(

@@ -674,7 +674,22 @@ def rack_new(request):
     else:
         form = SystemRackForm(initial=initial)
 
-    return render_to_response('user_systems/owner_form.html', {
+    return render_to_response('generic_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
+def location_new(request):
+    from forms import LocationForm
+    initial = {}
+    if request.method == 'POST':
+        form = LocationForm(request.POST, initial=initial)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/systems/locations/')
+    else:
+        form = LocationForm(initial=initial)
+
+    return render_to_response('generic_form.html', {
             'form': form,
            },
            RequestContext(request))
