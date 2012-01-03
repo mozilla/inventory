@@ -20,6 +20,10 @@ class OncallForm(forms.Form):
     class meta:
         model = User
 
+class SystemRackForm(forms.ModelForm):
+    class Meta:
+        model = models.SystemRack
+
 class RackFilterForm(forms.Form):
 
     location = forms.ChoiceField(

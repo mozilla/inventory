@@ -193,10 +193,6 @@ class SystemRack(models.Model):
     name = models.CharField(max_length=255, blank=True)
     location = models.ForeignKey('Location')
 
-    def save(self, *args, **kwargs):
-        kwargs['using'] = 'default'
-        super(SystemRack, self).save(*args, **kwargs)
-
     def __unicode__(self):
         return self.name
 

@@ -635,7 +635,49 @@ def set_oncall(type, username):
         new_oncall.save()
     except Exception, e:
         print e
+def rack_delete(request, object_id):
+    from models import SystemRack
+    rack = get_object_or_404(SystemRack, pk=object_id)
+    if request.method == "POST":
+        rack.delete()
+        return HttpResponseRedirect('/systems/racks/')
+    else:
+        return render_to_response('systems/rack_confirm_delete.html', {
+                'rack': rack,
+            },
+            RequestContext(request))
 
+def rack_edit(request, object_id):
+    rack = get_object_or_404(models.SystemRack, pk=object_id)
+    from forms import SystemRackForm
+    initial = {}
+    if request.method == 'POST':
+        form = SystemRackForm(request.POST, instance=rack)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/systems/racks/')
+    else:
+        form = SystemRackForm(instance=rack)
+
+    return render_to_response('systems/rack_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
+def rack_new(request):
+    from forms import SystemRackForm
+    initial = {}
+    if request.method == 'POST':
+        form = SystemRackForm(request.POST, initial=initial)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/systems/racks/')
+    else:
+        form = SystemRackForm(initial=initial)
+
+    return render_to_response('user_systems/owner_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
 def csv_import(request):
     from forms import CSVImportForm
     def generic_getter(field):

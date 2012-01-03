@@ -25,17 +25,11 @@ def delete_object(*args, **kwargs):
     return create_update.delete_object(*args, **kwargs)
 
 def create_object(*args, **kwargs):
-    try:
-        kwargs['post_save_redirect'] = reverse(kwargs['post_save_redirect'])
-    except:
-        pass
+    kwargs['post_save_redirect'] = reverse(kwargs['post_save_redirect'])
     kwargs['template_name'] = kwargs.get('template_name', 'systems/generic_form.html')
     return create_update.create_object(*args, **kwargs)
 
 def update_object(*args, **kwargs):
-    try:
-        kwargs['post_save_redirect'] = reverse(kwargs['post_save_redirect'])
-    except:
-        pass
+    kwargs['post_save_redirect'] = reverse(kwargs['post_save_redirect'])
     kwargs['template_name'] = kwargs.get('template_name', 'systems/generic_form.html')
     return create_update.update_object(*args, **kwargs)
