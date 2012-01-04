@@ -685,6 +685,22 @@ def location_show(request, object_id):
             'object': object,
            },
            RequestContext(request))
+def location_edit(request, object_id):
+    location = get_object_or_404(models.Location, pk=object_id)
+    from forms import LocationForm
+    initial = {}
+    if request.method == 'POST':
+        form = LocationForm(request.POST, instance=location)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/systems/locations/')
+    else:
+        form = LocationForm(instance=location)
+
+    return render_to_response('generic_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
 def location_new(request):
     from forms import LocationForm
     initial = {}

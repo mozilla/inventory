@@ -40,7 +40,7 @@ urlpatterns = patterns('systems',
     #url(r'^server_models/delete/(?P<object_id>\d+)/$', delete_object, gen_del_dict(ServerModel, 'server_model-list'), name='server_model-delete'),
 
     url(r'^locations/new/$', 'views.location_new', name="location-new"),
-    url(r'^locations/edit/(?P<object_id>\d+)/$', update_object, gen_mod_dict(Location, 'location-list'), name="location-edit"),
+    url(r'^locations/edit/(?P<object_id>\d+)/$', 'views.location_edit', name="location-edit"),
     url(r'^locations/$', 'views.location_list', name="location-list"),
     url(r'^locations/show/(?P<object_id>\d+)/$', 'views.location_show', name="location-show"),
     #url(r'^locations/delete/(?P<object_id>\d+)/$', delete_object, gen_del_dict(Location, 'location-list'), name='location-delete'),
