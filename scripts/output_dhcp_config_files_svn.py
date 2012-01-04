@@ -8,6 +8,7 @@ except:
     from django.utils import simplejson as json
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)))
+import manage
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
 
 from django.test.client import Client
