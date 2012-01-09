@@ -16,6 +16,8 @@ except:
     from django.utils import simplejson as json
 
 from inventory.systems import models
+from test_utils import setup_test_environment,TestCase
+setup_test_environment()
 
 class BlankTest(TestCase):
     fixtures = ['testdata.json']
@@ -83,16 +85,17 @@ class SimpleTest(TestCase):
         res = self.client.post('/system/new/', self.system_post)
 
     def test_quicksearch_by_hostname(self):
-        resp = self.client.post("/systems/quicksearch/", {'quicksearch':'natasha', 'is_test':'True'})
+        resp = self.client.post("/en-US/systems/quicksearch/", {'quicksearch':'fake-hostname2', 'is_test':'True'}, follow=True)
         self.assertEqual(resp.status_code, 200)
         obj = json.loads(resp.content)
+        print obj
         self.assertEqual(1,obj[0]['pk'])
-        self.assertEqual('natasha',obj[0]['fields']['hostname'])
+        self.assertEqual('fake-hostname2',obj[0]['fields']['hostname'])
 
     def test_quicksearch_by_asset_tag(self):
-        resp = self.client.post("/systems/quicksearch/", {'quicksearch':'65432', 'is_test':'True'})
+        resp = self.client.post("/en-US/systems/quicksearch/", {'quicksearch':'65432', 'is_test':'True'})
         self.assertEqual(resp.status_code, 200)
         obj = json.loads(resp.content)
         self.assertEqual(1,obj[0]['pk'])
-        self.assertEqual('natasha',obj[0]['fields']['hostname'])
+        self.assertEqual('fake-hostname2',obj[0]['fields']['hostname'])
 
