@@ -81,3 +81,4 @@ AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.RemoteUserBackend',
     )
 AUTH_PROFILE_MODULE = "systems.UserProfile"
+PISTON_IGNORE_DUPE_MODELS = True

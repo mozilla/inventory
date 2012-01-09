@@ -51,7 +51,7 @@ class SystemApi(TestCase):
         self.assertEqual(200, resp.status_code)
 
     def test_create_system(self):
-        resp = self.client.post('/api/v2/system/%s/' % self.new_hostname, follow=True)
+        resp = self.client.post('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
         self.assertEqual(201, resp.status_code)
         resp = self.client.get('/api/v2/system/%i/' % self.new_host_id, follow=True)
         self.assertEqual(200, resp.status_code)
@@ -60,25 +60,28 @@ class SystemApi(TestCase):
         self.assertEqual(json.loads(resp.content)['hostname'], self.new_hostname)
 
     def test_update_system(self):
-        resp = self.client.post('/api/v2/system/%s/' % self.new_hostname, follow=True)
-        print "The hostname is: %s" % self.new_hostname
-        print "The response is: %s" % resp.content
-        self.assertEqual(200, resp.status_code)
-        resp = self.client.put('/api/v2/system/%i/' % (5), {'hostname':'updated_hostname'}, follow=True)
+        self.client.delete('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
+        resp = self.client.post('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
+        obj = json.loads(resp.content.split(" = ")[1])
+        self.assertEqual(201, resp.status_code)
+        resp = self.client.put('/en-US/api/v2/system/%i/' % (obj['id']), {'hostname':'updated_hostname'}, follow=True)
         self.assertEqual(200, resp.status_code)
         resp = self.client.get('/api/v2/system/%i/' % (5), follow=True)
         self.assertEqual(200, resp.status_code)
         self.assertEqual(json.loads(resp.content)['hostname'], 'updated_hostname')
 
     def test_delete_system(self):
-        resp = self.client.post('/api/v2/system/%s/' % self.new_hostname, follow=True)
+        resp = self.client.post('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
         self.assertEqual(201, resp.status_code)
-        resp = self.client.delete('/api/v2/system/%i/' % (4), follow=True)
+        obj = json.loads(resp.content.split(" = ")[1])
+        resp = self.client.delete('/en-US/api/v2/system/%i/' % (obj['id']), follow=True)
         self.assertEqual(200, resp.status_code)
-        resp = self.client.get('/api/v2/system/%i/' % (4), follow=True)
+        obj = json.loads(resp.content.split(" = ")[1])
+        resp = self.client.get('/api/v2/system/%i/' % (obj['id']), follow=True)
         self.assertEqual(404, resp.status_code)
         resp = self.client.get('/api/v2/system/%s/' % self.new_hostname, follow=True)
         self.assertEqual(404, resp.status_code)
+
     def test_key_value_tree(self):
         tree = KeyValueTree('fake-hostname2').final
         self.assertEqual(tree['nic.0.ipv4_address.0'],'10.99.32.1')
@@ -235,74 +238,74 @@ class KeyValueApi(TestCase):
         #print resp.content
 
     def test_keyvalue_set_invalid_ip(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'nic.0.ipv4_address.0'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'nic.0.ipv4_address.0'}, follow=True)
         self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_valid_ip(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'nic.0.ipv4_address.0'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'nic.0.ipv4_address.0'}, follow=True)
         self.assertEqual(resp.status_code, 200)
 
     def test_keyvalue_set_invalid_mac_address(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'asdfsadfsadf','key':'nic.0.mac_address.0'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'asdfsadfsadf','key':'nic.0.mac_address.0'}, follow=True)
         self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_valid_mac_address(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'00:00:00:00:00:00','key':'nic.0.mac_address.0'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'00:00:00:00:00:00','key':'nic.0.mac_address.0'}, follow=True)
         self.assertEqual(resp.status_code, 200)
 
     def test_keyvalue_set_invalid_is_dhcp_scope(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'true','key':'is_dhcp_scope'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'true','key':'is_dhcp_scope'}, follow=True)
         self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_valid_is_dhcp_scope(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'True','key':'is_dhcp_scope'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'True','key':'is_dhcp_scope'}, follow=True)
         self.assertEqual(resp.status_code, 200)
 
     def test_keyvalue_set_invalid_dhcp_scope_start(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.scope.start'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.scope.start'}, follow=True)
         self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_valid_dhcp_scope_start(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.scope.start'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.scope.start'}, follow=True)
         self.assertEqual(resp.status_code, 200)
 
     def test_keyvalue_set_invalid_dhcp_scope_end(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.scope.end'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.scope.end'}, follow=True)
         self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_valid_dhcp_scope_end(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.scope.end'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.scope.end'}, follow=True)
         self.assertEqual(resp.status_code, 200)
 
 
     def test_keyvalue_set_invalid_dhcp_pool_start(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.pool.start'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.pool.start'}, follow=True)
         self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_valid_dhcp_pool_start(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.pool.start'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.pool.start'}, follow=True)
         self.assertEqual(resp.status_code, 200)
 
     def test_keyvalue_set_invalid_dhcp_pool_end(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.pool.end'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.pool.end'}, follow=True)
         self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_valid_dhcp_pool_end(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.pool.end'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.pool.end'}, follow=True)
         self.assertEqual(resp.status_code, 200)
 
     def test_keyvalue_set_invalid_dhcp_scope_netmask(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.scope.start'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.scope.start'}, follow=True)
         self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_valid_dhcp_scope_netmask(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.scope.start'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.scope.start'}, follow=True)
         self.assertEqual(resp.status_code, 200)
 
     def test_keyvalue_set_invalid_dhcp_ntp_server(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.option.ntp_server.0'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'dhcp.option.ntp_server.0'}, follow=True)
         self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_valid_dhcp_ntp_server(self):
-        resp = self.client.put('/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.option.ntp_server.0'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'dhcp.option.ntp_server.0'}, follow=True)
         self.assertEqual(resp.status_code, 200)
