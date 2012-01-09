@@ -18,7 +18,8 @@ import re
 from django.test.client import Client
 from jinja2.filters import contextfilter
 from django.utils import translation
-from libs.jinja import jinja_render_to_response as render_to_response
+from libs.jinja import render_to_response as render_to_response
+from jingo import render
 from django.views.decorators.csrf import csrf_exempt
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
@@ -63,7 +64,7 @@ def check_dupe_nic_name(request,system_id,adapter_name):
 @allow_anyone
 def list_all_systems_ajax(request):
 #iSortCol_0 = which column is sorted
-#sSortDir_0 = which direction 	
+#sSortDir_0 = which direction   
     
     cols = ['hostname','serial','asset_tag','server_model','system_rack', 'oob_ip', 'system_status']
     sort_col = cols[0]
@@ -100,7 +101,7 @@ def list_all_systems_ajax(request):
         the_data = build_json(request, systems, sEcho, system_count, iDisplayLength, sort_col, sort_dir)
 
     if search_term is not None and len(search_term) > 0:
-				
+                
         search_q = Q(hostname__icontains=search_term)
         search_q |= Q(serial__contains=search_term)
         search_q |= Q(notes__contains=search_term)
@@ -618,11 +619,7 @@ def oncall(request):
             set_oncall('sysadmin', current_sysadmin_oncall)
     else:
         form = OncallForm(initial = initial)
-
-    return render_to_response('systems/generic_form.html', {
-            'form': form,
-           },
-           RequestContext(request))
+    return render(request, 'systems/generic_form.html', {'current_desktop_oncall':current_desktop_oncall,'current_sysadmin_oncall':current_sysadmin_oncall, 'form':form})
 def set_oncall(type, username):
     from django.contrib.auth.models import User
     try:
@@ -798,3 +795,4 @@ def csv_import(request):
         'new_systems': new_systems,
         },
         RequestContext(request))
+

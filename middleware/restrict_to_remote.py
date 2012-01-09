@@ -26,6 +26,8 @@ class RestrictToRemoteMiddleware:
     def process_view(self, request, view_func, view_args, view_kwargs):
         request.MOBILE = False
         
+        if settings.DEV == True:
+            return None
         ## Check if connecting to /tokenapi.
         ## IF so then we don't need to check the rest of this stuff. The API will validate credentials
 

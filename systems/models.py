@@ -120,9 +120,9 @@ class Location(models.Model):
         db_table = u'locations'
         ordering = ['name']
 class ApiManager(models.Manager):
-	def get_query_set(self):
-		results = super(ApiManager, self).get_query_set()
-		return results
+    def get_query_set(self):
+        results = super(ApiManager, self).get_query_set()
+        return results
 
 class KeyValue(models.Model):
     system = models.ForeignKey('System')
@@ -383,3 +383,4 @@ class UserProfile(models.Model):
             self.filter(is_sysadmin_oncall=1)
     class Meta:
         db_table = u'user_profiles'
+

@@ -11,12 +11,13 @@ from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 
 class OncallForm(forms.Form):
+    desktop_support_choices = [(m, m.get_profile().irc_nick) for m in User.objects.select_related().filter(userprofile__is_desktop_oncall=1)]
+    sysadmin_support_choices = [(m, m.get_profile().irc_nick) for m in User.objects.select_related().filter(userprofile__is_sysadmin_oncall=1)]
+                    
     desktop_support = forms.ChoiceField(label='Desktop Oncall',
-        choices=[(m, m.get_profile().irc_nick)
-                    for m in User.objects.select_related().filter(userprofile__is_desktop_oncall=1)])
+        choices= desktop_support_choices)
     sysadmin_support = forms.ChoiceField(label='Sysadmin Oncall',
-        choices= [(m, m.get_profile().irc_nick)
-                    for m in User.objects.select_related().filter(userprofile__is_sysadmin_oncall=1)])
+        choices= sysadmin_support_choices)
     class meta:
         model = User
 

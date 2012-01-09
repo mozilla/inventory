@@ -4,7 +4,13 @@ unittest). These will both pass when you run "manage.py test".
 
 Replace these with more appropriate tests for your application.
 """
-
+import sys
+import sys
+import os
+_base = os.path.dirname(__file__)
+site_root = os.path.realpath(os.path.join(_base, '../'))
+sys.path.append(site_root)
+import manage
 from django.test import TestCase
 
 from django.test.client import Client

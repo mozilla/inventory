@@ -1,0 +1,42 @@
+[
+  {
+    "pk": 1, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "user1@domain.com",
+      "first_name": "Test",
+      "last_name": "Userone",
+      "email": "user1@domain.com"
+    }
+  },{
+    "pk": 1, 
+    "model": "systems.userprofile", 
+    "fields": {
+      "user": 1,
+      "irc_nick": "user1",
+      "is_desktop_oncall": "1",
+      "current_desktop_oncall": "1",
+      "is_sysadmin_oncall": "1"
+    }
+  },
+  {
+    "pk": 2, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "user2@domain.com",
+      "first_name": "Test",
+      "last_name": "UserTwo",
+      "email": "user2@domain.com"
+    }
+  },{
+    "pk": 2, 
+    "model": "systems.userprofile", 
+    "fields": {
+      "user": 2,
+      "irc_nick": "user2",
+      "is_desktop_oncall": "1",
+      "current_sysadmin_oncall": "1",
+      "is_sysadmin_oncall": "1"
+    }
+  }
+]
