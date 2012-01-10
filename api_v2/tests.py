@@ -27,6 +27,7 @@ class TestMacroExpansion(TestCase):
         m = MacroExpansion('host:fake-hostname2:ip_address')
         self.assertEqual(m.output(),'10.99.32.1')
 
+## Test that the oncall api is returning the proper people from our test fixture
 class TestOnCall(TestCase):
     fixtures = ['user_systems_test_data.json']
 
