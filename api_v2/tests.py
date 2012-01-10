@@ -30,7 +30,7 @@ class TestMacroExpansion(TestCase):
 ## Test that the oncall api is returning the proper people from our test fixture
 class TestOnCall(TestCase):
     fixtures = ['user_systems_test_data.json']
-
+    FORCE_DB = True
     def setup(self):
         self.client = Client()
 
@@ -59,6 +59,34 @@ class TestOnCall(TestCase):
         obj = json.loads(resp.content)
         self.assertEqual(len(obj), 3)
         self.assertTrue('user4@domain.com' in obj)
+
+    def test_set_desktop_oncall(self):
+        resp = self.client.get('/api/v2/oncall/desktop/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj, 'user1@domain.com')
+
+        resp = self.client.put('/en-US/api/v2/oncall/setdesktop/user3@domain.com/', follow=True)
+        self.assertEqual(200, resp.status_code)
+
+        resp = self.client.get('/api/v2/oncall/desktop/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj, 'user3@domain.com')
+    def test_set_sysadmin_oncall(self):
+
+        resp = self.client.get('/api/v2/oncall/sysadmin/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj, 'user2@domain.com')
+
+        resp = self.client.put('/en-US/api/v2/oncall/setsysadmin/user3@domain.com/', follow=True)
+        self.assertEqual(200, resp.status_code)
+
+        resp = self.client.get('/api/v2/oncall/sysadmin/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj, 'user3@domain.com')
 #TODO Add checks for setting every property of a sytem through the api
 class SystemApi(TestCase):
     fixtures = ['testdata.json']

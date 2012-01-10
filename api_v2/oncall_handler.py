@@ -32,10 +32,33 @@ class OncallHandler(BaseHandler):
             for u in list:
                 oncall.append(u.username)
         return oncall
-    def update(self, request, oncall_type=None):
-        pass
+    def update(self, request, oncall_type = None, user=None):
+        from django.db import connection, transaction
     	if request.method == 'PUT':
-            return resp
+            if oncall_type == 'setdesktop':
+                cursor = connection.cursor()
+                cursor.execute("UPDATE `user_profiles` set `current_desktop_oncall` = 0")
+                transaction.commit_unless_managed()
+                new_oncall = User.objects.get(username=user)
+                new_oncall.get_profile().current_desktop_oncall = 1
+                new_oncall.get_profile().save()
+                new_oncall.save()
+                resp = rc.ALL_OK
+                return resp
+                
+            elif oncall_type == 'setsysadmin':
+                cursor = connection.cursor()
+                cursor.execute("UPDATE `user_profiles` set `current_sysadmin_oncall` = 0")
+                transaction.commit_unless_managed()
+                new_oncall = User.objects.get(username=user)
+                new_oncall.get_profile().current_sysadmin_oncall = 1
+                new_oncall.get_profile().save()
+                new_oncall.save()
+                resp = rc.ALL_OK
+                return resp
 
+            else:
+                resp = rc.NOT_FOUND
+                return resp
     def delete(self, request, oncall_type=None):
         pass
