@@ -27,6 +27,25 @@ class TestMacroExpansion(TestCase):
         m = MacroExpansion('host:fake-hostname2:ip_address')
         self.assertEqual(m.output(),'10.99.32.1')
 
+class TestOnCall(TestCase):
+    fixtures = ['user_systems_test_data.json']
+
+    def setup(self):
+        self.client = Client()
+
+    def test_get_current_desktop_oncall(self):
+        resp = self.client.get('/api/v2/oncall/desktop/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj, 'user1@domain.com')
+
+    def test_get_current_sysadmin_oncall(self):
+        resp = self.client.get('/api/v2/oncall/sysadmin/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj, 'user2@domain.com')
+
+
 #TODO Add checks for setting every property of a sytem through the api
 class SystemApi(TestCase):
     fixtures = ['testdata.json']

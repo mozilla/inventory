@@ -4,6 +4,7 @@ from api_v2.system_handler import SystemHandler
 from api_v2.networkadapter_handler import NetworkAdapterHandler
 from api_v2.keyvalue_handler import KeyValueHandler
 from api_v2.truth_handler import TruthHandler
+from api_v2.oncall_handler import OncallHandler
 from api_v2.dhcp_handler import DHCPHandler
 from api_v2.reverse_dns_handler import ReverseDNSHandler
 from api_v2.system_rack_handler import SystemRackHandler
@@ -18,6 +19,7 @@ reverse_dns_handler = Resource(ReverseDNSHandler)
 dhcp_handler = Resource(DHCPHandler)
 system_rack_handler = Resource(SystemRackHandler)
 system_status_handler = Resource(SystemStatusHandler)
+oncall_handler = Resource(OncallHandler)
 
 urlpatterns = patterns('',
     url(r'^dhcp/(?P<dhcp_scope>[^/]+)/(?P<dhcp_action>[^/]+)', cached_resource(dhcp_handler)),
@@ -34,4 +36,5 @@ urlpatterns = patterns('',
     url(r'^keyvalue/', cached_resource(keyvalue_handler)),
     url(r'^networkadapter/(?P<network_adapter_id>[^/]+)/', cached_resource(network_adapter_handler)),
     url(r'^networkadapter/', cached_resource(network_adapter_handler)),
+    url(r'^oncall/(?P<oncall_type>[^/]+)/', cached_resource(oncall_handler)),
       )
