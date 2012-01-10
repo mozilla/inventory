@@ -38,5 +38,45 @@
       "current_sysadmin_oncall": "1",
       "is_sysadmin_oncall": "1"
     }
+  },
+  {
+    "pk": 3, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "user3@domain.com",
+      "first_name": "Test",
+      "last_name": "UserThree",
+      "email": "user3@domain.com"
+    }
+  },{
+    "pk": 3, 
+    "model": "systems.userprofile", 
+    "fields": {
+      "user": 3,
+      "irc_nick": "user3",
+      "is_desktop_oncall": "0",
+      "current_sysadmin_oncall": "0",
+      "is_sysadmin_oncall": "1"
+    }
+  },
+  {
+    "pk": 4, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "user4@domain.com",
+      "first_name": "Test",
+      "last_name": "UserFour",
+      "email": "user4@domain.com"
+    }
+  },{
+    "pk": 4, 
+    "model": "systems.userprofile", 
+    "fields": {
+      "user": 4,
+      "irc_nick": "user4",
+      "is_desktop_oncall": "1",
+      "current_sysadmin_oncall": "0",
+      "is_sysadmin_oncall": "0"
+    }
   }
 ]

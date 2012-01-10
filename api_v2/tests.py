@@ -46,7 +46,19 @@ class TestOnCall(TestCase):
         obj = json.loads(resp.content)
         self.assertEqual(obj, 'user2@domain.com')
 
+    def test_get_all_sysadmin_oncall(self):
+        resp = self.client.get('/api/v2/oncall/listsysadmin/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(len(obj), 3)
+        self.assertTrue('user3@domain.com' in obj)
 
+    def test_get_all_desktop_oncall(self):
+        resp = self.client.get('/api/v2/oncall/listdesktop/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(len(obj), 3)
+        self.assertTrue('user4@domain.com' in obj)
 #TODO Add checks for setting every property of a sytem through the api
 class SystemApi(TestCase):
     fixtures = ['testdata.json']
