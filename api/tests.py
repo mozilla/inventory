@@ -31,7 +31,6 @@ class TestMacroExpansion(TestCase):
 class SystemApi(TestCase):
     fixtures = ['testdata.json']
     new_hostname = 'new_hostname999'
-    new_host_id = 5
 
     def setup(self):
         self.client = Client()
@@ -51,7 +50,7 @@ class SystemApi(TestCase):
         self.assertEqual(200, resp.status_code)
 
     def test_create_system(self):
-        resp = self.client.post('/api/system/%s/' % self.new_hostname, follow=True)
+        resp = self.client.post('/en-US/api/system/%s/' % self.new_hostname, follow=True)
         self.assertEqual(201, resp.status_code)
         resp = self.client.get('/api/system/%i/' % 3, follow=True)
         self.assertEqual(200, resp.status_code)
@@ -60,20 +59,24 @@ class SystemApi(TestCase):
         self.assertEqual(json.loads(resp.content)['hostname'], self.new_hostname)
 
     def test_update_system(self):
-        resp = self.client.post('/api/system/%s/' % self.new_hostname, follow=True)
+        resp = self.client.post('/en-US/api/system/%s/' % self.new_hostname, follow=True)
         self.assertEqual(201, resp.status_code)
-        resp = self.client.put('/api/system/%i/' % (self.new_host_id), {'hostname':'updated_hostname'}, follow=True)
+        obj = json.loads(resp.content.split(" = ")[1])
+        resp = self.client.put('/en-US/api/system/%i/' % (obj['id']), {'hostname':'updated_hostname'}, follow=True)
         self.assertEqual(200, resp.status_code)
-        resp = self.client.get('/api/system/%i/' % (self.new_host_id), follow=True)
+        obj = json.loads(resp.content.split(" = ")[1])
+        resp = self.client.get('/api/system/%i/' % (obj['id']), follow=True)
         self.assertEqual(200, resp.status_code)
         self.assertEqual(json.loads(resp.content)['hostname'], 'updated_hostname')
 
     def test_delete_system(self):
-        resp = self.client.post('/api/system/%s/' % self.new_hostname, follow=True)
+        resp = self.client.post('/en-US/api/system/%s/' % self.new_hostname, follow=True)
         self.assertEqual(201, resp.status_code)
-        resp = self.client.delete('/api/system/%i/' % (4), follow=True)
+        obj = json.loads(resp.content.split(" = ")[1])
+        resp = self.client.delete('/en-US/api/system/%i/' % (obj['id']), follow=True)
         self.assertEqual(200, resp.status_code)
-        resp = self.client.get('/api/system/%i/' % (self.new_host_id), follow=True)
+        obj = json.loads(resp.content.split(" = ")[1])
+        resp = self.client.get('/api/system/%i/' % (obj['id']), follow=True)
         self.assertEqual(404, resp.status_code)
         resp = self.client.get('/api/system/%s/' % self.new_hostname, follow=True)
         self.assertEqual(404, resp.status_code)

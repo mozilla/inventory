@@ -31,7 +31,6 @@ class TestMacroExpansion(TestCase):
 class SystemApi(TestCase):
     fixtures = ['testdata.json']
     new_hostname = 'new_hostname999asdf'
-    new_host_id = 3
 
     def setup(self):
         self.client = Client()
@@ -53,7 +52,8 @@ class SystemApi(TestCase):
     def test_create_system(self):
         resp = self.client.post('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
         self.assertEqual(201, resp.status_code)
-        resp = self.client.get('/api/v2/system/%i/' % self.new_host_id, follow=True)
+        obj = json.loads(resp.content.split(" = ")[1])
+        resp = self.client.get('/api/v2/system/%i/' % obj['id'], follow=True)
         self.assertEqual(200, resp.status_code)
         resp = self.client.get('/api/v2/system/%s/' % self.new_hostname, follow=True)
         self.assertEqual(200, resp.status_code)
@@ -66,7 +66,7 @@ class SystemApi(TestCase):
         self.assertEqual(201, resp.status_code)
         resp = self.client.put('/en-US/api/v2/system/%i/' % (obj['id']), {'hostname':'updated_hostname'}, follow=True)
         self.assertEqual(200, resp.status_code)
-        resp = self.client.get('/api/v2/system/%i/' % (5), follow=True)
+        resp = self.client.get('/api/v2/system/%i/' % (obj['id']), follow=True)
         self.assertEqual(200, resp.status_code)
         self.assertEqual(json.loads(resp.content)['hostname'], 'updated_hostname')
 
