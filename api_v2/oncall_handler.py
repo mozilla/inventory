@@ -49,7 +49,10 @@ class OncallHandler(BaseHandler):
                 cursor = connection.cursor()
                 cursor.execute("UPDATE `user_profiles` set `current_desktop_oncall` = 0")
                 transaction.commit_unless_managed()
-                new_oncall = User.objects.get(username=user)
+                if re.match("^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", user):
+                    new_oncall = User.objects.get(username=user)
+                else:
+                    new_oncall = User.objects.get(userprofile__irc_nick=user)
                 new_oncall.get_profile().current_desktop_oncall = 1
                 new_oncall.get_profile().save()
                 new_oncall.save()
@@ -60,7 +63,10 @@ class OncallHandler(BaseHandler):
                 cursor = connection.cursor()
                 cursor.execute("UPDATE `user_profiles` set `current_sysadmin_oncall` = 0")
                 transaction.commit_unless_managed()
-                new_oncall = User.objects.get(username=user)
+                if re.match("^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", user):
+                    new_oncall = User.objects.get(username=user)
+                else:
+                    new_oncall = User.objects.get(userprofile__irc_nick=user)
                 new_oncall.get_profile().current_sysadmin_oncall = 1
                 new_oncall.get_profile().save()
                 new_oncall.save()
