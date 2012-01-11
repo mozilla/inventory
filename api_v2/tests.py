@@ -34,34 +34,40 @@ class TestOnCall(TestCase):
     def setup(self):
         self.client = Client()
 
-    def test_get_current_desktop_oncall(self):
-        resp = self.client.get('/api/v2/oncall/desktop/', follow=True)
+    def test_get_current_desktop_oncall_email(self):
+        resp = self.client.get('/api/v2/oncall/desktop/email/', follow=True)
         self.assertEqual(200, resp.status_code)
         obj = json.loads(resp.content)
         self.assertEqual(obj, 'user1@domain.com')
 
+    def test_get_current_desktop_oncall_irc_nick(self):
+        resp = self.client.get('/api/v2/oncall/desktop/irc_nick/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj, 'user1')
+
     def test_get_current_sysadmin_oncall(self):
-        resp = self.client.get('/api/v2/oncall/sysadmin/', follow=True)
+        resp = self.client.get('/api/v2/oncall/sysadmin/email/', follow=True)
         self.assertEqual(200, resp.status_code)
         obj = json.loads(resp.content)
         self.assertEqual(obj, 'user2@domain.com')
 
     def test_get_all_sysadmin_oncall(self):
-        resp = self.client.get('/api/v2/oncall/listsysadmin/', follow=True)
+        resp = self.client.get('/api/v2/oncall/sysadmin/all/', follow=True)
         self.assertEqual(200, resp.status_code)
         obj = json.loads(resp.content)
         self.assertEqual(len(obj), 3)
         self.assertTrue('user3@domain.com' in obj)
 
     def test_get_all_desktop_oncall(self):
-        resp = self.client.get('/api/v2/oncall/listdesktop/', follow=True)
+        resp = self.client.get('/api/v2/oncall/desktop/all/', follow=True)
         self.assertEqual(200, resp.status_code)
         obj = json.loads(resp.content)
         self.assertEqual(len(obj), 3)
         self.assertTrue('user4@domain.com' in obj)
 
     def test_set_desktop_oncall(self):
-        resp = self.client.get('/api/v2/oncall/desktop/', follow=True)
+        resp = self.client.get('/api/v2/oncall/desktop/email/', follow=True)
         self.assertEqual(200, resp.status_code)
         obj = json.loads(resp.content)
         self.assertEqual(obj, 'user1@domain.com')
@@ -69,13 +75,13 @@ class TestOnCall(TestCase):
         resp = self.client.put('/en-US/api/v2/oncall/setdesktop/user3@domain.com/', follow=True)
         self.assertEqual(200, resp.status_code)
 
-        resp = self.client.get('/api/v2/oncall/desktop/', follow=True)
+        resp = self.client.get('/api/v2/oncall/desktop/email/', follow=True)
         self.assertEqual(200, resp.status_code)
         obj = json.loads(resp.content)
         self.assertEqual(obj, 'user3@domain.com')
     def test_set_sysadmin_oncall(self):
 
-        resp = self.client.get('/api/v2/oncall/sysadmin/', follow=True)
+        resp = self.client.get('/api/v2/oncall/sysadmin/email/', follow=True)
         self.assertEqual(200, resp.status_code)
         obj = json.loads(resp.content)
         self.assertEqual(obj, 'user2@domain.com')
@@ -83,7 +89,7 @@ class TestOnCall(TestCase):
         resp = self.client.put('/en-US/api/v2/oncall/setsysadmin/user3@domain.com/', follow=True)
         self.assertEqual(200, resp.status_code)
 
-        resp = self.client.get('/api/v2/oncall/sysadmin/', follow=True)
+        resp = self.client.get('/api/v2/oncall/sysadmin/email/', follow=True)
         self.assertEqual(200, resp.status_code)
         obj = json.loads(resp.content)
         self.assertEqual(obj, 'user3@domain.com')

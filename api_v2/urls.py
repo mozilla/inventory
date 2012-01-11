@@ -36,6 +36,5 @@ urlpatterns = patterns('',
     url(r'^keyvalue/', cached_resource(keyvalue_handler)),
     url(r'^networkadapter/(?P<network_adapter_id>[^/]+)/', cached_resource(network_adapter_handler)),
     url(r'^networkadapter/', cached_resource(network_adapter_handler)),
-    url(r'^oncall/(?P<oncall_type>[^/]+)/(?P<user>[^/]+)', cached_resource(oncall_handler)),
-    url(r'^oncall/(?P<oncall_type>[^/]+)/', cached_resource(oncall_handler)),
+    url(r'^oncall/(?P<oncall_type>[^/]+)/(?P<display_type>[^/]+)/', cached_resource(oncall_handler)),
       )

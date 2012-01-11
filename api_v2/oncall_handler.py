@@ -15,24 +15,31 @@ class OncallHandler(BaseHandler):
     allowed_methods = API_ACCESS
 
     @AuthenticatedAPI
-    def read(self, request, oncall_type):
-
+    def read(self, request, oncall_type, display_type=None):
+        oncall = ''
         if oncall_type == 'desktop':
-            oncall = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].username
+            if display_type == 'email':
+                oncall = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].username
+            elif display_type == 'irc_nick':
+                oncall = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].get_profile().irc_nick
+            elif display_type == 'all':
+                oncall = []
+                list = User.objects.select_related().filter(userprofile__is_desktop_oncall=1)
+                for u in list:
+                    oncall.append(u.username)
         elif oncall_type == 'sysadmin':
-            oncall = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].username
-        elif oncall_type == 'listsysadmin':
-            oncall = []
-            list = User.objects.select_related().filter(userprofile__is_sysadmin_oncall=1)
-            for u in list:
-                oncall.append(u.username)
-        elif oncall_type == 'listdesktop':
-            oncall = []
-            list = User.objects.select_related().filter(userprofile__is_desktop_oncall=1)
-            for u in list:
-                oncall.append(u.username)
+            if display_type == 'email':
+                oncall = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].username
+            elif display_type == 'irc_nick':
+                oncall = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].irc_nick
+            elif display_type == 'all':
+                oncall = []
+                list = User.objects.select_related().filter(userprofile__is_sysadmin_oncall=1)
+                for u in list:
+                    oncall.append(u.username)
         return oncall
-    def update(self, request, oncall_type = None, user=None):
+    def update(self, request, oncall_type = None, display_type=None):
+        user = display_type
         from django.db import connection, transaction
     	if request.method == 'PUT':
             if oncall_type == 'setdesktop':
