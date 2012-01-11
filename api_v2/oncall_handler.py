@@ -19,24 +19,28 @@ class OncallHandler(BaseHandler):
         oncall = ''
         if oncall_type == 'desktop':
             if display_type == 'email':
-                oncall = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].username
+                result = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0]
+                oncall = {'user':result.username, 'pager_type': result.get_profile().pager_type, 'pager_number': result.get_profile().pager_number}
             elif display_type == 'irc_nick':
-                oncall = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].get_profile().irc_nick
+                result = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0]
+                oncall = {'user':result.get_profile().irc_nick, 'pager_type': result.get_profile().pager_type, 'pager_number': result.get_profile().pager_number}
             elif display_type == 'all':
                 oncall = []
                 list = User.objects.select_related().filter(userprofile__is_desktop_oncall=1)
                 for u in list:
-                    oncall.append(u.username)
+                    oncall.append({'user':u.get_profile().irc_nick, 'pager_type': u.get_profile().pager_type, 'pager_number': u.get_profile().pager_number})
         elif oncall_type == 'sysadmin':
             if display_type == 'email':
-                oncall = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].username
+                result = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0]
+                oncall = {'user':result.username, 'pager_type': result.get_profile().pager_type, 'pager_number': result.get_profile().pager_number}
             elif display_type == 'irc_nick':
-                oncall = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].irc_nick
+                result = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0]
+                oncall = {'user':result.get_profile().irc_nick, 'pager_type': result.get_profile().pager_type, 'pager_number': result.get_profile().pager_number}
             elif display_type == 'all':
                 oncall = []
                 list = User.objects.select_related().filter(userprofile__is_sysadmin_oncall=1)
                 for u in list:
-                    oncall.append(u.username)
+                    oncall.append({'user':u.get_profile().irc_nick, 'pager_type': u.get_profile().pager_type, 'pager_number': u.get_profile().pager_number})
         return oncall
     def update(self, request, oncall_type = None, display_type=None):
         user = display_type

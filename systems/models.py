@@ -365,6 +365,10 @@ class SystemChangeLog(models.Model):
 #    class Meta:
 ##        db_table = u'user_profiles'
 class UserProfile(models.Model):
+    PAGER_CHOICES = (
+            ('epager', 'epager'),
+            ('sms', 'sms'),
+    )
     user = models.ForeignKey(User, unique=True)
     is_desktop_oncall = models.BooleanField()
     is_sysadmin_oncall = models.BooleanField()
@@ -372,6 +376,8 @@ class UserProfile(models.Model):
     current_sysadmin_oncall = models.BooleanField()
     irc_nick = models.CharField(max_length=128)
     api_key = models.CharField(max_length=255, null=True, blank=True)
+    pager_type = models.CharField(choices=PAGER_CHOICES, max_length=255, null=False, blank=False)
+    pager_number = models.CharField(max_length=255, null=False, blank=False)
     objects = QuerySetManager()
     class QuerySet(QuerySet):
         def get_all_desktop_oncall(self):
