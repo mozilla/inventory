@@ -99,7 +99,9 @@ th.ui-state-default {
 	</tbody>
 </table>
 <script type="text/javascript">
-jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function ( oSettings, iDelay ) {
+	//$().ready(function(){
+$(document).ready(function() {
+$.fn.dataTableExt.oApi.fnSetFilteringDelay = function ( oSettings, iDelay ) {
 	/*
 	 * Type:        Plugin for DataTables (www.datatables.net) JQuery plugin.
 	 * Name:        dataTableExt.oApi.fnSetFilteringDelay
@@ -147,8 +149,6 @@ jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function ( oSettings, iDelay )
 	} );
 	return this;
 }
-	//$().ready(function(){
-$(document).ready(function() {
 the_state = serialize([{'iDisplayStart':0, 'iDisplayEnd':0}]);
 if (history.pushState) {
     history.pushState(the_state, "settings", "#inventory");
