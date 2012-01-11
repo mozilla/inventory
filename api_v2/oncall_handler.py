@@ -14,7 +14,6 @@ from django.contrib.auth.models import User
 class OncallHandler(BaseHandler):
     allowed_methods = API_ACCESS
 
-    @AuthenticatedAPI
     def read(self, request, oncall_type, display_type=None):
         oncall = ''
         if oncall_type == 'desktop':
