@@ -194,7 +194,7 @@ class SystemRack(models.Model):
     location = models.ForeignKey('Location')
 
     def __unicode__(self):
-        return self.name
+        return "%s - %s" % (self.name, self.location.name)
 
     def delete(self, *args, **kwargs):
         self.system_set.clear()
