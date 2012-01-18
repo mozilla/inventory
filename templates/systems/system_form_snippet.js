@@ -19,6 +19,9 @@
 		}
 
 		var system_id = getURISegment(4);
+        if(system_id == 'new'){
+            $("#network_adapter_link").hide();
+        }
 
 			/*if($('#id_allocation').val() == 2){
 				$('#releng_div_label').show();
