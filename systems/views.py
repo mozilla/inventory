@@ -251,10 +251,14 @@ def save_key_value(request, id):
                     models.ScheduledTask(task=existing_reverse_dns_zone, type='reverse_dns_zone').save()
             except:
                 pass
-        kv.key = request.POST['key'].strip()
-        kv.value = request.POST['value'].strip()
-        system_id = str(kv.system_id)
-        kv.save()
+        try:
+            kv.key = request.POST['key'].strip()
+            kv.value = request.POST['value'].strip()
+            system_id = str(kv.system_id)
+            kv.save()
+        except:
+            kv.key = None
+            kv.value = None
         ##Here we eant to check if the new key is a network adapter. If so we want to find out if it has a dhcp scope. If so then we want to add it to ScheduledTasks so that the dhcp file gets regenerated
         matches = re.search('nic\.(\d+)', kv.key)
         if matches.group(1):
