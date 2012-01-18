@@ -272,7 +272,7 @@ def save_key_value(request, id):
                     pass
 
 
-    return HttpResponseRedirect('/systems/get_key_value_store/' + system_id + '/')
+    return HttpResponseRedirect('/en-US/systems/get_key_value_store/' + system_id + '/')
 
 @csrf_exempt
 def create_key_value(request, id):
