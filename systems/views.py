@@ -245,13 +245,15 @@ def save_key_value(request, id):
         if matches and matches.group(1):
             try:
                 existing_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
-                existing_reverse_dns_zone = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.reverse_dns_zone.0' % matches.group(1))[0].value
                 if existing_dhcp_scope is not None:
                     models.ScheduledTask(task=existing_dhcp_scope, type='dhcp').save()
+            except Exception, e: 
+                pass
+            try:
+                existing_reverse_dns_zone = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.reverse_dns_zone.0' % matches.group(1))[0].value
                 if existing_reverse_dns_zone is not None:
                     models.ScheduledTask(task=existing_reverse_dns_zone, type='reverse_dns_zone').save()
             except Exception, e: 
-                print e
                 pass
         try:
             kv.key = request.POST.get('key').strip()
@@ -269,10 +271,13 @@ def save_key_value(request, id):
                 new_reverse_dns_zone = None
                 try:
                     new_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
+                except Exception, e:
+                    pass
+
+                try:
                     new_reverse_dns_zone = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.reverse_dns_zone.0' % matches.group(1))[0].value
                 except Exception, e:
-                    print e
-                    new_dhcp_scope = None
+                    pass
                 if new_dhcp_scope is not None:
                     try:
                         models.ScheduledTask(task=new_dhcp_scope, type='dhcp').save()
