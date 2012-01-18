@@ -237,6 +237,7 @@ def delete_key_value(request, id, system_id):
            RequestContext(request))
 @csrf_exempt
 def save_key_value(request, id):
+    system_id = None
     kv = models.KeyValue.objects.get(id=id)
     if kv is not None:
         ##Here we eant to check if the existing key is a network adapter. If so we want to find out if it has a dhcp scope. If so then we want to add it to ScheduledTasks so that the dhcp file gets regenerated
