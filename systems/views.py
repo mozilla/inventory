@@ -263,7 +263,7 @@ def save_key_value(request, id):
         ##Here we eant to check if the new key is a network adapter. If so we want to find out if it has a dhcp scope. If so then we want to add it to ScheduledTasks so that the dhcp file gets regenerated
         if kv.key is not None:
             matches = re.search('nic\.(\d+)', kv.key)
-            if matches.group(1):
+            if matches and matches.group(1):
                 new_dhcp_scope = None
                 new_reverse_dns_zone = None
                 try:
