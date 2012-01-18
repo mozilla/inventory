@@ -263,9 +263,14 @@ def save_key_value(request, id):
                 new_reverse_dns_zone = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.reverse_dns_zone.0' % matches.group(1))[0].value
             except:
                 new_dhcp_scope = None
-            if new_dhcp_scope:
+            if new_dhcp_scope is not None:
                 try:
                     models.ScheduledTask(task=new_dhcp_scope, type='dhcp').save()
+                except:
+                    ##This is due to the key already existing in the db
+                    pass
+            if new_reverse_dns_zone is not None:
+                try:
                     models.ScheduledTask(task=new_reverse_dns_zone, type='reverse_dns_zone').save()
                 except:
                     ##This is due to the key already existing in the db
