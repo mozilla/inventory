@@ -32,9 +32,9 @@ class DHCPHandler(BaseHandler):
             adapter_list = []
             for host in hosts:
                 if 'hostname' in host:
-                    the_url = '/api/keyvalue/?key_type=adapters_by_system_and_scope&dhcp_scope=%s&system=%s' % (dhcp_scope, host['hostname'], follow=True)
+                    the_url = '/api/keyvalue/?key_type=adapters_by_system_and_scope&dhcp_scope=%s&system=%s' % (dhcp_scope, host['hostname'])
                     try:
-                        adapter_list.append(json.loads(client.get(the_url).content))
+                        adapter_list.append(json.loads(client.get(the_url, follow=True).content))
                     except:
                         pass
             d = DHCPInterface(scope_options, adapter_list)
