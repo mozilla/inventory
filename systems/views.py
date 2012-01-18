@@ -254,7 +254,7 @@ def save_key_value(request, id):
                 pass
         try:
             kv.key = request.POST.get('key').strip()
-            kv.value = request.POST.get('value).strip()
+            kv.value = request.POST.get('value').strip()
             system_id = str(kv.system_id)
             kv.save()
         except:
