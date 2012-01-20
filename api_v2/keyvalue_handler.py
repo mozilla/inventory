@@ -394,7 +394,7 @@ class KeyValueHandler(BaseHandler):
                         dhcp_filename = tmp_dict['nic.%s.dhcp_filename.0' % a]
                     if 'nic.%s.dhcp_domain_name.0' % a in tmp_dict:
                         dhcp_domain_name = tmp_dict['nic.%s.dhcp_domain_name.0' % a]
-                    final_list.append({'system_hostname':system.hostname, 'ipv4_address':ipv4_address,  'adapter_name':adapter_name, 'mac_address':mac_address, 'dhcp_hostname':dhcp_hostname, 'dhcp_filename':dhcp_filename, 'dhcp_domain_name':dhcp_domain_name})
+                    final_list.append({'system_hostname':system.hostname, 'ipv4_address':ipv4_address,  'adapter_name':adapter_name, 'mac_address':mac_address, 'option_hostname': dhcp_hostname, 'dhcp_hostname':dhcp_hostname, 'dhcp_filename':dhcp_filename, 'dhcp_domain_name':dhcp_domain_name})
                 #tmp_list.append(tmp_dict)
                 return final_list
         elif 'key' in request.GET and request.GET['key'] > '':
