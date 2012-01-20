@@ -412,6 +412,8 @@ class KeyValueHandler(BaseHandler):
                         mac_address = tmp_dict['nic.%s.mac_address.0' % a]
                     if 'nic.%s.dhcp_hostname.0' % a in tmp_dict:
                         dhcp_hostname = tmp_dict['nic.%s.dhcp_hostname.0' % a]
+                    if 'nic.%s.option_hostname.0' % a in tmp_dict:
+                        dhcp_hostname = tmp_dict['nic.%s.option_hostname.0' % a]
                     if 'nic.%s.dhcp_filename.0' % a in tmp_dict:
                         dhcp_filename = tmp_dict['nic.%s.dhcp_filename.0' % a]
                     if 'nic.%s.dhcp_domain_name.0' % a in tmp_dict:
