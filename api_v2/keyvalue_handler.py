@@ -171,10 +171,10 @@ class KeyValueHandler(BaseHandler):
                     resp = rc.NOT_FOUND
                     resp.write('Unable to Create Key/Value Pair')
                 return resp
-        elif 'truth_id' in request.POST:
+        elif 'truth_id' in request.PUT:
             try:
                 truth = Truth.objects.get(name=key_value_id)
-                na = TruthKeyValue.objects.get(truth=truth,key=request.POST['key'])
+                n = TruthKeyValue.objects.get(truth=truth,key=request.POST['key'])
                 if 'value' in request.POST:
                     n.value = request.POST['value']
             except:
