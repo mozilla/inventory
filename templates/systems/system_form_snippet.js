@@ -3,7 +3,12 @@
             $("ul.tabs").tabs("div.panes > div");
             $("#key_value_store_expansion").overlay();
             $("#key_value_store_expansion_help").overlay();
-            $("#key_value_store_quick_add_adapter").overlay();
+            $("#key_value_store_quick_add_adapter").overlay({
+               onBeforeLoad: function(){
+                    $("#quick_add_host_name").val($("#id_hostname").val());
+               }
+            });
+                
             $("#key_value_store_expansion").click(function(){
                 $('#expanded_keystore_inner').html('&nbsp;').load('/systems/get_expanded_key_value_store/' + system_id + '/');
             });
