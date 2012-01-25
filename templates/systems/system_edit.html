@@ -318,7 +318,7 @@ ul.css-tabs a.current {
 			$('#network_adapters_div').html('&nbsp;').load('/systems/get_network_adapters/' + system_id + '/');
 
 		}
-$.ajaxSetup({
+/*$.ajaxSetup({
   beforeSend: function() {
      $('#image-loading').attr({"left":"50%"});
      $('#image-loading').attr({"top":"50%"});
@@ -329,7 +329,7 @@ $.ajaxSetup({
      $('#image-loading').hide()
   },
   success: function() {}
-});
+});*/
 
 
 
@@ -338,9 +338,9 @@ $.ajaxSetup({
 {% endblock %}
 {% block content %}
     <h2>Edit system - {{system}}</h2>
-<div id='image-loading' style='position: fixed; top: 50%; left: 50%; z-index:5000; display: none;'>
+<!--<div id='image-loading' style='position: fixed; top: 50%; left: 50%; z-index:5000; display: none;'>
     <img src='/static/images/ajax-loader-large.gif'>
-</div>
+</div> -->
     {{form.errors}}
     <form class="editform" action="" method="post">
         {% include "systems/system_form_snippet.html" %}
