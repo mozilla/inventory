@@ -553,23 +553,34 @@ def racks(request):
     racks = models.SystemRack.objects.select_related('location')
 
     system_query = Q()
+    if 'location' in request.GET:
+        has_query = True
+    else:
+        has_query = False
     if filter_form.is_valid():
+
         if filter_form.cleaned_data['location']:
             racks = racks.filter(location=filter_form.cleaned_data['location'])
+            has_query = True
         if filter_form.cleaned_data['rack']:
             racks = racks.filter(id=filter_form.cleaned_data['rack'])
+            has_query = True
         if filter_form.cleaned_data['allocation']:
             system_query &= Q(allocation=filter_form.cleaned_data['allocation'])
+            has_query = True
         if filter_form.cleaned_data['status']:
             system_query &= Q(system_status=filter_form.cleaned_data['status'])
-
+            has_query = True
     ##Here we create an object to hold decommissioned systems for the following filter
-    decommissioned = models.SystemStatus.objects.get(status='decommissioned')
-    racks = [(k, list(k.system_set.select_related(
-        'server_model',
-        'allocation',
-        'system_status',
-    ).filter(system_query).exclude(system_status=decommissioned).order_by('rack_order'))) for k in racks]
+    if not has_query:
+        racks = []
+    else:
+        decommissioned = models.SystemStatus.objects.get(status='decommissioned')
+        racks = [(k, list(k.system_set.select_related(
+            'server_model',
+            'allocation',
+            'system_status',
+        ).filter(system_query).exclude(system_status=decommissioned).order_by('rack_order'))) for k in racks]
 
     return render_to_response('systems/racks.html', {
             'racks': racks,
