@@ -62,6 +62,12 @@ def check_dupe_nic_name(request,system_id,adapter_name):
         pass
     return HttpResponse(found)
 @allow_anyone
+def system_rack_elevation(request, rack_id):
+        return render_to_response('systems/rack_elevation.html', {
+            },
+            RequestContext(request))
+
+@allow_anyone
 def list_all_systems_ajax(request):
 #iSortCol_0 = which column is sorted
 #sSortDir_0 = which direction   
