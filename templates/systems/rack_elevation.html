@@ -17,36 +17,38 @@ function draw() {
         var edge = 25;
         var usable_height = rack_height - (edge * 2)
         var usable_width = rack_width - (edge * 2)
-
+        var total_ru = 42;
+        //alert(usable_height/total_ru);
+        // Each RU is 18 pixels
+        ru_height = usable_height/total_ru;
         ctx.fillStyle   = '#000000';
         ctx.fillRect(0,0,rack_width, rack_height);  
         ctx.fillStyle   = '#FFFFFF';
         ctx.fillRect(edge, edge, usable_width, usable_height);  
         counter = 1;
-        for(i=usable_height; i>edge - 10; i-=(usable_height/42)){
+        for(i=usable_height; i>edge - 10; i-=(usable_height/total_ru)){
             mult = i;
-            console.log(mult);
-            ctx.moveTo(edge, edge + mult);  
-            ctx.lineTo(usable_width + edge, edge + mult);  
-            ctx.stroke();
-            ctx.fillStyle = "blue";
-            ctx.font="8pt";
-            text_y = mult + ( (usable_height/24) / 2) + 4;
-            ctx.fillText("RU " + counter, usable_width / 2, text_y);
+            if(counter % 3 == 0){
+                draw_image_at_ru(ctx, '/static/images/hp-1RU.png', counter, edge, edge+mult, usable_width);
+            } else {
+                ctx.moveTo(edge, edge + mult);  
+                ctx.lineTo(usable_width + edge, edge + mult);  
+                ctx.stroke();
+                ctx.fillStyle = "blue";
+                ctx.font="8pt";
+                text_y = mult + ( (usable_height/24) / 2) + 4;
+                ctx.fillText("RU " + counter, usable_width / 2, text_y);
+            }
             counter++;
         }
-        // Draw some rectangles.
-        //ctx.lineTo(103,76);
-        ////ctx.lineTo(170,15);
-        //ctx.stroke();
-        //ctx.fillRect(100, 200, 150, 100);
-        /*var img = new Image();
-        img.width = 400;
-        img.height = 700;
-        img.src = '/static/images/server_rack_background.png';
-        img.onload = function(){
-            ctx.drawImage(img,0,0);
-        }*/
+}
+
+    function draw_image_at_ru(ctx, img_path, ru,x,y,width ){
+        var img = new Image();   // Create new img element  
+        img.onload = function(){  
+            ctx.drawImage(img, x, y, width, 18);
+        };  
+        img.src = '/static/images/hp-1RU.png';
     }
 
 
