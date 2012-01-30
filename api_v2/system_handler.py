@@ -1,5 +1,5 @@
 from piston.handler import BaseHandler, rc
-from systems.models import System, SystemRack,SystemStatus,NetworkAdapter,KeyValue,ServerModel,Allocation
+from systems.models import System, SystemRack,SystemStatus,NetworkAdapter,KeyValue,ServerModel,Allocation,OperatingSystem
 from truth.models import Truth, KeyValue as TruthKeyValue
 from dhcp.DHCP import DHCP as DHCPInterface
 from dhcp.models import DHCP
@@ -147,6 +147,12 @@ class SystemHandler(BaseHandler):
                         pass
                         #resp = rc.NOT_FOUND
                         #resp.write("Server Not Found") 
+                if 'operating_system' in request.POST:
+                    try:
+                        sos = OperatingSystem.objects.get(id=request.POST['operating_system'])
+                        s.operating_system = s0s
+                    except:
+                        pass
                 if 'system_status' in request.POST:
                     ss = None
                     try:
