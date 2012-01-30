@@ -151,8 +151,11 @@ class SystemHandler(BaseHandler):
                     try:
                         sos = OperatingSystem.objects.get(id=request.POST['operating_system'])
                         s.operating_system = sos
-                    except:
-                        pass
+                    except Exception, e:
+                        resp = rc.NOT_FOUND
+                        resp.write(e)
+                        return resp
+                        #pass
                 if 'system_status' in request.POST:
                     ss = None
                     try:
