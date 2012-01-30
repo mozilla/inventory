@@ -1,7 +1,6 @@
 {% extends "jinja_base.html" %}
 {% block subtitle %} - racks{% endblock %}
 {% block content %}
-{% block head %}
 <style type='text/css'>
     #blah-rack_elevation {
         width: 400px;
@@ -10,14 +9,48 @@
 </style>
 
 <script type="text/javascript">
+
+
+$(document).ready(function() {
+    var called = false;
+    var system_list = new Array();
+    var item_height = 18;
+    var total_ru = 46;
+    var rack_height = (total_ru * item_height) + 50;
+    var rack_width = 400;
+    var edge = 25;
+    var usable_height = rack_height - (edge * 2)
+    var usable_width = rack_width - (edge * 2)
+    if(called == false){
+        draw();
+        called = true;
+    }
+    $("#rack_elevation").click(function(e){
+
+        //Setup this offset to allow for the a segment having an image and a border.
+        //Perhaps my math is wrong though, but this works out perfectly
+        e.pageY = e.pageY - 7;
+        var y = Math.floor((e.pageY-$("#rack_elevation").offset().top) / 18);
+        //Flip the bits to get the proper slice of the array
+        y = 46 - y;
+        system_index = y;
+        //Check to see if we have a system_id stored
+        if( parseInt(system_list[system_index]) > 0){
+            alert("Redirect to system edit page");
+            //self.location = "/systems/edit/" + system_list[system_index];
+        //If not, then we'll display a jQuery UI to select which system goes here
+        } else {
+            alert("Show interface to add");
+            //console.log("Here is where we display how to add a new system to this RU");
+        }
+
+
+    });
+
+        // put all your jQuery goodness in here.
 function draw() {
         var ctx = document.getElementById('rack_elevation').getContext('2d');
-        var rack_height = 806;
-        var rack_width = 400;
-        var edge = 25;
-        var usable_height = rack_height - (edge * 2)
-        var usable_width = rack_width - (edge * 2)
-        var total_ru = 42;
+        //Statically setting the total RU for now, it will configurable
         //alert(usable_height/total_ru);
         // Each RU is 18 pixels
         ru_height = usable_height/total_ru;
@@ -26,42 +59,75 @@ function draw() {
         ctx.fillStyle   = '#FFFFFF';
         ctx.fillRect(edge, edge, usable_width, usable_height);  
         counter = 1;
-        for(i=usable_height; i>edge - 10; i-=(usable_height/total_ru)){
+        ignore = 0;
+        for(i=usable_height; i>edge - 11; i-=(usable_height/total_ru)){
             mult = i;
-            if(counter % 3 == 0){
-                draw_image_at_ru(ctx, '/static/images/hp-1RU.png', counter, edge, edge+mult, usable_width);
+            if(counter % 5 == 0){
+                system_ru = 2;
+                draw_image_at_ru(ctx, '/static/images/hp-1RU.png', counter, edge, edge+mult, usable_width, usable_height, system_ru);
+                system_list.push(counter);
+                system_list.push(counter);
+                if(system_ru > 1){
+                    ignore += (system_ru);
+                }
+                /*for(ii=1; ii<=system_ru; ii++){
+                    system_list.push(counter);
+                }*/
             } else {
+                if(ignore == 0){
+                    system_list.push('add');
+                }
+                ctx.strokeStyle = "black";
                 ctx.moveTo(edge, edge + mult);  
                 ctx.lineTo(usable_width + edge, edge + mult);  
                 ctx.stroke();
                 ctx.fillStyle = "blue";
                 ctx.font="8pt";
-                text_y = mult + ( (usable_height/24) / 2) + 4;
+                text_y = mult + ( (usable_height/24) / 2) + 2;
                 ctx.fillText("RU " + counter, usable_width / 2, text_y);
+            }
+            if(ignore > 0){
+                ignore--;
             }
             counter++;
         }
 }
 
-    function draw_image_at_ru(ctx, img_path, ru,x,y,width ){
+    function draw_image_at_ru(ctx, img_path, ru,x,y,width,height, ru ){
+        // Calculate the top portion of the system. Each is based on an RU being 18 pixels high, counting backwards
+        y = y - (item_height * ru);
         var img = new Image();   // Create new img element  
         img.onload = function(){  
-            ctx.drawImage(img, x, y, width, 18);
+            ctx.drawImage(img, x, y, width, 18  * ru);
         };  
         img.src = '/static/images/hp-1RU.png';
+        ctx.fillStyle = "red";
+        ctx.font="8pt";
+        text_y = y + ((18 * ru) / 2) + 0;
+        ctx.fillText(counter, 7, text_y);
+        ctx.strokeStyle = "blue";
+        ctx.font = "12px";
+        ctx.fillText('foo.bar.private.mozilla.com', 443, text_y +3);
+        ctx.stroke();
+        canvas_arrow(ctx, 440, text_y, 400, text_y);
     }
 
+    function canvas_arrow(ctx, fromx, fromy, tox, toy, text){
+        var headlen = 10;   // length of head in pixels
+        var angle = Math.atan2(toy-fromy,tox-fromx);
+        ctx.moveTo(fromx, fromy);
+        ctx.lineTo(tox, toy);
+        ctx.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
+        ctx.moveTo(tox, toy);
+        ctx.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
+    }
 
-$(document).ready(function() {
-    draw();
-        // put all your jQuery goodness in here.
     });
 
 
 </script>
-{% endblock %}
 <h2>System Rack Elevation</h2>
-<canvas width="400" height="800" id='rack_elevation'>
+<canvas width="700" height="1000" id='rack_elevation' style="cursor:pointer;">
 
 
 
