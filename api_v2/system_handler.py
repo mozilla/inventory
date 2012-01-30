@@ -150,7 +150,7 @@ class SystemHandler(BaseHandler):
                 if 'operating_system' in request.POST:
                     try:
                         sos = OperatingSystem.objects.get(id=request.POST['operating_system'])
-                        s.operating_system = s0s
+                        s.operating_system = sos
                     except:
                         pass
                 if 'system_status' in request.POST:
