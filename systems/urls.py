@@ -35,6 +35,7 @@ urlpatterns = patterns('systems',
     url(r'^racks/system/new/(?P<rack_id>\d+)/$', 'views.new_rack_system_ajax', name='racks-system-new'),
     url(r'^racks/elevation/(?P<rack_id>\d+)/$', 'views.system_rack_elevation', name='system-rack-elevation'),
     url(r'^racks/bylocation/(?P<location>\d+)/$', 'views.racks_by_location', name='system-racks-by-location'),
+    url(r'^racks/bylocation//$', 'views.racks_by_location', name='system-racks-by-location'),
     url(r'^server_models/new/$', create_object, gen_mod_dict(ServerModel, 'server_model-list'), name="server_model-new"),
     url(r'^server_models/edit/(?P<object_id>\d+)/$', 'views.server_model_edit', name="server_model-edit"),
    
