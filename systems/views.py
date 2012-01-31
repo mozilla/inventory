@@ -555,9 +555,9 @@ def racks_by_location(request, location=0):
     ret_list = []
     if int(location) > 0:
         location = models.Location.objects.get(id=location)
-        racks = models.SystemRack.objects.select_related('location').filter(location=location)
+        racks = models.SystemRack.objects.select_related('location').filter(location=location).order_by('name')
     else:
-        racks = models.SystemRack.objects.select_related('location')
+        racks = models.SystemRack.objects.select_related('location').order_by('location', 'name')
 
     for r in racks:
         ret_list.append({'name':'%s %s' % (r.location.name, r.name), 'id':r.id})
