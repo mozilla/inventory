@@ -550,6 +550,18 @@ def new_rack_system_ajax(request, rack_id):
 
     return HttpResponse(json.dumps(resp_data), mimetype="application/json")
 
+@allow_anyone
+def racks_by_location(request, location):
+    ret_list = []
+    if location > 0:
+        location = models.Location.objects.get(id=location)
+        racks = models.SystemRack.objects.select_related('location').filter(location=location)
+    else:
+        racks = models.SystemRack.objects.select_related('location')
+
+    for r in racks:
+        ret_list.append({'name':'%s %s' % (r.location.name, r.name), 'id':r.id})
+    return HttpResponse(json.dumps(ret_list))
 
 @allow_anyone
 def racks(request):

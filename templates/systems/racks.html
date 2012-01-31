@@ -39,6 +39,27 @@ Allocation: {{ filter_form.allocation }}
 <script type="text/javascript">
     $(document).ready(function() {
         $('.new-system').new_system_from_rack();
+        $('#id_location').change(function(){
+            $("#id_rack").get(0).options.length = 0;
+            $.ajax({
+                type: "GET",
+                url: "/en-US/systems/racks/bylocation/" + $("#id_location").val() + '/',
+                data: "{}",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(msg) {
+                    $("#id_rack").get(0).options.length = 0;
+                    $("#id_rack").get(0).options[0] = new Option("All", "");   
+                    $.each(msg, function(index, item) {
+                        $("#id_rack").get(0).options[$("#id_rack").get(0).options.length] = new Option(item.name, item.id);
+                    });
+                },
+                error: function() {
+                    alert("Failed to load racks");
+                }
+        }); 
+        });
+    
     });
 </script>
 
