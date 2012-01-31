@@ -37,7 +37,7 @@ class RackFilterForm(forms.Form):
 
     location = forms.ChoiceField(
         required=False,
-        choices=[('', 'All')] + [(m.id, m)
+        choices=[('0', 'All')] + [(m.id, m)
                     for m in models.Location.objects.all()])
     status = forms.ChoiceField(
         required=False,

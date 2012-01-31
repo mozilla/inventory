@@ -551,13 +551,9 @@ def new_rack_system_ajax(request, rack_id):
     return HttpResponse(json.dumps(resp_data), mimetype="application/json")
 
 @allow_anyone
-def racks_by_location_empty(request):
-    return racks_by_location(request,0)
-
-@allow_anyone
 def racks_by_location(request, location=0):
     ret_list = []
-    if location > 0:
+    if int(location) > 0:
         location = models.Location.objects.get(id=location)
         racks = models.SystemRack.objects.select_related('location').filter(location=location)
     else:
