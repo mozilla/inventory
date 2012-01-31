@@ -560,16 +560,20 @@ def racks(request):
 
     system_query = Q()
     if 'location' in request.GET:
+        location_id = request.GET['location']
         has_query = True
+        if len(location_id) > 0:
+            loc = models.Location.objects.get(id=location_id)
+            filter_form.fields['rack'].choices = [('','ALL')] + [(m.id, m.location.name + ' ' +  m.name) for m in models.SystemRack.objects.filter(location=loc).order_by('name')]
     else:
         has_query = False
     if filter_form.is_valid():
 
-        if filter_form.cleaned_data['location']:
-            racks = racks.filter(location=filter_form.cleaned_data['location'])
-            has_query = True
         if filter_form.cleaned_data['rack']:
             racks = racks.filter(id=filter_form.cleaned_data['rack'])
+            has_query = True
+        if filter_form.cleaned_data['location']:
+            racks = racks.filter(location=filter_form.cleaned_data['location'])
             has_query = True
         if filter_form.cleaned_data['allocation']:
             system_query &= Q(allocation=filter_form.cleaned_data['allocation'])

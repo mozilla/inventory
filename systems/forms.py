@@ -42,7 +42,7 @@ class RackFilterForm(forms.Form):
     rack = forms.ChoiceField(
         required=False,
         choices=[('', 'All')] + [(m.id, m.location.name + ' ' +  m.name)
-                    for m in models.SystemRack.objects.all()])
+                    for m in models.SystemRack.objects.all().order_by('location','name')])
     allocation = forms.ChoiceField(
         required=False,
         choices=[('', 'All')] + [(m.id, m)
