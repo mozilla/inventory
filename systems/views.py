@@ -574,7 +574,7 @@ def racks(request):
     if 'location' in request.GET:
         location_id = request.GET['location']
         has_query = True
-        if len(location_id) > 0:
+        if len(location_id) > 0 and int(location_id) > 0:
             loc = models.Location.objects.get(id=location_id)
             filter_form.fields['rack'].choices = [('','ALL')] + [(m.id, m.location.name + ' ' +  m.name) for m in models.SystemRack.objects.filter(location=loc).order_by('name')]
     else:
@@ -584,7 +584,7 @@ def racks(request):
         if filter_form.cleaned_data['rack']:
             racks = racks.filter(id=filter_form.cleaned_data['rack'])
             has_query = True
-        if filter_form.cleaned_data['location']:
+        if filter_form.cleaned_data['location'] and int(filter_form.cleaned_data['location']) > 0:
             racks = racks.filter(location=filter_form.cleaned_data['location'])
             has_query = True
         if filter_form.cleaned_data['allocation']:
