@@ -25,6 +25,10 @@ class SystemRackForm(forms.ModelForm):
     class Meta:
         model = models.SystemRack
 
+class ServerModelForm(forms.ModelForm):
+    class Meta:
+        model = models.ServerModel
+
 class LocationForm(forms.ModelForm):
     class Meta:
         model = models.Location

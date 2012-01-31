@@ -133,3 +133,8 @@ class SimpleTest(TestCase):
         self.assertEqual(1,obj[0]['pk'])
         self.assertEqual('fake-hostname2',obj[0]['fields']['hostname'])
 
+    def test_server_models_index(self):
+        resp = self.client.get("/en-US/systems/server_models/", follow=True)
+        print resp.context
+        self.assertEqual(resp.status_code, 200)
+

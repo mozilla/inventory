@@ -1,7 +1,7 @@
 {% extends "generic_listtable.html" %}
 {% block list_name %}Server Models{% endblock %}
 
-{% block create_new_url %}{% url server_model-new %}{% endblock %}
+{% block create_new_url %}{{ 'server_model-new'|url() }}{% endblock %}
 {% block table_head %}
         <tr>
             <th>Vendor</th> 
@@ -16,8 +16,8 @@
             <td>{{ o.vendor }}</td>
             <td>{{ o.model }}</td>
             <td>{{ o.description }}</td>
-            <td><a href="{% url server_model-show o.id %}">Show</a></td>
-            <td><a href="{% url server_model-edit o.id %}">Edit</a></td>
+            <td><a href="{{ "server_model-show"|url(o.id) }}">Show</a></td>
+            <td><a href="{{ "server_model-edit"|url(o.id) }}">Edit</a></td>
         </tr>
         {% endfor %}
 {% endblock %}

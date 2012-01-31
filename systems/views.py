@@ -756,6 +756,36 @@ def location_new(request):
             'form': form,
            },
            RequestContext(request))
+def server_model_edit(request, object_id):
+    server_model = get_object_or_404(models.ServerModel, pk=object_id)
+    from forms import ServerModelForm
+    initial = {}
+    if request.method == 'POST':
+        form = ServerModelForm(request.POST, instance=server_model)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/systems/server_models/')
+    else:
+        form = ServerModelForm(instance=server_model)
+
+    return render_to_response('generic_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
+def server_model_show(request, object_id):
+    object = get_object_or_404(models.ServerModel, pk=object_id)
+
+    return render_to_response('systems/servermodel_detail.html', {
+            'object': object,
+           },
+           RequestContext(request))
+def server_model_list(request):
+    object_list = models.ServerModel.objects.all()
+    print object_list
+    return render_to_response('systems/servermodel_list.html', {
+            'object_list': object_list,
+           },
+           RequestContext(request))
 def location_list(request):
     object_list = models.Location.objects.all()
     return render_to_response('systems/location_list.html', {
