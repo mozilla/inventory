@@ -7,6 +7,7 @@ except:
 from MacroExpansion import MacroExpansion
 from KeyValueTree import KeyValueTree
 from truth.models import Truth, KeyValue as TruthKeyValue
+from systems.models import ScheduledTask
 
 
 class TestMacroExpansion(TestCase):
@@ -294,6 +295,23 @@ class DHCPApi(TestCase):
     def test_delete_network_adapter(self):
         resp = self.client.delete('/api/v2/keyvalue/1/', {'system_hostname':'fake-hostname2', 'adapter_number':'0', 'key_type':'delete_network_adapter'}, follow=True)
         #print "The content is %s" % resp.content
+
+    def test_add_dhcp_scope_via_api(self):
+        ScheduledTask.objects.all().delete()
+        self.assertEqual(len(ScheduledTask.objects.all()), 0)
+        resp = self.client.post('/en-US/api/v2/dhcp/phx1-vlan73/add_scheduled_task/', follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(ScheduledTask.objects.all()), 1)
+        self.assertEqual(ScheduledTask.objects.all()[0].type, 'dhcp')
+
+
+    def test_delete_dhcp_scope_via_api(self):
+        ScheduledTask.objects.all().delete()
+        self.assertEqual(len(ScheduledTask.objects.all()), 0)
+        resp = self.client.post('/en-US/api/v2/dhcp/phx1-vlan73/add_scheduled_task/', follow=True)
+        self.assertEqual(len(ScheduledTask.objects.all()), 1)
+        resp = self.client.delete('/en-US/api/v2/dhcp/phx1-vlan73/remove_scheduled_task/', follow=True)
+        self.assertEqual(len(ScheduledTask.objects.all()), 0)
 
 class TestReverseDNSApi(TestCase):
     fixtures = ['testdata.json']

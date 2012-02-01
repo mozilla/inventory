@@ -86,7 +86,7 @@ class SystemApi(TestCase):
 
     def test_key_value_api(self):
         resp = self.client.get('/api/keyvalue/?keystore=fake-hostname2', follow=True)
-        print resp.content
+        #print resp.content
         self.assertEqual(json.loads(resp.content)['truth:test:cluster_name'], 'Test Cluster Name')
         self.assertEqual(json.loads(resp.content)['host:fake-hostname1:nic.0.ipv4_address.0'], u'10.99.32.3')
 

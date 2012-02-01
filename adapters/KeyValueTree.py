@@ -8,7 +8,6 @@ from systems.models import System, KeyValue
 from truth.models import Truth, KeyValue as TruthKeyValue
 import re
 from MacroExpansion import MacroExpansion
-
 class KeyValueTree:
     def __init__(self,search_string):
         self.ret = []

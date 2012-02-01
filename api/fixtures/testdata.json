@@ -126,6 +126,22 @@
         }
     },
     {
+        "pk": 5, 
+        "model": "truth.truth", 
+        "fields": {
+            "name": "scl3-101",
+            "description": "Test Rack for Elevation"
+        }
+    },
+    {
+        "pk": 6, 
+        "model": "truth.truth", 
+        "fields": {
+            "name": "hp-1ru-server",
+            "description": "Hp 1RU Server"
+        }
+    },
+    {
         "pk": 1, 
         "model": "systems.ScheduledTask", 
         "fields": {
@@ -286,7 +302,7 @@
         }
     },
     {
-        "pk": 16, 
+        "pk": 17, 
         "model": "truth.keyvalue", 
         "fields": {
             "truth": 3,
@@ -295,7 +311,7 @@
         }
     },
     {
-        "pk": 17, 
+        "pk": 18, 
         "model": "truth.keyvalue", 
         "fields": {
             "truth": 3,
@@ -304,7 +320,7 @@
         }
     },
     {
-        "pk": 18, 
+        "pk": 19, 
         "model": "truth.keyvalue", 
         "fields": {
             "truth": 3,
@@ -313,7 +329,7 @@
         }
     },
     {
-        "pk": 19, 
+        "pk": 20, 
         "model": "truth.keyvalue", 
         "fields": {
             "truth": 3,
@@ -322,7 +338,7 @@
         }
     },
     {
-        "pk": 20, 
+        "pk": 21, 
         "model": "truth.keyvalue", 
         "fields": {
             "truth": 3,
@@ -331,12 +347,48 @@
         }
     },
     {
-        "pk": 21, 
+        "pk": 22, 
         "model": "truth.keyvalue", 
         "fields": {
             "truth": 4,
             "key": "is_reverse_dns_zone",
             "value": "True"
+        }
+    },
+    {
+        "pk": 23, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 5,
+            "key": "rack-ru",
+            "value": "42"
+        }
+    },
+    {
+        "pk": 24, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 6,
+            "key": "system_ru",
+            "value": "1"
+        }
+    },
+    {
+        "pk": 25, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 6,
+            "key": "system_image",
+            "value": "hp-1RU.png"
+        }
+    },
+    {
+        "pk": 26, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 5,
+            "key": "rack-width",
+            "value": "30"
         }
     },
     {
@@ -527,5 +579,33 @@
             "key": "Null",
             "value": "Null"
         }
+    },
+    {
+        "pk": 21, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "parent.3",
+            "value": "${truth:scl3-101}"
+        }
+    },
+    {
+        "pk": 22, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "2",
+            "key": "parent.3",
+            "value": "${truth:scl3-101}"
+        }
+    },
+    {
+        "pk": 23, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "parent.4",
+            "value": "${truth:hp-1ru-server}"
+        }
     }
+
 ]

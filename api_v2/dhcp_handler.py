@@ -14,8 +14,6 @@ from django.test.client import Client
 from settings import API_ACCESS
 class DHCPHandler(BaseHandler):
     allowed_methods = API_ACCESS
-    model = System
-    #fields = ('id', 'asset_tag', 'oob_ip', 'hostname', 'operating_system', ('system_status',('status', 'id')))
     exclude = ()
     def read(self, request, dhcp_scope=None, dhcp_action=None):
         if dhcp_scope and dhcp_action == 'get_scopes':
@@ -46,3 +44,21 @@ class DHCPHandler(BaseHandler):
                         pass
             d = DHCPInterface(scope_options, adapter_list)
             return d.get_hosts()
+
+    def create(self, request, dhcp_scope=None, dhcp_action=None):
+        if dhcp_scope and dhcp_action == 'add_scheduled_task':
+            try:
+                task = ScheduledTask(type='dhcp',task=dhcp_scope)
+                task.save()
+            except Exception, e:
+                print e
+            return rc.ALL_OK
+        else:
+            return rc.NOT_FOUND
+
+    def delete(self, request, dhcp_scope=None, dhcp_action=None):
+
+        if dhcp_scope and dhcp_action == 'remove_scheduled_task':
+            task = ScheduledTask.objects.get(type='dhcp',task=dhcp_scope)
+            task.delete()
+            return rc.ALL_OK

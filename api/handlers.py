@@ -22,7 +22,7 @@ class DHCPHandler(BaseHandler):
             tasks = []
             for task in ScheduledTask.objects.get_all_dhcp():
                 tasks.append(task.task)
-            ScheduledTask.objects.delete_all_dhcp()
+            #ScheduledTask.objects.delete_all_dhcp()
             return tasks
         if dhcp_scope and dhcp_action == 'view_hosts':
             scope_options = []

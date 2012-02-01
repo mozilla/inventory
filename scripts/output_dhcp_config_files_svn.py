@@ -24,12 +24,12 @@ def main():
         final_destination_file = "%s/%s/%s_generated_hosts.conf" % (output_dir,dir, output_file)
         output_text = client.get('/api/dhcp/%s/view_hosts/' % dhcp_scope, follow=True).content
         output_text = output_text[1:-1]
-        f = open(final_destination_file,"w")
         output_text =  output_text.replace("\\n","\n")
         output_text =  output_text.replace('\\"','"')
-        #print output_text
+        f = open(final_destination_file,"w")
         f.write(output_text)
         f.close()
+        client.delete('/en-US/api/v2/dhcp/%s/remove_scheduled_task/' % dhcp_scope, follow=True)
     if len(dhcp_scopes) > 0:
         os.chdir(output_dir)
         os.system('/usr/bin/svn update')
