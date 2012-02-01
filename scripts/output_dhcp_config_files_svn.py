@@ -13,6 +13,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
 
 from django.test.client import Client
 from settings import DHCP_CONFIG_OUTPUT_DIRECTORY
+always_push_svn = True
 def main():
     client = Client()
     dhcp_scopes = []
@@ -30,7 +31,7 @@ def main():
         f.write(output_text)
         f.close()
         client.delete('/en-US/api/v2/dhcp/%s/remove_scheduled_task/' % dhcp_scope, follow=True)
-    if len(dhcp_scopes) > 0:
+    if len(dhcp_scopes) > 0 or always_push_svn:
         os.chdir(output_dir)
         os.system('/usr/bin/svn update')
         os.system('/usr/bin/svn add * --force')
