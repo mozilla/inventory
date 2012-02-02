@@ -606,6 +606,15 @@
             "key": "parent.4",
             "value": "${truth:hp-1ru-server}"
         }
+    },
+    {
+        "pk": 24, 
+        "model": "systems.keyvalue", 
+        "fields": {
+            "system": "1",
+            "key": "system_slot",
+            "value": "3"
+        }
     }
 
 ]

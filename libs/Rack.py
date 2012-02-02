@@ -26,7 +26,9 @@ class Rack:
             tree = json.loads(resp.content) 
             system_ru = self._get_system_ru(tree)
             system_image = self._get_system_image(tree)
-            self.systems.append({"system_name":s.system.hostname, "system_tree":tree, "system_ru":system_ru, "system_image":system_image})
+            system_slot = self._get_system_slot(tree)
+            self.systems.append({"system_name":s.system.hostname, "system_ru":system_ru, "system_image":system_image, 'system_slot':system_slot})
+            self.systems = sorted(self.systems, key=lambda k: k['system_slot']) 
         try:
             self.ru = self.kv.keyvalue_set.get(key='rack_ru').value
         except:
@@ -53,3 +55,12 @@ class Rack:
             except:
                 pass
         return None
+
+    def _get_system_slot(self, tree):
+        for i in tree.iterkeys():
+            try:
+                if 'system_slot' in i.split(':'):
+                    return tree[i]
+            except:
+                pass
+        return 1

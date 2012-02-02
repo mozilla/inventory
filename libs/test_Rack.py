@@ -47,15 +47,20 @@ class RackTest(TestCase):
 
     def test_system_count(self):
         r = Rack('scl3-101')
-        self.assertEquals(r.systems[0]['system_name'], 'fake-hostname2')
-        self.assertEquals(r.systems[1]['system_name'], 'fake-hostname1')
+        self.assertEquals(r.systems[0]['system_name'], 'fake-hostname1')
+        self.assertEquals(r.systems[1]['system_name'], 'fake-hostname2')
 
     def test_system_ru(self):
         r = Rack('scl3-101')
-        self.assertEquals(int(r.systems[0]['system_ru']), 1)
-        self.assertEquals(r.systems[1]['system_ru'], 4)
+        self.assertEquals(int(r.systems[0]['system_ru']), 4)
+        self.assertEquals(int(r.systems[1]['system_ru']), 1)
 
     def test_system_image(self):
         r = Rack('scl3-101')
-        self.assertEquals(r.systems[0]['system_image'], 'hp-1RU.png')
-        self.assertEquals(r.systems[1]['system_image'], None)
+        self.assertEquals(r.systems[0]['system_image'], None)
+        self.assertEquals(r.systems[1]['system_image'], 'hp-1RU.png')
+
+    def test_system_slot(self):
+        r = Rack('scl3-101')
+        self.assertEquals(int(r.systems[0]['system_slot']), 1)
+        self.assertEquals(int(r.systems[1]['system_slot']), 3)

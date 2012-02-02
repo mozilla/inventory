@@ -8,10 +8,10 @@
                 return (ret[segment - 1]);
             }
 
-            var kv_id = getURISegment(4);
-            load_key_value_store(kv_id)
+            var kv_id = getURISegment(5);
+            load_key_value_store(kv_id);
             function load_key_value_store(kv_id){
-                $('#key_value_store_span').html('&nbsp;').load('/truth/get_key_value_store/' + kv_id + '/');
+                $('#key_value_store_span').html('&nbsp;').load('/en-US/truth/get_key_value_store/' + kv_id + '/');
             }
 
 

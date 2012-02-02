@@ -8,7 +8,10 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import  redirect, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
-from django.utils import simplejson as json
+try:
+    import json
+except:
+    from django.utils import simplejson as json
 import _mysql_exceptions
 
 import models
@@ -21,6 +24,7 @@ from django.utils import translation
 from libs.jinja import render_to_response as render_to_response
 from jingo import render
 from django.views.decorators.csrf import csrf_exempt
+from Rack import Rack
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
 def tryint(s):
@@ -63,9 +67,16 @@ def check_dupe_nic_name(request,system_id,adapter_name):
     return HttpResponse(found)
 @allow_anyone
 def system_rack_elevation(request, rack_id):
-        return render_to_response('systems/rack_elevation.html', {
-            },
-            RequestContext(request))
+    r = Rack(rack_id)
+    data  = {
+            'rack_ru': r.ru,
+            'systems': r.systems,
+    }
+    data = json.dumps(data)
+    return render_to_response('systems/rack_elevation.html', {
+        'data':data,
+        },
+        RequestContext(request))
 
 @allow_anyone
 def list_all_systems_ajax(request):
