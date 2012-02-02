@@ -63,9 +63,20 @@ function draw() {
         ignore = 0;
         for(i=usable_height; i>edge - 11; i-=(usable_height/total_ru)){
             mult = i;
-            if(counter % 5 == 0){
-                system_ru = 1;
-                draw_image_at_ru(ctx, '/static/images/hp-1RU.png', counter, edge, edge+mult, usable_width, usable_height, system_ru);
+            var slot = 0;
+            var image = false;
+            var ru = 0;
+            $.each(data.systems, function(key, value){
+                 if(value['system_slot'] == counter){
+                    slot = value['system_slot'];
+                    image = value['system_image'];
+                    ru = value['system_ru'];
+                    system_name = value['system_name'];
+                 }
+            });
+            if(slot > 0){
+                system_ru = ru;
+                draw_image_at_ru(ctx, '/static/images/' + image, counter, edge, edge+mult, usable_width, usable_height, system_ru, system_name);
                 system_list.push(counter);
                 system_list.push(counter);
                 if(system_ru > 1){
@@ -101,7 +112,7 @@ function draw() {
         }
 }
 
-    function draw_image_at_ru(ctx, img_path, ru,x,y,width,height, ru ){
+    function draw_image_at_ru(ctx, img_path, ru,x,y,width,height, ru, system_name ){
         // Calculate the top portion of the system. Each is based on an RU being 18 pixels high, counting backwards
         y = y - (item_height * ru);
         var img = new Image();   // Create new img element  
@@ -116,7 +127,7 @@ function draw() {
         ctx.fillText(counter, 7, text_y);
         ctx.strokeStyle = "grey";
         ctx.font = "12px";
-        ctx.fillText('foo.bar.private.mozilla.com', 443, text_y +3);
+        ctx.fillText(system_name, 443, text_y +0);
         ctx.stroke();
         canvas_arrow(ctx, 440, text_y -3, 380, text_y -3);
     }
