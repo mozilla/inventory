@@ -27,7 +27,7 @@ class Rack:
             system_ru = self._get_system_ru(tree)
             system_image = self._get_system_image(tree)
             system_slot = self._get_system_slot(tree)
-            self.systems.append({"system_name":s.system.hostname, "system_ru":system_ru, "system_image":system_image, 'system_slot':system_slot})
+            self.systems.append({"system_name":s.system.hostname, "system_id":s.system.id, "system_ru":system_ru, "system_image":system_image, 'system_slot':system_slot})
             self.systems = sorted(self.systems, key=lambda k: k['system_slot']) 
         try:
             self.ru = self.kv.keyvalue_set.get(key='rack_ru').value

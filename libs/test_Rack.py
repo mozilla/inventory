@@ -55,6 +55,11 @@ class RackTest(TestCase):
         self.assertEquals(int(r.systems[0]['system_ru']), 4)
         self.assertEquals(int(r.systems[1]['system_ru']), 1)
 
+    def test_system_id(self):
+        r = Rack('scl3-101')
+        self.assertEquals(int(r.systems[1]['system_id']), 1)
+        self.assertEquals(int(r.systems[0]['system_id']), 2)
+
     def test_system_image(self):
         r = Rack('scl3-101')
         self.assertEquals(r.systems[0]['system_image'], None)

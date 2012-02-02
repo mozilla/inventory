@@ -33,15 +33,18 @@ $(document).ready(function() {
         e.pageY = e.pageY - 7;
         var y = Math.floor((e.pageY-$("#rack_elevation").offset().top) / 18);
         //Flip the bits to get the proper slice of the array
-        y = 46 - y;
+        y = total_ru - y;
         system_index = y;
+        console.log(system_index);
         //Check to see if we have a system_id stored
         if( parseInt(system_list[system_index]) > 0){
-            alert("Redirect to system edit page");
-            //self.location = "/systems/edit/" + system_list[system_index];
+            //alert("Redirect to system edit page" + system_list[system_index]);
+            self.location = "/en-US/systems/edit/" + system_list[system_index];
         //If not, then we'll display a jQuery UI to select which system goes here
         } else {
-            alert("Show interface to add");
+            if(system_index > 0){ 
+                alert("Show interface to add");
+            }
             //console.log("Here is where we display how to add a new system to this RU");
         }
 
@@ -72,14 +75,14 @@ function draw() {
                     image = value['system_image'];
                     ru = value['system_ru'];
                     system_name = value['system_name'];
+                    system_id= value['system_id'];
                  }
             });
             if(slot > 0){
                 system_ru = ru;
                 draw_image_at_ru(ctx, '/static/images/' + image, counter, edge, edge+mult, usable_width, usable_height, system_ru, system_name);
-                system_list.push(counter);
-                system_list.push(counter);
-                if(system_ru > 1){
+                system_list.push(system_id);
+                if(system_ru > 0){
                     ignore += (system_ru);
                 }
                 /*for(ii=1; ii<=system_ru; ii++){
@@ -152,7 +155,7 @@ function draw() {
 
 </script>
 <h2>System Rack Elevation</h2>
-<canvas width="700" height="1000" id='rack_elevation' style="cursor:pointer;">
+<canvas width="500" height="900" id='rack_elevation' style="cursor:pointer;">
 
 
 
