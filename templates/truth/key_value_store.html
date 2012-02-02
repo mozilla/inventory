@@ -57,13 +57,13 @@
 		});
 		$('.delete_key_value').click(function(){
 			var key_value_store_id = this.id.split('_')[0];
-			var system_id = getURISegment(4);
+			var system_id = getURISegment(5);
 			$('#key_value_store_span').html('&nbsp;').load('/en-US/truth/delete_key_value/' + key_value_store_id + '/' + system_id + '/');
 			return false;
 
 		});
 		$('#create_key_value').click(function(){
-			var system_id = getURISegment(4);
+			var system_id = getURISegment(5);
 			$('#key_value_store_span').html('&nbsp;').load('/en-US/truth/create_key_value/' + system_id + '/');
 			return false;
 
