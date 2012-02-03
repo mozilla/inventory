@@ -81,7 +81,9 @@ function draw() {
             if(slot > 0){
                 system_ru = ru;
                 draw_image_at_ru(ctx, '/static/images/' + image, counter, edge, edge+mult, usable_width, usable_height, system_ru, system_name);
-                system_list.push(system_id);
+                for(ii=1;ii<=system_ru;ii++){
+                    system_list.push(system_id);
+                }
                 if(system_ru > 0){
                     ignore += (system_ru);
                 }
@@ -115,26 +117,58 @@ function draw() {
         }
 }
 
-    function draw_image_at_ru(ctx, img_path, ru,x,y,width,height, ru, system_name ){
+    function draw_image_at_ru(ctx, img_path, slot,x,y,width,height, ru, system_name ){
         // Calculate the top portion of the system. Each is based on an RU being 18 pixels high, counting backwards
         y = y - (item_height * ru);
+        text_y = y + ((18 * ru) / 2) + 3;
         var img = new Image();   // Create new img element  
         img.onload = function(){  
             ctx.drawImage(img, x, y, width, 18  * ru);
+            ctx.fillStyle   = 'white';
+            var new_text_y = y + ((18 * ru) / 2) + 3;
+            ctx.fillRect(edge + edge + 2, new_text_y - 12, usable_width -340 + (system_name.length * 5),16);  
+            ctx.fill();
+            ctx.fillStyle = "red";
+            ctx.font="8pt";
+            ctx.fillText(slot, 7, new_text_y);
+            ctx.strokeStyle = "grey";
+            ctx.font = "12px";
+            ctx.fillStyle = "blue";
+            ctx.fillText(system_name, edge + edge + 6, new_text_y +0);
+            ctx.stroke();
+            //canvas_arrow(ctx, 440, text_y -3, 380, text_y -3);
         };  
         img.src = '/static/images/hp-1RU.png';
-        ctx.beginPath();
+        /*ctx.beginPath();
         ctx.fillStyle = "red";
         ctx.font="8pt";
-        text_y = y + ((18 * ru) / 2) + 3;
         ctx.fillText(counter, 7, text_y);
         ctx.strokeStyle = "grey";
         ctx.font = "12px";
         ctx.fillText(system_name, 443, text_y +0);
-        ctx.stroke();
-        canvas_arrow(ctx, 440, text_y -3, 380, text_y -3);
+        ctx.stroke();*/
+        //canvas_arrow(ctx, 440, text_y -3, 380, text_y -3);
+        //server_label(ctx, text_y, system_name);
+        //server_label(ctx, text_y, system_name);
     }
 
+    function server_label(ctx, fromy, text){
+        ctx.beginPath();
+        ctx.fillStyle   = 'green';
+        ctx.fillRect(edge + edge + 2, fromy - 12, usable_width -50 ,16);  
+        ctx.fill();
+        /*var headlen = 10;   // length of head in pixels
+        var angle = Math.atan2(toy-fromy,tox-fromx);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "blue";
+        ctx.fillStyle = 'blue';
+        ctx.moveTo(fromx, fromy);
+        ctx.lineTo(tox, toy);
+        ctx.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
+        ctx.moveTo(tox, toy);
+        ctx.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
+        ctx.stroke();*/
+    }
     function canvas_arrow(ctx, fromx, fromy, tox, toy, text){
         ctx.beginPath();
         var headlen = 10;   // length of head in pixels
