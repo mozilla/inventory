@@ -7,6 +7,13 @@ class DHCPOverride(models.Model):
     class Meta:
         db_table = u'dhcp_overrides'
 
+class DHCPFile(models.Model):
+
+    dhcp_scope = models.CharField(max_length=32)
+    file_text = models.TextField(blank=True, null=True)
+    class Meta:
+        db_table = u'dhcp_file'
+
 class DHCP(models.Model):
     SUBNET_CHOICES = (
         ('255.255.254.0', '255.255.254.0'),

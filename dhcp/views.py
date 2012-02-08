@@ -93,82 +93,15 @@ def showfile(request, dhcp_scope):
     #scope = get_object_or_404(models.DHCP, pk=id)
     #truth = Truth.objects.get(name='phx-vlan73')
     #scope = TruthKeyValue(truth=truth)
-    client = Client()
-    resp = client.get('/en-US/api/keyvalue/?keystore=%s' % dhcp_scope, follow=True)
-    scope=json.loads(resp.content)
-    scope_options = {}
-    if 'dhcp.scope.start' in scope:
-        scope_options['network_block'] = scope['dhcp.scope.start']
-    if 'dhcp.scope.netmask' in scope:
-        scope_options['subnet_mask'] = scope['dhcp.scope.netmask']
-    if 'dhcp.pool.start' in scope:
-        scope_options['pool_range_start'] = scope['dhcp.pool.start']
-    if 'dhcp.pool.end' in scope:
-        scope_options['pool_range_end'] = scope['dhcp.pool.end']
-    if 'dhcp.pool.allow_booting.0' in scope and scope['dhcp.pool.allow_booting.0'] is not None:
-        scope_options['allow_booting'] = 1
-    if 'dhcp.pool.allow_bootp.0' in scope and scope['dhcp.pool.allow_bootp.0'] is not None:
-        scope_options['allow_bootp'] = 1
-
-    if 'dhcp.option.domain_name.0' in scope and scope['dhcp.option.domain_name.0'] is not None:
-        scope_options['option_domain_name'] = scope['dhcp.option.domain_name.0']
-    if 'dhcp.option.domain_name.1' in scope and scope['dhcp.option.domain_name.1'] is not None:
-        scope_options['option_domain_name'] += ', ' + scope['dhcp.option.domain_name.1']
-    if 'dhcp.option.domain_name.2' in scope and scope['dhcp.option.domain_name.2'] is not None:
-        scope_options['option_domain_name'] += ', ' + scope['dhcp.option.domain_name.2']
-
-    if 'dhcp.option.ntp_server.0' in scope and scope['dhcp.option.ntp_server.0'] is not None:
-        scope_options['option_ntp_servers'] = scope['dhcp.option.ntp_server.0']
-    if 'dhcp.option.ntp_server.1' in scope and scope['dhcp.option.ntp_server.1'] is not None:
-        scope_options['option_ntp_servers'] += ', ' + scope['dhcp.option.ntp_server.1']
-    if 'dhcp.option.ntp_server.2' in scope and scope['dhcp.option.ntp_server.2'] is not None:
-        scope_options['option_ntp_servers'] += ', ' + scope['dhcp.option.ntp_server.2']
-
-    if 'dhcp.option.router.0' in scope and scope['dhcp.option.router.0'] is not None:
-        scope_options['option_routers'] = scope['dhcp.option.router.0']
-
-    if 'dhcp.option.subnet_mask.0' in scope and scope['dhcp.option.subnet_mask.0'] is not None:
-        scope_options['option_subnet_mask'] = scope['dhcp.option.subnet_mask.0']
-    scope_options['notes'] = '' #scope.scope_notes
     try:
-        scope_options['overrides'] = models.DHCPOverride.objects.get(dhcp_scope=dhcp_scope).override_text #scope.scope_notes
-        if scope_options['overrides'] is None:
-            scope_options['overrides'] = ''
+        d = models.DHCPFile.objects.get(dhcp_scope=dhcp_scope)
+        content = d.file_text
     except:
-        d = models.DHCPOverride(dhcp_scope=dhcp_scope)
-        d.save()
-        scope_options['overrides'] = models.DHCPOverride.objects.get(dhcp_scope=dhcp_scope) #scope.scope_notes
-        if scope_options['overrides'] is None:
-            scope_options['overrides'] = ''
-    """scope_options['allow_booting'] = scope.allow_booting
-    scope_options['allow_bootp'] = scope.allow_bootp
-    scope_options['filename'] = scope.filename
-    scope_options['pool_deny_dynamic_bootp_agents'] = scope.pool_deny_dynamic_bootp_agents
-    scope_options['option_ntp_servers'] = scope.option_ntp_servers
-    scope_options['option_subnet_mask'] = scope.option_subnet_mask
-    scope_options['option_domain_name'] = scope.option_domain_name
-    scope_options['option_domain_name_servers'] = scope.option_domain_name_servers
-    scope_options['option_routers'] = scope.option_routers"""
-    
-
-    #hostsAll = NetworkAdapter.objects.filter(dhcp_scope = id)
-    hosts = json.loads(client.get('/api/keyvalue/?key_type=system_by_scope&scope=%s' % dhcp_scope, follow=True).content)
-    #print hosts
-    adapter_list = []
-    for host in hosts:
-        the_url = '/api/keyvalue/?key_type=adapters_by_system_and_scope&dhcp_scope=%s&system=%s' % (dhcp_scope, host['hostname'])
-        adapter_list.append(json.loads(client.get(the_url, follow=True).content))
-
-    #print adapter_list
-
-    d = DHCP(scope_options, adapter_list)
-    output = d.notes()
-    #output += d.header()
-    #output += d.pool()
-    #output += d.options()
-    output += d.get_hosts()
-    #output += d.footer()
-    output = output.replace("\n","<br />")
+        content = """This file has not been stored in inventory yet. 
+        To get it stored. Make an innocous change to a hosts key/value entry. 
+        An example would be to change the nic name from nic0 to nic1 then back to nic0 again and click save. 
+        Once the file gets regenerated, it will be stored here"""
+    output = content.replace("\n","<br />")
     return render_to_response('dhcp/showfile.html', {
 
         "output": output 

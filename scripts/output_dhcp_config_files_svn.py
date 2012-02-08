@@ -13,6 +13,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
 
 from django.test.client import Client
 from settings import DHCP_CONFIG_OUTPUT_DIRECTORY
+from dhcp.models import DHCPFile
 always_push_svn = True
 def main():
     client = Client()
@@ -30,6 +31,12 @@ def main():
         f = open(final_destination_file,"w")
         f.write(output_text)
         f.close()
+        try:
+            DHCPFile.objects.get(dhcp_scope=dhcp_scope).delete()
+        except:
+            pass
+        d = DHCPFile(dhcp_scope=dhcp_scope,file_text=output_text)
+        d.save()
         client.delete('/en-US/api/v2/dhcp/%s/remove_scheduled_task/' % dhcp_scope, follow=True)
     if len(dhcp_scopes) > 0 or always_push_svn:
         os.chdir(output_dir)

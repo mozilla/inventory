@@ -1,6 +1,7 @@
 {% extends "jinja_base.html" %}
 {% block subtitle %} - racks{% endblock %}
 {% block content %}
+<script src="/static/js/kinetic.js" type="text/javascript"></script>
 <style type='text/css'>
     #blah-rack_elevation {
         width: 400px;
@@ -24,6 +25,8 @@ $(document).ready(function() {
     ru_height = usable_height/total_ru;
     if(called == false){
         draw();
+        draw_stage();
+
         called = true;
     }
     $("#rack_elevation").click(function(e){
@@ -35,7 +38,6 @@ $(document).ready(function() {
         //Flip the bits to get the proper slice of the array
         y = total_ru - y;
         system_index = y;
-        console.log(system_index);
         //Check to see if we have a system_id stored
         if( parseInt(system_list[system_index]) > 0){
             //alert("Redirect to system edit page" + system_list[system_index]);
@@ -45,12 +47,144 @@ $(document).ready(function() {
             if(system_index > 0){ 
                 alert("Show interface to add");
             }
-            //console.log("Here is where we display how to add a new system to this RU");
         }
 
 
     });
+    /*
+     *   draw_rack_lines
+    */
 
+    function draw_rack_lines(){
+        var layer = new Kinetic.Layer();
+        var shape = new Kinetic.Shape(function(){
+            var counter = 1;
+            for(i=usable_height; i>edge - 11; i-=(usable_height/total_ru)){
+                var mult = i;
+                ctx.beginPath();
+                ctx.fillStyle = '';
+                ctx.strokeStyle = "grey";
+                ctx.lineWidth = 1;
+                ctx.moveTo(edge, edge + mult);  
+                ctx.lineTo(usable_width + edge, edge + mult);  
+                ctx.stroke();
+                ctx.closePath();
+                ctx.beginPath();
+                ctx.fillStyle = "blue";
+                ctx.strokeStyle = "blue";
+                ctx.font="8pt";
+                text_y = mult + ( (usable_height/24) / 2) + 2;
+                ctx.fillText("RU " + counter, usable_width / 2, text_y);
+                ctx.stroke();
+                ctx.fill();
+                ctx.closePath();
+                counter++;
+            }
+        });
+        layer.add(shape);
+        return layer;
+    }
+
+    function draw_rack_background(){
+        var layer = new Kinetic.Layer();
+        var rack = new Kinetic.Shape(function(){
+            ctx = this.getContext();
+            ctx.beginPath();
+            ctx.fillStyle   = '#000000';
+            ctx.fillRect(0,0,rack_width, rack_height);  
+            ctx.fillStyle   = '#FFFFFF';
+            ctx.fillRect(edge, edge, usable_width, usable_height);  
+            ctx.closePath();
+            });
+        layer.add(rack);
+        return layer;
+    }
+    function draw_systems(stage){
+        var system_layer = new Kinetic.Layer();
+        $.each(data.systems, function(key, value){
+            slot = value['system_slot'];
+            image = value['system_image'];
+            ru = value['system_ru'];
+            system_name = value['system_name'];
+            system_id= value['system_id'];
+            if(slot > 0){
+                system_ru = ru;
+                draw_system(stage, system_layer, '/static/images/' + image, counter, edge, edge+mult, usable_width, usable_height, system_ru, slot, system_name, system_id);
+            }
+        });
+        stage.add(system_layer);
+        stage.draw();
+    }
+    function draw_system(stage, layer, img_path, slot,x,y,width,height, ru, slot, system_name, system_id){
+        var img = new Image();   // Create new img element  
+        ru = 1;
+        img.onload = function(){  
+
+            var box = new Kinetic.Shape(function(){
+                this.system_name = system_name;
+                this.system_id = system_id;
+                this.height = ru * 18;
+
+                var y_cord = height - (slot * 18);
+                y_cord = y_cord + this.height/ru;
+                y_cord = y_cord + 6;
+
+                var context = this.getContext();
+                var new_text_y = y_cord;
+                context.beginPath();
+                context.rect(edge, y_cord, usable_width, this.height);
+                context.drawImage(img, edge, y_cord, usable_width, this.height);
+                context.stroke();
+                context.fillStyle   = 'white';
+                context.fillRect(edge + edge + 2, y_cord + 2, usable_width -340 + (system_name.length * 5),16);  
+                context.font = "12px";
+                context.fillStyle = "blue";
+                context.fillText(system_name, edge + edge + 6, y_cord +14);
+                context.stroke();
+                context.closePath();
+            });
+            box.draggableY(true);
+
+            box.on("mouseover", function(){
+                this.moveToTop();
+                layer.draw();
+                document.body.style.cursor = "pointer";
+            });
+
+            box.on("click", function(){
+                this.moveToTop();
+                layer.draw();
+            });
+
+            box.on("dragstart", function(){
+                this.moveToTop();
+            });
+
+            box.on("dragend", function(){
+                //var y = Math.ceil(Math.abs(this.y)) / 28;
+                y = Math.abs(this.y) + 18;
+                y = Math.floor(y/18);
+                console.log(y);
+
+                layer.draw();
+            });
+
+            box.on("mouseout", function(){
+                document.body.style.cursor = "default";
+            });
+            layer.add(box);
+            stage.draw();
+        }
+        img.src = '/static/images/hp-1RU.png';
+    }
+
+    function draw_stage(){
+        var stage = new Kinetic.Stage("container", 500, 900);
+        stage.add(draw_rack_background());
+        stage.add(draw_rack_lines());
+        draw_systems(stage);
+        stage.draw();
+    }
         // put all your jQuery goodness in here.
 function draw() {
         var ctx = document.getElementById('rack_elevation').getContext('2d');
@@ -190,8 +324,6 @@ function draw() {
 </script>
 <h2>System Rack Elevation</h2>
 <canvas width="500" height="900" id='rack_elevation' style="cursor:pointer;">
-
-
-
 </canvas>
+<div id = "container"></div>
 {% endblock %}
