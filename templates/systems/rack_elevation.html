@@ -25,7 +25,7 @@ $(document).ready(function() {
     ru_height = usable_height/total_ru;
     if(called == false){
         draw();
-        draw_stage();
+        //draw_stage();
 
         called = true;
     }
@@ -280,7 +280,8 @@ function draw() {
             ctx.stroke();
             //canvas_arrow(ctx, 440, text_y -3, 380, text_y -3);
         };  
-        img.src = '/static/images/hp-1RU.png';
+        img.src =  img_path;
+        console.log(img.src);
         /*ctx.beginPath();
         ctx.fillStyle = "red";
         ctx.font="8pt";
