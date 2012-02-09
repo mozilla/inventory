@@ -160,11 +160,19 @@ $(document).ready(function() {
                 this.moveToTop();
             });
 
-            box.on("dragend", function(){
+            box.on("dragend", function(e){
                 //var y = Math.ceil(Math.abs(this.y)) / 28;
-                y = Math.abs(this.y) + 18;
+                //y = Math.abs(this.y) + 18;
+                //console.log(this);
+                console.log(e);
+                console.log(e.clientY);
+                //console.log(box.y);
+                box.y = box.y;
+                layer.draw();
+    
+                var y = this.y + 18;
                 y = Math.floor(y/18);
-                console.log(y);
+                //console.log(y);
 
                 layer.draw();
             });
