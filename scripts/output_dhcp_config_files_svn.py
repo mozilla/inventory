@@ -28,9 +28,12 @@ def main():
         output_text = output_text[1:-1]
         output_text =  output_text.replace("\\n","\n")
         output_text =  output_text.replace('\\"','"')
-        f = open(final_destination_file,"w")
-        f.write(output_text)
-        f.close()
+        try:
+            f = open(final_destination_file,"w")
+            f.write(output_text)
+            f.close()
+        except IOError:
+            pass
         try:
             DHCPFile.objects.get(dhcp_scope=dhcp_scope).delete()
         except:
@@ -48,3 +51,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
