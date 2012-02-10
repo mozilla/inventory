@@ -1,6 +1,9 @@
 {% extends "jinja_base.html" %}
 {% block subtitle %} - racks{% endblock %}
 {% block content %}
+<script type="text/javascript" src="/static/js/jQuery.rightclick.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui-1.8.11.custom.min.js"></script>
+<link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
 <style type='text/css'>
     #blah-rack_elevation {
         width: 400px;
@@ -26,27 +29,49 @@ $(document).ready(function() {
         draw();
         called = true;
     }
-    $("#rack_elevation").click(function(e){
-
-        //Setup this offset to allow for the a segment having an image and a border.
-        //Perhaps my math is wrong though, but this works out perfectly
+    function get_ru(e){
         e.pageY = e.pageY - 7;
         var y = Math.floor((e.pageY-$("#rack_elevation").offset().top) / 18);
         //Flip the bits to get the proper slice of the array
         y = total_ru - y;
-        system_index = y;
-        //Check to see if we have a system_id stored
+        return y;
+    }
+
+    function is_system(system_index){
         if( parseInt(system_list[system_index]) > 0){
-            self.location = "/en-US/systems/edit/" + system_list[system_index];
-        //If not, then we'll display a jQuery UI to select which system goes here
+            return true;
         } else {
-            //Check to confirm that we're inside of the rack and not someplace else
-        if(system_index > 0 && system_list[system_index] > 0){ 
-                alert("Show interface to add");
-            }
+            return false;
         }
 
+    }
+    function is_rack_hardware(system_index){
+        if( parseInt(system_list[system_index]) == -1){
+            return true;
+        } else {
+            return false;
+        }
 
+    }
+    function left_click_rack(system_index){
+        if( is_system(system_index)){
+            self.location = "/en-US/systems/edit/" + system_list[system_index];
+        } else if (is_rack_hardware(system_index) == false){
+            // @TODO Add jquery ui dialog box for adding hardware
+            alert("Show interface to add");
+        }
+    }
+
+    $("#rack_elevation").rightClick(function(e){
+        system_index = get_ru(e);
+        if(is_system(system_index)){
+            $( "#dialog" ).dialog();
+        }
+    });
+
+    $("#rack_elevation").click(function(e){
+        system_index = get_ru(e);
+        left_click_rack(system_index);                
     });
     /*
      *   draw_rack_lines
@@ -185,4 +210,7 @@ function draw() {
 <canvas width="500" height="900" id='rack_elevation' style="cursor:pointer;">
 </canvas>
 <div id = "container"></div>
+<div id="dialog" title="Basic dialog">
+    <p>Here i'll show stuff like OOB ip, serial number and whatever else somoene wants</p>
+</div>
 {% endblock %}
