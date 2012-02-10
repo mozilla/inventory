@@ -41,6 +41,12 @@ class TestOnCall(TestCase):
         obj = json.loads(resp.content)
         self.assertEqual(obj['user'], 'user1@domain.com')
         self.assertEqual(obj['epager_address'], 'user1@domain.com')
+        resp = self.client.put('/en-US/api/v2/oncall/setsysadmin/user1@domain.com/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        resp = self.client.get('/api/v2/oncall/desktop/email/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['user'], 'user1@domain.com')
 
     def test_get_current_desktop_oncall_irc_nick(self):
         resp = self.client.get('/api/v2/oncall/sysadmin/irc_nick/', follow=True)
@@ -95,6 +101,7 @@ class TestOnCall(TestCase):
         self.assertEqual(200, resp.status_code)
         obj = json.loads(resp.content)
         self.assertEqual('user3@domain.com', obj['user'])
+
     def test_set_sysadmin_oncall(self):
 
         resp = self.client.get('/api/v2/oncall/sysadmin/email/', follow=True)
