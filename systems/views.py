@@ -683,8 +683,11 @@ def oncall(request):
 
             current_desktop_oncall = form.cleaned_data['desktop_support']
             current_sysadmin_oncall = form.cleaned_data['sysadmin_support']
-            set_oncall('sysadmin', current_sysadmin_oncall)
-            set_oncall('desktop', current_desktop_oncall)
+            if current_desktop_oncall != current_sysadmin_oncall:
+                set_oncall('desktop', current_desktop_oncall)
+                set_oncall('sysadmin', current_sysadmin_oncall)
+            elif current_desktop_oncall == current_sysadmin_oncall:
+                set_oncall('both', current_sysadmin_oncall)
     else:
         form = OncallForm(initial = initial)
     return render(request, 'systems/generic_form.html', {'current_desktop_oncall':current_desktop_oncall,'current_sysadmin_oncall':current_sysadmin_oncall, 'form':form})
@@ -694,8 +697,11 @@ def set_oncall(type, username):
         new_oncall = User.objects.get(username=username)
         if type=='desktop':
             new_oncall.get_profile().current_desktop_oncall = 1
-        if type=='sysadmin':
+        elif type=='sysadmin':
             new_oncall.get_profile().current_sysadmin_oncall = 1
+        elif type=='both':
+            new_oncall.get_profile().current_sysadmin_oncall = 1
+            new_oncall.get_profile().current_desktop_oncall = 1
         new_oncall.get_profile().save()
         new_oncall.save()
     except Exception, e:
