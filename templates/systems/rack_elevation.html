@@ -41,7 +41,7 @@ $(document).ready(function() {
         //If not, then we'll display a jQuery UI to select which system goes here
         } else {
             //Check to confirm that we're inside of the rack and not someplace else
-            if(system_index > 0){ 
+        if(system_index > 0 && system_list[system_index] > 0){ 
                 alert("Show interface to add");
             }
         }
@@ -86,6 +86,24 @@ function draw() {
                     ru = value['system_ru'];
                     system_name = value['system_name'];
                     system_id= value['system_id'];
+                 }
+            });
+            $.each(data.ethernet_patch_panels_24, function(key, value){
+                 if(value == counter){
+                    slot = value;
+                    image = '24port_ethernet_patch_panel.jpg';
+                    ru = 1;
+                    system_name = '';
+                    system_id= '-1';
+                 }
+            });
+            $.each(data.ethernet_patch_panels_48, function(key, value){
+                 if(value == counter){
+                    slot = value;
+                    image = '48port_ethernet_patch_panel.jpg';
+                    ru = 2;
+                    system_name = '';
+                    system_id= '-1';
                  }
             });
             if(slot > 0){
@@ -135,23 +153,25 @@ function draw() {
         img.onload = function(){  
             // Set the background to the image of the server
             ctx.drawImage(img, x, y, width, 18  * ru);
-            // Clear out a white background to overlay the system name
-            ctx.fillStyle   = 'white';
-            var new_text_y = y + ((18 * ru) / 2) + 3;
-            //Because system names are of variable length. Create a small box then increment it based on the length of the system name.
-            ctx.fillRect(edge + edge + 2, new_text_y - 12, usable_width -340 + (system_name.length * 5),16);  
-            ctx.fill();
-            // We want to mark on the left side of the rack the RU that the system starts at
-            ctx.fillStyle = "red";
-            ctx.font="8pt";
-            ctx.fillText(slot, 7, new_text_y);
-            // Add a grey border, with blue text
-            ctx.strokeStyle = "grey";
-            ctx.font = "12px";
-            ctx.fillStyle = "blue";
-            //Add the text that includes the system name
-            ctx.fillText(system_name, edge + edge + 6, new_text_y +0);
-            ctx.stroke();
+            if(system_name.length > 0){
+                // Clear out a white background to overlay the system name
+                ctx.fillStyle   = 'white';
+                var new_text_y = y + ((18 * ru) / 2) + 3;
+                //Because system names are of variable length. Create a small box then increment it based on the length of the system name.
+                ctx.fillRect(edge + edge + 2, new_text_y - 12, usable_width -340 + (system_name.length * 5),16);  
+                ctx.fill();
+                // We want to mark on the left side of the rack the RU that the system starts at
+                ctx.fillStyle = "red";
+                ctx.font="8pt";
+                ctx.fillText(slot, 7, new_text_y);
+                // Add a grey border, with blue text
+                ctx.strokeStyle = "grey";
+                ctx.font = "12px";
+                ctx.fillStyle = "blue";
+                //Add the text that includes the system name
+                ctx.fillText(system_name, edge + edge + 6, new_text_y +0);
+                ctx.stroke();
+            }
         };  
         img.src =  img_path;
     }

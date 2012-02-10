@@ -392,6 +392,33 @@
         }
     },
     {
+        "pk": 27, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 5,
+            "key": "24_port_ethernet_patch_panel",
+            "value": "42"
+        }
+    },
+    {
+        "pk": 28, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 5,
+            "key": "48_port_ethernet_patch_panel",
+            "value": "40"
+        }
+    },
+    {
+        "pk": 29, 
+        "model": "truth.keyvalue", 
+        "fields": {
+            "truth": 5,
+            "key": "48_port_ethernet_patch_panel",
+            "value": "38"
+        }
+    },
+    {
         "pk": 1, 
         "model": "systems.keyvalue", 
         "fields": {

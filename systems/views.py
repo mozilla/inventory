@@ -70,6 +70,8 @@ def system_rack_elevation(request, rack_id):
     r = Rack(rack_id)
     data  = {
             'rack_ru': r.ru,
+            'ethernet_patch_panels_24': r.ethernet_patch_panel_24,
+            'ethernet_patch_panels_48': r.ethernet_patch_panel_48,
             'systems': r.systems,
     }
     data = json.dumps(data)

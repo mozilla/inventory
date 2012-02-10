@@ -69,3 +69,11 @@ class RackTest(TestCase):
         r = Rack('scl3-101')
         self.assertEquals(int(r.systems[0]['system_slot']), 1)
         self.assertEquals(int(r.systems[1]['system_slot']), 3)
+
+    def test_ethernet_patch_panels(self):
+        r = Rack('scl3-101')
+        self.assertEquals(len(r.ethernet_patch_panel_24), 1)
+        self.assertEquals(len(r.ethernet_patch_panel_48), 2)
+        self.assertEquals(int(r.ethernet_patch_panel_24[0]), 42)
+        self.assertEquals(int(r.ethernet_patch_panel_48[0]), 40)
+        self.assertEquals(int(r.ethernet_patch_panel_48[1]), 38)

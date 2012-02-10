@@ -14,11 +14,15 @@ class Rack:
     ru = None
     width = None
     systems = []
+    ethernet_patch_panel_24 = []
+    ethernet_patch_panel_48 = []
     def __init__(self, rack_name):
         self.systems = []
         self.rack_name = rack_name
         self.kv = Truth.objects.select_related('truth_key_value').get(name=self.rack_name)
         self.system_list = KeyValue.objects.select_related('system').filter(value__contains="truth:%s" % (self.rack_name))
+        self.ethernet_patch_panel_24 = self._get_ethernet_patch_panels(self.kv, 'ethernet', 24)
+        self.ethernet_patch_panel_48 = self._get_ethernet_patch_panels(self.kv, 'ethernet', 48)
         for s in self.system_list:
             #print dir(s)
             client = Client()
@@ -38,6 +42,15 @@ class Rack:
             self.width = self.kv.keyvalue_set.get(key='rack_width').value
         except:
             self.width = 30
+    def _get_ethernet_patch_panels(self, tree, type, port_count):
+        ret = []
+        for i in tree.keyvalue_set.all():
+            match_string = "%i_port_%s_patch_panel" % (port_count, type)
+            if str(i.key) == match_string:
+                ret.append(i.value)
+        return ret
+
+
     def _get_system_ru(self, tree):
         for i in tree.iterkeys():
             try:
