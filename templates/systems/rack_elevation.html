@@ -1,7 +1,6 @@
 {% extends "jinja_base.html" %}
 {% block subtitle %} - racks{% endblock %}
 {% block content %}
-<script src="/static/js/kinetic.js" type="text/javascript"></script>
 <style type='text/css'>
     #blah-rack_elevation {
         width: 400px;
@@ -25,8 +24,6 @@ $(document).ready(function() {
     ru_height = usable_height/total_ru;
     if(called == false){
         draw();
-        //draw_stage();
-
         called = true;
     }
     $("#rack_elevation").click(function(e){
@@ -40,10 +37,10 @@ $(document).ready(function() {
         system_index = y;
         //Check to see if we have a system_id stored
         if( parseInt(system_list[system_index]) > 0){
-            //alert("Redirect to system edit page" + system_list[system_index]);
             self.location = "/en-US/systems/edit/" + system_list[system_index];
         //If not, then we'll display a jQuery UI to select which system goes here
         } else {
+            //Check to confirm that we're inside of the rack and not someplace else
             if(system_index > 0){ 
                 alert("Show interface to add");
             }
@@ -55,157 +52,28 @@ $(document).ready(function() {
      *   draw_rack_lines
     */
 
-    function draw_rack_lines(){
-        var layer = new Kinetic.Layer();
-        var shape = new Kinetic.Shape(function(){
-            var counter = 1;
-            for(i=usable_height; i>edge - 11; i-=(usable_height/total_ru)){
-                var mult = i;
-                ctx.beginPath();
-                ctx.fillStyle = '';
-                ctx.strokeStyle = "grey";
-                ctx.lineWidth = 1;
-                ctx.moveTo(edge, edge + mult);  
-                ctx.lineTo(usable_width + edge, edge + mult);  
-                ctx.stroke();
-                ctx.closePath();
-                ctx.beginPath();
-                ctx.fillStyle = "blue";
-                ctx.strokeStyle = "blue";
-                ctx.font="8pt";
-                text_y = mult + ( (usable_height/24) / 2) + 2;
-                ctx.fillText("RU " + counter, usable_width / 2, text_y);
-                ctx.stroke();
-                ctx.fill();
-                ctx.closePath();
-                counter++;
-            }
-        });
-        layer.add(shape);
-        return layer;
-    }
-
-    function draw_rack_background(){
-        var layer = new Kinetic.Layer();
-        var rack = new Kinetic.Shape(function(){
-            ctx = this.getContext();
-            ctx.beginPath();
-            ctx.fillStyle   = '#000000';
-            ctx.fillRect(0,0,rack_width, rack_height);  
-            ctx.fillStyle   = '#FFFFFF';
-            ctx.fillRect(edge, edge, usable_width, usable_height);  
-            ctx.closePath();
-            });
-        layer.add(rack);
-        return layer;
-    }
-    function draw_systems(stage){
-        var system_layer = new Kinetic.Layer();
-        $.each(data.systems, function(key, value){
-            slot = value['system_slot'];
-            image = value['system_image'];
-            ru = value['system_ru'];
-            system_name = value['system_name'];
-            system_id= value['system_id'];
-            if(slot > 0){
-                system_ru = ru;
-                draw_system(stage, system_layer, '/static/images/' + image, counter, edge, edge+mult, usable_width, usable_height, system_ru, slot, system_name, system_id);
-            }
-        });
-        stage.add(system_layer);
-        stage.draw();
-    }
-    function draw_system(stage, layer, img_path, slot,x,y,width,height, ru, slot, system_name, system_id){
-        var img = new Image();   // Create new img element  
-        ru = 1;
-        img.onload = function(){  
-
-            var box = new Kinetic.Shape(function(){
-                this.system_name = system_name;
-                this.system_id = system_id;
-                this.height = ru * 18;
-
-                var y_cord = height - (slot * 18);
-                y_cord = y_cord + this.height/ru;
-                y_cord = y_cord + 6;
-
-                var context = this.getContext();
-                var new_text_y = y_cord;
-                context.beginPath();
-                context.rect(edge, y_cord, usable_width, this.height);
-                context.drawImage(img, edge, y_cord, usable_width, this.height);
-                context.stroke();
-                context.fillStyle   = 'white';
-                context.fillRect(edge + edge + 2, y_cord + 2, usable_width -340 + (system_name.length * 5),16);  
-                context.font = "12px";
-                context.fillStyle = "blue";
-                context.fillText(system_name, edge + edge + 6, y_cord +14);
-                context.stroke();
-                context.closePath();
-            });
-            box.draggableY(true);
-
-            box.on("mouseover", function(){
-                this.moveToTop();
-                layer.draw();
-                document.body.style.cursor = "pointer";
-            });
-
-            box.on("click", function(){
-                this.moveToTop();
-                layer.draw();
-            });
-
-            box.on("dragstart", function(){
-                this.moveToTop();
-            });
-
-            box.on("dragend", function(e){
-                //var y = Math.ceil(Math.abs(this.y)) / 28;
-                //y = Math.abs(this.y) + 18;
-                //console.log(this);
-                console.log(e);
-                console.log(e.clientY);
-                //console.log(box.y);
-                box.y = box.y;
-                layer.draw();
-    
-                var y = this.y + 18;
-                y = Math.floor(y/18);
-                //console.log(y);
-
-                layer.draw();
-            });
-
-            box.on("mouseout", function(){
-                document.body.style.cursor = "default";
-            });
-            layer.add(box);
-            stage.draw();
-        }
-        img.src = '/static/images/hp-1RU.png';
-    }
-
-    function draw_stage(){
-        var stage = new Kinetic.Stage("container", 500, 900);
-        stage.add(draw_rack_background());
-        stage.add(draw_rack_lines());
-        draw_systems(stage);
-        stage.draw();
-    }
-        // put all your jQuery goodness in here.
-function draw() {
-        var ctx = document.getElementById('rack_elevation').getContext('2d');
-        //Statically setting the total RU for now, it will configurable
-        //alert(usable_height/total_ru);
-        // Each RU is 18 pixels
+    function draw_rack_border(ctx){
         ctx.beginPath();
         ctx.fillStyle   = '#000000';
         ctx.fillRect(0,0,rack_width, rack_height);  
+    }
+    function clear_rack_center(ctx){
+        ctx.beginPath();
         ctx.fillStyle   = '#FFFFFF';
         ctx.fillRect(edge, edge, usable_width, usable_height);  
+
+    }
+function draw() {
+        var ctx = document.getElementById('rack_elevation').getContext('2d');
+        //alert(usable_height/total_ru);
+        // Each RU is 18 pixels
+        draw_rack_border(ctx);
+        clear_rack_center(ctx);
         counter = 1;
+        // Counter to decide whether or not we want to draw rack lines.
+        // If ignore > 0 then no lines get drawn
         ignore = 0;
+        //Iterate over each RU
         for(i=usable_height; i>edge - 11; i-=(usable_height/total_ru)){
             mult = i;
             var slot = 0;
@@ -226,13 +94,13 @@ function draw() {
                 for(ii=1;ii<=system_ru;ii++){
                     system_list.push(system_id);
                 }
+                //Get the size of the system and increment the ignore counter
                 if(system_ru > 0){
                     ignore += (system_ru);
                 }
-                /*for(ii=1; ii<=system_ru; ii++){
-                    system_list.push(counter);
-                }*/
             } else {
+                // Add some text to the array
+                // Later we check the array for either a system id or text. If there is text then we'll show a UI Dialog to add a system
                 if(ignore == 0){
                     system_list.push('add');
                 }
@@ -260,72 +128,34 @@ function draw() {
 }
 
     function draw_image_at_ru(ctx, img_path, slot,x,y,width,height, ru, system_name ){
-        // Calculate the top portion of the system. Each is based on an RU being 18 pixels high, counting backwards
+        // Calculate the top portion of the system. Each is based on an RU being 18 pixels high, counting backwards from the bottom up
         y = y - (item_height * ru);
         text_y = y + ((18 * ru) / 2) + 3;
         var img = new Image();   // Create new img element  
         img.onload = function(){  
+            // Set the background to the image of the server
             ctx.drawImage(img, x, y, width, 18  * ru);
+            // Clear out a white background to overlay the system name
             ctx.fillStyle   = 'white';
             var new_text_y = y + ((18 * ru) / 2) + 3;
+            //Because system names are of variable length. Create a small box then increment it based on the length of the system name.
             ctx.fillRect(edge + edge + 2, new_text_y - 12, usable_width -340 + (system_name.length * 5),16);  
             ctx.fill();
+            // We want to mark on the left side of the rack the RU that the system starts at
             ctx.fillStyle = "red";
             ctx.font="8pt";
             ctx.fillText(slot, 7, new_text_y);
+            // Add a grey border, with blue text
             ctx.strokeStyle = "grey";
             ctx.font = "12px";
             ctx.fillStyle = "blue";
+            //Add the text that includes the system name
             ctx.fillText(system_name, edge + edge + 6, new_text_y +0);
             ctx.stroke();
-            //canvas_arrow(ctx, 440, text_y -3, 380, text_y -3);
         };  
         img.src =  img_path;
-        console.log(img.src);
-        /*ctx.beginPath();
-        ctx.fillStyle = "red";
-        ctx.font="8pt";
-        ctx.fillText(counter, 7, text_y);
-        ctx.strokeStyle = "grey";
-        ctx.font = "12px";
-        ctx.fillText(system_name, 443, text_y +0);
-        ctx.stroke();*/
-        //canvas_arrow(ctx, 440, text_y -3, 380, text_y -3);
-        //server_label(ctx, text_y, system_name);
-        //server_label(ctx, text_y, system_name);
     }
 
-    function server_label(ctx, fromy, text){
-        ctx.beginPath();
-        ctx.fillStyle   = 'green';
-        ctx.fillRect(edge + edge + 2, fromy - 12, usable_width -50 ,16);  
-        ctx.fill();
-        /*var headlen = 10;   // length of head in pixels
-        var angle = Math.atan2(toy-fromy,tox-fromx);
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "blue";
-        ctx.fillStyle = 'blue';
-        ctx.moveTo(fromx, fromy);
-        ctx.lineTo(tox, toy);
-        ctx.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
-        ctx.moveTo(tox, toy);
-        ctx.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
-        ctx.stroke();*/
-    }
-    function canvas_arrow(ctx, fromx, fromy, tox, toy, text){
-        ctx.beginPath();
-        var headlen = 10;   // length of head in pixels
-        var angle = Math.atan2(toy-fromy,tox-fromx);
-        ctx.lineWidth = 2;
-        ctx.strokeStyle = "blue";
-        ctx.fillStyle = 'blue';
-        ctx.moveTo(fromx, fromy);
-        ctx.lineTo(tox, toy);
-        ctx.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
-        ctx.moveTo(tox, toy);
-        ctx.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
-        ctx.stroke();
-    }
 
     });
 
