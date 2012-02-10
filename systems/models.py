@@ -378,6 +378,7 @@ class UserProfile(models.Model):
     api_key = models.CharField(max_length=255, null=True, blank=True)
     pager_type = models.CharField(choices=PAGER_CHOICES, max_length=255, null=False, blank=False)
     pager_number = models.CharField(max_length=255, null=False, blank=False)
+    epager_address = models.CharField(max_length=255, null=False, blank=False)
     objects = QuerySetManager()
     class QuerySet(QuerySet):
         def get_all_desktop_oncall(self):

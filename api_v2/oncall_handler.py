@@ -19,10 +19,10 @@ class OncallHandler(BaseHandler):
         if oncall_type == 'desktop':
             if display_type == 'email':
                 result = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0]
-                oncall = {'user':result.username, 'pager_type': result.get_profile().pager_type, 'pager_number': result.get_profile().pager_number}
+                oncall = {'user':result.username, 'pager_type': result.get_profile().pager_type, 'epager_address': result.get_profile().epager_address, 'pager_number': result.get_profile().pager_number}
             elif display_type == 'irc_nick':
                 result = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0]
-                oncall = {'user':result.get_profile().irc_nick, 'pager_type': result.get_profile().pager_type, 'pager_number': result.get_profile().pager_number}
+                oncall = {'user':result.get_profile().irc_nick, 'pager_type': result.get_profile().pager_type, 'epager_address': result.get_profile().epager_address, 'pager_number': result.get_profile().pager_number}
             elif display_type == 'all':
                 oncall = []
                 list = User.objects.select_related().filter(userprofile__is_desktop_oncall=1)
@@ -31,10 +31,10 @@ class OncallHandler(BaseHandler):
         elif oncall_type == 'sysadmin':
             if display_type == 'email':
                 result = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0]
-                oncall = {'user':result.username, 'pager_type': result.get_profile().pager_type, 'pager_number': result.get_profile().pager_number}
+                oncall = {'user':result.username, 'pager_type': result.get_profile().pager_type, 'epager_address': result.get_profile().epager_address, 'pager_number': result.get_profile().pager_number}
             elif display_type == 'irc_nick':
                 result = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0]
-                oncall = {'user':result.get_profile().irc_nick, 'pager_type': result.get_profile().pager_type, 'pager_number': result.get_profile().pager_number}
+                oncall = {'user':result.get_profile().irc_nick, 'pager_type': result.get_profile().pager_type, 'epager_address': result.get_profile().epager_address, 'pager_number': result.get_profile().pager_number}
             elif display_type == 'all':
                 oncall = []
                 list = User.objects.select_related().filter(userprofile__is_sysadmin_oncall=1)

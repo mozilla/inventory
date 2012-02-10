@@ -40,6 +40,7 @@ class TestOnCall(TestCase):
         self.assertEqual(200, resp.status_code)
         obj = json.loads(resp.content)
         self.assertEqual(obj['user'], 'user1@domain.com')
+        self.assertEqual(obj['epager_address'], 'user1@domain.com')
 
     def test_get_current_desktop_oncall_irc_nick(self):
         resp = self.client.get('/api/v2/oncall/sysadmin/irc_nick/', follow=True)

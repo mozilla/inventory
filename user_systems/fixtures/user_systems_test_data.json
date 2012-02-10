@@ -17,6 +17,7 @@
       "is_desktop_oncall": "1",
       "pager_type": "sms",
       "pager_number": "1231231234",
+      "epager_address": "user1@domain.com",
       "current_desktop_oncall": "1",
       "is_sysadmin_oncall": "1"
     }
@@ -39,6 +40,7 @@
       "is_desktop_oncall": "1",
       "pager_type": "sms",
       "pager_number": "1231231234",
+      "epager_address": "user2@domain.com",
       "current_sysadmin_oncall": "1",
       "is_sysadmin_oncall": "1"
     }
@@ -61,6 +63,7 @@
       "is_desktop_oncall": "0",
       "pager_type": "sms",
       "pager_number": "1231231234",
+      "epager_address": "user3@domain.com",
       "current_sysadmin_oncall": "0",
       "is_sysadmin_oncall": "1"
     }
@@ -83,6 +86,7 @@
       "is_desktop_oncall": "1",
       "pager_type": "epager",
       "pager_number": "user4@domain.com",
+      "epager_address": "user4@domain.com",
       "current_sysadmin_oncall": "0",
       "is_sysadmin_oncall": "0"
     }
