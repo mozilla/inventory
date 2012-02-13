@@ -77,3 +77,15 @@ class RackTest(TestCase):
         self.assertEquals(int(r.ethernet_patch_panel_24[0]), 42)
         self.assertEquals(int(r.ethernet_patch_panel_48[0]), 40)
         self.assertEquals(int(r.ethernet_patch_panel_48[1]), 38)
+
+    def test_operating_system(self):
+        r = Rack('scl3-101')
+        self.assertEquals(r.systems[0]['operating_system'], 'RHEL - 6.0')
+
+    def test_server_model(self):
+        r = Rack('scl3-101')
+        self.assertEquals(r.systems[0]['server_model'], 'HP - DL360')
+
+    def test_oob_ip(self):
+        r = Rack('scl3-101')
+        self.assertEquals(r.systems[0]['oob_ip'], '192.168.1.11')

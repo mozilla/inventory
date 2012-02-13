@@ -62,16 +62,64 @@ $(document).ready(function() {
         }
     }
 
-    $("#rack_elevation").rightClick(function(e){
+    /*$("#rack_elevation").rightClick(function(e){
         system_index = get_ru(e);
         if(is_system(system_index)){
-            $( "#dialog" ).dialog();
+            make_system_dialog(system_index);
         }
-    });
+    });*/
+
+    function make_system_dialog(system_index){
+        var system_id = system_list[system_index];
+        $.each(data.systems, function(key, value){
+                if(value['system_id'] == system_id){
+                slot = value['system_slot'];
+                image = value['system_image'];
+                ru = value['system_ru'];
+                system_name = value['system_name'];
+                system_id= value['system_id'];
+                oob_ip = value['oob_ip'];
+                server_model = value['server_model'];
+                operating_system = value['operating_system'];
+                }
+        });
+        console.log("OOB IP" + oob_ip);
+        $("#oob_ip").html(oob_ip);
+        $("#server_model").html(server_model);
+        $("#operating_system").html(operating_system);
+        var d = $( "#dialog" ).dialog({
+                title: system_name, 
+                autoShow: false,
+                buttons: {
+                    "Show": function() {
+                        self.location = '/systems/show/' + system_id;
+                            $( this ).dialog( "close" );
+                    },
+                    "Edit": function() {
+                        self.location = '/systems/edit/' + system_id;
+                            $( this ).dialog( "close" );
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+                
+                });
+        d.show();
+
+    }
 
     $("#rack_elevation").click(function(e){
         system_index = get_ru(e);
-        left_click_rack(system_index);                
+        if(is_system(system_index)){
+            make_system_dialog(system_index);
+        } else if(!is_rack_hardware(system_index) && system_index > 0){
+            alert("Here is where we add");
+
+        }
+        
+        /*system_index = get_ru(e);
+        left_click_rack(system_index);*/
     });
     /*
      *   draw_rack_lines
@@ -210,7 +258,9 @@ function draw() {
 <canvas width="500" height="900" id='rack_elevation' style="cursor:pointer;">
 </canvas>
 <div id = "container"></div>
-<div id="dialog" title="Basic dialog">
-    <p>Here i'll show stuff like OOB ip, serial number and whatever else somoene wants</p>
+<div id="dialog" title="Basic dialog" style='display: none;'>
+    OOP IP: <span id='oob_ip'>&nbsp;</span><br />
+    Server Model: <span id='server_model'>&nbsp;</span><br />
+    Operating System <span id='operating_system'>&nbsp;</span><br />
 </div>
 {% endblock %}

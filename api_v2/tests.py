@@ -41,10 +41,12 @@ class TestOnCall(TestCase):
         obj = json.loads(resp.content)
         self.assertEqual(obj['user'], 'user1@domain.com')
         self.assertEqual(obj['epager_address'], 'user1@domain.com')
+
         resp = self.client.put('/en-US/api/v2/oncall/setsysadmin/user1@domain.com/', follow=True)
         self.assertEqual(200, resp.status_code)
         resp = self.client.get('/api/v2/oncall/desktop/email/', follow=True)
         self.assertEqual(200, resp.status_code)
+
         obj = json.loads(resp.content)
         self.assertEqual(obj['user'], 'user1@domain.com')
 
