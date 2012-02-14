@@ -152,7 +152,7 @@ ul.css-tabs a.current {
         var system_id = getURISegment(5);
     $.validator.addMethod("checkForDupeNicName", function(value, element, param){
 
-        var regex_result = this.optional(element) || /^nic\d+$/.test(value);
+        var regex_result = this.optional(element) || /(^nic|^mgmt)\d+$/.test(value);
         if (regex_result == false){
             return false;
         }
@@ -170,7 +170,7 @@ ul.css-tabs a.current {
             return true;
         }
         },
-            "Adapter name is already taken or needs formatted as nic[0-99]"
+            "Adapter name is already taken or needs formatted as nic[0-99] or mgmt[0-99]"
         );
 
     $.validator.addMethod("checkForDupeNic", function(value, element, param){
