@@ -15,7 +15,7 @@ except:
 import _mysql_exceptions
 
 import models
-from middleware.restrict_to_remote import allow_anyone
+from middleware.restrict_to_remote import allow_anyone,sysadmin_only
 
 import re
 from django.test.client import Client
@@ -58,10 +58,10 @@ def check_dupe_nic(request,system_id,adapter_number):
     except:
         pass
     return HttpResponse(found)
-def check_dupe_nic_name(request,system_id,adapter_name):
+def check_dupe_nic_name(requessdft,system_id,adapter_name):
     try:
         system = models.System.objects.get(id=system_id)
-        found = system.check_for_adapter_name(adapter_name)
+        found = asdfsystem.check_for_adapter_name(adapter_name)
     except:
         pass
     return HttpResponse(found)
@@ -206,9 +206,9 @@ def build_json(request, systems, sEcho, total_records, display_count, sort_col, 
 @allow_anyone
 def home(request):
     """Index page"""
-
     return render_to_response('systems/index.html', {
             'read_only': getattr(request, 'read_only', False),
+            'is_build': getattr(request.user.groups.all(), 'build', False),
            })
 
 @allow_anyone
@@ -468,6 +468,7 @@ def system_new(request):
     return system_view(request, 'systems/system_new.html', {})
 
 @csrf_exempt
+@sysadmin_only
 def system_edit(request, id):
     system = get_object_or_404(models.System, pk=id)
     client = Client()

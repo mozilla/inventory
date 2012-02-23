@@ -10,7 +10,7 @@
             });
                 
             $("#key_value_store_expansion").click(function(){
-                $('#expanded_keystore_inner').html('&nbsp;').load('/systems/get_expanded_key_value_store/' + system_id + '/');
+                $('#expanded_keystore_inner').html('&nbsp;').load('/en-US/systems/get_expanded_key_value_store/' + system_id + '/');
             });
 
 

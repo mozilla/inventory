@@ -297,6 +297,14 @@ ul.css-tabs a.current {
                                         value: $('#quick_add_adapter_name').val() 
                                         }
                                     );
+                                    if($('#quick_add_option_host_name').val().length > 0){
+                                        $.post("/en-US/systems/create_key_value/" + system_id + '/',
+                                            { 
+                                            key: 'nic.' + $('#quick_add_adapter_number').val() + '.option_hostname.0', 
+                                            value: $('#quick_add_option_host_name').val() 
+                                            }
+                                        );
+                                    }
                                     $("#key_value_store_quick_add_adapter").data("overlay").close()
                                     $('#key_value_store_span').html('&nbsp;').load('/en-US/systems/get_key_value_store/' + system_id + '/');
                                 return false;
@@ -386,7 +394,7 @@ ul.css-tabs a.current {
             <input type='text' id='quick_add_adapter_number' name='quick_add_adapter_number' value='' />
         </p>
         <p>
-            <label for='quick_add_ip_address'>ip Address</label>
+            <label for='quick_add_ip_address'>IP Address</label>
             <input type='text' id='quick_add_ip_address' name='quick_add_ip_address' value='' />
         </p>
         <p>
@@ -396,6 +404,10 @@ ul.css-tabs a.current {
         <p>
             <label for='adapter_number'>Adapter Name (nic0-99 or mgmt0-99)</label>
             <input type='text' id='quick_add_adapter_name' name='quick_add_adapter_name' value='' />
+        </p>
+        <p>
+            <label for='host_name'>DHCP Option Host Name</label>
+            <input type='text' id='quick_add_option_host_name' name='quick_add_option_host_name' value='' />
         </p>
         <p>
             <label for='host_name'>Host Name</label>
