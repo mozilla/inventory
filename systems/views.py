@@ -15,7 +15,7 @@ except:
 import _mysql_exceptions
 
 import models
-from middleware.restrict_to_remote import allow_anyone,sysadmin_only
+from middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 
 import re
 from django.test.client import Client
@@ -203,6 +203,8 @@ def build_json(request, systems, sEcho, total_records, display_count, sort_col, 
     return the_data 
 
 
+#@ldap_group_required('build')
+#@LdapGroupRequired('build_team', exclusive=False)
 @allow_anyone
 def home(request):
     """Index page"""
@@ -468,7 +470,6 @@ def system_new(request):
     return system_view(request, 'systems/system_new.html', {})
 
 @csrf_exempt
-@sysadmin_only
 def system_edit(request, id):
     system = get_object_or_404(models.System, pk=id)
     client = Client()
