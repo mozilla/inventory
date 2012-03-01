@@ -3,12 +3,18 @@
 {% block content %}
 <script type="text/javascript" src="/static/js/jQuery.rightclick.js"></script>
 <script type="text/javascript" src="/static/js/jquery-ui-1.8.11.custom.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.autocomplete-min.js"></script>
 <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
 <style type='text/css'>
     #blah-rack_elevation {
         width: 400px;
         height: 700px;
     }
+    .autocomplete-w1 { border-right: 1 px solid #F0F0F0; position:absolute; top:0px; width: 150px; left:0px; margin:6px 0 0 6px; /* IE6 fix: */ _background:none; _margin:1px 0 0 0; }
+    .autocomplete { background:#FFF; cursor:default; text-align:left; max-height:350px; background-color: #FEFEFE; width: 150px; margin:-6px 6px 6px -6px;}
+    .autocomplete .selected { background:#F0F0F0; }
+    .autocomplete div { border-bottom: 1px solid #999; border-left: 1px solid #999; border-right: 1px solid #999; padding:2px 5px; white-space:nowrap; width: 149px; overflow:visible; background-color: #FEFEFE;}
+    .autocomplete strong { font-weight:normal; color:#3399FF; }
 </style>
 
 <script type="text/javascript">
@@ -83,7 +89,6 @@ $(document).ready(function() {
                 operating_system = value['operating_system'];
                 }
         });
-        console.log("OOB IP" + oob_ip);
         $("#oob_ip").html(oob_ip);
         $("#server_model").html(server_model);
         $("#operating_system").html(operating_system);
@@ -114,7 +119,22 @@ $(document).ready(function() {
         if(is_system(system_index)){
             make_system_dialog(system_index);
         } else if(!is_rack_hardware(system_index) && system_index > 0){
-            alert("Here is where we add");
+            $("#ru_number").html(system_index);
+            var d = $( "#add-dialog" ).dialog({
+                    title: system_name, 
+                    autoShow: false,
+                    buttons: {
+                        "Save": function() {
+                            self.location = '/systems/show/' + system_id;
+                                $( this ).dialog( "close" );
+                        },
+                        Cancel: function() {
+                            $( this ).dialog( "close" );
+                        }
+                    }
+                    
+                    });
+            d.show();
 
         }
         
@@ -258,9 +278,21 @@ function draw() {
 <canvas width="500" height="900" id='rack_elevation' style="cursor:pointer;">
 </canvas>
 <div id = "container"></div>
-<div id="dialog" title="Basic dialog" style='display: none;'>
+<div id="dialog" title="System Details" style='display: none;'>
     OOP IP: <span id='oob_ip'>&nbsp;</span><br />
     Server Model: <span id='server_model'>&nbsp;</span><br />
     Operating System <span id='operating_system'>&nbsp;</span><br />
 </div>
+<div id="add-dialog" title="Add System to Rack" style='display: none;'>
+    <div>Search: <input type='text' name='system_search' id='system_search' style='width: 159px;' value=''></div>
+</div>
+<script type="text/javascript">
+    var ac = $('#system_search').autocomplete({
+                serviceUrl:'/en-US/systems/system_auto_complete_ajax/',
+                minChars:2,
+                deferRequestBy: 500,
+                maxHeight:400
+            });
+
+</script>
 {% endblock %}

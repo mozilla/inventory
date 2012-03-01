@@ -79,6 +79,17 @@ def system_rack_elevation(request, rack_id):
         'data':data,
         },
         RequestContext(request))
+@allow_anyone
+def system_auto_complete_ajax(request):
+    query = request.GET['query']
+    system_list = models.System.objects.filter(hostname__icontains=query)
+    hostname_list = [system.hostname for system in system_list]
+    id_list = [system.id for system in system_list]
+    ret_dict = {}
+    ret_dict['query'] = query
+    ret_dict['suggestions'] = hostname_list
+    ret_dict['data'] = id_list
+    return HttpResponse(json.dumps(ret_dict))
 
 @allow_anyone
 def list_all_systems_ajax(request):
@@ -732,7 +743,7 @@ def rack_edit(request, object_id):
     else:
         form = SystemRackForm(instance=rack)
 
-    return render_to_response('systems/rack_form.html', {
+    return render_to_response('systems/generic_form.html', {
             'form': form,
            },
            RequestContext(request))
