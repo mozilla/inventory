@@ -59,6 +59,9 @@ class DHCPHandler(BaseHandler):
     def delete(self, request, dhcp_scope=None, dhcp_action=None):
 
         if dhcp_scope and dhcp_action == 'remove_scheduled_task':
-            task = ScheduledTask.objects.get(type='dhcp',task=dhcp_scope)
-            task.delete()
+            try:
+                task = ScheduledTask.objects.get(type='dhcp',task=dhcp_scope)
+                task.delete()
+            except:
+                pass
             return rc.ALL_OK
