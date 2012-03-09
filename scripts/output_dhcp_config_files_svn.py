@@ -36,7 +36,7 @@ def main():
             except IOError:
                 pass
             try:
-                DHCPFile.objects.get(dhcp_scope=dhcp_scope).delete()
+                DHCPFile.objects.filter(dhcp_scope=dhcp_scope).delete()
             except:
                 pass
             d = DHCPFile(dhcp_scope=dhcp_scope,file_text=output_text)

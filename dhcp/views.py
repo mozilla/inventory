@@ -100,7 +100,7 @@ def showfile(request, dhcp_scope):
         content = """This file has not been stored in inventory yet. 
         To get it stored. Make an innocous change to a hosts key/value entry. 
         An example would be to change the nic name from nic0 to nic1 then back to nic0 again and click save. 
-        Once the file gets regenerated, it will be stored here %s""" % (e)
+        Once the file gets regenerated, it will be stored here"""
     output = content.replace("\n","<br />")
     return render_to_response('dhcp/showfile.html', {
 
