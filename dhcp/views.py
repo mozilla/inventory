@@ -96,11 +96,11 @@ def showfile(request, dhcp_scope):
     try:
         d = models.DHCPFile.objects.get(dhcp_scope=dhcp_scope)
         content = d.file_text
-    except:
+    except Exception, e:
         content = """This file has not been stored in inventory yet. 
         To get it stored. Make an innocous change to a hosts key/value entry. 
         An example would be to change the nic name from nic0 to nic1 then back to nic0 again and click save. 
-        Once the file gets regenerated, it will be stored here"""
+        Once the file gets regenerated, it will be stored here %s""" % (e)
     output = content.replace("\n","<br />")
     return render_to_response('dhcp/showfile.html', {
 
