@@ -33,6 +33,9 @@ class LocationForm(forms.ModelForm):
     class Meta:
         model = models.Location
 
+class AllocationForm(forms.ModelForm):
+    class Meta:
+        model = models.Allocation
 class RackFilterForm(forms.Form):
 
     location = forms.ChoiceField(

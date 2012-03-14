@@ -53,7 +53,7 @@ class SystemWithRelatedManager(models.Manager):
 
 
 class Allocation(models.Model):
-    name = models.CharField(max_length=255, blank=True)
+    name = models.CharField(max_length=255, blank=False)
     
     def __unicode__(self):
         return self.name

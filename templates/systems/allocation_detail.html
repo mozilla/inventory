@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block content %}
 <dl class="show">
     <dt>Name:</dt>
@@ -7,6 +7,6 @@
 </dl>
 
 <div style="clear:both;"></div>
-<a href="{% url allocation-edit object.id %}">Edit</a>
-<a href="{% url allocation-list %}">Back</a>
+<a href="{{ "allocation-edit"|url(object.id) }}">Edit</a>
+<a href="{{ "allocation-list"|url() }}">Back</a>
 {% endblock %}

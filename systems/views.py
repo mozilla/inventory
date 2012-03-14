@@ -830,6 +830,50 @@ def server_model_list(request):
             'object_list': object_list,
            },
            RequestContext(request))
+def allocation_show(request, object_id):
+    object = get_object_or_404(models.Allocation, pk=object_id)
+
+    return render_to_response('systems/allocation_detail.html', {
+            'object': object,
+           },
+           RequestContext(request))
+def allocation_edit(request, object_id):
+    allocation = get_object_or_404(models.Allocation, pk=object_id)
+    from forms import AllocationForm
+    initial = {}
+    if request.method == 'POST':
+        form = AllocationForm(request.POST, instance=allocation)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/systems/allocations/')
+    else:
+        form = AllocationForm(instance=allocation)
+
+    return render_to_response('generic_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
+def allocation_list(request):
+    object_list = models.Allocation.objects.all()
+    return render_to_response('systems/allocation_list.html', {
+            'object_list': object_list,
+           },
+           RequestContext(request))
+def allocation_new(request):
+    from forms import AllocationForm
+    initial = {}
+    if request.method == 'POST':
+        form = AllocationForm(request.POST, initial=initial)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect('/systems/allocations/')
+    else:
+        form = AllocationForm(initial=initial)
+
+    return render_to_response('generic_form.html', {
+            'form': form,
+           },
+           RequestContext(request))
 def location_list(request):
     object_list = models.Location.objects.all()
     return render_to_response('systems/location_list.html', {

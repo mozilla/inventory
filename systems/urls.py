@@ -48,9 +48,8 @@ urlpatterns = patterns('systems',
     url(r'^locations/show/(?P<object_id>\d+)/$', 'views.location_show', name="location-show"),
     #url(r'^locations/delete/(?P<object_id>\d+)/$', delete_object, gen_del_dict(Location, 'location-list'), name='location-delete'),
 
-    url(r'^allocations/new/$', create_object, gen_mod_dict(Allocation, 'allocation-list'), name="allocation-new"),
-    url(r'^allocations/edit/(?P<object_id>\d+)/$', update_object, gen_mod_dict(Allocation, 'allocation-list'), name="allocation-edit"),
-    url(r'^allocations/$', object_list, gen_info_dict(Allocation), name="allocation-list"),
-    url(r'^allocations/show/(?P<object_id>\d+)/$', object_detail, gen_info_dict(Allocation), name="allocation-show"),
-    #url(r'^allocations/delete/(?P<object_id>\d+)/$', delete_object, gen_del_dict(Allocation, 'allocation-list'), name='allocation-delete'),
+    url(r'^allocations/new/$', 'views.allocation_new', name="allocation-new"),
+    url(r'^allocations/edit/(?P<object_id>\d+)/$', 'views.allocation_edit',  name="allocation-edit"),
+    url(r'^allocations/$', 'views.allocation_list', name="allocation-list"),
+    url(r'^allocations/show/(?P<object_id>\d+)/$', 'views.allocation_show', name="allocation-show"),
 )
