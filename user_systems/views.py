@@ -344,13 +344,23 @@ def unmanaged_system_delete(request, object_id):
             RequestContext(request))
 
 def show_by_model(request, object_id):
-    systems = models.UnmanagedSystem.objects.filter(server_model=models.ServerModel.objects.get(id=object_id))
-    #system = models.UnmanagedSystem.objects.select_related(
-    #                'owner', 'server_model', 'operating_system'
-    #                 ).filter(asset_tag=id).order_by('owner__name')
-
-    #system = get_object_or_404(models.UnmanagedSystem
-    return render_to_response('user_systems/unmanagedsystem_list_by_model.html', {
+    system_list = models.UnmanagedSystem.objects.filter(server_model=models.ServerModel.objects.get(id=object_id))
+    paginator = Paginator(system_list, 25)                                                                        
+                    
+    if 'page' in request.GET:
+        page = request.GET.get('page')
+    else:   
+        page = 1
+        
+    try:
+        systems = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        systems = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        systems = paginator.page(paginator.num_pages)
+    return render_to_response('user_systems/unmanagedsystem_list.html', {
             'user_system_list': systems,
            },
            RequestContext(request))
