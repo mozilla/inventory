@@ -28,7 +28,7 @@
         </tr>
 	</thead>
     <tbody>
-        {% with user_system_list.object_list as systems %}
+        {% with user_system_list as systems %}
         {% include "user_systems/unmanagedsystem_table_snippet.html" %}
         {% endwith %}
         <tr><td colspan="9">

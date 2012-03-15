@@ -350,7 +350,7 @@ def show_by_model(request, object_id):
     #                 ).filter(asset_tag=id).order_by('owner__name')
 
     #system = get_object_or_404(models.UnmanagedSystem
-    return render_to_response('user_systems/unmanagedsystem_list.html', {
+    return render_to_response('user_systems/unmanagedsystem_list_by_model.html', {
             'user_system_list': systems,
            },
            RequestContext(request))
