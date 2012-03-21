@@ -146,17 +146,30 @@ class KeyValueHandler(BaseHandler):
         ###TODO This whole method is not functioning correctly. Just for version 2. Not getting the system_id or truth_id from the poster firefox plugin
         if 'system_id' in request.POST:
             n = None
+            found = False
+
             key_validated, validation_error_string = self.validate(request.POST['key'], request.POST['value']) 
             if key_validated is False:
                 resp = rc.FORBIDDEN
                 resp.write('Validation Failed for %s %s' % (request.POST['key'], validation_error_string) )
                 return resp
+
             try:
                 n = KeyValue.objects.get(id=key_value_id,key=request.POST['key'])
                 system = System.objects.get(id=request.POST['system_id'])
             except:
+                found = False
+            if found is False:
+                try:
+                    system = System.objects.get(id=request.POST['system_id'])
+                    n = KeyValue.objects.get(system=system,key=request.POST['key'])
+                except:
+                    found = False
+
+            if found is False:
                 resp = rc.NOT_FOUND
                 resp.write('Neither system_id or truth_id found')
+                return resp
 
             if n is not None:
                 n.system = system
