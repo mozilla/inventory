@@ -190,6 +190,8 @@ class SystemHandler(BaseHandler):
                     s.rack_order = request.POST['rack_order']
                 if 'purchase_price' in request.POST:
                     s.purchase_price = request.POST['purchase_price']
+                if 'purchase_date' in request.POST:
+                    s.purchase_date = request.POST['purchase_date']
                 if 'oob_ip' in request.POST:
                     s.oob_ip = request.POST['oob_ip']
 
