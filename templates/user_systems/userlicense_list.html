@@ -17,10 +17,10 @@
         <tr>
             <th>Type</th> 
             <th>Key</th> 
+            <th>Operating System</th>
             <th>Username</th>
             <th>Version</th>
             <th>Belongs To</th>
-            <th>Operating system</th>
             <th colspan="3">Actions</th>
         </tr>
 	</thead>
@@ -29,18 +29,10 @@
         <tr>
             <td>{{ license.license_type }}</td>
             <td>{{ license.license_key }}</td>
+            <td>{{ license.user_operating_system }}</td>
             <td>{{ license.username }}</td>
             <td>{{ license.version }}</td>
             <td><a href="{{ license.owner.get_absolute_url }}">{{ license.owner }}</a></td>
-            {% ifequal license.user_operating_system  0 %}
-		<td> Windows </td>
-	    {% else %}
-		 {% ifequal license.user_operating_system 1 %}
-			<td>Mac OS</td>
-	    	 {% else %}
-			<td>Not specified</td>
-		 {% endifequal %}
-	    {% endifequal %}
 	
             <td><a href="{% url license-show license.id %}">Show</a></td>
             <td><a href="{% url license-edit license.id %}">Edit</a></td>

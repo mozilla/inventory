@@ -22,7 +22,11 @@ class QuerySetManager(models.Manager):
         return self.model.QuerySet(self.model)
     def __getattr__(self, attr, *args):
         return getattr(self.get_query_set(), attr, *args)
-
+class UserOperatingSystem(models.Model):
+    name = models.CharField(max_length=128, blank=False)
+    def __unicode__(self):
+        return self.name
+    
 class UnmanagedSystem(models.Model):
     serial = models.CharField(max_length=255, blank=True)
     asset_tag = models.CharField(max_length=255, blank=True)
@@ -121,14 +125,15 @@ class UserLicense(models.Model):
     license_type = models.CharField(max_length=255, blank=True)
     license_key = models.CharField(max_length=255, blank=False)
     owner = models.ForeignKey('Owner', blank=True, null=True)
-    user_operating_system = models.IntegerField(choices=OS_CHOICES, blank=True, null=True)
+    #user_operating_system = models.IntegerField(choices=OS_CHOICES, blank=True, null=True)
+    user_operating_system = models.ForeignKey('UserOperatingSystem', blank=True, null=True)
     search_fields = (
             'username', 
             'version',
             'license_type',
             'license_key',
             'owner__name',
-            'user_operating_system',
+            'user_operating_system__name',
 	)
 
     def __unicode__(self):
