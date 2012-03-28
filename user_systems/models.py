@@ -77,6 +77,7 @@ class UnmanagedSystem(models.Model):
 
 class History(models.Model):
     change = models.CharField(max_length=1000)
+    changed_by = models.CharField(max_length=128, null=True, blank=True)
     system = models.ForeignKey(UnmanagedSystem)
     created = models.DateTimeField(auto_now_add=True)
 

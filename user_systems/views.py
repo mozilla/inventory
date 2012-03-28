@@ -192,53 +192,65 @@ def user_system_view(request, template, data, instance=None):
                 if old_notes:
                     models.History(
                         change="Notes changed from %s" % old_notes,
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
                 if saved_instance.notes:
                     models.History(
                         change="Notes changed to %s" % saved_instance.notes,
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
                 else:
                     models.History(
                         change="System has no Notes",
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
             if not instance or old_asset_tag != saved_instance.asset_tag:
                 if old_asset_tag:
                     models.History(
                         change="Asset Tag changed from %s" % old_asset_tag,
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
                 if saved_instance.asset_tag:
                     models.History(
                         change="Asset Tag changed to %s" % saved_instance.asset_tag,
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
                 else:
                     models.History(
                         change="System has no Asset Tag",
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
             if not instance or old_serial != saved_instance.serial:
                 if old_serial:
                     models.History(
                         change="Serial changed from %s" % old_serial,
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
                 if saved_instance.serial:
                     models.History(
                         change="Serial changed to %s" % saved_instance.serial,
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
                 else:
                     models.History(
                         change="System has no serial",
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
             if not instance or old_owner != saved_instance.owner:
                 if old_owner:
                     models.History(
                         change="Owner changed from %s" % old_owner,
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
                 if saved_instance.owner:
                     models.History(
                         change="Owner changed to %s" % saved_instance.owner,
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
                 else:
                     models.History(
                         change="System has no owner",
+                        changed_by=get_changed_by(request),
                         system=saved_instance).save()
             return redirect('user-system-list')
     else:
@@ -259,7 +271,13 @@ def user_system_view(request, template, data, instance=None):
     #data['owner_json'].append("Stock")
 
     return render_to_response(template, data, RequestContext(request))
+def get_changed_by(request):
+    try:
+        remote_user = request.META['REMOTE_USER']
+    except:
+        remote_user = None
 
+    return remote_user
 
 #def license_new(request):
 #	return render_to_response('user_systems/userlicense_new.html')

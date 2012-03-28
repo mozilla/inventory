@@ -54,10 +54,12 @@
     <table>
         <th>Date</th>
         <th>Info</th>
+        <th>Changed By</th>
         {% for history in user_system.history_set.all %}
         <tr>
             <td>{{ history.created }}</td>
             <td>{{ history.change }}</td>
+            <td>{{ history.changed_by }}</td>
         </tr>
         {% endfor %}
     </table>
