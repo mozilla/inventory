@@ -27,11 +27,19 @@ class UserOperatingSystem(models.Model):
     def __unicode__(self):
         return self.name
     
+class UnmanagedSystemType(models.Model):
+    name = models.CharField(max_length=128, blank=False)
+    def __unicode__(self):
+        return self.name
+    class Meta:
+        db_table = 'unmanaged_system_types'
+
 class UnmanagedSystem(models.Model):
     serial = models.CharField(max_length=255, blank=True)
     asset_tag = models.CharField(max_length=255, blank=True)
     operating_system = models.ForeignKey(OperatingSystem, blank=True, null=True)
     owner = models.ForeignKey('Owner', blank=True, null=True)
+    system_type = models.ForeignKey('UnmanagedSystemType', blank=True, null=True)
     server_model = models.ForeignKey(ServerModel, blank=True, null=True)
     created_on = models.DateTimeField(null=True, blank=True)
     updated_on = models.DateTimeField(null=True, blank=True)

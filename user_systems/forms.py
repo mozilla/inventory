@@ -36,6 +36,7 @@ class UserSystemForm(forms.ModelForm):
                   'serial',
                   'asset_tag',
                   'date_purchased',
+                  'system_type',
                   'cost',
                   'is_loaned',
                   'is_loaner',
