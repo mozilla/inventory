@@ -135,6 +135,7 @@ def license_quicksearch_ajax(request):
 @csrf_exempt
 def user_system_quicksearch_ajax(request):
     """Returns systems sort table"""
+    from settings import BUG_URL as BUG_URL
     search = request.POST['quicksearch']
     print request.POST
     filters = [Q(**{"%s__icontains" % t: search})
@@ -145,6 +146,7 @@ def user_system_quicksearch_ajax(request):
 
     return render_to_response('user_systems/quicksearch.html', {
             'systems': systems,
+            'BUG_URL': BUG_URL,
            },
            RequestContext(request))
 
