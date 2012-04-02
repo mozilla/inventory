@@ -13,7 +13,7 @@ import _mysql_exceptions
 
 from systems.models import System, Location
 from user_systems.models import UnmanagedSystem
-from middleware.restrict_to_remote import allow_anyone
+from mozilla_inventory.middleware.restrict_to_remote import allow_anyone
 
 import re
 from django.test.client import Client

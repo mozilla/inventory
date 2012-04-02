@@ -5,7 +5,7 @@ try:
     import json
 except:
     from django.utils import simplejson as json
-from middleware.restrict_by_api_token import AuthenticatedAPI
+from mozilla_inventory.middleware.restrict_by_api_token import AuthenticatedAPI
 
 from settings import API_ACCESS
 

@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.views.generic.simple import direct_to_template
 from django.views import static
 
-from middleware.restrict_to_remote import allow_anyone
+from mozilla_inventory.middleware.restrict_to_remote import allow_anyone
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
