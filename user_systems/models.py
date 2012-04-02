@@ -22,12 +22,24 @@ class QuerySetManager(models.Manager):
         return self.model.QuerySet(self.model)
     def __getattr__(self, attr, *args):
         return getattr(self.get_query_set(), attr, *args)
+class UserOperatingSystem(models.Model):
+    name = models.CharField(max_length=128, blank=False)
+    def __unicode__(self):
+        return self.name
+    
+class UnmanagedSystemType(models.Model):
+    name = models.CharField(max_length=128, blank=False)
+    def __unicode__(self):
+        return self.name
+    class Meta:
+        db_table = 'unmanaged_system_types'
 
 class UnmanagedSystem(models.Model):
     serial = models.CharField(max_length=255, blank=True)
     asset_tag = models.CharField(max_length=255, blank=True)
     operating_system = models.ForeignKey(OperatingSystem, blank=True, null=True)
     owner = models.ForeignKey('Owner', blank=True, null=True)
+    system_type = models.ForeignKey('UnmanagedSystemType', blank=True, null=True)
     server_model = models.ForeignKey(ServerModel, blank=True, null=True)
     created_on = models.DateTimeField(null=True, blank=True)
     updated_on = models.DateTimeField(null=True, blank=True)
@@ -73,6 +85,7 @@ class UnmanagedSystem(models.Model):
 
 class History(models.Model):
     change = models.CharField(max_length=1000)
+    changed_by = models.CharField(max_length=128, null=True, blank=True)
     system = models.ForeignKey(UnmanagedSystem)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -121,14 +134,15 @@ class UserLicense(models.Model):
     license_type = models.CharField(max_length=255, blank=True)
     license_key = models.CharField(max_length=255, blank=False)
     owner = models.ForeignKey('Owner', blank=True, null=True)
-    user_operating_system = models.IntegerField(choices=OS_CHOICES, blank=True, null=True)
+    #user_operating_system = models.IntegerField(choices=OS_CHOICES, blank=True, null=True)
+    user_operating_system = models.ForeignKey('UserOperatingSystem', blank=True, null=True)
     search_fields = (
             'username', 
             'version',
             'license_type',
             'license_key',
             'owner__name',
-            'user_operating_system',
+            'user_operating_system__name',
 	)
 
     def __unicode__(self):

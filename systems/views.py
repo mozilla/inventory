@@ -61,7 +61,7 @@ def check_dupe_nic(request,system_id,adapter_number):
 def check_dupe_nic_name(requessdft,system_id,adapter_name):
     try:
         system = models.System.objects.get(id=system_id)
-        found = asdfsystem.check_for_adapter_name(adapter_name)
+        found = system.check_for_adapter_name(adapter_name)
     except:
         pass
     return HttpResponse(found)
