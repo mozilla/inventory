@@ -465,7 +465,8 @@ def system_view(request, template, data, instance=None):
     if request.method == 'POST':
         form = SystemForm(request.POST, instance=instance)
         if form.is_valid():
-            s = form.save()
+            s = form.save(commit=False)
+            s.save(request=request)
             return redirect(system_show, s.pk)
     else:
         form = SystemForm(instance=instance)

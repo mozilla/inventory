@@ -272,6 +272,7 @@ class System(DirtyFieldsMixin, models.Model):
     with_related = SystemWithRelatedManager()
 
     def save(self, *args, **kwargs):
+        request = kwargs.pop('request', None)
         try:
             changes = self.get_dirty_fields()
             if changes:
@@ -291,9 +292,14 @@ class System(DirtyFieldsMixin, models.Model):
                         ss = ServerModel.objects.get(id=v)
                         v = ss
                     save_string += '%s: %s\n\n' % (k,v)
-                tmp = SystemChangeLog(system=system,changed_by = 'changed_user',changed_text = save_string, changed_date = datetime.datetime.now())
+                try:
+                    remote_user = request.META['REMOTE_USER']
+                except Exception, e:
+                    remote_user = 'changed_user'
+                tmp = SystemChangeLog(system=system,changed_by = remote_user,changed_text = save_string, changed_date = datetime.datetime.now())
                 tmp.save()
-        except:
+        except Exception, e:
+            print e
             pass
                 
         super(System, self).save(*args, **kwargs)
