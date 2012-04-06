@@ -32,6 +32,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.admin',
+    #'django_nose',
     'piston',
     #'south',
     'systems',
@@ -82,3 +83,4 @@ AUTHENTICATION_BACKENDS = (
     )
 AUTH_PROFILE_MODULE = "systems.UserProfile"
 PISTON_IGNORE_DUPE_MODELS = True
+#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'

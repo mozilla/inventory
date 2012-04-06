@@ -79,6 +79,7 @@ def system_rack_elevation(request, rack_id):
         'data':data,
         },
         RequestContext(request))
+
 @allow_anyone
 def system_auto_complete_ajax(request):
     query = request.GET['query']
@@ -817,6 +818,43 @@ def server_model_edit(request, object_id):
             'form': form,
            },
            RequestContext(request))
+
+@csrf_exempt
+def operating_system_create_ajax(request):
+    if request.method == "POST":
+        if 'name' in request.POST and 'version' in request.POST:
+            name = request.POST['name']
+            version = request.POST['version']
+        models.OperatingSystem(name=name,version=version).save()
+        return operating_system_list_ajax(request)
+    else:
+        return HttpResponse("OK")
+
+@csrf_exempt
+def server_model_create_ajax(request):
+    if request.method == "POST":
+        if 'model' in request.POST and 'vendor' in request.POST:
+            model = request.POST['model']
+            vendor = request.POST['vendor']
+        models.ServerModel(vendor=vendor,model=model).save()
+        return server_model_list_ajax(request)
+    else:
+        return HttpResponse("OK")
+
+def operating_system_list_ajax(request):
+    ret = []
+    for m in models.OperatingSystem.objects.all():
+        ret.append({'id':m.id, 'name': "%s - %s" % (m.name, m.version)})
+
+    return HttpResponse(json.dumps(ret))
+
+def server_model_list_ajax(request):
+    ret = []
+    for m in models.ServerModel.objects.all():
+        ret.append({'id':m.id, 'name': "%s - %s" % (m.vendor, m.model)})
+
+    return HttpResponse(json.dumps(ret))
+
 def server_model_show(request, object_id):
     object = get_object_or_404(models.ServerModel, pk=object_id)
 
