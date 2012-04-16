@@ -55,6 +55,9 @@ class SystemHandler(BaseHandler):
             if 'location' in request.GET:
                 has_criteria = True
                 search_q &= Q(system_rack__location__name=request.GET['location'])
+            if 'allocation' in request.GET:
+                has_criteria = True
+                search_q &= Q(allocation__name=request.GET['allocation'])
             if 'system_rack_id' in request.GET:
                 has_criteria = True
                 try:
