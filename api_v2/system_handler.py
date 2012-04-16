@@ -43,6 +43,9 @@ class SystemHandler(BaseHandler):
             if 'serial' in request.GET:
                 has_criteria = True
                 search_q &= Q(serial=request.GET['serial'])
+            if 'is_switch' in request.GET:
+                has_criteria = True
+                search_q &= Q(is_switch=request.GET['serial'])
             if 'rack_order' in request.GET:
                 has_criteria = True
                 search_q &= Q(rack_order=request.GET['rack_order'])
