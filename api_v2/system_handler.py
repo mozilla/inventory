@@ -52,6 +52,9 @@ class SystemHandler(BaseHandler):
             if 'switch_ports' in request.GET:
                 has_criteria = True
                 search_q &= Q(switch_ports=request.GET['switch_ports'])
+            if 'location' in request.GET:
+                has_criteria = True
+                search_q &= Q(system_rack__location_name=request.GET['location'])
             if 'system_rack_id' in request.GET:
                 has_criteria = True
                 try:
