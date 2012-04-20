@@ -210,6 +210,9 @@ class SystemHandler(BaseHandler):
                 if 'notes' in request.POST:
                     s.notes = request.POST['notes']
 
+                if 'notes_append' in request.POST:
+                    s.notes = "%s\n%s" % (s.notes, request.POST['notes_append'])
+
                 if 'oob_switch_port' in request.POST:
                     s.oob_switch_port = request.POST['oob_switch_port']
 
