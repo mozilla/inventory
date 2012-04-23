@@ -132,8 +132,11 @@ def list_all_systems_ajax(request):
         the_data = build_json(request, systems, sEcho, system_count, iDisplayLength, sort_col, sort_dir)
 
     if search_term is not None and len(search_term) > 0:
-                
-        search_q = Q(hostname__icontains=search_term)
+        if search_term.startswith('/'):
+            search_term = search_term[1:]
+            search_q = Q(hostname__regex=search_term)
+        else:
+            search_q = Q(hostname__icontains=search_term)
         search_q |= Q(serial__contains=search_term)
         search_q |= Q(notes__contains=search_term)
         search_q |= Q(asset_tag=search_term)
