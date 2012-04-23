@@ -26,13 +26,24 @@ class SystemHandler(BaseHandler):
         base = model.objects
         #return base.get(id=453)
         if 'name_search' in request.GET:
-            try:
-                s = System.objects.filter(hostname__contains=request.GET['name_search'])
-            except:
-                resp = rc.NOT_FOUND
-                return resp
-            if s is not None:
-                return s
+            name_search = request.GET['name_search']
+            if name_search.startswith('/'):
+                try:
+                    name_search = name_search[1:]
+                    s = System.objects.filter(hostname__regex=name_search)
+                except:
+                    resp = rc.NOT_FOUND
+                    return resp
+                if s is not None:
+                    return s
+            else:
+                try:
+                    s = System.objects.filter(hostname__contains=name_search)
+                except:
+                    resp = rc.NOT_FOUND
+                    return resp
+                if s is not None:
+                    return s
         if 'search' in request.GET:
             search_q = Q()
             has_criteria = False
