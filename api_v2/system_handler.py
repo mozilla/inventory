@@ -27,15 +27,16 @@ class SystemHandler(BaseHandler):
         #return base.get(id=453)
         if 'name_search' in request.GET:
             name_search = request.GET['name_search']
-            if name_search.startswith('/'):
+
+            if name_search.startswith('/') and len(name_search) > 1:
                 try:
                     name_search = name_search[1:]
                     s = System.objects.filter(hostname__regex=name_search)
                 except:
                     resp = rc.NOT_FOUND
                     return resp
-                if s is not None:
-                    return s
+            if s is not None:
+                return s
             else:
                 try:
                     s = System.objects.filter(hostname__contains=name_search)

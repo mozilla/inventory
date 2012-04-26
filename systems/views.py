@@ -132,20 +132,29 @@ def list_all_systems_ajax(request):
         the_data = build_json(request, systems, sEcho, system_count, iDisplayLength, sort_col, sort_dir)
 
     if search_term is not None and len(search_term) > 0:
-        if search_term.startswith('/'):
-            search_term = search_term[1:]
-            search_q = Q(hostname__regex=search_term)
+        if search_term.startswith('/') and len(search_term) > 1:
+            try:
+                search_term = search_term[1:]
+                search_q = Q(hostname__regex=search_term)
+            except:
+                search_q = Q(hostname__icontains=search_term)
         else:
             search_q = Q(hostname__icontains=search_term)
         search_q |= Q(serial__contains=search_term)
         search_q |= Q(notes__contains=search_term)
         search_q |= Q(asset_tag=search_term)
         search_q |= Q(oob_ip__contains=search_term)
-        total_count = models.System.with_related.filter(search_q).count()
+        try:
+            total_count = models.System.with_related.filter(search_q).count()
+        except:
+            total_count = 0
         search_q |= Q(keyvalue__value__contains=search_term)
         end_display = int(iDisplayStart) + int(iDisplayLength)
-        systems = models.System.with_related.filter(search_q).order_by('hostname').distinct('hostname')[iDisplayStart:end_display]
-        the_data = build_json(request, systems, sEcho, total_count, iDisplayLength, sort_col, sort_dir)
+        try:
+            systems = models.System.with_related.filter(search_q).order_by('hostname').distinct('hostname')[iDisplayStart:end_display]
+            the_data = build_json(request, systems, sEcho, total_count, iDisplayLength, sort_col, sort_dir)
+        except:
+            the_data = '{"sEcho": %s, "iTotalRecords":0, "iTotalDisplayRecords":0, "aaData":[]}' % (sEcho) 
     return HttpResponse(the_data)
 
 def build_json(request, systems, sEcho, total_records, display_count, sort_col, sort_dir):
