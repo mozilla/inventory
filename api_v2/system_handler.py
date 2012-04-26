@@ -27,7 +27,7 @@ class SystemHandler(BaseHandler):
         #return base.get(id=453)
         if 'name_search' in request.GET:
             name_search = request.GET['name_search']
-
+            s = None
             if name_search.startswith('/') and len(name_search) > 1:
                 try:
                     name_search = name_search[1:]
