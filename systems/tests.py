@@ -6,9 +6,14 @@ unittest). These will both pass when you run "manage.py test".
 Replace these with more appropriate tests for your application.
 """
 
+import sys
+import os
+_base = os.path.dirname(__file__)
+site_root = os.path.realpath(os.path.join(_base, '../'))
+sys.path.append(site_root)
+import manage
 from django.test import TestCase
 from django.test.client import Client
-import manage
 from models import KeyValue, System
 try:
     import json
@@ -135,6 +140,26 @@ class SimpleTest(TestCase):
 
     def test_server_models_index(self):
         resp = self.client.get("/en-US/systems/server_models/", follow=True)
-        print resp.context
         self.assertEqual(resp.status_code, 200)
 
+class ServerModelTest(TestCase):
+    fixtures = ['testdata.json']
+    def setUp(self):
+        self.client = Client()
+
+    def test_update_ajax_page_exists(self):
+        resp = self.client.get("/en-US/systems/server_models/create_ajax/", follow=True)
+        self.assertEqual(resp.status_code, 200)
+
+
+    def test_server_models_count(self, the_count = 1):
+        self.assertEqual(models.ServerModel.objects.count(), the_count)
+
+    def test_server_models_count_after_post(self):
+        self.test_server_models_count(1)
+        self.client.post("/en-US/systems/server_models/create_ajax/", {'model':'test', 'vendor':'vendor'}, follow=True)
+        self.test_server_models_count(2)
+        self.assertEqual(models.ServerModel.objects.all()[0].model, 'DL360')
+        self.assertEqual(models.ServerModel.objects.all()[0].vendor, 'HP')
+        self.assertEqual(models.ServerModel.objects.all()[1].model, 'test')
+        self.assertEqual(models.ServerModel.objects.all()[1].vendor, 'vendor')

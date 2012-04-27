@@ -26,13 +26,25 @@ class SystemHandler(BaseHandler):
         base = model.objects
         #return base.get(id=453)
         if 'name_search' in request.GET:
-            try:
-                s = System.objects.filter(hostname__contains=request.GET['name_search'])
-            except:
-                resp = rc.NOT_FOUND
-                return resp
+            name_search = request.GET['name_search']
+            s = None
+            if name_search.startswith('/') and len(name_search) > 1:
+                try:
+                    name_search = name_search[1:]
+                    s = System.objects.filter(hostname__regex=name_search)
+                except:
+                    resp = rc.NOT_FOUND
+                    return resp
             if s is not None:
                 return s
+            else:
+                try:
+                    s = System.objects.filter(hostname__contains=name_search)
+                except:
+                    resp = rc.NOT_FOUND
+                    return resp
+                if s is not None:
+                    return s
         if 'search' in request.GET:
             search_q = Q()
             has_criteria = False
@@ -43,12 +55,21 @@ class SystemHandler(BaseHandler):
             if 'serial' in request.GET:
                 has_criteria = True
                 search_q &= Q(serial=request.GET['serial'])
+            if 'is_switch' in request.GET:
+                has_criteria = True
+                search_q &= Q(is_switch=request.GET['is_switch'])
             if 'rack_order' in request.GET:
                 has_criteria = True
                 search_q &= Q(rack_order=request.GET['rack_order'])
             if 'switch_ports' in request.GET:
                 has_criteria = True
                 search_q &= Q(switch_ports=request.GET['switch_ports'])
+            if 'location' in request.GET:
+                has_criteria = True
+                search_q &= Q(system_rack__location__name=request.GET['location'])
+            if 'allocation' in request.GET:
+                has_criteria = True
+                search_q &= Q(allocation__name=request.GET['allocation'])
             if 'system_rack_id' in request.GET:
                 has_criteria = True
                 try:
@@ -200,6 +221,9 @@ class SystemHandler(BaseHandler):
 
                 if 'notes' in request.POST:
                     s.notes = request.POST['notes']
+
+                if 'notes_append' in request.POST:
+                    s.notes = "%s\n%s" % (s.notes, request.POST['notes_append'])
 
                 if 'oob_switch_port' in request.POST:
                     s.oob_switch_port = request.POST['oob_switch_port']

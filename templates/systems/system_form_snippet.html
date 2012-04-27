@@ -132,7 +132,7 @@
 			<table style='width: 900px;' cellpadding='2' border='1' cellspacing='0'>
 			{% for r in revision_history %}
 			<tr>
-				<td style="width:200px;">{{r.changed_date}}</td>
+                <td style="width:200px;">{{r.changed_date}}{% if r.changed_by != "changed_user" %}({{ r.changed_by }}){% endif %}</td>
 				<td style='width: 600px;'><pre style='width: 650px;'>{{r.changed_text}}</pre></td>
 			</tr>
 			<tr><td colspan='2' style='width: 650px;'><hr></td></tr>

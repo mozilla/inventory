@@ -1,5 +1,47 @@
 [
     {
+        "pk": 1, 
+        "model": "systems.operatingsystem", 
+        "fields": {
+            "name": "RHEL",
+            "version": "6.0"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "systems.servermodel", 
+        "fields": {
+            "vendor":"HP",
+            "model":"DL360",
+            "description":"Server Description",
+            "model":"DL360"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "systems.allocation", 
+        "fields": {
+            "name": "The Allocation"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "systems.location", 
+        "fields": {
+            "address":"The Address",
+            "note":"The Note",
+            "name": "1-1-1"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "systems.systemrack", 
+        "fields": {
+            "name": "1-1-1",
+            "location": 1
+        }
+    },
+    {
       "pk": 1, 
       "model": "systems.system", 
       "fields": {
@@ -51,48 +93,6 @@
             "purchase_price": "$101.2", 
             "ram": "", 
             "purchase_date": "2011-04-04"
-        }
-    },
-    {
-        "pk": 1, 
-        "model": "systems.servermodel", 
-        "fields": {
-            "vendor":"HP",
-            "model":"DL360",
-            "description":"Server Description",
-            "model":"DL360"
-        }
-    },
-    {
-        "pk": 1, 
-        "model": "systems.allocation", 
-        "fields": {
-            "name": "The Allocation"
-        }
-    },
-    {
-        "pk": 1, 
-        "model": "systems.location", 
-        "fields": {
-            "address":"The Address",
-            "note":"The Note",
-            "name": "1-1-1"
-        }
-    },
-    {
-        "pk": 1, 
-        "model": "systems.systemrack", 
-        "fields": {
-            "name": "1-1-1",
-            "location": 1
-        }
-    },
-    {
-        "pk": 1, 
-        "model": "systems.operatingsystem", 
-        "fields": {
-            "name": "RHEL",
-            "version": "6.0"
         }
     },
     {
