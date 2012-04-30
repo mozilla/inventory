@@ -1,5 +1,6 @@
 import sys, inspect
 
+import django
 from django.http import (HttpResponse, Http404, HttpResponseNotAllowed,
     HttpResponseForbidden, HttpResponseServerError)
 from django.views.debug import ExceptionReporter
@@ -8,6 +9,11 @@ from django.conf import settings
 from django.core.mail import send_mail, EmailMessage
 from django.db.models.query import QuerySet
 from django.http import Http404
+
+try:
+    import mimeparse
+except ImportError:
+    mimeparse = None
 
 from emitters import Emitter
 from handler import typemapper
@@ -47,23 +53,35 @@ class Resource(object):
         self.email_errors = getattr(settings, 'PISTON_EMAIL_ERRORS', True)
         self.display_errors = getattr(settings, 'PISTON_DISPLAY_ERRORS', True)
         self.stream = getattr(settings, 'PISTON_STREAM_OUTPUT', False)
+        # Emitter selection
+        self.strict_accept = getattr(settings, 'PISTON_STRICT_ACCEPT_HANDLING',
+                                     False)
+        self.default_emitter = getattr(settings, 'PISTON_DEFAULT_EMITTER',
+                                       'json')
 
     def determine_emitter(self, request, *args, **kwargs):
         """
         Function for determening which emitter to use
         for output. It lives here so you can easily subclass
         `Resource` in order to change how emission is detected.
-
-        You could also check for the `Accept` HTTP header here,
-        since that pretty much makes sense. Refer to `Mimer` for
-        that as well.
         """
-        em = kwargs.pop('emitter_format', None)
-
-        if not em:
-            em = request.GET.get('format', 'json')
-
-        return em
+        try:
+            return kwargs['emitter_format']
+        except KeyError:
+            pass
+        if 'format' in request.GET:
+            return request.GET.get('format')
+        if mimeparse and 'HTTP_ACCEPT' in request.META:
+            supported_mime_types = set()
+            emitter_map = {}
+            for name, (klass, content_type) in Emitter.EMITTERS.items():
+                content_type_without_encoding = content_type.split(';')[0]
+                supported_mime_types.add(content_type_without_encoding)
+                emitter_map[content_type_without_encoding] = name
+            preferred_content_type = mimeparse.best_match(
+                list(supported_mime_types),
+                request.META['HTTP_ACCEPT'])
+            return emitter_map.get(preferred_content_type, None)
 
     def form_validation_response(self, e):
         """
@@ -72,7 +90,7 @@ class Resource(object):
         `Resource` subclass.
         """
         resp = rc.BAD_REQUEST
-        resp.write(' '+str(e.form.errors))
+        resp.write(u' '+unicode(e.form.errors))
         return resp
 
     @property
@@ -150,8 +168,14 @@ class Resource(object):
         if not meth:
             raise Http404
 
-        # Support emitter both through (?P<emitter_format>) and ?format=emitter.
+        # Support emitter through (?P<emitter_format>) and ?format=emitter
+        # and lastly Accept: header processing
         em_format = self.determine_emitter(request, *args, **kwargs)
+        if not em_format:
+            request_has_accept = 'HTTP_ACCEPT' in request.META
+            if request_has_accept and self.strict_accept:
+                return rc.NOT_ACCEPTABLE
+            em_format = self.default_emitter
 
         kwargs.pop('emitter_format', None)
 
@@ -181,13 +205,15 @@ class Resource(object):
         # If we're looking at a response object which contains non-string
         # content, then assume we should use the emitter to format that 
         # content
-        if isinstance(result, HttpResponse) and not result._is_string:
+        if self._use_emitter(result):
             status_code = result.status_code
-            # Note: We can't use result.content here because that method attempts
-            # to convert the content into a string which we don't want. 
-            # when _is_string is False _container is the raw data
+            # Note: We can't use result.content here because that
+            # method attempts to convert the content into a string
+            # which we don't want.  when
+            # _is_string/_base_content_is_iter is False _container is
+            # the raw data
             result = result._container
-     
+
         srl = emitter(result, typemapper, handler, fields, anonymous)
 
         try:
@@ -210,6 +236,16 @@ class Resource(object):
             return resp
         except HttpStatusCode, e:
             return e.response
+
+    @staticmethod
+    def _use_emitter(result):
+        """True iff result is a HttpResponse and contains non-string content."""
+        if not isinstance(result, HttpResponse):
+            return False
+        elif django.VERSION >= (1, 4):
+            return result._base_content_is_iter
+        else:
+            return not result._is_string
 
     @staticmethod
     def cleanup_request(request):

@@ -72,3 +72,4 @@ data/tests/test_project/templates/404.html.i
 data/tests/test_project/templates/500.html.i
 data/tests/test_project/templates/admin/login.html.i
 data/tests/test_project/urls.py.i
+data/piston/admin.py.i

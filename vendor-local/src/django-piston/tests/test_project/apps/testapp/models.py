@@ -38,3 +38,15 @@ class ListFieldsModel(models.Model):
 class Issue58Model(models.Model):
     read = models.BooleanField(default=False)
     model = models.CharField(max_length=1, blank=True, null=True)
+
+class CircularA(models.Model):
+    link = models.ForeignKey('testapp.CircularB', null=True)
+    name = models.CharField(max_length=15)
+
+class CircularB(models.Model):
+    link = models.ForeignKey('testapp.CircularC', null=True)
+    name = models.CharField(max_length=15)
+
+class CircularC(models.Model):
+    link = models.ForeignKey('testapp.CircularA', null=True)
+    name = models.CharField(max_length=15)

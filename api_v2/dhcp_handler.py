@@ -23,7 +23,7 @@ class DHCPHandler(BaseHandler):
             #ScheduledTask.objects.delete_all_dhcp()
             return tasks
         if dhcp_scope and dhcp_action == 'get_scopes_with_names':
-            truths = Truth.objects.select_related().filter(keyvalue__key='is_dhcp_scope',keyvalue__value='True')
+            truths = Truth.objects.select_related().filter(keyvalue__key='is_dhcp_scope',keyvalue__value='True').order_by('name')
 
             truth_list = []
             for t in truths:

@@ -101,6 +101,16 @@ class Emitter(object):
             """
             ret = None
 
+            # return anything we've already seen as a string only
+            # this prevents infinite recursion in the case of recursive 
+            # relationships
+
+            if thing in self.stack:
+                raise RuntimeError, (u'Circular reference detected while emitting '
+                                     'response')
+
+            self.stack.append(thing)
+
             if isinstance(thing, QuerySet):
                 ret = _qs(thing, fields)
             elif isinstance(thing, (tuple, list, set)):
@@ -124,6 +134,8 @@ class Emitter(object):
                 ret = _any(thing.all())
             else:
                 ret = smart_unicode(thing, strings_only=True)
+
+            self.stack.pop()
 
             return ret
 
@@ -156,7 +168,13 @@ class Emitter(object):
 
             if handler or fields:
                 v = lambda f: getattr(data, f.attname)
-
+                # FIXME
+                # Catch 22 here. Either we use the fields from the
+                # typemapped handler to make nested models work but the
+                # declared list_fields will ignored for models, or we
+                # use the list_fields from the base handler and accept that
+                # the nested models won't appear properly
+                # Refs #157
                 if handler:
                     fields = getattr(handler, 'fields')    
                 
@@ -297,6 +315,7 @@ class Emitter(object):
             return dict([ (k, _any(v, fields)) for k, v in data.iteritems() ])
 
         # Kickstart the seralizin'.
+        self.stack = [];
         return _any(self.data, self.fields)
 
     def in_typemapper(self, model, anonymous):
