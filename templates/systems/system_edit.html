@@ -216,7 +216,7 @@ ul.css-tabs a.current {
             "mac_address",
             function(value, element, regexp) {
                 var check = false;
-                var the_regex = new RegExp(/^([0-9a-f]{2}([:-]|$)){6}$/i);
+                var the_regex = new RegExp(/^([0-9a-f]{2}([:]|$)){6}$/i);
                 return this.optional(element) || the_regex.test(value);
             },
             "Please Enter a Valid MAC Address."
