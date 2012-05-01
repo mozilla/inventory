@@ -366,7 +366,10 @@ def unmanaged_system_delete(request, object_id):
 
 def show_by_model(request, object_id):
     system_list = models.UnmanagedSystem.objects.filter(server_model=models.ServerModel.objects.get(id=object_id))
-    paginator = Paginator(system_list, 25)                                                                        
+    if 'show_all' in request.GET:
+        paginator = Paginator(system_list, system_list.count())                                                                        
+    else:
+        paginator = Paginator(system_list, 25)                                                                        
                     
     if 'page' in request.GET:
         page = request.GET.get('page')
@@ -383,6 +386,7 @@ def show_by_model(request, object_id):
         systems = paginator.page(paginator.num_pages)
     return render_to_response('user_systems/unmanagedsystem_list.html', {
             'user_system_list': systems,
+            'show_all': True,
            },
            RequestContext(request))
 

@@ -44,12 +44,15 @@
 
                 {% if user_system_list.has_next %}
                     <a href="?page={{ user_system_list.next_page_number }}">Next</a>
+                    {% if show_all %}
+                        <a id="show_all_link" href="{{ request.get_full_path}}?show_all=true">Show All</a>
+                    {% endif %}
                 {% endif %}
             </span>
         </td></tr>
     </tbody>
 </table>
-<script>
+<script type="text/javascript">
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
         add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{% url user-system-quicksearch %}");
