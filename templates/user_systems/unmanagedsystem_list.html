@@ -33,22 +33,22 @@
         {% include "user_systems/unmanagedsystem_table_snippet.html" %}
         {% endwith %}
         <tr><td colspan="9">
-            <span class="step-links">
-                {% if user_system_list.has_previous %}
-                    <a href="?page={{ user_system_list.previous_page_number }}">Previous</a>
-                {% endif %}
-
-                <span class="current">
-                    Page {{ user_system_list.number }} of {{ user_system_list.paginator.num_pages }}.
-                </span>
-
-                {% if user_system_list.has_next %}
-                    <a href="?page={{ user_system_list.next_page_number }}">Next</a>
-                {% endif %}
-            </span>
         </td></tr>
     </tbody>
 </table>
+<span class="step-links">
+    {% if user_system_list.has_previous %}
+        <a href="?page={{ user_system_list.previous_page_number }}">Previous</a>
+    {% endif %}
+
+    <span class="current">
+        Page {{ user_system_list.number }} of {{ user_system_list.paginator.num_pages }}.
+    </span>
+
+    {% if user_system_list.has_next %}
+        <a href="?page={{ user_system_list.next_page_number }}">Next</a>
+    {% endif %}
+</span>
 <script>
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
