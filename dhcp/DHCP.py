@@ -67,15 +67,15 @@ class DHCP:
                 if 'system_hostname' in host and 'adapter_name' in host:
                     self.host_text += "\nhost " + host['system_hostname'].strip() + "-" + host['adapter_name'].strip() + "  {\n"
                 if 'mac_address' in host:
-                    self.host_text +=  "hardware ethernet " + host['mac_address'] + ";\n" 
+                    self.host_text +=  "\thardware ethernet " + host['mac_address'] + ";\n" 
                 if 'ipv4_address' in host:
-                    self.host_text +=  "fixed-address " + host['ipv4_address'] + ";\n" 
+                    self.host_text +=  "\tfixed-address " + host['ipv4_address'] + ";\n" 
                 if 'dhcp_filename' in host and host['dhcp_filename'] > '':
-                    self.host_text +=  "filename \"" + host['dhcp_filename'] + "\";\n" 
+                    self.host_text +=  "\tfilename \"" + host['dhcp_filename'] + "\";\n" 
                 if 'dhcp_hostname' in host and host['dhcp_hostname'] > '':
-                    self.host_text +=  "option host-name \"" + host['dhcp_hostname'] + "\";\n" 
+                    self.host_text +=  "\toption host-name \"" + host['dhcp_hostname'] + "\";\n" 
                 if 'dhcp_domain_name' in host and host['dhcp_domain_name'] > '':
-                    self.host_text +=  'option domain-name "' + host['dhcp_domain_name'] + '";\n '
+                    self.host_text +=  '\toption domain-name "' + host['dhcp_domain_name'] + '";\n '
                 self.host_text += "}"
         try:
             self.host_text += self.scope_options['overrides']
