@@ -33,25 +33,25 @@
         {% include "user_systems/unmanagedsystem_table_snippet.html" %}
         {% endwith %}
         <tr><td colspan="9">
-            <span class="step-links">
-                {% if user_system_list.has_previous %}
-                    <a href="?page={{ user_system_list.previous_page_number }}">Previous</a>
-                {% endif %}
-
-                <span class="current">
-                    Page {{ user_system_list.number }} of {{ user_system_list.paginator.num_pages }}.
-                </span>
-
-                {% if user_system_list.has_next %}
-                    <a href="?page={{ user_system_list.next_page_number }}">Next</a>
-                    {% if show_all %}
-                        <a id="show_all_link" href="{{ request.get_full_path}}?show_all=true">Show All</a>
-                    {% endif %}
-                {% endif %}
-            </span>
         </td></tr>
     </tbody>
 </table>
+<span class="step-links">
+    {% if user_system_list.has_previous %}
+        <a href="?page={{ user_system_list.previous_page_number }}">Previous</a>
+    {% endif %}
+
+    <span class="current">
+        Page {{ user_system_list.number }} of {{ user_system_list.paginator.num_pages }}.
+    </span>
+
+    {% if user_system_list.has_next %}
+        <a href="?page={{ user_system_list.next_page_number }}">Next</a>
+        {% if show_all %}
+            <a id="show_all_link" href="{{ request.get_full_path}}?show_all=true">Show All</a>
+        {% endif %}
+    {% endif %}
+</span>
 <script type="text/javascript">
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
