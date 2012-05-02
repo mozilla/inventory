@@ -302,6 +302,7 @@ class DHCPApi(TestCase):
     def test_get_adapters_by_system(self):
         resp = self.client.get(reverse('api_v2_keyvalue_get'), {'key_type': 'adapters_by_system', 'system':'fake-hostname2'}, follow=True)
         system_list = json.loads(resp.content)
+        self.assertEqual(resp.status_code,  200)
         #print system_list
     def test_delete_network_adapter(self):
         resp = self.client.delete('/api/v2/keyvalue/1/', {'system_hostname':'fake-hostname2', 'adapter_number':'0', 'key_type':'delete_network_adapter'}, follow=True)
