@@ -158,7 +158,8 @@ class KeyValueHandler(BaseHandler):
                 n = KeyValue.objects.get(id=key_value_id,key=request.POST['key'])
                 system = System.objects.get(id=request.POST['system_id'])
                 found = True
-            except:
+            except Exception, e:
+                #print e
                 found = False
 
             if found is False:
