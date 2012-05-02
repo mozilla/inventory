@@ -304,7 +304,7 @@ def save_key_value(request, id):
             kv.key = request.POST.get('key').strip()
             kv.value = request.POST.get('value').strip()
             system_id = str(kv.system_id)
-            kv.save()
+            kv.save() # This is going to be throwing usefull exceptions. We should figure out a way to forward them to users.
         except:
             kv.key = None
             kv.value = None

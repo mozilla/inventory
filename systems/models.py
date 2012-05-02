@@ -8,12 +8,16 @@
 # into your database.
 
 from django.db import models
+from django.core.exceptions import ValidationError
+
 from dhcp.models import DHCP
 from django.db.models.signals import post_save
 from django.db.models.query import QuerySet
 import datetime
 import re
 from django.contrib.auth.models import User
+
+import pdb
 
 class QuerySetManager(models.Manager):
     def get_query_set(self):
@@ -45,7 +49,7 @@ class BuildManager(models.Manager):
 class SystemWithRelatedManager(models.Manager):
     def get_query_set(self):
         return super(SystemWithRelatedManager, self).get_query_set().select_related(
-            'operating_system', 
+            'operating_system',
             'server_model',
             'allocation',
             'system_rack',
@@ -54,10 +58,10 @@ class SystemWithRelatedManager(models.Manager):
 
 class Allocation(models.Model):
     name = models.CharField(max_length=255, blank=False)
-    
+
     def __unicode__(self):
         return self.name
-    
+
     class Meta:
         db_table = u'allocations'
         ordering = ['name']
@@ -134,8 +138,33 @@ class KeyValue(models.Model):
     def __unicode__(self):
         return self.key
 
+    def save(self, *args, **kwargs):
+        if re.match('^nic\.\d+\.mac_address\.\d+$', self.key):
+            print "Validating Mac"
+            self.value = validate_mac(self.value)
+        super(KeyValue, self).save(*args, **kwargs)
+
+
     class Meta:
         db_table = u'key_value'
+
+# Eventually, should this go in the KV class? Depends on whether other code
+# calls this.
+def validate_mac(mac):
+    """
+    Validates a mac address. If the mac is in the form XX-XX-XX-XX-XX-XX this
+    function will replace all '-' with ':'.
+
+    :param mac: The mac address
+    :type mac: str
+    :returns: The valid mac address.
+    :raises: ValidationError
+    """
+    mac = mac.replace('-',':')
+    if not re.match('^([0-9a-fA-F]{2}(:|$)){6}$', mac):
+        raise ValidationError("Please enter a valid Mac Address in the form "
+                                "XX:XX:XX:XX:XX:XX")
+    return mac
 
 class NetworkAdapter(models.Model):
     system_id = models.IntegerField()
@@ -149,6 +178,11 @@ class NetworkAdapter(models.Model):
     option_domain_name = models.CharField(max_length=128)
     dhcp_scope = models.ForeignKey(DHCP, null=True, blank=True)
     switch_id = models.IntegerField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.full_clean() # Calls field.clean() on all fields.
+        super(NetworkAdapter, self).save(*args, **kwargs)
+
     def get_system_host_name(self):
         systems = System.objects.filter(id=self.system_id)
         if systems:
@@ -168,7 +202,7 @@ class Mac(models.Model):
 class OperatingSystem(models.Model):
     name = models.CharField(unique=True, max_length=255, blank=True)
     version = models.CharField(unique=True, max_length=255, blank=True)
-    
+
     def __unicode__(self):
         return "%s - %s" % (self.name, self.version)
 
@@ -301,7 +335,7 @@ class System(DirtyFieldsMixin, models.Model):
         except Exception, e:
             print e
             pass
-                
+
         super(System, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -351,10 +385,10 @@ class System(DirtyFieldsMixin, models.Model):
                 return 1
         else:
             return 1
-    
+
     def get_adapter_count(self):
         return len(self.get_adapter_numbers())
-       
+
     class Meta:
         db_table = u'systems'
 
