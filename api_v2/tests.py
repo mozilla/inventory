@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.core.urlresolvers import reverse
 from django.test.client import Client
 try:
     import json
@@ -299,7 +300,7 @@ class DHCPApi(TestCase):
         self.assertEqual(system_list[0]['nic.1.ipv4_address.0'],'10.99.32.2')
 
     def test_get_adapters_by_system(self):
-        resp = self.client.get('/api/v2/keyvalue/?key_type=adapters_by_system&system=fake-hostname2', follow=True)
+        resp = self.client.get(reverse('api_v2_keyvalue_get') + '?key_type=adapters_by_system&system=fake-hostname2', follow=True)
         system_list = json.loads(resp.content)
         #print system_list
     def test_delete_network_adapter(self):
