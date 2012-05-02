@@ -358,7 +358,6 @@ class KeyValueApi(TestCase):
 
     def test_get_adapters_by_system(self):
         resp = self.client.get('/api/v2/keyvalue/3/', {'key_type':'adapters_by_system','system':'fake-hostname2'}, follow=True)
-        #print resp.content
 
     def test_keyvalue_set_invalid_ip(self):
         resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'1.1.1asdfasdf.1','key':'nic.0.ipv4_address.0'}, follow=True)
@@ -373,7 +372,8 @@ class KeyValueApi(TestCase):
         self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_valid_mac_address(self):
-        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'00:00:00:00:00:00','key':'nic.0.mac_address.0'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system':'fake-hostname1', 'value':'00:00:00:00:00:00','key':'nic.0.mac_address.0'}, follow=True)
+        print resp.content
         self.assertEqual(resp.status_code, 200)
 
     def test_keyvalue_set_invalid_is_dhcp_scope(self):

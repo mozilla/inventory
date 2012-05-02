@@ -23,7 +23,7 @@
 			return (ret[segment - 1]);
 		}
 
-		var system_id = getURISegment(4);
+		var system_id = getURISegment(5);
         if(system_id == 'new'){
             $("#network_adapter_link").hide();
         }
