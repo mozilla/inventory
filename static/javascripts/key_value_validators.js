@@ -68,7 +68,7 @@
             validation_error_array.push('Requires True|False');
 
             input_regex_array.push(new RegExp(/^nic\.\d+\.mac_address\.\d+$/));
-            output_regex_array.push(new RegExp(/^([0-9a-f]{2}([:-]|$)){6}$/i));
+            output_regex_array.push(new RegExp(/^([0-9a-fA-F]{2}([-:]|$)){6}$/i));
             validation_error_array.push('Requires Mac Address XX:XX:XX:XX:XX:XX');
 
             for(var i=0;i<input_regex_array.length;i++){
