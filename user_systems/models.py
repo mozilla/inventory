@@ -160,7 +160,6 @@ class UserLicense(models.Model):
     def delete(self, *args, **kwargs):
         request = kwargs.pop('request', None)
         if request:
-            import pdb; pdb.set_trace()
             if request.user.username and request.user.username in USER_SYSTEM_ALLOWED_DELETE:
                 send_mail('License Deleted', '%s Deleted by %s' % (self, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
             else:
