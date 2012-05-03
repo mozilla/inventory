@@ -4,6 +4,7 @@ import operator
 from django.template import RequestContext
 from django.forms.extras.widgets import SelectDateWidget
 from django.db import connection
+from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.utils import simplejson as json
 from django.http import HttpResponse, HttpResponseRedirect
@@ -16,6 +17,7 @@ from datetime import datetime, timedelta
 from libs import ldap_lib
 import settings
 from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -352,17 +354,16 @@ def license_delete(request, object_id):
             },
             RequestContext(request))
 def unmanaged_system_delete(request, object_id):
-    from misc.generic_views import delete_object
     user_system = get_object_or_404(models.UnmanagedSystem, pk=object_id)
-    if request.user.username in USER_SYSTEM_ALLOWED_DELETE:
-        return delete_object(request, model=models.UnmanagedSystem, object_id=object_id,post_delete_redirect='user-system-list')
-    else:
-        send_mail('Unauthorized Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
-                    
+    try:
+        user_system.delete(request=request)
+        return HttpResponseRedirect( reverse('user-system-list') )
+    except PermissionDenied, e:
         return render_to_response('user_systems/unauthorized_delete.html', {
-                'content': "You're not authorized to delete",
+                'content': e,
             },
             RequestContext(request))
+                    
 
 def show_by_model(request, object_id):
     system_list = models.UnmanagedSystem.objects.filter(server_model=models.ServerModel.objects.get(id=object_id))
