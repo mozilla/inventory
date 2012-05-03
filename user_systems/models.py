@@ -2,6 +2,9 @@ from django.db import models
 from systems.models import OperatingSystem, ServerModel
 from datetime import datetime, timedelta, date
 from django.db.models.query import QuerySet
+from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS
+from django.core.exceptions import PermissionDenied
+from django.core.mail import send_mail
 
 # Create your models here.
 YES_NO_CHOICES = (
@@ -60,6 +63,16 @@ class UnmanagedSystem(models.Model):
             'notes',
             'server_model__model'
         )
+
+    def delete(self, *args, **kwargs):
+        request = kwargs.pop('request', None)
+        if request:
+            if request.user.username and request.user.username in USER_SYSTEM_ALLOWED_DELETE:
+                send_mail('Unmanaged System Deleted', '%s Deleted by %s' % (self, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
+            else:
+                send_mail('Unauthorized Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (self, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
+                raise PermissionDenied('You do not have permission to delete this system.')
+        super(UnmanagedSystem, self).delete(*args, **kwargs)
 
     def __unicode__(self):
         try:
