@@ -342,17 +342,16 @@ def user_system_index(request):
         
 
 def license_delete(request, object_id):
-    from misc.generic_views import delete_object
     license = get_object_or_404(models.UserLicense, pk=object_id)
-    if request.user.username in USER_SYSTEM_ALLOWED_DELETE:
-        return delete_object(request, model=models.UserLicense, object_id=object_id,post_delete_redirect='license-list')
-    else:
-        send_mail('Unauthorized Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (license, request.user.username), settings.local.FROM_EMAIL_ADDRESS,settings.local.UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=True)
-                    
+    try:
+        license.delete(request=request)
+        return HttpResponseRedirect( reverse('license-list') )
+    except PermissionDenied, e:
         return render_to_response('user_systems/unauthorized_delete.html', {
-                'content': "You're not authorized to delete",
+                'content': e,
             },
             RequestContext(request))
+
 def unmanaged_system_delete(request, object_id):
     user_system = get_object_or_404(models.UnmanagedSystem, pk=object_id)
     try:
