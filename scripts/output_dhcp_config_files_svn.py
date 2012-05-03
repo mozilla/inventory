@@ -28,6 +28,7 @@ def main():
             output_text = client.get('/api/dhcp/%s/view_hosts/' % dhcp_scope, follow=True).content
             output_text = output_text[1:-1]
             output_text =  output_text.replace("\\n","\n")
+            output_text =  output_text.replace("\\t","\t")
             output_text =  output_text.replace('\\"','"')
             try:
                 f = open(final_destination_file,"w")
