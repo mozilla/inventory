@@ -1,5 +1,5 @@
 from django.core.exceptions import PermissionDenied
-class BaseACL:
+class BaseACL(object):
     request = None
     user = None
 
