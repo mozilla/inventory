@@ -10,5 +10,4 @@ class UnmanagedSystemACL(BaseACL):
             allowed = allowed
         else:
             allowed = USER_SYSTEM_ALLOWED_DELETE
-        import pdb; pdb.set_trace()
         self.check_for_permission(self.user, allowed)
