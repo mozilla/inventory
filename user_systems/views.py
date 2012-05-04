@@ -21,6 +21,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from MozInvAuthorization.UnmanagedSystemACL import UnmanagedSystemACL
 @csrf_exempt
 def owners_quicksearch_ajax(request):
     """Returns systems sort table"""
@@ -355,9 +356,13 @@ def license_delete(request, object_id):
 def unmanaged_system_delete(request, object_id):
     user_system = get_object_or_404(models.UnmanagedSystem, pk=object_id)
     try:
-        user_system.delete(request=request)
+        acl = UnmanagedSystemACL(request)
+        acl.check_delete()
+        user_system.delete()
+        send_mail('License Deleted', '%s Deleted by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
         return HttpResponseRedirect( reverse('user-system-list') )
     except PermissionDenied, e:
+        send_mail('Unauthorized License Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
         return render_to_response('user_systems/unauthorized_delete.html', {
                 'content': e,
             },
