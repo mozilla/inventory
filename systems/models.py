@@ -139,7 +139,8 @@ class KeyValue(models.Model):
         return self.key if self.key else ''
 
     def __repr__(self):
-        return self.key if self.key else ''
+        return "<{0}: '{1}'>".format(self.key, self.value)
+
     def save(self, *args, **kwargs):
         if re.match('^nic\.\d+\.mac_address\.\d+$', self.key):
             print "Validating Mac"

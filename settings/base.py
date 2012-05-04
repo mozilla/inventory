@@ -36,6 +36,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'piston',
     #'south',
     'systems',
+    'dns',
     'user_systems',
     'build',
     'dhcp',
