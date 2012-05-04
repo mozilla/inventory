@@ -136,8 +136,10 @@ class KeyValue(models.Model):
     expanded_objects = ApiManager()
 
     def __unicode__(self):
-        return self.key
+        return self.key if self.key else ''
 
+    def __repr__(self):
+        return self.key if self.key else ''
     def save(self, *args, **kwargs):
         if re.match('^nic\.\d+\.mac_address\.\d+$', self.key):
             print "Validating Mac"
