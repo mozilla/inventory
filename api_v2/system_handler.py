@@ -191,11 +191,14 @@ class SystemHandler(BaseHandler):
                         except:
                             pass
                 if 'system_rack' in request.POST:
-                    try:
-                        sr = SystemRack.objects.get(id=request.POST['system_rack'])
-                        s.system_rack = sr
-                    except:
-                        pass
+                    if request.POST['system_rack'] == '':
+                        s.system_rack = None
+                    else:
+                        try:
+                            sr = SystemRack.objects.get(id=request.POST['system_rack'])
+                            s.system_rack = sr
+                        except:
+                            pass
                         #resp = rc.NOT_FOUND
                         #resp.write("System Rack Not Found") 
                 if 'location' in request.POST:
@@ -231,7 +234,7 @@ class SystemHandler(BaseHandler):
                 s.save()
                 resp = rc.ALL_OK
                 resp.write('json = {"id":%i, "hostname":"%s"}' % (s.id, s.hostname))
-            except:
+            except Exception, e:
                 resp = rc.NOT_FOUND
                 resp.write("System Updated")
             return resp
