@@ -362,7 +362,6 @@ def license_delete(request, object_id):
 
 def unmanaged_system_delete(request, object_id):
     user_system = get_object_or_404(models.UnmanagedSystem, pk=object_id)
-    import pdb; pdb.set_trace()
     try:
         acl = UnmanagedSystemACL(request)
         acl.check_delete()
