@@ -6,7 +6,6 @@ class UnmanagedSystemACL(BaseACL):
         self.request = request
 
     def check_delete(self, allowed = None):
-        import pdb; pdb.set_trace()
         if allowed:
             allowed = allowed
         else:
