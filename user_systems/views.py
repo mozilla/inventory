@@ -271,6 +271,13 @@ def user_system_view(request, template, data, instance=None):
     the_owner_list.append("STOCK-MTV")
     the_owner_list.append("STOCK-TOR")
     the_owner_list.append("STOCK-LON")
+    the_owner_list.append("STOCK-LON")
+    the_owner_list.append("desktop-mtv1")
+    the_owner_list.append("desktop-sfo1")
+    the_owner_list.append("desktop-tor1")
+    the_owner_list.append("desktop-lon1")
+    the_owner_list.append("desktop-par1")
+    the_owner_list.append("desktop-yvr1")
     data['owner_json'] = json.dumps(the_owner_list)
 
     #data['owner_json'] = json.dumps(ldap_lib.get_all_names())
