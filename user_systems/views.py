@@ -352,11 +352,11 @@ def user_system_index(request):
 def license_delete(request, object_id):
     license = get_object_or_404(models.UserLicense, pk=object_id)
     try:
-        license.delete(request=request)
+        license.delete()
         return HttpResponseRedirect( reverse('license-list') )
     except PermissionDenied, e:
         return render_to_response('user_systems/unauthorized_delete.html', {
-                'content': e,
+                'content': 'You do not have permission to delete this license',
             },
             RequestContext(request))
 
@@ -366,12 +366,12 @@ def unmanaged_system_delete(request, object_id):
         acl = UnmanagedSystemACL(request)
         acl.check_delete()
         user_system.delete()
-        send_mail('License Deleted', '%s Deleted by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
+        send_mail('System Deleted', '%s Deleted by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
         return HttpResponseRedirect( reverse('user-system-list') )
     except PermissionDenied, e:
-        send_mail('Unauthorized License Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
+        send_mail('Unauthorized System Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
         return render_to_response('user_systems/unauthorized_delete.html', {
-                'content': e,
+                'content': 'You do not have permission to delete this system',
             },
             RequestContext(request))
                     
