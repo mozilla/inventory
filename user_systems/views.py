@@ -362,16 +362,23 @@ def license_delete(request, object_id):
 
 def unmanaged_system_delete(request, object_id):
     user_system = get_object_or_404(models.UnmanagedSystem, pk=object_id)
-    try:
-        acl = UnmanagedSystemACL(request)
-        acl.check_delete()
-        user_system.delete()
-        send_mail('System Deleted', '%s Deleted by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
-        return HttpResponseRedirect( reverse('user-system-list') )
-    except PermissionDenied, e:
-        send_mail('Unauthorized System Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
-        return render_to_response('user_systems/unauthorized_delete.html', {
-                'content': 'You do not have permission to delete this system',
+    if request.method == 'POST':
+        try:
+            import pdb; pdb.set_trace()
+            acl = UnmanagedSystemACL(request)
+            acl.check_delete()
+            user_system.delete()
+            send_mail('System Deleted', '%s Deleted by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
+            return HttpResponseRedirect( reverse('user-system-list') )
+        except PermissionDenied, e:
+            send_mail('Unauthorized System Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
+            return render_to_response('user_systems/unauthorized_delete.html', {
+                    'content': 'You do not have permission to delete this system',
+                },
+                RequestContext(request))
+    else:
+        return render_to_response('user_systems/unmanagedsystem_confirm_delete.html', {
+                'owner': user_system,
             },
             RequestContext(request))
                     
