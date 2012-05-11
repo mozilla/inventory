@@ -361,10 +361,10 @@ def license_delete(request, object_id):
             RequestContext(request))
 
 def unmanaged_system_delete(request, object_id):
+    #Dummy comment
     user_system = get_object_or_404(models.UnmanagedSystem, pk=object_id)
     if request.method == 'POST':
         try:
-            import pdb; pdb.set_trace()
             acl = UnmanagedSystemACL(request)
             acl.check_delete()
             user_system.delete()
