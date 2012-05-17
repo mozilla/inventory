@@ -302,11 +302,14 @@ class KeyValueHandler(BaseHandler):
                             adapter_ids.append(matches.group(1))
                 adapter_ids.sort()
                 for a in adapter_ids:
+                    if system.hostname == 'pp-web01':
+                        import pdb; pdb.set_trace()
                     adapter_name = ''
                     mac_address = ''
                     dhcp_hostname = ''
                     dhcp_filename = ''
                     ipv4_address = ''
+                    dhcp_domain_name_servers = ''
                     if 'nic.%s.ipv4_address.0' % a in tmp_dict:
                         ipv4_address = tmp_dict['nic.%s.ipv4_address.0' % a]
                     if 'nic.%s.name.0' % a in tmp_dict:
@@ -317,14 +320,18 @@ class KeyValueHandler(BaseHandler):
                         dhcp_hostname = tmp_dict['nic.%s.dhcp_hostname.0' % a]
                     if 'nic.%s.dhcp_filename.0' % a in tmp_dict:
                         dhcp_filename = tmp_dict['nic.%s.dhcp_filename.0' % a]
+                    if 'nic.%s.dhcp_domain_name_servers.0' % a in tmp_dict:
+                        dhcp_domain_name_servers = tmp_dict['nic.%s.dhcp_domain_name_servers.0' % a]
                     try:
                         final_list.append({
-                            'system_hostname':system.hostname,
-                            'ipv4_address':ipv4_address,
-                            'adapter_name':adapter_name,
-                            'mac_address':mac_address,
-                            'dhcp_hostname':dhcp_hostname,
-                            'dhcp_filename':dhcp_filename}
+                                'system_hostname':system.hostname,
+                                'ipv4_address':ipv4_address,
+                                'adapter_name':adapter_name,
+                                'mac_address':mac_address,
+                                'dhcp_hostname':dhcp_hostname,
+                                'dhcp_filename':dhcp_filename,
+                                'dhcp_domain_name_servers':dhcp_domain_name_servers,
+                            }
                             )
                     except:
                         pass
@@ -397,6 +404,7 @@ class KeyValueHandler(BaseHandler):
                     dhcp_filename = ''
                     dhcp_domain_name = ''
                     ipv4_address = ''
+                    dhcp_domain_name_servers = ''
                     if 'nic.%s.ipv4_address.0' % a in tmp_dict:
                         ipv4_address = tmp_dict['nic.%s.ipv4_address.0' % a]
                     if 'nic.%s.name.0' % a in tmp_dict:
@@ -411,7 +419,9 @@ class KeyValueHandler(BaseHandler):
                         dhcp_filename = tmp_dict['nic.%s.dhcp_filename.0' % a]
                     if 'nic.%s.dhcp_domain_name.0' % a in tmp_dict:
                         dhcp_domain_name = tmp_dict['nic.%s.dhcp_domain_name.0' % a]
-                    final_list.append({'system_hostname':system.hostname, 'ipv4_address':ipv4_address,  'adapter_name':adapter_name, 'mac_address':mac_address, 'option_hostname': dhcp_hostname, 'dhcp_hostname':dhcp_hostname, 'dhcp_filename':dhcp_filename, 'dhcp_domain_name':dhcp_domain_name})
+                    if 'nic.%s.dhcp_domain_name_servers.0' % a in tmp_dict:
+                        dhcp_domain_name_servers = tmp_dict['nic.%s.dhcp_domain_name_servers.0' % a]
+                    final_list.append({'system_hostname':system.hostname, 'ipv4_address':ipv4_address,  'adapter_name':adapter_name, 'mac_address':mac_address, 'option_hostname': dhcp_hostname, 'dhcp_hostname':dhcp_hostname, 'dhcp_filename':dhcp_filename, 'dhcp_domain_name':dhcp_domain_name, 'dhcp_domain_name_servers':dhcp_domain_name_servers})
                 #tmp_list.append(tmp_dict)
                 return final_list
         elif 'key' in request.GET and request.GET['key'] > '':

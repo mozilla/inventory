@@ -32,12 +32,12 @@ class DHCPHandler(BaseHandler):
         if dhcp_scope and dhcp_action == 'view_hosts':
             scope_options = []
             client = Client()
-            hosts = json.loads(client.get('/api/keyvalue/?key_type=system_by_scope&scope=%s' % dhcp_scope, follow=True).content)
+            hosts = json.loads(client.get('/api/v2/keyvalue/?key_type=system_by_scope&scope=%s' % dhcp_scope, follow=True).content)
             #print hosts
             adapter_list = []
             for host in hosts:
                 if 'hostname' in host:
-                    the_url = '/api/keyvalue/?key_type=adapters_by_system_and_scope&dhcp_scope=%s&system=%s' % (dhcp_scope, host['hostname'])
+                    the_url = '/api/v2/keyvalue/?key_type=adapters_by_system_and_scope&dhcp_scope=%s&system=%s' % (dhcp_scope, host['hostname'])
                     try:
                         adapter_list.append(json.loads(client.get(the_url, follow=True).content))
                     except:

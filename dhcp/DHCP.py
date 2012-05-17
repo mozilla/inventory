@@ -76,6 +76,8 @@ class DHCP:
                     self.host_text +=  "\toption host-name \"" + host['dhcp_hostname'] + "\";\n" 
                 if 'dhcp_domain_name' in host and host['dhcp_domain_name'] > '':
                     self.host_text +=  '\toption domain-name "' + host['dhcp_domain_name'] + '";\n '
+                if 'dhcp_domain_name_servers' in host and host['dhcp_domain_name_servers'] != '':
+                    self.host_text += 'option domain-name-servers "' + host['dhcp_domain_name_servers'] + "\";\n"
                 self.host_text += "}"
         try:
             self.host_text += self.scope_options['overrides']
