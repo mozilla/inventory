@@ -302,8 +302,6 @@ class KeyValueHandler(BaseHandler):
                             adapter_ids.append(matches.group(1))
                 adapter_ids.sort()
                 for a in adapter_ids:
-                    if system.hostname == 'pp-web01':
-                        import pdb; pdb.set_trace()
                     adapter_name = ''
                     mac_address = ''
                     dhcp_hostname = ''
