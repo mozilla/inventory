@@ -12,4 +12,3 @@ def get_site_from_ip(ip, mappings):
     :return site: The site's name
     :type site: str
     """
-

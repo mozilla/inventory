@@ -1,12 +1,39 @@
 import re
+import pdb
+from systems.models import System
 
+
+def get_dns_data():
+    """
+    Use this function to return all data that *could* be included in a DNS
+    build.
+    :return: list of tuples. See :function:`get_nick_data`
+    """
+    systems = System.objects.all()
+    formated_nics = []
+    for system in systems:
+        raw_nics = system.keyvalue_set.all()
+        if not raw_nics:
+            continue
+        formated_nics.append(transform_nics(raw_nics))
+    dns_data = []
+    for system_nics in formated_nics:
+        for primary_nic_number, primary_nic in system_nics.items():
+            for sub_nic_number, sub_nics in primary_nic['sub_nics'].items():
+                info = get_nick_data(sub_nics)
+                if not info:
+                    continue
+                dns_data.append(info)
+    return dns_data
 
 is_mac_key = re.compile("^nic\.\d+\.mac_address\.\d+$")
 is_hostname_key = re.compile("^nic\.\d+\.hostname\.\d+$")
 is_ip_key = re.compile("^nic\.\d+\.ipv4_address\.\d+$")
+is_dns_auto_build_key = re.compile("^nic\.\d+\.dns_auto_build\.\d+$")
+is_dns_auto_hostname_key = re.compile("^nic\.\d+\.dns_auto_hostname\.\d+$")
 
 
-def get_ip_mac_hostname(sub_nics):
+def get_nick_data(sub_nics):
     """
     Gather information about all nics of a system.
 
@@ -15,32 +42,35 @@ def get_ip_mac_hostname(sub_nics):
         sanitized (in valid ip/mac/hostname format).
 
     :return: Return a list of tuples containing (ip, mac, hostname, nic). nic
-        is the object that originally contained the other info. It is used if
-        we need to backtrack for more info (like getting the system).
+    is the object that originally contained the other info. It is used if we
+    need to backtrack for more info (like getting the system).
     """
     #TODO return the nic in the tuple.
     data = {}
     for nic in sub_nics:
         if is_mac_key.match(nic.key):
-            if 'macs' not in data:
-                data['macs'] = []
-            data['macs'].append(nic.value)
+            data.setdefault('macs', []).append(nic.value)
             continue
         if is_hostname_key.match(nic.key):
-            if 'hostname' not in data:
-                data['hostname'] = []
-            data['hostname'].append(nic.value)
+            data.setdefault('hostname', []).append(nic.value)
             continue
         if is_ip_key.match(nic.key):
-            if 'ip' not in data:
-                data['ip'] = []
-            data['ip'].append(nic.value)
+            data.setdefault('ip', []).append(nic.value)
             continue
+        if is_dns_auto_build_key.match(nic.key):
+            data.setdefault('dns_build_options',
+                    {})['dns_auto_build'] = nic.value
+            continue
+        if is_dns_auto_hostname_key.match(nic.key):
+            data.setdefault('dns_build_options',
+                    {})['dns_auto_hostname'] = nic.value
+            continue
+
     if not('macs' in data and 'hostname' in data and
             'ip' in data):
         return None
     data['nic'] = nic
-    return (data['ip'], data['macs'], data['hostname'], data['nic'])
+    return (data['ip'], data['macs'], data['hostname'], data)
 
 
 get_nic_primary_number = re.compile("^nic\.(\d+).*$")
@@ -71,7 +101,7 @@ def transform_nics(nics):
     formated_nics = _build_primary_nics(nics)
     for nic_number, nics in formated_nics.items():
         formated_nics[nic_number]['sub_nics'] = _build_sub_nics(nics)
-        formated_nics[nic_number].pop('nics') # We don't need nics anymore.
+        formated_nics[nic_number].pop('nics')  # We don't need nics anymore.
 
     return formated_nics
 
