@@ -316,6 +316,25 @@ class DHCPApi(TestCase):
         self.assertEqual(len(ScheduledTask.objects.all()), 1)
         self.assertEqual(ScheduledTask.objects.all()[0].type, 'dhcp')
 
+    def test_get_adapters_by_system_and_scope(self):
+        """
+            Get a list of all the adapters in this dhcp scope by system.
+            Should not include systems without a nic.X.ipv4_address.9 value
+        """
+        resp = self.client.get(reverse('api_v2_keyvalue_get'), {'key_type': 'adapters_by_system_and_scope', 'dhcp_scope': 'phx-vlan73', 'system':'fake-hostname2'}, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        system_list = json.loads(resp.content)
+        self.assertEqual(len(system_list), 2)
+        """
+            Delete a nic.0.ipv4_address.0 key/value pair
+            There should now only be one adapter available
+        """
+        KeyValue.objects.get(id=8).delete()
+        resp = self.client.get(reverse('api_v2_keyvalue_get'), {'key_type': 'adapters_by_system_and_scope', 'dhcp_scope': 'phx-vlan73', 'system':'fake-hostname2'}, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        system_list = json.loads(resp.content)
+        self.assertEqual(len(system_list), 1)
+
 
     def test_delete_dhcp_scope_via_api(self):
         ScheduledTask.objects.all().delete()

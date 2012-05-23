@@ -142,7 +142,6 @@ class KeyValue(models.Model):
         return self.key if self.key else ''
     def save(self, *args, **kwargs):
         if re.match('^nic\.\d+\.mac_address\.\d+$', self.key):
-            print "Validating Mac"
             self.value = validate_mac(self.value)
         super(KeyValue, self).save(*args, **kwargs)
 

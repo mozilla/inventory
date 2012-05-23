@@ -65,13 +65,6 @@ class UnmanagedSystem(models.Model):
         )
 
     def delete(self, *args, **kwargs):
-        request = kwargs.pop('request', None)
-        if request:
-            if request.user.username and request.user.username in USER_SYSTEM_ALLOWED_DELETE:
-                send_mail('Unmanaged System Deleted', '%s Deleted by %s' % (self, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
-            else:
-                send_mail('Unauthorized Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (self, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
-                raise PermissionDenied('You do not have permission to delete this system.')
         super(UnmanagedSystem, self).delete(*args, **kwargs)
 
     def __unicode__(self):

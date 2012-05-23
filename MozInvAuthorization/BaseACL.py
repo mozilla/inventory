@@ -5,7 +5,10 @@ class BaseACL(object):
 
     def __init__(self, request):
         self.request = request
-        self.user = request.user.username
+        if request.user.username and request.user.username != '':
+            self.user = request.user.username
+        else:
+            self.user = request.META['REMOTE_USER']
 
     def check_create(self, allowed = None):
         pass
