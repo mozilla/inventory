@@ -51,7 +51,8 @@ class DHCPHandler(BaseHandler):
                 task = ScheduledTask(type='dhcp',task=dhcp_scope)
                 task.save()
             except Exception, e:
-                print e
+                pass
+                #print e
             return rc.ALL_OK
         else:
             return rc.NOT_FOUND

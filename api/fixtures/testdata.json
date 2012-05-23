@@ -651,6 +651,6 @@
             "key": "nic.1.dhcp_domain_name_servers.0",
             "value": "127.0.0.1, 127.0.0.2"
         }
-    },
+    }
 
 ]
