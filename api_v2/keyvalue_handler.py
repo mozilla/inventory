@@ -391,7 +391,8 @@ class KeyValueHandler(BaseHandler):
                     matches = re.match('nic\.(\d+).*',k)
                     if matches.group is not None:
                         dhcp_scope_match = 'nic.%s.dhcp_scope.0' % matches.group(1)
-                        if matches.group(1) not in adapter_ids and dhcp_scope_match in tmp_dict and tmp_dict[dhcp_scope_match] == dhcp_scope:
+                        ip_address_match = 'nic.%s.ipv4_address.0' % matches.group(1)
+                        if matches.group(1) not in adapter_ids and ip_address_match in tmp_dict and dhcp_scope_match in tmp_dict and tmp_dict[dhcp_scope_match] == dhcp_scope:
                         #if matches.group(1) not in adapter_ids and 'nic.%s.dhcp_scope.0' % matches.group(1) in tmp_dict and tmp_dict['nic.%s.dhcp_scope.0' % matches.group(1)] == dhcp_scope:
                             adapter_ids.append(matches.group(1))
                 adapter_ids.sort()
