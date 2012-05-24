@@ -42,22 +42,32 @@
 
 		$('.save_key_value').click(function(){
 			var system_id = this.id.split('_')[0];
+            var container = $(this).parent().parent();
 			$.post("/en-US/systems/save_key_value/" + system_id + '/',
 				{ 
 				key: $('#' + system_id + '_key').val(), 
 				value: $('#' + system_id + '_value').val(), 
-				}
+                }, function(data){
+                    obj = $.parseJSON(data);
+                    if(obj.success){
+                        container.removeClass('is-dirty');
+                        container.contents('td').css({'border': 'none', 'border-left': 'none', 'border-right': 'none', 'background-color':'#FFFFFF'});
+                        container.contents('td:first').css('border-left', 'none');
+                        container.contents('td:last').css('border-right', 'none');
+                        container.contents('td:last').contents('a.save_key_value').css('display', 'none');
+                    } else {
+                        error_div = container.contents('td').contents('.error_span');
+                        error_div.css('display','inline');
+                        error_div.css('font-weight','bold');
+                        error_div.text(obj.errorMessage);
+                    }
+                }
 			);
-            //$(this).parent().parent().contents('td').css({'border': 'none', 'border-left': 'none', 'border-right': 'none', 'background-color':'#FFFFFF'});
-            //$(this).parent().parent().contents('td:first').css('border-left', 'none');
-            //$(this).parent().parent().contents('td:last').css('border-right', 'none');
-            //$(this).parent().parent().contents('td:last').contents('span').css('display', 'none');
-            $(this).parent().parent().removeClass('is-dirty');
+            /*$(this).parent().parent().removeClass('is-dirty');
             $(this).parent().parent().contents('td').css({'border': 'none', 'border-left': 'none', 'border-right': 'none', 'background-color':'#FFFFFF'});
             $(this).parent().parent().contents('td:first').css('border-left', 'none');
             $(this).parent().parent().contents('td:last').css('border-right', 'none');
-            $(this).parent().parent().contents('td:last').contents('a.save_key_value').css('display', 'none');
-            //$(this).parent().parent().contents('td:last').contents('span').css('display', 'none');
+            $(this).parent().parent().contents('td:last').contents('a.save_key_value').css('display', 'none');*/
 			return false;
 
 		});
