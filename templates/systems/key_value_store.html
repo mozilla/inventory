@@ -43,10 +43,10 @@
 		$('.save_key_value').click(function(){
 			var system_id = this.id.split('_')[0];
             var container = $(this).parent().parent();
-			$.post("/en-US/systems/save_key_value/" + system_id + '/',
-				{ 
-				key: $('#' + system_id + '_key').val(), 
-				value: $('#' + system_id + '_value').val(), 
+            $.post("/en-US/systems/save_key_value/" + system_id + '/',
+                { 
+                key: $('#' + system_id + '_key').val(), 
+                value: $('#' + system_id + '_value').val(), 
                 }, function(data){
                     obj = $.parseJSON(data);
                     if(obj.success){
@@ -62,12 +62,7 @@
                         error_div.text(obj.errorMessage);
                     }
                 }
-			);
-            /*$(this).parent().parent().removeClass('is-dirty');
-            $(this).parent().parent().contents('td').css({'border': 'none', 'border-left': 'none', 'border-right': 'none', 'background-color':'#FFFFFF'});
-            $(this).parent().parent().contents('td:first').css('border-left', 'none');
-            $(this).parent().parent().contents('td:last').css('border-right', 'none');
-            $(this).parent().parent().contents('td:last').contents('a.save_key_value').css('display', 'none');*/
+            );
 			return false;
 
 		});
