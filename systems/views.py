@@ -25,6 +25,7 @@ from libs.jinja import render_to_response as render_to_response
 from jingo import render
 from django.views.decorators.csrf import csrf_exempt
 from Rack import Rack
+from MozInvAuthorization.KeyValueACL import KeyValueACL 
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
 def tryint(s):
@@ -286,6 +287,20 @@ def save_key_value(request, id):
     validated = True
     resp = {'success': True, 'errorMessage' : ''}
     post_key = request.POST.get('key').strip()
+    post_value = request.POST.get('value').strip()
+    """
+        Create the key value acl object.
+        We can use it to validate based on criteria below
+    """
+    try:
+        tmp = models.KeyValue.objects.get(id=id)
+        system = tmp.system
+    except Exception, e:
+        print e
+        pass
+
+        
+    acl = KeyValueACL(request)
     if post_key == 'shouldfailvalidation':
         resp['success'] = False
         resp['errorMessage'] = 'Validation Failed'
@@ -294,7 +309,22 @@ def save_key_value(request, id):
     if kv is not None and validated:
         ##Here we eant to check if the existing key is a network adapter. If so we want to find out if it has a dhcp scope. If so then we want to add it to ScheduledTasks so that the dhcp file gets regenerated
         matches = re.search('^nic\.(\d+)', str(kv.key).strip() )
+        """
+            Check to see if we have a network adapter
+            If so we need to flag the dhcp zone file to be regenerated
+        """
         if matches and matches.group(1):
+            """
+                Check to see if it's an ipv4_address key
+                run KeyValueACL.check_ip_not_exist_other_system
+            """
+            #import pdb; pdb.set_trace()
+            if re.search('^nic\.(\d+)\.ipv4_address', str(kv.key).strip() ):
+                try:
+                    acl.check_ip_not_exist_other_system(system, post_value)
+                except Exception, e:
+                    resp['success'] = False
+                    resp['errorMessage'] = str(e)
             try:
                 existing_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
                 if existing_dhcp_scope is not None:
