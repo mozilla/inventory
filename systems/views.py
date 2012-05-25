@@ -325,6 +325,7 @@ def save_key_value(request, id):
                 except Exception, e:
                     resp['success'] = False
                     resp['errorMessage'] = str(e)
+                    return HttpResponse(json.dumps(resp))
             try:
                 existing_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
                 if existing_dhcp_scope is not None:

@@ -404,7 +404,7 @@ class KeyValueApi(TestCase):
 
     def test_keyvalue_set_valid_mac_address(self):
         resp = self.client.put('/en-US/api/v2/keyvalue/7/', {'system_id':'2', 'value':'00:00:00:00:00:00','key':'nic.0.mac_address.0'}, follow=True)
-        print resp.content
+        #print resp.content
         self.assertEqual(resp.status_code, 200)
 
     def test_keyvalue_set_invalid_is_dhcp_scope(self):
