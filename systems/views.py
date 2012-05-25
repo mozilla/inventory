@@ -283,13 +283,15 @@ def delete_key_value(request, id, system_id):
 @csrf_exempt
 def save_key_value(request, id):
     system_id = None
-    kv = models.KeyValue.objects.get(id=id)
+    validated = True
     resp = {'success': True, 'errorMessage' : ''}
-    if kv is not None:
-        post_key = request.POST.get('key').strip()
-        if post_key == 'shouldfailvalidation':
-            resp['success'] = False
-            resp['errorMessage'] = 'Validation Failed'
+    post_key = request.POST.get('key').strip()
+    if post_key == 'shouldfailvalidation':
+        resp['success'] = False
+        resp['errorMessage'] = 'Validation Failed'
+        validated = False
+    kv = models.KeyValue.objects.get(id=id)
+    if kv is not None and validated:
         ##Here we eant to check if the existing key is a network adapter. If so we want to find out if it has a dhcp scope. If so then we want to add it to ScheduledTasks so that the dhcp file gets regenerated
         matches = re.search('^nic\.(\d+)', str(kv.key).strip() )
         if matches and matches.group(1):
