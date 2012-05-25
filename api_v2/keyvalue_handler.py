@@ -11,20 +11,34 @@ try:
 except:
     from django.utils import simplejson as json
 from django.test.client import Client
+
+from MozInvAuthorization.KeyValueACL import KeyValueACL 
+
 from settings import API_ACCESS
 
 class KeyValueHandler(BaseHandler):
     allowed_methods = API_ACCESS
     def create(self, request, key_value_id=None):
         if 'system_id' in request.POST:
+            post_key = request.POST.get('key')
+            post_value = request.POST.get('value')
+            system_id = request.POST.get('system_id')
             n = KeyValue()
-            system = System.objects.get(id=request.POST['system_id'])
-            n.system = system
-            if 'key' in request.POST:
-                n.key = request.POST['key']
-            if 'value' in request.POST:
-                n.value = request.POST['value']
+            system = System.objects.get(id=system_id)
+            if re.search('^nic\.(\d+)\.ipv4_address', str(post_key).strip() ):
+                try:
+                    acl = KeyValueACL(request)
+                    acl.check_ip_not_exist_other_system(system, post_value)
+                except Exception, e:
+                    resp = rc.FORBIDDEN
+                    resp.write(e)
+                    return resp
             try:
+                n.system = system
+                if 'key' in request.POST:
+                    n.key = request.POST['key']
+                if 'value' in request.POST:
+                    n.value = request.POST['value']
                 n.save()
                 resp = rc.ALL_OK
                 resp.write('json = {"id":%i}' % (n.id))
@@ -147,8 +161,19 @@ class KeyValueHandler(BaseHandler):
         if 'system_id' in request.POST:
             n = None
             found = False
-
-            key_validated, validation_error_string = self.validate(request.POST['key'], request.POST['value']) 
+            post_key = request.POST.get('key')
+            post_value = request.POST.get('value')
+            system_id = request.POST.get('system_id')
+            key_validated, validation_error_string = self.validate(post_key, post_value) 
+            if re.search('^nic\.(\d+)\.ipv4_address', str(post_key).strip() ):
+                try:
+                    acl = KeyValueACL(request)
+                    system = System.objects.get(id=system_id)
+                    acl.check_ip_not_exist_other_system(system, post_value)
+                except Exception, e:
+                    resp = rc.FORBIDDEN
+                    resp.write(e)
+                    return resp
             if key_validated is False:
                 resp = rc.FORBIDDEN
                 resp.write('Validation Failed for %s %s' % (request.POST['key'], validation_error_string) )
