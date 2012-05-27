@@ -1,9 +1,102 @@
 import re
 import pdb
+import systems.models
 from systems.models import System
+from mdns.utils import *
+
+import pprint
+pp = pprint.PrettyPrinter(indent=2)
+
+nic_nums = re.compile("^nic\.(\d+)\..*\.(\d+)$")
+class Interface(object):
+    mac = None
+    hostname = None
+    system = None
+    nic_ = None
+
+    def __init__(self, system, sub_nic):
+        self.system = system
+        self._nic = sub_nic # Just in case we need it for something
+        tmp = nic_nums.match(sub_nic[0].key)
+        if tmp:
+            self.primary = tmp.group(1)
+            self.alias = tmp.group(2)
+        else:
+            self.primary = None
+            self.alias = None
+        self.ips = []
+        self.dns_auto_build = True
+        self.dns_auto_hostname = True
+
+    def has_dns_info(self):
+        # Eventually do validation here
+        if (isinstance(self.ips, type([])) and len(self.ips) > 0 and
+                isinstance(self.hostname, basestring)):
+            return True
+        else:
+            return False
+
+    def pprint(self):
+        pp.pprint(vars(self))
 
 
-def get_dns_data():
+is_mac_key = re.compile("^nic\.\d+\.mac_address\.\d+$")
+is_hostname_key = re.compile("^nic\.\d+\.hostname\.\d+$")
+is_ip_key = re.compile("^nic\.\d+\.ipv4_address\.\d+$")
+is_dns_auto_build_key = re.compile("^nic\.\d+\.dns_auto_build\.\d+$")
+is_dns_auto_hostname_key = re.compile("^nic\.\d+\.dns_auto_hostname\.\d+$")
+is_dns_has_conflict_key = re.compile("^nic\.\d+\.dns_has_conflict\.\d+$")
+is_some_key = re.compile("^nic\.\d+\.(.*)\.\d+$")
+
+def build_nics(sub_nic):
+    intr = Interface(sub_nic[0].system, sub_nic)
+    for nic_data in sub_nic:
+        if is_mac_key.match(nic_data.key):
+            if intr.mac is not None:
+                print "!" * 20
+                print ("[WARNING] nic with more than one mac in system "
+                        "{0} (https://inventory.mozilla.org/en-US/systems/edit/{0}/)"
+                        .format(intr.system, intr.system.pk))
+                pp.pprint(sub_nic)
+            intr.mac = nic_data.value
+            continue
+        if is_hostname_key.match(nic_data.key):
+            if intr.hostname is not None:
+                print "!" * 20
+                print ("[WARNING] nic with more than one hostname in system "
+                        "{0} (https://inventory.mozilla.org/en-US/systems/edit/{0}/)"
+                        .format(intr.system, intr.system.pk))
+                pp.pprint(sub_nic)
+            intr.hostname = nic_data.value
+            continue
+        if is_ip_key.match(nic_data.key):
+            intr.ips.append(nic_data.value)
+            continue
+        if is_dns_auto_build_key.match(nic_data.key):
+            if nic_data.value == 'False':
+                intr.dns_auto_build = False
+            continue
+        if is_dns_auto_hostname_key.match(nic_data.key):
+            if nic_data.value == 'False':
+                intr.dns_auto_hostname = False
+            continue
+        if is_dns_has_conflict_key.match(nic_data.key):
+            if nic_data.value == 'True':
+                intr.dns_has_conflict = True
+            else:
+                intr.dns_has_conflict = False
+            continue
+        tmp = is_some_key.match(nic_data.key)
+        if tmp:
+            if hasattr(intr, tmp.group(1)):
+                setattr(intr, tmp.group(1), [nic_data.value,
+                    getattr(intr, tmp.group(1))])
+
+            else:
+                setattr(intr, tmp.group(1), nic_data.value)
+    return intr
+
+def get_nic_objs():
     """
     Use this function to return all data that *could* be included in a DNS
     build.
@@ -16,21 +109,21 @@ def get_dns_data():
         if not raw_nics:
             continue
         formated_nics.append(transform_nics(raw_nics))
-    dns_data = []
+
+    interfaces = []
     for system_nics in formated_nics:
         for primary_nic_number, primary_nic in system_nics.items():
-            for sub_nic_number, sub_nics in primary_nic['sub_nics'].items():
-                info = get_nick_data(sub_nics)
-                if not info:
+            for sub_nic_number, sub_nic in primary_nic['sub_nics'].items():
+                interface = build_nics(sub_nic)
+                if not interface:
                     continue
-                dns_data.append(info)
-    return dns_data
+                interfaces.append(interface)
+    return interfaces
 
-is_mac_key = re.compile("^nic\.\d+\.mac_address\.\d+$")
-is_hostname_key = re.compile("^nic\.\d+\.hostname\.\d+$")
-is_ip_key = re.compile("^nic\.\d+\.ipv4_address\.\d+$")
-is_dns_auto_build_key = re.compile("^nic\.\d+\.dns_auto_build\.\d+$")
-is_dns_auto_hostname_key = re.compile("^nic\.\d+\.dns_auto_hostname\.\d+$")
+
+def get_dns_data():
+    dns_data, nic_objs = _get_dns_data()
+    return dns_data
 
 
 def get_nick_data(sub_nics):
@@ -119,13 +212,17 @@ def _build_primary_nics(all_nics):
         if not isinstance(nic.key, basestring):
             # TODO, should something more useful happen with this alert? Write
             # to a log file?
+            print "=" * 15
             print("System {0} and NIC {1} not in valid format.  Value is not "
                     "type basestring Skipping.".format(nic.system, nic))
+            print print_system(nic.system)
             continue
         possible_primary_nic = get_nic_primary_number.match(nic.key)
         if not possible_primary_nic:
+            print "=" * 15
             print("System {0} and NIC {1} not in valid format. "
                 "Skipping.".format(nic.system, nic))
+            print print_system(nic.system)
             continue
         primary_nic_number = possible_primary_nic.group(1)
         if primary_nic_number in primary_nics:

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from dns.dns_build import do_dns_build
+from mdns.dns_build import do_dns_build
 
 
 class Command(BaseCommand):
