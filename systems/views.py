@@ -319,7 +319,7 @@ def save_key_value(request, id):
                 run KeyValueACL.check_ip_not_exist_other_system
             """
             #import pdb; pdb.set_trace()
-            if re.search('^nic\.(\d+)\.ipv4_address', str(kv.key).strip() ):
+            if re.search('^nic\.(\d+)\.ipv4_address', str(post_key).strip() ):
                 try:
                     acl.check_ip_not_exist_other_system(system, post_value)
                 except Exception, e:
