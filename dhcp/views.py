@@ -84,7 +84,7 @@ def override_file(request, dhcp_scope):
 
         form = forms.DHCPScopeOverrideForm(initial={'dhcp_scope':dhcp_scope, 'override_text':do.override_text})
 
-    return render_to_response('dhcp/override.html', {
+    return jinja_render_to_response('dhcp/override.html', {
             "form": form,
             'dhcp_scope':dhcp_scope
            },
