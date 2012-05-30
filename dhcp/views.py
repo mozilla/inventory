@@ -159,7 +159,7 @@ def edit(request, dhcp_scope):
         client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.option.ntp_server.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
         initial['ntp_server1'] = ''
     try:
-        initial['ntp_server2'] = instance['dhcp.option.ntp_server.0']
+        initial['ntp_server2'] = instance['dhcp.option.ntp_server.1']
     except:
         client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.option.ntp_server.1', 'value':'', 'truth_name':dhcp_scope}, follow=True)
         initial['ntp_server2'] = ''
