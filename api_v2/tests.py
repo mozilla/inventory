@@ -63,6 +63,13 @@ class TestOnCall(TestCase):
         obj = json.loads(resp.content)
         self.assertEqual(obj['user'], 'user2@domain.com')
 
+    def test_get_current_services_oncall_email(self):
+        resp = self.client.get('/api/v2/oncall/services/email/', follow=True)
+        print resp.content
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['user'], 'user2@domain.com')
+
     def test_get_all_sysadmin_oncall(self):
         resp = self.client.get('/api/v2/oncall/sysadmin/all/', follow=True)
         self.assertEqual(200, resp.status_code)

@@ -67,6 +67,12 @@ class UnmanagedSystem(models.Model):
     def delete(self, *args, **kwargs):
         super(UnmanagedSystem, self).delete(*args, **kwargs)
 
+    def save(self):
+        if not self.id:
+            self.created_on = datetime.now()
+        self.updated_on = datetime.now()
+        super(UnmanagedSystem, self).save()
+
     def __unicode__(self):
         try:
             server_model = self.server_model
