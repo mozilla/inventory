@@ -413,10 +413,10 @@ class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
     is_desktop_oncall = models.BooleanField()
     is_sysadmin_oncall = models.BooleanField()
-    is_systems_oncall = models.BooleanField()
+    is_services_oncall = models.BooleanField()
     current_desktop_oncall = models.BooleanField()
     current_sysadmin_oncall = models.BooleanField()
-    current_systems_oncall = models.BooleanField()
+    current_services_oncall = models.BooleanField()
     irc_nick = models.CharField(max_length=128)
     api_key = models.CharField(max_length=255, null=True, blank=True)
     pager_type = models.CharField(choices=PAGER_CHOICES, max_length=255, null=False, blank=False)
@@ -429,8 +429,16 @@ class UserProfile(models.Model):
         def get_current_desktop_oncall(self):
             self.filter(current_desktop_oncall=1).select_related()
 
+        def get_all_services_oncall(self):
+            self.filter(is_services_oncall=1)
+        def get_current_services_oncall(self):
+            self.filter(current_services_oncall=1).select_related()
+
         def get_all_sysadmin_oncall(self):
             self.filter(is_sysadmin_oncall=1)
+        def get_current_sysadmin_oncall(self):
+            self.filter(current_sysadmin_oncall=1).select_related()
+
     class Meta:
         db_table = u'user_profiles'
 

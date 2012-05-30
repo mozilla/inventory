@@ -707,6 +707,7 @@ def oncall(request):
     from forms import OncallForm
     from django.contrib.auth.models import User
     #current_desktop_oncall = models.UserProfile.objects.get_current_desktop_oncall
+    #import pdb; pdb.set_trace()
     try:
         current_desktop_oncall = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].username
     except IndexError:
@@ -715,9 +716,15 @@ def oncall(request):
         current_sysadmin_oncall = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].username
     except IndexError:
         current_sysadmin_oncall = ''
+    try:
+        current_services_oncall = User.objects.select_related().filter(userprofile__current_services_oncall=1)[0].username
+    except IndexError:
+        current_services_oncall = ''
+
     initial = {
         'desktop_support':current_desktop_oncall,
         'sysadmin_support':current_sysadmin_oncall,
+        'services_support':current_services_oncall,
             }
     if request.method == 'POST':
         form = OncallForm(request.POST, initial=initial)
@@ -727,36 +734,22 @@ def oncall(request):
             """
             from django.db import connection, transaction
             cursor = connection.cursor()
-            cursor.execute("UPDATE `user_profiles` set `current_desktop_oncall` = 0, `current_sysadmin_oncall` = 0")
+            cursor.execute("UPDATE `user_profiles` set `current_desktop_oncall` = 0, `current_sysadmin_oncall` = 0, `current_services_oncall` = 0")
             transaction.commit_unless_managed()
-
-            ## There should only be one set oncall, but just in case it's cheap to loop through
-            ## @TODO Figure out why the orm won't update correctly after this transaction
-            """current_sysadmin_oncalls = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)
-            for c in current_sysadmin_oncalls:
-                c.get_profile().current_sysadmin_oncall = 0
-                c.get_profile().current_desktop_oncall = 0
-                c.get_profile().save()
-                c.save()
-            User.objects.update()
-            ## There should only be one set oncall, but just in case it's cheap to loop through
-            current_desktop_oncalls = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)
-            for c in current_desktop_oncalls:
-                c.get_profile().current_desktop_oncall = 0
-                c.get_profile().save()
-                c.save()
-            User.objects.update()"""
 
             current_desktop_oncall = form.cleaned_data['desktop_support']
             current_sysadmin_oncall = form.cleaned_data['sysadmin_support']
-            if current_desktop_oncall != current_sysadmin_oncall:
+            current_services_oncall = form.cleaned_data['services_support']
+
+            if current_desktop_oncall != current_sysadmin_oncall != current_services_oncall:
                 set_oncall('desktop', current_desktop_oncall)
                 set_oncall('sysadmin', current_sysadmin_oncall)
-            elif current_desktop_oncall == current_sysadmin_oncall:
-                set_oncall('both', current_sysadmin_oncall)
+                set_oncall('services', current_services_oncall)
+            elif current_desktop_oncall == current_sysadmin_oncall == current_services_oncall:
+                set_oncall('all', current_sysadmin_oncall)
     else:
         form = OncallForm(initial = initial)
-    return render(request, 'systems/generic_form.html', {'current_desktop_oncall':current_desktop_oncall,'current_sysadmin_oncall':current_sysadmin_oncall, 'form':form})
+    return render(request, 'systems/generic_form.html', {'current_services_oncall':current_services_oncall, 'current_desktop_oncall':current_desktop_oncall,'current_sysadmin_oncall':current_sysadmin_oncall, 'form':form})
 def set_oncall(type, username):
     from django.contrib.auth.models import User
     try:
@@ -765,9 +758,12 @@ def set_oncall(type, username):
             new_oncall.get_profile().current_desktop_oncall = 1
         elif type=='sysadmin':
             new_oncall.get_profile().current_sysadmin_oncall = 1
-        elif type=='both':
+        elif type=='services':
+            new_oncall.get_profile().current_services_oncall = 1
+        elif type=='all':
             new_oncall.get_profile().current_sysadmin_oncall = 1
             new_oncall.get_profile().current_desktop_oncall = 1
+            new_oncall.get_profile().current_services_oncall = 1
         new_oncall.get_profile().save()
         new_oncall.save()
     except Exception, e:
