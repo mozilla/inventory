@@ -312,7 +312,21 @@ class KeyValueHandler(BaseHandler):
                 return tmp_list
             if key_type == 'adapters_by_system':
                 #Get keystores from truth that have dhcp.is_scope = True
-                system = System.objects.get(hostname=request.GET['system'])
+                system = None
+                try:
+                    system = System.objects.get(hostname=request.GET['system'])
+                except:
+                    system = None
+                if not system:
+                    try:
+                        system = System.objects.get(id=request.GET['system'])
+                    except:
+                        system = None
+                if not system:
+                    resp = rc.NOT_FOUND
+                    resp.write('json = {"error_message":"Unable to find system"}')
+                    return resp
+
                 keyvalue_pairs = KeyValue.objects.filter(key__startswith='nic.').filter(system=system).order_by('key')
                 #Iterate through the list and get all of the key/value pairs
                 tmp_dict = {}
