@@ -2,6 +2,7 @@
 # repo. If you need to override a setting locally, use settings_local.py
 
 from funfactory.settings_base import *
+from settings.dns import *
 
 
 # Bundles is a dictionary of two dictionaries, css and js, which list css files

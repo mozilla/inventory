@@ -5,20 +5,22 @@ import stat
 import dns
 from dns import zone
 import pprint
-
+from settings import MOZ_SITE_PATH
+from settings import REV_SITE_PATH
+from settings import ZONE_PATH
+from mdns.utils import log
+import truth
+from truth.models import Truth
 pp = pprint.PrettyPrinter(indent=2)
 
 
-MOZ_SITE_PATH = "/home/uberj/dns_data/zones/mozilla.com/"
-REV_SITE_PATH = "/home/uberj/dns_data/zones/in-addr/"
-ZONE_PATH = "/home/uberj/dns_data/"
 SITE_IGNORE = []
 
 def get_site_dirs(base_dir):
     if os.access(base_dir, os.R_OK):
         site_dirs = os.listdir(base_dir)
     else:
-        print "Can't access MOZ_SITE_PATH"
+        print "Can't access svn_site_path"
         site_dirs = None
     return site_dirs
 
@@ -66,19 +68,29 @@ def get_zone_data(domain, filepath, dirpath, rtype=None):
     os.chdir(cwd)
     return data
 
-def collect_moz_zones(MOZ_SITE_PATH):
+def collect_svn_zones(svn_site_path, relative_zone_path):
+    """
+    :param svn_site_path: Full path to where reverse sites live. Atm that is in
+        dnsconfig/zones/in-addr
+    :type svn_rev_site_path: str
+    :param relative_zone_path: Full path to the root of where zone files live. This full
+        path is used by the zone parser during '$INCLUDE' statements.
+    :type relative_zone_path: str
+    """
+
     sites = {}
-    for site in get_site_dirs(MOZ_SITE_PATH):
+    for site in get_site_dirs(svn_site_path):
 
         if site == ".svn":
             continue
         if site in SITE_IGNORE:
             continue
 
-        if MOZ_SITE_PATH[len(MOZ_SITE_PATH)-1] == '/':
-            MOZ_SITE_PATH = MOZ_SITE_PATH[:-1]
+        if svn_site_path[len(svn_site_path)-1] == '/':
+            svn_site_path = svn_site_path[:-1]
 
-        full_site_path = "{0}/{1}".format(MOZ_SITE_PATH, site)
+        full_site_path = "{0}/{1}".format(svn_site_path, site)
+        # MEGA DERP: TODO, use os.path.join
         mode = os.stat(full_site_path).st_mode
         if stat.S_ISDIR(mode) == 0:
             # It's not a directory
@@ -89,26 +101,36 @@ def collect_moz_zones(MOZ_SITE_PATH):
         if is_valid_site_dir(site, site_dir):
             domain = "{0}.mozilla.com".format(site)
             site_zone_data = get_zone_data(domain,
-                    "{0}/private".format(full_site_path), ZONE_PATH, 'A')
+                    "{0}/private".format(full_site_path), relative_zone_path, 'A')
             sites[site] = site_zone_data
         else:
             print "[Invalid]"
             continue
     return sites
 
-def collect_rev_zones(REV_SITE_PATH):
+def collect_rev_svn_zones(svn_rev_site_path, relative_zone_path):
+    """
+    :param svn_rev_site_path: Full path to where reverse sites live. Atm that is in
+        dnsconfig/zones/in-addr
+    :type svn_rev_site_path: str
+    :param relative_zone_path: Full path to the root of where zone files live. This full
+        path is used by the zone parser during '$INCLUDE' statements.
+    :type relative_zone_path: str
+    """
     sites = {}
     fail = False
-    for site in get_site_dirs(REV_SITE_PATH):
+    # Get data for all the sites. Eventually, we might just want to get a
+    # subset of the sites.
+    for site in get_site_dirs(svn_rev_site_path):
         if site == ".svn":
             continue
         if site in SITE_IGNORE:
             continue
 
-        if REV_SITE_PATH[len(REV_SITE_PATH)-1] == '/':
-            REV_SITE_PATH = REV_SITE_PATH[:-1]
+        if svn_rev_site_path[len(svn_rev_site_path)-1] == '/':
+            svn_rev_site_path = svn_rev_site_path[:-1]
 
-        almost_full_site_path = "{0}/{1}".format(REV_SITE_PATH, site)
+        almost_full_site_path = "{0}/{1}".format(svn_rev_site_path, site)
         mode = os.stat(almost_full_site_path).st_mode
         if stat.S_ISDIR(mode) == 0:
             # It's not a directory
@@ -130,7 +152,7 @@ def collect_rev_zones(REV_SITE_PATH):
             for octet in reversed(octets):
                 if not octet.isdigit():
                     print ("[ERROR] Could not parse reverse domain name "
-                            " from file {0}/{1}/{2}.".format(REV_SITE_PATH,
+                            " from file {0}/{1}/{2}.".format(svn_rev_site_path,
                             site, network))
                     fail = True
                 rev_domain.append(octet)
@@ -141,20 +163,20 @@ def collect_rev_zones(REV_SITE_PATH):
 
             rev_domain = "{0}.IN-ADDR.ARPA".format('.'.join(rev_domain))
             print "DOMAIN: " + rev_domain
-            full_network_path = "{0}/{1}/{2}".format(REV_SITE_PATH, site,
+            full_network_path = "{0}/{1}/{2}".format(svn_rev_site_path, site,
                                                     network)
 
             mode = os.stat(full_network_path).st_mode
             if stat.S_ISREG(mode) == 0:
-                print "[ERROR] {0} is missing ti's 'SOA' file".format(site)
+                print "[ERROR] {0} is missing it's 'SOA' file".format(site)
             try:
                 site_zone_data = get_zone_data(rev_domain,
-                        full_network_path, ZONE_PATH, 'PTR')
+                        full_network_path, relative_zone_path, 'PTR')
             except dns.zone.NoSOA:
                 print "[ERROR] No SOA found for {0}".format(full_network_path)
-                print ("domain = '{0}'\nREV_SITE_PATH = '{1}'\n"
+                print ("domain = '{0}'\nsvn_rev_site_path = '{1}'\n"
                         "full_network_path = '{2}'\n".format(rev_domain,
-                        REV_SITE_PATH, full_network_path))
+                        svn_rev_site_path, full_network_path))
 
             sites[network] = site_zone_data
 
@@ -163,13 +185,31 @@ def collect_rev_zones(REV_SITE_PATH):
 
 def get_moz_sites():
     sites = {}
-    collect_moz_zones(sites, MOZ_SITE_PATH)
+    collect_moz_zones(sites, svn_site_path)
     return sites
 
 def get_rev_sites():
     sites = {}
     collect_rev_zones(sites, REV_SITE_PATH)
     return sites
+
+def get_svn_sites_changed(sites):
+    """This function should return a list of sites that have been changed in
+    SVN. It calculates which sites have changed by storing a hash of a file and
+    then comparing the current file's hash to the stored hash during next time
+    the build script runs.
+
+    :param sites: The sites for which we are looking for changes in.
+    :type sites: list
+    """
+    hash_store, created = Truth.objects.get_or_create("dns_site_hash")
+    if created:
+        log("Created dns_site_hash")
+    hashes = truth.models.KeyValue.objects.filter(truth=hash_store)
+
+    sites_hashes = [ (kv.k, kv.v) for kv in hashes ]
+    print "=" * 10 + " Site hashes"
+    pp.pprint(site_hashes)
 
 if __name__ == '__main__':
     sites1 = collect_rev_zones(REV_SITE_PATH)

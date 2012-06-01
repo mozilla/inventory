@@ -2,8 +2,11 @@ INV_URL = "https://inventory.mozilla.org/en-US/"
 import pdb
 import re
 
+def log(msg):
+    print msg
+
 def print_system(system):
-    return "{0} ({1}/systems/edit/{2}/)".format(system, INV_URL, system.pk)
+    return "{0} ({1}systems/edit/{2}/)".format(system, INV_URL, system.pk)
 
 def inrement_soa(file_):
     """This function wil take a file with an SOA a in it, parse the file,

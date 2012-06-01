@@ -249,6 +249,17 @@ $ORIGIN foo
                             IN  NS      ns2.mozilla.org.
 """
 
+ex_tx8 = """
+$TTL 300
+$TTL 800
+$ORIGIN foo
+@                           IN  NS      ns1.mozilla.org.
+                            IN  NS      ns2.mozilla.org.
+1   IN PTR v111.fw1.labs.scl3.mozilla.net.
+41  IN PTR vm1.phy.labs.scl3.mozilla.com.
+
+"""
+
 from StringIO import StringIO
 import pdb
 
@@ -289,3 +300,7 @@ class SOAParseTests(TestCase):
         res = _str_increment_soa(ios)
         self.assertEqual(ex_tx7_inc, res)
 
+    def test_parse_8(self):
+        ios = StringIO(ex_tx8)
+        res = _str_increment_soa(ios)
+        self.assertEqual(ex_tx8, res)

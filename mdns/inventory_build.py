@@ -29,9 +29,19 @@ def generate_hostname(nic, site_name):
     if nic.dns_auto_hostname is False:
         return hostname
     if len(nic.hostname.split('.')) == 1:
-        return "{0}.{1}.mozilla.com".format(nic.hostname, site_name)
+        hostname = "{0}.{1}.mozilla.com".format(nic.hostname, site_name)
     else:
-        return "{0}.mozilla.com".format(nic.hostname)
+        hostname = "{0}.mozilla.com".format(nic.hostname)
+
+    # These are checks for common mistakes. For now just print. TODO.
+    # Send an email or something.
+    if hostname.count('mozilla.com') >= 2:
+        print ("[WARNING] nic might have incorrect hostname "
+            "{0} (https://inventory.mozilla.org/en-US/systems/edit/{1}/). "
+            "Use the 'dns_auto_hostname' key to override."
+            .format(hostname, nic.system.pk))
+    return hostname
+
 
 def inventory_build_sites(sites):
     """
@@ -40,7 +50,7 @@ def inventory_build_sites(sites):
 
     Sites have the form::
 
-        ('<vlan-name>.<site-name>', <'network-mask'>)
+        ('<vlan-name>. <site-name>', <'network-mask'>, '<file_path_to_site>')
 
     For example::
 
@@ -54,7 +64,7 @@ def inventory_build_sites(sites):
     agg_reverse = {}
     for site in sites:
         # Pre-calculate the regular expressions so we can do this in one pass.
-        name, network = site
+        name, network, site_path = site
         # Add address family logic here if need be.
         try:
             agg_sites[name] = (ipaddr.IPv4Network(network), [])

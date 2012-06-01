@@ -55,7 +55,7 @@ def build_nics(sub_nic):
             if intr.mac is not None:
                 print "!" * 20
                 print ("[WARNING] nic with more than one mac in system "
-                        "{0} (https://inventory.mozilla.org/en-US/systems/edit/{0}/)"
+                        "{0} (https://inventory.mozilla.org/en-US/systems/edit/{1}/)"
                         .format(intr.system, intr.system.pk))
                 pp.pprint(sub_nic)
             intr.mac = nic_data.value
@@ -64,7 +64,7 @@ def build_nics(sub_nic):
             if intr.hostname is not None:
                 print "!" * 20
                 print ("[WARNING] nic with more than one hostname in system "
-                        "{0} (https://inventory.mozilla.org/en-US/systems/edit/{0}/)"
+                        "{0} (https://inventory.mozilla.org/en-US/systems/edit/{1}/)"
                         .format(intr.system, intr.system.pk))
                 pp.pprint(sub_nic)
             intr.hostname = nic_data.value
