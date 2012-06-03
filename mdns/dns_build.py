@@ -2,16 +2,19 @@ from mdns.inventory_build import inventory_build_sites
 from mdns.svn_build import collect_svn_zones, collect_rev_svn_zones
 from mdns.svn_build import get_svn_sites_changed
 from mdns.build_nics import *
+from mdns.utils import *
 from truth.models import Truth
 
 from settings import MOZ_SITE_PATH
 from settings import REV_SITE_PATH
 from settings import ZONE_PATH
+from settings import RUN_SVN_STATS
 
 import os.path
 import pprint
 
-DEBUG = False
+DEBUG = 3
+DO_DEBUG = False
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -38,23 +41,61 @@ def do_dns_build():
     #    get_all_forward_sites(MOZ_SITE_PATH)))
 
     inv_forward, inv_reverse = inventory_build_sites(sites_to_build)
-    if DEBUG == True:
-        print "=" * 10 + "Forward sites" + "=" * 10
+    if DO_DEBUG:
+        log( "=" * 10 + "Forward sites" + "=" * 10 , DEBUG)
         for site, data in inv_forward.items():
-            print "-" * 10 + site
+            log("-" * 10 + site, DEBUG)
             network, entries = data
             for thing in entries:
-                thing.pprint()
+                log(thing.pprint(), DEBUG)
 
-        print "=" * 10 + "Reverse sites" + "=" * 10
+        log("=" * 10 + "Reverse sites" + "=" * 10, DEBUG)
         for site, data in inv_reverse.items():
-            print "-" * 10 + site
-            for intr in data:
-                thing.pprint()
+            site_path, intrs = data
+            log("-" * 10 + site, DEBUG)
+            log(site_path, DEBUG)
+            for intr in intrs:
+                intr.pprint()
 
-    moz_zones = collect_svn_zones(MOZ_SITE_PATH, ZONE_PATH)
-    #rev_zones = collect_rev_zones(REV_SITE_PATH, ZONE_PATH)
+    svn_zones = collect_svn_zones(MOZ_SITE_PATH, ZONE_PATH)
+    rev_svn_zones = collect_rev_svn_zones(REV_SITE_PATH, ZONE_PATH)
 
+    if RUN_SVN_STATS:
+        # We have the data, let's do some analysis.
+        analyse_svn(svn_zones, rev_svn_zones)
+
+    build_forward(sites_to_build, inv_forward, svn_zones)
+    # The reason why this is done in two different functions rather than one is
+    # we might want to include PTR records that aren't part of a system. If we
+    # do this we will need go and get those from the KV store. That can be done
+    # in the build_reverse function.
+    build_reverse(sites_to_build, inv_reverse, rev_svn_zones)
+
+def build_reverse(sites_to_build, inv_reverse, rev_svn_zones):
+    final_records = {}
+    for network, interfaces in inv_reverse.items():
+        network_path, svn_entries = rev_svn_zones[network]
+        network_path, inv_entries = final_records.setdefault(network,
+                (network_path, set()))
+        # TODO, rename inv_entries to something more descriptive.
+        for intr in interfaces:
+            name = intr.hostname + "."
+            for ip in intr.ips:
+                dnsip = ip2dns_form(ip)
+                if (dnsip, name) in svn_entries:
+                    log("System {0} (interface: {1}, {2}) has "
+                        "conflict".format(intr.system, dnsip, name), INFO)
+                else:
+                    inv_entries.add((dnsip, name))
+
+    log("=" * 10 + " Final DNS data", DEBUG)
+    for network, network_data in final_records.items():
+        network_path, records = network_data
+        # Inv entries are in (<'name'>, <'ip'>) form
+        generate_reverse_inventory_data_file(network, records, network_path)
+
+
+def build_forward(sites_to_build, inv_forward, svn_zones):
 
     final_records = {}
     for vlan_site, network, site_path in sites_to_build:
@@ -83,39 +124,68 @@ def do_dns_build():
                 # !!! This '.' is important!
                 inv_entries.add((intr.hostname + ".", ip, intr))
 
-    print "=" * 10 + " Final DNS data"
+    log("=" * 10 + " Final DNS data", DEBUG)
     for site, site_data in final_records.items():
         site_path, inv_entries = site_data
         # Inv entries are in (<'name'>, <'ip'>) form
 
-        svn_entries = moz_zones.get(site, None)
+        svn_entries = svn_zones.get(site, None)
 
         if svn_entries is not None:
             a_records = filter_forward_conflicts(svn_entries, inv_entries,
                     site_path)
         else:
-            print "[WARNING] Couldn't find site {0} in svn".format(site)
+            log("Couldn't find site {0} in svn".format(site),
+                    WARNING)
             continue
 
-        print "-" * 10 + site
 
         generate_forward_inventory_data_file(site, a_records, site_path)
 
+def generate_reverse_inventory_data_file(network, records, network_path):
+    inventory_file = os.path.join(network_path, '{0}.inventory'.format(network))
+    network_file = os.path.join(network_path, network)
+    #inv_fd = open(inventory_file, 'w+')
+    try:
+        log(";---------- PTR records for {0} (in file {1})\n".format(network,
+                network_path), BUILD)
+        template = "{dnsip:50} {rclass:10} {rtype:15} {name:7}\n"
+        for dnsip, name in records:
+            info = {'dnsip':dnsip, 'rclass':"IN", 'rtype':'PTR', 'name':name}
+            log(template.format(**info), BUILD)
+        # Bump the soa in network file
+        # TODO
+    except Exception, e:
+        log(str(e), ERROR)
+    finally:
+        pass
+        #inv_fd.close()
+
+    if DEBUG == True:
+        pp.pprint(records)
 
 def generate_forward_inventory_data_file(site, records, site_path):
     inventory_file = os.path.join(site_path, 'inventory')
     private_file = os.path.join(site_path, 'private')
-    #fd = open(inventory_file, 'w+')
+    inv_fd = open(inventory_file, 'w+')
+
+    # Because the interfces are in records, we have to take it out before we
+    # remove duplicates.
+    a_records = [ (name, address) for name, address, intr in records ]
+    a_records = set(a_records)
     try:
-        for name, address, intr in records:
-            print ("{name:50} {rclass:10} {rtype:15} {address:7}\n".format(
-            #fd.write(("{name:50} {rclass:10} {rtype:15} {address:7}\n".format(
-                name=name, rclass="IN", rtype='A', address=address)),
+        log(";---------- A records for {0} (in file {1})\n".format(site,
+                site_path), BUILD)
+        template = "{name:50} {rclass:10} {rtype:15} {address:7}\n"
+        for name, address in a_records:
+            info = {'name':name, 'rclass':"IN", 'rtype':'A', 'address':address}
+            inv_fd.write(template.format(**info))
+            log(template.format(**info), BUILD)
+        # TODO Bump the soa
     except Exception, e:
-        print str(e)
+        log(str(e), ERROR)
     finally:
-        pass
-        #fd.close()
+        inv_fd.close()
 
     if DEBUG == True:
         pp.pprint(records)
@@ -132,9 +202,50 @@ def filter_forward_conflicts(svn_records, inv_entries, site):
     no_conflict_entries = []
     for name, ip, intr in inv_entries:
         if (name, ip) in svn_records:
-            print ("[INFO] System {0} (interface: {1}, {2}) has conflict"
-                .format(intr.system, ip, name))
+            log("System {0} (interface: {1}, {2}) has conflict"
+                .format(intr.system, ip, name), INFO)
         else:
             no_conflict_entries.append((name, ip, intr))
 
     return no_conflict_entries
+
+def analyse_svn(forward, reverse):
+
+    # forward_prime
+    forward_p = set()
+    for site, values in forward.iteritems():
+        # Transform foward to look like reverse so we can use sets. Nifty
+        # python sets are nifty.
+        for name, ip in values:
+            if not ip.startswith('10'):
+                continue
+            if name.find('unused') > -1:
+                # Don't care
+                continue
+            dnsip = ip2dns_form(ip)
+            forward_p.add((dnsip, name))
+
+    # Make reverse_p
+    reverse_p = set()
+    for site, site_data in reverse.iteritems():
+        site_path, values = site_data
+        for dnsip, name in values:
+            if not dns2ip_form(dnsip).startswith('10'):
+                continue
+            if name.find('unused') > -1:
+                # Don't care
+                continue
+            reverse_p.add((dnsip, name))
+
+    print "PTR Records with no matching A records"
+    for dnsip, name in reverse_p.difference(forward_p):
+        template = "{dnsip:50} {rclass:10} {rtype:15} {name:7}"
+        info = {'dnsip':dnsip, 'rclass':"IN", 'rtype':'PTR', 'name':name}
+        print template.format(**info)
+
+    print "A Records with no matching PTR records"
+    for dnsip, name in forward_p.difference(reverse_p):
+        address = dns2ip_form(dnsip)
+        template = "{name:50} {rclass:10} {rtype:15} {address:7}"
+        info = {'name':name, 'rclass':"IN", 'rtype':'A', 'address':address}
+        print template.format(**info)

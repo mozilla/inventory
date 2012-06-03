@@ -8,7 +8,7 @@ import pprint
 from settings import MOZ_SITE_PATH
 from settings import REV_SITE_PATH
 from settings import ZONE_PATH
-from mdns.utils import log
+from mdns.utils import *
 import truth
 from truth.models import Truth
 pp = pprint.PrettyPrinter(indent=2)
@@ -20,12 +20,12 @@ def get_site_dirs(base_dir):
     if os.access(base_dir, os.R_OK):
         site_dirs = os.listdir(base_dir)
     else:
-        print "Can't access svn_site_path"
+        log("Can't access svn_site_path", ERROR)
         site_dirs = None
     return site_dirs
 
 def process_site(site, site_dir):
-    print "===Processing site: {0}".format(site)
+    log("=== Processing site: {0}".format(site), DEBUG)
     for file_ in site_dir:
         if file_ == ".svn":
             continue
@@ -35,7 +35,7 @@ def process_site(site, site_dir):
             continue
         if file_.endswith(".split"):
             continue
-        print file_
+        log(file_, DEBUG)
 
 def is_valid_site_dir(site, site_dir):
     has_private, has_SOA = False, False
@@ -49,13 +49,14 @@ def is_valid_site_dir(site, site_dir):
         return True
     else:
         if not has_private:
-            print "{0} is missing the 'private' data file.".format(site)
+            log("{0} is missing the 'private' data file.".format(site), WARNING)
         if not has_SOA:
-            print "{0} is missing the 'SOA' file.".format(site)
+            log("{0} is missing the 'SOA' file.".format(site), WARNING)
         return False
 
 def get_zone_data(domain, filepath, dirpath, rtype=None):
-    print "domain = '{0}'\nfilepath = '{1}'\ndirpath = '{2}'\n".format(domain, filepath, dirpath)
+    log("domain = '{0}'\nfilepath = '{1}'\ndirpath = '{2}'\n".format(domain,
+        filepath, dirpath), DEBUG)
     cwd = os.getcwd()
     os.chdir(dirpath)
     if rtype is None:
@@ -97,14 +98,14 @@ def collect_svn_zones(svn_site_path, relative_zone_path):
             continue
 
         site_dir = os.listdir(full_site_path)
-        print "=" * 10 + "Processing site: {0}".format(site)
+        log("=" * 10 + "Processing site: {0}".format(site), DEBUG)
         if is_valid_site_dir(site, site_dir):
             domain = "{0}.mozilla.com".format(site)
             site_zone_data = get_zone_data(domain,
                     "{0}/private".format(full_site_path), relative_zone_path, 'A')
             sites[site] = site_zone_data
         else:
-            print "[Invalid]"
+            log("[Invalid] site dir for site {0}".format(site_dir), WARNING)
             continue
     return sites
 
@@ -145,15 +146,15 @@ def collect_rev_svn_zones(svn_rev_site_path, relative_zone_path):
             if network == "README":
                 # zones/in-addr/10.14/README
                 continue
-            print "=== Processing site: {0}".format(network)
+            log("=== Processing site: {0}".format(network), DEBUG)
             # Validate network, reverse it, and slap an 'in-addr.arpa' onto it.
             octets = network.split('.')
             rev_domain = []
             for octet in reversed(octets):
                 if not octet.isdigit():
-                    print ("[ERROR] Could not parse reverse domain name "
-                            " from file {0}/{1}/{2}.".format(svn_rev_site_path,
-                            site, network))
+                    print ("Could not parse reverse domain name ",
+                            "from file {0}/{1}/{2}.".format(svn_rev_site_path,
+                            site, network), ERROR)
                     fail = True
                 rev_domain.append(octet)
 
@@ -162,35 +163,25 @@ def collect_rev_svn_zones(svn_rev_site_path, relative_zone_path):
                 continue
 
             rev_domain = "{0}.IN-ADDR.ARPA".format('.'.join(rev_domain))
-            print "DOMAIN: " + rev_domain
             full_network_path = "{0}/{1}/{2}".format(svn_rev_site_path, site,
                                                     network)
 
             mode = os.stat(full_network_path).st_mode
             if stat.S_ISREG(mode) == 0:
-                print "[ERROR] {0} is missing it's 'SOA' file".format(site)
+                log("{0} is missing it's 'SOA' file".format(site),
+                        ERROR)
             try:
                 site_zone_data = get_zone_data(rev_domain,
                         full_network_path, relative_zone_path, 'PTR')
             except dns.zone.NoSOA:
-                print "[ERROR] No SOA found for {0}".format(full_network_path)
-                print ("domain = '{0}'\nsvn_rev_site_path = '{1}'\n"
+                log("No SOA found for {0}".format(full_network_path),
+                        ERROR)
+                log("domain = '{0}'\nsvn_rev_site_path = '{1}'\n"
                         "full_network_path = '{2}'\n".format(rev_domain,
-                        svn_rev_site_path, full_network_path))
+                        svn_rev_site_path, full_network_path), ERROR)
 
-            sites[network] = site_zone_data
+            sites[network] = (full_network_path, site_zone_data)
 
-    return sites
-
-
-def get_moz_sites():
-    sites = {}
-    collect_moz_zones(sites, svn_site_path)
-    return sites
-
-def get_rev_sites():
-    sites = {}
-    collect_rev_zones(sites, REV_SITE_PATH)
     return sites
 
 def get_svn_sites_changed(sites):
@@ -208,11 +199,6 @@ def get_svn_sites_changed(sites):
     hashes = truth.models.KeyValue.objects.filter(truth=hash_store)
 
     sites_hashes = [ (kv.k, kv.v) for kv in hashes ]
-    print "=" * 10 + " Site hashes"
-    pp.pprint(site_hashes)
+    log("=" * 10 + " Site hashes", DEBUG)
+    log(pp.pformat(site_hashes), DEBUG)
 
-if __name__ == '__main__':
-    sites1 = collect_rev_zones(REV_SITE_PATH)
-    sites2 = collect_moz_zones(MOZ_SITE_PATH)
-    pp.pprint(sites1)
-    pp.pprint(sites2)

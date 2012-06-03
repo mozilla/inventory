@@ -1,6 +1,9 @@
 from truth.models import Truth
+import systems
 from systems.models import System
 from mdns.build_nics import *
+from settings import FIX_M_C_M_C
+from mdns.utils import *
 
 import ipaddr
 
@@ -27,7 +30,7 @@ def generate_hostname(nic, site_name):
     """
     # Hey look Values are stored as strings.
     if nic.dns_auto_hostname is False:
-        return hostname
+        return nic.hostname
     if len(nic.hostname.split('.')) == 1:
         hostname = "{0}.{1}.mozilla.com".format(nic.hostname, site_name)
     else:
@@ -36,10 +39,17 @@ def generate_hostname(nic, site_name):
     # These are checks for common mistakes. For now just print. TODO.
     # Send an email or something.
     if hostname.count('mozilla.com') >= 2:
-        print ("[WARNING] nic might have incorrect hostname "
+        log("nic might have incorrect hostname "
             "{0} (https://inventory.mozilla.org/en-US/systems/edit/{1}/). "
             "Use the 'dns_auto_hostname' key to override."
-            .format(hostname, nic.system.pk))
+            .format(hostname, nic.system.pk), WARNING)
+
+        if FIX_M_C_M_C:
+            log("Attemping to fix...", DEBUG)
+            kv = systems.models.KeyValue(key =
+                    "nic.{0}.dns_auto_hostname.{1}".format(nic.primary,
+                    nic.alias), value = 'False', system = nic.system)
+            kv.save()
     return hostname
 
 
@@ -71,7 +81,7 @@ def inventory_build_sites(sites):
         except ipaddr.AddressValueError, e:
             # Eventually send an email or do something more serious about an
             # error here.
-            print str(e)
+            log(str(e), ERROR)
 
     for intr in get_nic_objs():
         if intr.dns_auto_build is False:

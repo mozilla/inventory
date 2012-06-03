@@ -2,11 +2,67 @@ INV_URL = "https://inventory.mozilla.org/en-US/"
 import pdb
 import re
 
-def log(msg):
-    print msg
+INFO = 0
+WARNING = 1
+ERROR = 2
+DEBUG = 3
+BUILD = 4
+
+def log(msg, level=0):
+    """
+    0 - Info
+    1 - Warning
+    2 - Error
+    3 - Debug
+    4 - Build
+    """
+    do_info = False
+    do_warning = False
+    do_error = False
+    do_debug = False
+    do_build = False
+    if do_info and level == 0:
+        print "[INFO] {0}\n".format(msg),
+        return
+    elif do_warning and level == 1:
+        print "[WARNING] {0}\n".format(msg),
+        return
+    elif do_error and level == 2:
+        print "[ERROR] {0}\n".format(msg),
+        return
+    elif do_debug and level == 3:
+        print "[DEBUG] {0}\n".format(msg),
+        return
+    elif do_build and level == 4:
+        print "[BUILD] {0}".format(msg),
+        return
 
 def print_system(system):
     return "{0} ({1}systems/edit/{2}/)".format(system, INV_URL, system.pk)
+
+"""
+>>> ip2dns_form('10.20.30.40')
+'40.30.20.10.IN-ADDR.ARPA'
+>>> ip2dns_form('10.20.30.40', lowercase=True)
+'40.30.20.10.in-addr.arpa'
+"""
+def ip2dns_form(ip, lowercase=False):
+    """Convert an ip to dns zone form. The ip is assumed to be in valid dotted
+    decimal format."""
+    octets = ip.split('.')
+    name = '.IN-ADDR.ARPA.'
+    if lowercase:
+        name = name.lowercase
+
+    name = '.'.join(list(reversed(octets))) + name
+    return name
+
+def dns2ip_form(dnsip):
+    dnsip = dnsip.upper()
+    dnsip = dnsip.replace('.IN-ADDR.ARPA.', '')
+    return '.'.join(list(reversed(dnsip.split('.'))))
+
+
 
 def inrement_soa(file_):
     """This function wil take a file with an SOA a in it, parse the file,

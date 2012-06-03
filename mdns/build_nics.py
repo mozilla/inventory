@@ -37,7 +37,7 @@ class Interface(object):
             return False
 
     def pprint(self):
-        pp.pprint(vars(self))
+        pp.pformat(vars(self))
 
 
 is_mac_key = re.compile("^nic\.\d+\.mac_address\.\d+$")
@@ -53,20 +53,20 @@ def build_nics(sub_nic):
     for nic_data in sub_nic:
         if is_mac_key.match(nic_data.key):
             if intr.mac is not None:
-                print "!" * 20
-                print ("[WARNING] nic with more than one mac in system "
+                log("!" * 20, WARNING)
+                log("nic with more than one mac in system "
                         "{0} (https://inventory.mozilla.org/en-US/systems/edit/{1}/)"
-                        .format(intr.system, intr.system.pk))
-                pp.pprint(sub_nic)
+                        .format(intr.system, intr.system.pk), WARNING)
+                log(pp.pformat(sub_nic), WARNING)
             intr.mac = nic_data.value
             continue
         if is_hostname_key.match(nic_data.key):
             if intr.hostname is not None:
-                print "!" * 20
-                print ("[WARNING] nic with more than one hostname in system "
+                log("!" * 20, WARNING)
+                log("nic with more than one hostname in system "
                         "{0} (https://inventory.mozilla.org/en-US/systems/edit/{1}/)"
-                        .format(intr.system, intr.system.pk))
-                pp.pprint(sub_nic)
+                        .format(intr.system, intr.system.pk), WARNING)
+                log(pp.pformat(sub_nic), WARNING)
             intr.hostname = nic_data.value
             continue
         if is_ip_key.match(nic_data.key):
@@ -126,46 +126,6 @@ def get_dns_data():
     return dns_data
 
 
-def get_nick_data(sub_nics):
-    """
-    Gather information about all nics of a system.
-
-    .. note::
-        This function assumes that all data in the database is valid *and*
-        sanitized (in valid ip/mac/hostname format).
-
-    :return: Return a list of tuples containing (ip, mac, hostname, nic). nic
-    is the object that originally contained the other info. It is used if we
-    need to backtrack for more info (like getting the system).
-    """
-    #TODO return the nic in the tuple.
-    data = {}
-    for nic in sub_nics:
-        if is_mac_key.match(nic.key):
-            data.setdefault('macs', []).append(nic.value)
-            continue
-        if is_hostname_key.match(nic.key):
-            data.setdefault('hostname', []).append(nic.value)
-            continue
-        if is_ip_key.match(nic.key):
-            data.setdefault('ip', []).append(nic.value)
-            continue
-        if is_dns_auto_build_key.match(nic.key):
-            data.setdefault('dns_build_options',
-                    {})['dns_auto_build'] = nic.value
-            continue
-        if is_dns_auto_hostname_key.match(nic.key):
-            data.setdefault('dns_build_options',
-                    {})['dns_auto_hostname'] = nic.value
-            continue
-
-    if not('macs' in data and 'hostname' in data and
-            'ip' in data):
-        return None
-    data['nic'] = nic
-    return (data['ip'], data['macs'], data['hostname'], data)
-
-
 get_nic_primary_number = re.compile("^nic\.(\d+).*$")
 
 
@@ -210,19 +170,17 @@ def _build_primary_nics(all_nics):
     primary_nics = {}
     for nic in all_nics:
         if not isinstance(nic.key, basestring):
-            # TODO, should something more useful happen with this alert? Write
-            # to a log file?
-            print "=" * 15
-            print("System {0} and NIC {1} not in valid format.  Value is not "
-                    "type basestring Skipping.".format(nic.system, nic))
-            print print_system(nic.system)
+            log("=" * 15, DEBUG)
+            log("System {0} and NIC {1} not in valid format.  Value is not "
+                    "type basestring Skipping.".format(nic.system, nic), DEBUG)
+            log(print_system(nic.system), DEBUG)
             continue
         possible_primary_nic = get_nic_primary_number.match(nic.key)
         if not possible_primary_nic:
-            print "=" * 15
-            print("System {0} and NIC {1} not in valid format. "
-                "Skipping.".format(nic.system, nic))
-            print print_system(nic.system)
+            log("=" * 15, DEBUG)
+            log("System {0} and NIC {1} not in valid format. "
+                "Skipping.".format(nic.system, nic), DEBUG)
+            log(print_system(nic.system), DEBUG)
             continue
         primary_nic_number = possible_primary_nic.group(1)
         if primary_nic_number in primary_nics:
@@ -247,8 +205,8 @@ def _build_sub_nics(all_nics):
     for nic in all_nics['nics']:
         possible_sub_nic = get_nic_sub_number.match(nic.key)
         if not possible_sub_nic:
-            print("System {0} and NIC {1} not in valid format. "
-                "Skipping.".format(nic.system, nic.key))
+            log("System {0} and NIC {1} not in valid format. "
+                "Skipping.".format(nic.system, nic.key), DEBUG)
             continue
         sub_nic_number = possible_sub_nic.group(1)
         if sub_nic_number in sub_nics:
