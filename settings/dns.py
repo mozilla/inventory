@@ -11,4 +11,4 @@ FIX_M_C_M_C = True
 
 # All DNS data in SVN is being parsed. If this flag is True, that data will
 # have sanity checks ran on it.
-RUN_SVN_STATS = True
+RUN_SVN_STATS = False

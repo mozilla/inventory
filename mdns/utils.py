@@ -16,10 +16,10 @@ def log(msg, level=0):
     3 - Debug
     4 - Build
     """
-    do_info = False
-    do_warning = False
-    do_error = False
-    do_debug = False
+    do_info = True
+    do_warning = True
+    do_error = True
+    do_debug = True
     do_build = False
     if do_info and level == 0:
         print "[INFO] {0}\n".format(msg),

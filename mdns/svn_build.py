@@ -5,6 +5,7 @@ import stat
 import dns
 from dns import zone
 import pprint
+import hashlib
 from settings import MOZ_SITE_PATH
 from settings import REV_SITE_PATH
 from settings import ZONE_PATH
@@ -146,6 +147,9 @@ def collect_rev_svn_zones(svn_rev_site_path, relative_zone_path):
             if network == "README":
                 # zones/in-addr/10.14/README
                 continue
+            if network.endswith(".inventory"):
+                # zones/in-addr/10.14/README
+                continue
             log("=== Processing site: {0}".format(network), DEBUG)
             # Validate network, reverse it, and slap an 'in-addr.arpa' onto it.
             octets = network.split('.')
@@ -184,7 +188,20 @@ def collect_rev_svn_zones(svn_rev_site_path, relative_zone_path):
 
     return sites
 
-def get_svn_sites_changed(sites):
+def get_site_hash(site_file, digest, hashes, truth):
+    """
+    Figure out if a site file (i.e. private or public) has been changed.
+    """
+    prev_digest = truth.models.KeyValue.objects.get(truth=truth,
+            key=site_file)
+
+    if prev_digest and prev_digest.value == digest:
+        return False
+
+    return True
+
+    kv = truth.models.KeyValue.objects.get(key=site_path)
+def get_svn_sites_changed(sites, site_path):
     """This function should return a list of sites that have been changed in
     SVN. It calculates which sites have changed by storing a hash of a file and
     then comparing the current file's hash to the stored hash during next time
@@ -193,12 +210,62 @@ def get_svn_sites_changed(sites):
     :param sites: The sites for which we are looking for changes in.
     :type sites: list
     """
-    hash_store, created = Truth.objects.get_or_create("dns_site_hash")
+    hash_store, created = Truth.objects.get_or_create(name="dns_site_hash",
+            description="Truth store for storing hashes of DNS data files in "
+            "SVN. Don't edit these entries")
     if created:
         log("Created dns_site_hash")
-    hashes = truth.models.KeyValue.objects.filter(truth=hash_store)
 
-    sites_hashes = [ (kv.k, kv.v) for kv in hashes ]
-    log("=" * 10 + " Site hashes", DEBUG)
-    log(pp.pformat(site_hashes), DEBUG)
+    files_to_check = []
+    for site_meta in sites:
+        vlan_site, network, site_path = site_meta
+        vlan, site = vlan_site.split('.')
+        log("=" * 10 + " " + site, DEBUG)
+        for file_ in os.listdir(site_path):
+            important_files = ['SOA', 'private', 'public']
+            if file_ not in important_files:
+                continue
+            files_to_check.append((os.path.join(site_path, file_), site_meta))
 
+    sites_to_build = []
+    files_flaged_to_build = set()
+    log("Checking for changes in the following files:", DEBUG)
+    log(pp.pformat(files_to_check), INFO)
+    for file_, site_meta in files_to_check:
+        vlan_site, network, site_path = site_meta
+        vlan, site = vlan_site.split('.')
+        if file_ in files_flaged_to_build:
+            sites_to_build.append(site_meta)
+            continue
+
+        # Compute the hash
+        fd = open(file_, 'r')
+        hash_ = hashlib.md5()
+        hash_.update(fd.read())
+        digest = hash_.hexdigest()
+        fd.close()
+
+        kv_prev_digest = truth.models.KeyValue.objects.filter(truth=hash_store,
+                key=file_)
+        if kv_prev_digest and kv_prev_digest[0].value == digest:
+            log("No changes in {0}".format(file_), INFO)
+            continue
+        if kv_prev_digest and kv_prev_digest[0].value != digest:
+            log("Changes in site {0}, file {1}".format(site, file_), INFO)
+            sites_to_build.append(site_meta)
+            files_flaged_to_build.add(file_)
+            kv_prev_digest[0].value = digest
+            kv_prev_digest[0].save()
+            continue
+
+        log("New file for site {0}, file {1}".format(site, file_), INFO)
+        # We didn't find anything.
+        kv = truth.models.KeyValue(truth=hash_store,
+                key=file_, value=digest)
+        kv.save()
+        files_flaged_to_build.add(file_)
+        sites_to_build.append(site_meta)
+
+
+    # We didn't find a site
+    return sites_to_build

@@ -35,10 +35,19 @@ def do_dns_build():
     # The function get_all_sites should generate tuples like:
     #   ('<site-name>', '<network>', '<file_path_to_site_dir>')
 
-    sites_to_build = set(get_all_forward_sites(MOZ_SITE_PATH))
+    sites_to_build = set()
+    #sites_to_build = set(get_all_forward_sites(MOZ_SITE_PATH))
     #sites_to_build = set(get_dns_scheduled_sites(MOZILLA_SITE_PATH))
-    #sites_to_build.add(get_svn_sites_changed(
-    #    get_all_forward_sites(MOZ_SITE_PATH)))
+    for site in get_svn_sites_changed(get_all_forward_sites(MOZ_SITE_PATH),
+            MOZ_SITE_PATH):
+        sites_to_build.add(site)
+
+    log("====== Sites to build", DEBUG)
+    log(pp.pformat(sites_to_build), DEBUG)
+    if not sites_to_build:
+        log("No sites to build.", INFO)
+        log("Done.", INFO)
+        return
 
     inv_forward, inv_reverse = inventory_build_sites(sites_to_build)
     if DO_DEBUG:
@@ -70,6 +79,7 @@ def do_dns_build():
     # do this we will need go and get those from the KV store. That can be done
     # in the build_reverse function.
     build_reverse(sites_to_build, inv_reverse, rev_svn_zones)
+    log("Done.", INFO)
 
 def build_reverse(sites_to_build, inv_reverse, rev_svn_zones):
     final_records = {}
@@ -88,7 +98,7 @@ def build_reverse(sites_to_build, inv_reverse, rev_svn_zones):
                 else:
                     inv_entries.add((dnsip, name))
 
-    log("=" * 10 + " Final DNS data", DEBUG)
+    log("=" * 10 + " Final DNS data", BUILD)
     for network, network_data in final_records.items():
         network_path, records = network_data
         # Inv entries are in (<'name'>, <'ip'>) form
@@ -143,9 +153,9 @@ def build_forward(sites_to_build, inv_forward, svn_zones):
         generate_forward_inventory_data_file(site, a_records, site_path)
 
 def generate_reverse_inventory_data_file(network, records, network_path):
-    inventory_file = os.path.join(network_path, '{0}.inventory'.format(network))
+    inventory_file = '{0}.inventory'.format(network_path)
     network_file = os.path.join(network_path, network)
-    #inv_fd = open(inventory_file, 'w+')
+    inv_fd = open(inventory_file, 'w+')
     try:
         log(";---------- PTR records for {0} (in file {1})\n".format(network,
                 network_path), BUILD)
@@ -153,13 +163,13 @@ def generate_reverse_inventory_data_file(network, records, network_path):
         for dnsip, name in records:
             info = {'dnsip':dnsip, 'rclass':"IN", 'rtype':'PTR', 'name':name}
             log(template.format(**info), BUILD)
+            inv_fd.write(template.format(**info))
         # Bump the soa in network file
         # TODO
     except Exception, e:
         log(str(e), ERROR)
     finally:
-        pass
-        #inv_fd.close()
+        inv_fd.close()
 
     if DEBUG == True:
         pp.pprint(records)
@@ -222,6 +232,9 @@ def analyse_svn(forward, reverse):
             if name.find('unused') > -1:
                 # Don't care
                 continue
+            if name.find('sjc1') > -1:
+                # Don't care
+                continue
             dnsip = ip2dns_form(ip)
             forward_p.add((dnsip, name))
 
@@ -235,15 +248,20 @@ def analyse_svn(forward, reverse):
             if name.find('unused') > -1:
                 # Don't care
                 continue
+            if name.find('sjc1') > -1:
+                # Don't care
+                continue
             reverse_p.add((dnsip, name))
 
-    print "PTR Records with no matching A records"
+    print ("PTR records in sysadmins/dnsconfig/ip-addr/ with no matching A "
+        "record in sysadmins/dnsconfig/zones/mozilla.com")
     for dnsip, name in reverse_p.difference(forward_p):
         template = "{dnsip:50} {rclass:10} {rtype:15} {name:7}"
         info = {'dnsip':dnsip, 'rclass':"IN", 'rtype':'PTR', 'name':name}
         print template.format(**info)
 
-    print "A Records with no matching PTR records"
+    print ("A records in sysadmins/dnsconfig/zones/mozilla.com with no "
+        "matching PTR record in sysadmins/dnsconfig/ip-addr/")
     for dnsip, name in forward_p.difference(reverse_p):
         address = dns2ip_form(dnsip)
         template = "{name:50} {rclass:10} {rtype:15} {address:7}"
