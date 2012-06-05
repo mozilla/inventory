@@ -6,6 +6,7 @@ import dns
 from dns import zone
 import pprint
 import hashlib
+import ipaddr
 from settings import MOZ_SITE_PATH
 from settings import REV_SITE_PATH
 from settings import ZONE_PATH
@@ -188,20 +189,93 @@ def collect_rev_svn_zones(svn_rev_site_path, relative_zone_path):
 
     return sites
 
-def get_site_hash(site_file, digest, hashes, truth):
+def get_hash_store():
+    hash_store, created = Truth.objects.get_or_create(name="dns_site_hash",
+            description="Truth store for storing hashes of DNS data files in "
+            "SVN. Don't edit these entries")
+    if created:
+        log("Created dns_site_hash")
+    return hash_store
+
+is_network_file = re.compile("^([0-9][0-9]?[0-9]?)\.([0-9][0-9]?[0-9]?)\.([0-9][0-9]?[0-9]?)$")
+def get_reverse_svn_sites_changed(sites, site_path):
+    """This function looks at every file in the in-addr/ directory in SVN and
+    compares it to the full list of sites that *could* be built. If the network
+    that the file represents and a file overlap *and* the file has been
+    changed, the site will be added to sites_to_build.
+
+    :param sites: The sites for which we are looking for changes in.
+    :type sites: list
+    :param site_path: Where sites are stored.
+    :type site_path: str
     """
-    Figure out if a site file (i.e. private or public) has been changed.
-    """
-    prev_digest = truth.models.KeyValue.objects.get(truth=truth,
-            key=site_file)
+    hash_store = get_hash_store()
+    files_to_check = []
+    for network in os.listdir(site_path):
+        network_dir = os.path.join(site_path, network)
+        if not os.path.isdir(network_dir):
+            continue
+        for file_ in os.listdir(network_dir):
+            if not is_network_file.match(file_):
+                continue
+            network_file = os.path.join(network_dir, file_)
+            files_to_check.append((file_, network_file))
 
-    if prev_digest and prev_digest.value == digest:
-        return False
+    sites_to_build = []
+    for network, file_ in files_to_check:
+        digest = hash_file(file_)
+        kv_prev_digest = truth.models.KeyValue.objects.filter(truth=hash_store,
+                key=file_)
 
-    return True
+        if kv_prev_digest and kv_prev_digest[0].value == digest:
+            log("No changes in {0}".format(file_), INFO)
+            continue
+        elif kv_prev_digest and kv_prev_digest[0].value != digest:
+            kv_prev_digest = kv_prev_digest[0]
+            log("Changes in network {0}, file {1}".format(network, file_), INFO)
+            # Fall through
+        elif not kv_prev_digest:
+            log("New file for network {0}, file {1}".format(network, file_), INFO)
+            kv_prev_digest = truth.models.KeyValue(truth=hash_store,
+                    key=file_, value=digest)
 
-    kv = truth.models.KeyValue.objects.get(key=site_path)
-def get_svn_sites_changed(sites, site_path):
+        # Even if the file isn't going to cause a site to be built, track
+        # it's hash.
+        kv_prev_digest.value = digest
+        kv_prev_digest.save()
+
+        for site_meta in sites:
+            vlan_site, site_network_str, site_path = site_meta
+
+            # Determine if the file_'s network intersects with the vlan
+            # corresponding to this site.
+
+            # !!!!! THERE COULD BE A BUG RIGHT HERE.
+            # TODO Ask people about this.
+            # If the class C network the file represents overlaps with a
+            # network in a site, rebuild that site.
+            network_file_str = network + ".0/24"  # Make sure it's a full class C
+            network_file = ipaddr.IPv4Network(network_file_str)
+            site_network = ipaddr.IPv4Network(site_network_str)
+
+            if ipaddr.IPv4Network(network_file).overlaps(site_network):
+                sites_to_build.append(site_meta)
+                kv_prev_digest.value = digest
+                kv_prev_digest.save()
+                continue
+
+
+    return sites_to_build
+
+def hash_file(file_):
+    fd = open(file_, 'r')
+    hash_ = hashlib.md5()
+    hash_.update(fd.read())
+    digest = hash_.hexdigest()
+    fd.close()
+    return digest
+
+def get_forward_svn_sites_changed(sites, site_path):
     """This function should return a list of sites that have been changed in
     SVN. It calculates which sites have changed by storing a hash of a file and
     then comparing the current file's hash to the stored hash during next time
@@ -209,18 +283,16 @@ def get_svn_sites_changed(sites, site_path):
 
     :param sites: The sites for which we are looking for changes in.
     :type sites: list
+    :param site_path: Where sites are stored.
+    :type site_path: str
     """
-    hash_store, created = Truth.objects.get_or_create(name="dns_site_hash",
-            description="Truth store for storing hashes of DNS data files in "
-            "SVN. Don't edit these entries")
-    if created:
-        log("Created dns_site_hash")
+
+    hash_store = get_hash_store()
 
     files_to_check = []
     for site_meta in sites:
         vlan_site, network, site_path = site_meta
         vlan, site = vlan_site.split('.')
-        log("=" * 10 + " " + site, DEBUG)
         for file_ in os.listdir(site_path):
             important_files = ['SOA', 'private', 'public']
             if file_ not in important_files:
@@ -230,7 +302,6 @@ def get_svn_sites_changed(sites, site_path):
     sites_to_build = []
     files_flaged_to_build = set()
     log("Checking for changes in the following files:", DEBUG)
-    log(pp.pformat(files_to_check), INFO)
     for file_, site_meta in files_to_check:
         vlan_site, network, site_path = site_meta
         vlan, site = vlan_site.split('.')
@@ -239,11 +310,7 @@ def get_svn_sites_changed(sites, site_path):
             continue
 
         # Compute the hash
-        fd = open(file_, 'r')
-        hash_ = hashlib.md5()
-        hash_.update(fd.read())
-        digest = hash_.hexdigest()
-        fd.close()
+        digest = hash_file(file_)
 
         kv_prev_digest = truth.models.KeyValue.objects.filter(truth=hash_store,
                 key=file_)

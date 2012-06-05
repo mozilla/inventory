@@ -1,6 +1,7 @@
 from mdns.inventory_build import inventory_build_sites
 from mdns.svn_build import collect_svn_zones, collect_rev_svn_zones
-from mdns.svn_build import get_svn_sites_changed
+from mdns.svn_build import get_forward_svn_sites_changed
+from mdns.svn_build import get_reverse_svn_sites_changed
 from mdns.build_nics import *
 from mdns.utils import *
 from truth.models import Truth
@@ -18,7 +19,7 @@ DO_DEBUG = False
 
 pp = pprint.PrettyPrinter(indent=2)
 
-def get_all_forward_sites(site_path):
+def get_all_sites(site_path):
     """
     Return every site in the ip_to_vlan_mapping truth store.
     """
@@ -35,15 +36,23 @@ def do_dns_build():
     # The function get_all_sites should generate tuples like:
     #   ('<site-name>', '<network>', '<file_path_to_site_dir>')
 
+    all_sites = set(get_all_sites(MOZ_SITE_PATH))
     sites_to_build = set()
-    #sites_to_build = set(get_all_forward_sites(MOZ_SITE_PATH))
-    #sites_to_build = set(get_dns_scheduled_sites(MOZILLA_SITE_PATH))
-    for site in get_svn_sites_changed(get_all_forward_sites(MOZ_SITE_PATH),
-            MOZ_SITE_PATH):
-        sites_to_build.add(site)
 
-    log("====== Sites to build", DEBUG)
-    log(pp.pformat(sites_to_build), DEBUG)
+    changed_forward = set(get_forward_svn_sites_changed(all_sites,
+        MOZ_SITE_PATH))
+    sites_to_build = sites_to_build.union(changed_forward)
+
+    changed_reverse = set(get_reverse_svn_sites_changed(all_sites,
+        REV_SITE_PATH))
+    sites_to_build = sites_to_build.union(changed_reverse)
+
+    log("====== Sites to build", INFO)
+    for vlan_site, network, site_path in sites_to_build:
+        vlan, site = vlan_site.split('.')
+        log("Building {0} for vlan {1} ({2}). Site is in {3}".format(site, vlan, network,
+            site_path))
+
     if not sites_to_build:
         log("No sites to build.", INFO)
         log("Done.", INFO)
@@ -79,6 +88,12 @@ def do_dns_build():
     # do this we will need go and get those from the KV store. That can be done
     # in the build_reverse function.
     build_reverse(sites_to_build, inv_reverse, rev_svn_zones)
+
+    log("Rebuilding Hashes (SOAs serials were changed).", INFO)
+    # These two functions will update the hashes truth store with fresh hashes.
+    get_forward_svn_sites_changed(all_sites, MOZ_SITE_PATH)
+    get_reverse_svn_sites_changed(all_sites, REV_SITE_PATH)
+
     log("Done.", INFO)
 
 def build_reverse(sites_to_build, inv_reverse, rev_svn_zones):
@@ -152,21 +167,21 @@ def build_forward(sites_to_build, inv_forward, svn_zones):
 
         generate_forward_inventory_data_file(site, a_records, site_path)
 
-def generate_reverse_inventory_data_file(network, records, network_path):
-    inventory_file = '{0}.inventory'.format(network_path)
-    network_file = os.path.join(network_path, network)
+def generate_reverse_inventory_data_file(network, records, network_file):
+    inventory_file = '{0}.inventory'.format(network_file)
     inv_fd = open(inventory_file, 'w+')
     try:
         log(";---------- PTR records for {0} (in file {1})\n".format(network,
-                network_path), BUILD)
+                inventory_file), BUILD)
         template = "{dnsip:50} {rclass:10} {rtype:15} {name:7}\n"
         for dnsip, name in records:
             info = {'dnsip':dnsip, 'rclass':"IN", 'rtype':'PTR', 'name':name}
             log(template.format(**info), BUILD)
             inv_fd.write(template.format(**info))
         # Bump the soa in network file
-        # TODO
+        increment_soa(network_file)
     except Exception, e:
+        pdb.set_trace()
         log(str(e), ERROR)
     finally:
         inv_fd.close()
@@ -177,6 +192,8 @@ def generate_reverse_inventory_data_file(network, records, network_path):
 def generate_forward_inventory_data_file(site, records, site_path):
     inventory_file = os.path.join(site_path, 'inventory')
     private_file = os.path.join(site_path, 'private')
+    soa_file = os.path.join(site_path, 'SOA')
+
     inv_fd = open(inventory_file, 'w+')
 
     # Because the interfces are in records, we have to take it out before we
@@ -192,7 +209,9 @@ def generate_forward_inventory_data_file(site, records, site_path):
             inv_fd.write(template.format(**info))
             log(template.format(**info), BUILD)
         # TODO Bump the soa
+        increment_soa(soa_file)
     except Exception, e:
+        pdb.set_trace()
         log(str(e), ERROR)
     finally:
         inv_fd.close()

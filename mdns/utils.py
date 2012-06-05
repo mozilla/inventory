@@ -20,7 +20,7 @@ def log(msg, level=0):
     do_warning = True
     do_error = True
     do_debug = True
-    do_build = False
+    do_build = True
     if do_info and level == 0:
         print "[INFO] {0}\n".format(msg),
         return
@@ -64,16 +64,21 @@ def dns2ip_form(dnsip):
 
 
 
-def inrement_soa(file_):
+def increment_soa(file_):
     """This function wil take a file with an SOA a in it, parse the file,
     incriment the SOA and write the new contents back to the file.
 
     :param file_: The file with the SOA in it.
     :type file_: file
     """
-    fd = open(file_, 'w+')
+    # TODO. Totally a bug right here. What happens if the _str_inc fucntion
+    # fails? Currently everything will be borked. The original contents of the
+    # file should be restored.
+    fd = open(file_, 'r+')
     try:
         new_content = _str_increment_soa(fd)
+        fd.close()
+        fd = open(file_, 'w+')
         fd.write(new_content)
     except Exception, e:
         raise Exception
