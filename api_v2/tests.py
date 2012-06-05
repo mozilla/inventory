@@ -194,7 +194,6 @@ class SystemApi(TestCase):
         self.assertEqual(json.loads(resp.content)['hostname'], self.new_hostname)
 
     def test_update_system(self):
-        self.client.delete('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
         resp = self.client.post('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
         obj = json.loads(resp.content.split(" = ")[1])
         self.assertEqual(201, resp.status_code)
@@ -284,6 +283,19 @@ class SystemApi(TestCase):
         resp = self.client.get('/api/v2/system/3/', {'search':True, 'system_rack_id':'1', 'serial':'39993asdf'}, follow=True)
         self.assertEqual(resp.status_code, 404)
 
+    def test_delete_key_by_system(self):
+        system = System.objects.get(hostname='fake-hostname2')
+        k = KeyValue(system=system, key='testing', value='blahblah')
+        k.save()
+        resp = self.client.delete('/en-US/api/v2/keyvalue/?key_type=delete_key_by_system&system=fake-hostname2&key=testing', follow=True)
+        try:
+            count = KeyValue.objects.get(system=system, key='testing').count()
+        except KeyValue.DoesNotExist:
+            count = 0
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(int(json.loads(resp.content.split(" = ")[1])['id']), 14)
+        self.assertEqual(count, 0)
+
 class DHCPApi(TestCase):
     fixtures = ['testdata.json']
 
@@ -334,6 +346,7 @@ class DHCPApi(TestCase):
     def test_delete_network_adapter(self):
         resp = self.client.delete('/api/v2/keyvalue/1/', {'system_hostname':'fake-hostname2', 'adapter_number':'0', 'key_type':'delete_network_adapter'}, follow=True)
         #print "The content is %s" % resp.content
+
 
     def test_add_dhcp_scope_via_api(self):
         ScheduledTask.objects.all().delete()

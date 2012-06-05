@@ -548,7 +548,19 @@ class KeyValueHandler(BaseHandler):
                 resp.write('json = {"error_message":"Unable to Delete}')
 
             return resp
+        if 'key_type' in request.GET and request.GET['key_type'] == 'delete_key_by_system':
+            try:
+                system_hostname = request.GET.get('system')
+                key = request.GET.get('key')
+                system = System.objects.get(hostname=system_hostname)
+                KeyValue.objects.filter(key=key, system=system).delete()
+                resp = rc.ALL_OK
+                resp.write('json = {"id":"14"}')
+            except:
+                resp = rc.NOT_FOUND
+                resp.write('json = {"error_message":"Unable to Delete}')
 
+            return resp
         if 'key_type' not in request.GET:
             if 'system_id' in request.GET:
                 try:
