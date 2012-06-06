@@ -197,6 +197,7 @@ def get_hash_store():
         log("Created dns_site_hash")
     return hash_store
 
+# This regex is wrong. it matches 256.256.256.256.
 is_network_file = re.compile("^([0-9][0-9]?[0-9]?)\.([0-9][0-9]?[0-9]?)\.([0-9][0-9]?[0-9]?)$")
 def get_reverse_svn_sites_changed(sites, site_path):
     """This function looks at every file in the in-addr/ directory in SVN and
