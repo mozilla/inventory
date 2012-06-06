@@ -48,7 +48,7 @@ is_dns_auto_hostname_key = re.compile("^nic\.\d+\.dns_auto_hostname\.\d+$")
 is_dns_has_conflict_key = re.compile("^nic\.\d+\.dns_has_conflict\.\d+$")
 is_some_key = re.compile("^nic\.\d+\.(.*)\.\d+$")
 
-def build_nics(sub_nic):
+def build_nic(sub_nic):
     intr = Interface(sub_nic[0].system, sub_nic)
     for nic_data in sub_nic:
         if is_mac_key.match(nic_data.key):
@@ -114,7 +114,7 @@ def get_nic_objs():
     for system_nics in formated_nics:
         for primary_nic_number, primary_nic in system_nics.items():
             for sub_nic_number, sub_nic in primary_nic['sub_nics'].items():
-                interface = build_nics(sub_nic)
+                interface = build_nic(sub_nic)
                 if not interface:
                     continue
                 interfaces.append(interface)
