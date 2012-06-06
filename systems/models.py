@@ -9,14 +9,18 @@
 
 from django.db import models
 from django.core.exceptions import ValidationError
-
-from dhcp.models import DHCP
 from django.db.models.signals import post_save
 from django.db.models.query import QuerySet
+from django.contrib.auth.models import User
+from django.db import IntegrityError
+
+from dhcp.models import DHCP
+import mdns
+from settings import MOZ_SITE_PATH
+
+
 import datetime
 import re
-from django.contrib.auth.models import User
-
 import pdb
 
 class QuerySetManager(models.Manager):
@@ -142,10 +146,48 @@ class KeyValue(models.Model):
         return "<{0}: '{1}'>".format(self.key, self.value)
 
     def save(self, *args, **kwargs):
+        from mdns.build_nics import build_nic
+        from mdns.dns_build import ip_to_site
+
+        is_nic = re.match('^nic\.\d+\.(.*)\.\d+$', self.key)
+        if self.pk:
+            self_ = KeyValue.objects.get(pk=self.pk)
+            if self_.value == self.value:
+                ditry = False
+            else:
+                dirty = True
+        if is_nic and dirty:
+            nic_type = is_nic.groups(0)
+            dns_related_types = ('hostname', 'ipv4_address', 'dns_auto_build',
+                    'dns_auto_hostname', 'dns_has_conflict')
+            # dns_has_conflict is probably not needed.
+            if nic_type and nic_type[0] in dns_related_types:
+                schedule_dns = True
+            else:
+                schedule_dns = False
+
+
         if re.match('^nic\.\d+\.mac_address\.\d+$', self.key):
             print "Validating Mac"
             self.value = validate_mac(self.value)
+
         super(KeyValue, self).save(*args, **kwargs)
+
+        if schedule_dns:
+        # We should rebuild dns.
+        # If hostname changed, we need the ip. If dns_auto_build
+        # changed, we need the ip, if dns_auto_hostame changed, we need
+        # the ip... We always need the ip. Use the build nic function
+        # to construct an interface and find the ip in the interface.
+            intr = build_nic(self.system.keyvalue_set.all())
+            for ip in intr.ips:
+                kv = mdns.dns_build.ip_to_site(ip, MOZ_SITE_PATH)
+                if kv:
+                    try:
+                        ScheduledTask(type='dns', task=kv.key).save()
+                    except IntegrityError, e:
+                        # The task already existed.
+                        pass
 
 
     class Meta:

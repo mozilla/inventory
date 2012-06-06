@@ -1,11 +1,13 @@
+from truth.models import Truth
+
 from mdns.inventory_build import inventory_build_sites
 from mdns.svn_build import collect_svn_zones, collect_rev_svn_zones
 from mdns.svn_build import get_forward_svn_sites_changed
 from mdns.svn_build import get_reverse_svn_sites_changed
 from mdns.build_nics import *
 from mdns.utils import *
-from truth.models import Truth
-
+import ipaddr
+from systems.models import ScheduledTask
 from settings import MOZ_SITE_PATH
 from settings import REV_SITE_PATH
 from settings import ZONE_PATH
@@ -18,6 +20,28 @@ DEBUG = 3
 DO_DEBUG = False
 
 pp = pprint.PrettyPrinter(indent=2)
+
+def ip_to_site(ip_str, base_site_path):
+    """Given the dotted decimal of an IP address, find the site it corresponds
+    to. If no site is found return None. This function assumes that the ip is
+    in valid format.
+
+    :param ip_str: The ip to use.
+    :type ip_str: str
+    :param base_site_path: The dir containing all other sites (usually MOZ_SITE_PATH)
+    :type base_site_path: str
+    :returns key_value: The kv representing the site the ip belongs in.
+    :type key_value: truth.models.KeyValue
+    """
+    print "IP string" + ip_str
+    ip = ipaddr.IPv4Network(ip_str)  # This will end up being <ip>/32
+    sites = get_all_sites(base_site_path)
+    ip2v = Truth.objects.get(name='ip_to_vlan_mapping').keyvalue_set.all()
+    for kv in ip2v:
+        vlan_site, network_str = kv.key, kv.value
+        if ipaddr.IPv4Network(network_str).overlaps(ip):
+            return kv
+    return None
 
 def get_all_sites(site_path):
     """
@@ -32,12 +56,28 @@ def get_all_sites(site_path):
         sites.append((vlan_site, network, full_site_path))
     return sites
 
+def get_ui_sites_changed(all_sites):
+    sites_to_build = []
+    tasks = ScheduledTask.objects.filter(type='dns')
+    for site_meta in all_sites:
+        vlan_site, network, site_path = site_meta
+        for t in tasks:
+            if vlan_site == t.task:
+                print vlan_site
+                sites_to_build.append(site_meta)
+                t.delete()
+
+    return sites_to_build
+
 def do_dns_build():
     # The function get_all_sites should generate tuples like:
     #   ('<site-name>', '<network>', '<file_path_to_site_dir>')
 
     all_sites = set(get_all_sites(MOZ_SITE_PATH))
     sites_to_build = set()
+
+    changed_ui = set(get_ui_sites_changed(all_sites))
+    sites_to_build = sites_to_build.union(changed_ui)
 
     changed_forward = set(get_forward_svn_sites_changed(all_sites,
         MOZ_SITE_PATH))
@@ -196,8 +236,8 @@ def generate_forward_inventory_data_file(site, records, site_path):
 
     inv_fd = open(inventory_file, 'w+')
 
-    # Because the interfces are in records, we have to take it out before we
-    # remove duplicates.
+    # Because the interface objects are in records at this point, we have to
+    # take them out before we remove duplicates.
     a_records = [ (name, address) for name, address, intr in records ]
     a_records = set(a_records)
     try:
@@ -208,7 +248,7 @@ def generate_forward_inventory_data_file(site, records, site_path):
             info = {'name':name, 'rclass':"IN", 'rtype':'A', 'address':address}
             inv_fd.write(template.format(**info))
             log(template.format(**info), BUILD)
-        # TODO Bump the soa
+        # Bump the soa
         increment_soa(soa_file)
     except Exception, e:
         pdb.set_trace()
