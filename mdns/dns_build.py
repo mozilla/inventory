@@ -220,6 +220,8 @@ def generate_reverse_inventory_data_file(network, records, network_file):
             inv_fd.write(template.format(**info))
         # Bump the soa in network file
         increment_soa(network_file)
+        # Insure that the inventory file is included.
+        ensure_include(network_file, 'reverse', inventory_file)
     except Exception, e:
         pdb.set_trace()
         log(str(e), ERROR)
@@ -250,6 +252,8 @@ def generate_forward_inventory_data_file(site, records, site_path):
             log(template.format(**info), BUILD)
         # Bump the soa
         increment_soa(soa_file)
+        # Insure that the inventory file is included.
+        ensure_include(private_file, 'forward', inventory_file)
     except Exception, e:
         pdb.set_trace()
         log(str(e), ERROR)

@@ -76,7 +76,7 @@ def ensure_include(file_, file_type, include_file):
     """
     fd = open(file_, 'r+')
     try:
-        new_content = _ensure_include(fd)
+        new_content = _ensure_include(fd, file_type, include_file)
         fd.close()
         fd = open(file_, 'w+')
         fd.write(new_content)
