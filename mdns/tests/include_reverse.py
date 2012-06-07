@@ -19,7 +19,7 @@ import pdb
 txt1 = """
 foo bar
 $INCLUDE foo/bar/private
-asf.asdf IN A 10.0.0.1
+10.0.0.1 IN PTR  asf.asdf
 """
 
 ex_txt1 = """
@@ -28,7 +28,7 @@ $INCLUDE foo/bar/private
 
 $INCLUDE foo/bar/inventory ; This include preserves $ORIGIN
 
-asf.asdf IN A 10.0.0.1
+10.0.0.1 IN PTR  asf.asdf
 """
 
 txt2 = """
@@ -41,13 +41,13 @@ $INCLUDE zones/mozilla.com/scl3/releng
 $ORIGIN scl3.mozilla.com.
 
 $ORIGIN console.scl3.mozilla.com.
-conserver1.r101-3   IN  A   10.22.0.10
-conserver1.r101-8   IN  A   10.22.0.11
-conserver1.r101-11  IN  A   10.22.0.12
-conserver1.r101-16  IN  A   10.22.0.13
-conserver1.r101-21  IN  A   10.22.0.14
-conserver1.r102-3   IN  A   10.22.0.15
-conserver1.r102-8   IN  A   10.22.0.16
+10.22.0.10 IN  PTR    conserver1.r101-3
+10.22.0.11 IN  PTR    conserver1.r101-8
+10.22.0.12 IN  PTR    conserver1.r101-11
+10.22.0.13 IN  PTR    conserver1.r101-16
+10.22.0.14 IN  PTR    conserver1.r101-21
+10.22.0.15 IN  PTR    conserver1.r102-3
+10.22.0.16 IN  PTR    conserver1.r102-8
 """
 
 ex_txt2 = """
@@ -63,13 +63,13 @@ $ORIGIN console.scl3.mozilla.com.
 
 $INCLUDE foo/bar/inventory ; This include preserves $ORIGIN
 
-conserver1.r101-3   IN  A   10.22.0.10
-conserver1.r101-8   IN  A   10.22.0.11
-conserver1.r101-11  IN  A   10.22.0.12
-conserver1.r101-16  IN  A   10.22.0.13
-conserver1.r101-21  IN  A   10.22.0.14
-conserver1.r102-3   IN  A   10.22.0.15
-conserver1.r102-8   IN  A   10.22.0.16
+10.22.0.10 IN  PTR    conserver1.r101-3
+10.22.0.11 IN  PTR    conserver1.r101-8
+10.22.0.12 IN  PTR    conserver1.r101-11
+10.22.0.13 IN  PTR    conserver1.r101-16
+10.22.0.14 IN  PTR    conserver1.r101-21
+10.22.0.15 IN  PTR    conserver1.r102-3
+10.22.0.16 IN  PTR    conserver1.r102-8
 """
 
 txt3 = """
@@ -79,25 +79,26 @@ txt3 = """
 $INCLUDE zones/mozilla.com/phx1/public
 
 $ORIGIN phx1.mozilla.com.
-tp-socorro01-master01   IN A       10.8.70.100
-tp-socorro01-master02   IN A       10.8.70.101
-tp-socorro01-rw-zeus    IN A       10.8.70.109
-tp-socorro01-ro-zeus    IN A       10.8.70.134
-db-internal-rw-zeus     IN A       10.8.70.240
-db-internal-ro-zeus     IN A       10.8.70.249
-db-engagement-rw-zeus   IN A       10.8.70.230
-db-engagement-ro-zeus   IN A       10.8.70.239
-db-engagement-dev-rw    IN A       10.8.70.237
-db-engagement-dev-ro    IN A       10.8.70.238
-receipt-sign1.dev       IN A       10.8.83.35
-sp-admin01      IN A        10.8.75.29
+10.8.70.100 IN PTR       tp-socorro01-master01
+10.8.70.101 IN PTR       tp-socorro01-master02
+10.8.70.109 IN PTR       tp-socorro01-rw-zeus
+10.8.70.134 IN PTR       tp-socorro01-ro-zeus
+10.8.70.240 IN PTR       db-internal-rw-zeus
+10.8.70.249 IN PTR       db-internal-ro-zeus
+10.8.70.230 IN PTR       db-engagement-rw-zeus
+10.8.70.239 IN PTR       db-engagement-ro-zeus
+10.8.70.237 IN PTR       db-engagement-dev-rw
+10.8.70.238 IN PTR       db-engagement-dev-ro
+10.8.83.35 IN PTR       receipt-sign1.dev
+10.8.75.29 IN PTR        sp-admin01
 
-sysadmin1.sandbox   IN A        10.8.76.10
-inventory-dev       IN CNAME    sysadmin1.sandbox 
-inventory           IN A        10.8.81.14 
-ldap-dev        IN CNAME    sysadmin1.sandbox 
-rhel6dev64.sandbox  IN A        10.8.76.11
-dnssec-test     IN A    10.8.76.12
+10.8.76.10 IN PTR        sysadmin1.sandbox
+inventory-dev       IN CNAME    sysadmin1.sandbox
+10.8.81.14  IN PTR        inventory
+ldap-dev        IN CNAME    sysadmin1.sandbox
+10.8.76.11 IN PTR        rhel6dev64.sandbox
+
+10.8.76.12 IN PTR    dnssec-test
 
 puppet                  IN CNAME dp-nagios01.phx.mozilla.com.
 scalarcmgmt         IN  CNAME   scalarc1.db.phx1.mozilla.com.
@@ -114,25 +115,26 @@ $ORIGIN phx1.mozilla.com.
 
 $INCLUDE foo/bar/inventory ; This include preserves $ORIGIN
 
-tp-socorro01-master01   IN A       10.8.70.100
-tp-socorro01-master02   IN A       10.8.70.101
-tp-socorro01-rw-zeus    IN A       10.8.70.109
-tp-socorro01-ro-zeus    IN A       10.8.70.134
-db-internal-rw-zeus     IN A       10.8.70.240
-db-internal-ro-zeus     IN A       10.8.70.249
-db-engagement-rw-zeus   IN A       10.8.70.230
-db-engagement-ro-zeus   IN A       10.8.70.239
-db-engagement-dev-rw    IN A       10.8.70.237
-db-engagement-dev-ro    IN A       10.8.70.238
-receipt-sign1.dev       IN A       10.8.83.35
-sp-admin01      IN A        10.8.75.29
+10.8.70.100 IN PTR       tp-socorro01-master01
+10.8.70.101 IN PTR       tp-socorro01-master02
+10.8.70.109 IN PTR       tp-socorro01-rw-zeus
+10.8.70.134 IN PTR       tp-socorro01-ro-zeus
+10.8.70.240 IN PTR       db-internal-rw-zeus
+10.8.70.249 IN PTR       db-internal-ro-zeus
+10.8.70.230 IN PTR       db-engagement-rw-zeus
+10.8.70.239 IN PTR       db-engagement-ro-zeus
+10.8.70.237 IN PTR       db-engagement-dev-rw
+10.8.70.238 IN PTR       db-engagement-dev-ro
+10.8.83.35 IN PTR       receipt-sign1.dev
+10.8.75.29 IN PTR        sp-admin01
 
-sysadmin1.sandbox   IN A        10.8.76.10
-inventory-dev       IN CNAME    sysadmin1.sandbox 
-inventory           IN A        10.8.81.14 
-ldap-dev        IN CNAME    sysadmin1.sandbox 
-rhel6dev64.sandbox  IN A        10.8.76.11
-dnssec-test     IN A    10.8.76.12
+10.8.76.10 IN PTR        sysadmin1.sandbox
+inventory-dev       IN CNAME    sysadmin1.sandbox
+10.8.81.14  IN PTR        inventory
+ldap-dev        IN CNAME    sysadmin1.sandbox
+10.8.76.11 IN PTR        rhel6dev64.sandbox
+
+10.8.76.12 IN PTR    dnssec-test
 
 puppet                  IN CNAME dp-nagios01.phx.mozilla.com.
 scalarcmgmt         IN  CNAME   scalarc1.db.phx1.mozilla.com.
@@ -143,9 +145,9 @@ txt4 = """
 ;BE SURE TO INCREMENT THE SERIAL IN:
 ; zones/mozilla.com/tor1/SOA
 
-aruba-master    IN  A       10.242.0.20
+10.242.0.20 IN  PTR       aruba-master
 crashplan   IN  CNAME       backup1.private.tor1.mozilla.com.
-caadm01     IN  A       10.242.40.11
+10.242.40.11 IN  PTR       caadm01
 """
 
 ex_txt4 = """
@@ -155,9 +157,9 @@ ex_txt4 = """
 
 $INCLUDE foo/bar/inventory ; This include preserves $ORIGIN
 
-aruba-master    IN  A       10.242.0.20
+10.242.0.20 IN  PTR       aruba-master
 crashplan   IN  CNAME       backup1.private.tor1.mozilla.com.
-caadm01     IN  A       10.242.40.11
+10.242.40.11 IN  PTR       caadm01
 """
 
 txt5 = """
@@ -175,18 +177,25 @@ caadm01     IN  FOO       10.242.40.11
 $ORIGIN ops.tor1.mozilla.com.
 
 fw1         IN  FOO   10.242.0.1
-wifi1      IN  A       10.242.0.20
-wifi1a     IN  A       10.242.0.21
-wifi1b     IN  A       10.242.0.22
+
+10.242.0.20 IN  PTR       wifi1
+
+10.242.0.21 IN  PTR       wifi1a
+
+10.242.0.22 IN  PTR       wifi1b
 
 $ORIGIN private.tor1.mozilla.com.
 
-infosec1    IN  A       10.240.2.10
+10.240.2.10 IN  PTR       infosec1
 
-fw1         IN  A   10.242.75.1
-admin1      IN  A   10.242.75.5
-admin1a     IN  A       10.242.75.6
-admin1b     IN  A       10.242.75.7
+    
+   10.242.75.1  IN  PTR   fw1
+
+10.242.75.5 IN  PTR   admin1
+
+10.242.75.6 IN  PTR       admin1a
+
+10.242.75.7 IN  PTR       admin1b
 """
 
 ex_txt5 = """
@@ -205,20 +214,27 @@ $ORIGIN ops.tor1.mozilla.com.
 
 fw1         IN  FOO   10.242.0.1
 
+
 $INCLUDE foo/bar/inventory ; This include preserves $ORIGIN
 
-wifi1      IN  A       10.242.0.20
-wifi1a     IN  A       10.242.0.21
-wifi1b     IN  A       10.242.0.22
+10.242.0.20 IN  PTR       wifi1
+
+10.242.0.21 IN  PTR       wifi1a
+
+10.242.0.22 IN  PTR       wifi1b
 
 $ORIGIN private.tor1.mozilla.com.
 
-infosec1    IN  A       10.240.2.10
+10.240.2.10 IN  PTR       infosec1
 
-fw1         IN  A   10.242.75.1
-admin1      IN  A   10.242.75.5
-admin1a     IN  A       10.242.75.6
-admin1b     IN  A       10.242.75.7
+    
+   10.242.75.1  IN  PTR   fw1
+
+10.242.75.5 IN  PTR   admin1
+
+10.242.75.6 IN  PTR       admin1a
+
+10.242.75.7 IN  PTR       admin1b
 """
 
 txt6 = """
@@ -236,18 +252,25 @@ caadm01     IN  FOO       10.242.40.11
 $ORIGIN ops.tor1.mozilla.com.
 
 fw1         IN  FOO   10.242.0.1
-wifi1      IN  A       10.242.0.20
-wifi1a     IN  A       10.242.0.21
-wifi1b     IN  A       10.242.0.22
+
+10.242.0.20 IN  PTR       wifi1
+
+10.242.0.21 IN  PTR       wifi1a
+
+10.242.0.22 IN  PTR       wifi1b
 
 $ORIGIN private.tor1.mozilla.com.
 
-infosec1    IN  A       10.240.2.10
+10.240.2.10 IN  PTR       infosec1
 
-fw1         IN  A   10.242.75.1
-admin1      IN  A   10.242.75.5
-admin1a     IN  A       10.242.75.6
-admin1b     IN  A       10.242.75.7
+    
+   10.242.75.1  IN  PTR   fw1
+
+10.242.75.5 IN  PTR   admin1
+
+10.242.75.6 IN  PTR       admin1a
+
+10.242.75.7 IN  PTR       admin1b
 """
 
 ex_txt6 = """
@@ -266,20 +289,27 @@ $ORIGIN ops.tor1.mozilla.com.
 
 fw1         IN  FOO   10.242.0.1
 
+
 $INCLUDE foo/bar/inventory ; This include preserves $ORIGIN
 
-wifi1      IN  A       10.242.0.20
-wifi1a     IN  A       10.242.0.21
-wifi1b     IN  A       10.242.0.22
+10.242.0.20 IN  PTR       wifi1
+
+10.242.0.21 IN  PTR       wifi1a
+
+10.242.0.22 IN  PTR       wifi1b
 
 $ORIGIN private.tor1.mozilla.com.
 
-infosec1    IN  A       10.240.2.10
+10.240.2.10 IN  PTR       infosec1
 
-fw1         IN  A   10.242.75.1
-admin1      IN  A   10.242.75.5
-admin1a     IN  A       10.242.75.6
-admin1b     IN  A       10.242.75.7
+    
+   10.242.75.1  IN  PTR   fw1
+
+10.242.75.5 IN  PTR   admin1
+
+10.242.75.6 IN  PTR       admin1a
+
+10.242.75.7 IN  PTR       admin1b
 """
 
 txt7 = """
@@ -290,7 +320,8 @@ $INCLUDE zones/mozilla.com/tor1/public
 
 $INCLUDE foo/bar/inventory ; This include preserves $ORIGIN
 
-wifi1      IN  A       10.242.0.20
+
+10.242.0.20 IN  PTR       wifi1
 """
 
 ex_txt7 = """
@@ -301,7 +332,8 @@ $INCLUDE zones/mozilla.com/tor1/public
 
 $INCLUDE foo/bar/inventory ; This include preserves $ORIGIN
 
-wifi1      IN  A       10.242.0.20
+
+10.242.0.20 IN  PTR       wifi1
 """
 
 txt8 = """
@@ -312,7 +344,7 @@ ex_txt8 = """
 $INCLUDE foo/bar/inventory ; This include preserves $ORIGIN
 """
 
-class EnsureIncludeTests(TestCase):
+class EnsureRevIncludeTests(TestCase):
 
     def test_1(self):
         self._do_test(txt1, ex_txt1, _ensure_include, include_file='foo/bar/inventory')
@@ -334,5 +366,5 @@ class EnsureIncludeTests(TestCase):
 
     def _do_test(self, text, expect, fun, include_file):
         ios = StringIO(text)
-        res = fun(ios, include_file)
+        res = fun(ios, 'reverse', include_file)
         self.assertEqual(res, expect)
