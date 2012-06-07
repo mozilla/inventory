@@ -63,6 +63,66 @@ def dns2ip_form(dnsip):
     return '.'.join(list(reversed(dnsip.split('.'))))
 
 
+def _ensure_include(text, include_file=None):
+    """Read in a zone file and ensure that the string::
+
+        $INCLUDE <include_file>
+
+    exists somewhere in the file. If it does exist return None. If it doesn't
+    exist insert the statment above the _first_ A record found in the file.
+
+    :param text: the zone file.
+    :type text: A file-ish object (StringIO or actual file)
+    :param include_file: the file to be included
+    :type include_file: str
+    """
+    if _has_include(text, include_file):
+        text.seek(0)
+        return text.read()
+
+    text.seek(0)  # Reset fp
+    done = False
+    return_text = ""
+    comment = "This include preserves $ORIGIN"
+
+    is_A = re.compile("^\s*\S*\s*IN\s*A\s*.*")
+    is_AAAA = re.compile("^\s*\S*\s*IN\s*AAAA\s*.*")
+
+    for raw_line in text.readlines():
+        if done == True:
+            return_text += raw_line
+            continue
+
+        line = raw_line.strip()
+        if is_A.match(line) or is_AAAA.match(line):
+            log("Inventory include not found. Adding $INCLUDE "
+                    "{0}".format(include_file), INFO)
+            return_text += "\n"
+            return_text += "$INCLUDE {0} ; {1}\n".format(include_file, comment)
+            return_text += "\n"
+            done = True
+
+        return_text += raw_line
+
+    return return_text
+
+def _has_include(text, include_file=None):
+    """Sanity check."""
+
+    is_file_include = re.compile("^\s*\$INCLUDE\s*([^;\s]*)\s*")
+
+    done = False
+    for raw_line in text.readlines():
+        file_include = is_file_include.match(raw_line)
+        if file_include:
+            include_str = file_include.groups(0)[0]
+            include_str = include_str.strip("'").strip('"')
+            if include_str == include_file:
+                log("Found existing include str: {0}".format(include_str), DEBUG)
+                return True
+
+    return False
+
 
 def increment_soa(file_):
     """This function wil take a file with an SOA a in it, parse the file,
