@@ -194,18 +194,36 @@ def build_forward(sites_to_build, inv_forward, svn_zones):
         site_path, inv_entries = site_data
         # Inv entries are in (<'name'>, <'ip'>) form
 
-        svn_entries = svn_zones.get(site, None)
+        zone, svn_entries = svn_zones.get(site, None)
 
         if svn_entries is not None:
-            a_records = filter_forward_conflicts(svn_entries, inv_entries,
+            raw_a_records = filter_forward_conflicts(svn_entries, inv_entries,
                     site_path)
+            clean_a_records = []
+            for name, ip, intr in raw_a_records:
+                cname_conflict = False
+                for dns_name, ttl, dns_data in zone.iterate_rdatas('CNAME'):
+                    cname = dns_name.to_text()
+                    cdata = dns_data.to_text()
+                    # This is madness, but it must be done.
+                    if cname == name:
+                        log("'{0}  A {1}' would conflict with '{2}   CNAME {3}', This "
+                                "A record will not be included in the build "
+                                "output.".format(name, ip, cname, cdata),
+                                WARNING)
+                        log("^ The system the conflict belongs to: "
+                                "{0}".format(print_system(intr.system)))
+                        cname_conflict = True
+                if not cname_conflict:
+                    clean_a_records.append((name, ip, intr))
+
         else:
             log("Couldn't find site {0} in svn".format(site),
                     WARNING)
             continue
 
 
-        generate_forward_inventory_data_file(site, a_records, site_path)
+        generate_forward_inventory_data_file(site, clean_a_records, site_path)
 
 def generate_reverse_inventory_data_file(network, records, network_file):
     inventory_file = '{0}.inventory'.format(network_file)
@@ -289,7 +307,8 @@ def analyse_svn(forward, reverse):
     for site, values in forward.iteritems():
         # Transform foward to look like reverse so we can use sets. Nifty
         # python sets are nifty.
-        for name, ip in values:
+        rzone, records = values
+        for name, ip in records:
             if not ip.startswith('10'):
                 continue
             if name.find('unused') > -1:
@@ -305,7 +324,8 @@ def analyse_svn(forward, reverse):
     reverse_p = set()
     for site, site_data in reverse.iteritems():
         site_path, values = site_data
-        for dnsip, name in values:
+        rzone, records = values
+        for dnsip, name in records:
             if not dns2ip_form(dnsip).startswith('10'):
                 continue
             if name.find('unused') > -1:

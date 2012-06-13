@@ -69,7 +69,7 @@ def get_zone_data(domain, filepath, dirpath, rtype=None):
         data.append((str(name), str(rdata)))
 
     os.chdir(cwd)
-    return data
+    return (rzone, data)
 
 def collect_svn_zones(svn_site_path, relative_zone_path):
     """
