@@ -145,11 +145,11 @@ def list_all_systems_ajax(request):
         search_q |= Q(notes__contains=search_term)
         search_q |= Q(asset_tag=search_term)
         search_q |= Q(oob_ip__contains=search_term)
+        search_q |= Q(keyvalue__value__contains=search_term)
         try:
-            total_count = models.System.with_related.filter(search_q).count()
+            total_count = models.System.with_related.filter(search_q).distinct('hostname').count()
         except:
             total_count = 0
-        search_q |= Q(keyvalue__value__contains=search_term)
         end_display = int(iDisplayStart) + int(iDisplayLength)
         try:
             systems = models.System.with_related.filter(search_q).order_by('hostname').distinct('hostname')[iDisplayStart:end_display]
