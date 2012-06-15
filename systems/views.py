@@ -698,12 +698,12 @@ def getoncall(request, type):
             return_irc_nick = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].get_profile().irc_nick
         except:
             return_irc_nick = ''
-    if type == 'sysadmin':
+    elif type == 'sysadmin':
         try:
             return_irc_nick = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].get_profile().irc_nick
         except:
             return_irc_nick = ''
-    if type == 'services':
+    elif type == 'services':
         try:
             return_irc_nick = User.objects.select_related().filter(userprofile__current_services_oncall=1)[0].get_profile().irc_nick
         except:
@@ -738,24 +738,38 @@ def oncall(request):
             """
                Couldn't get the ORM to update properly so running a manual transaction. For some reason, the model refuses to refresh
             """
-            from django.db import connection, transaction
-            cursor = connection.cursor()
-            cursor.execute("UPDATE `user_profiles` set `current_desktop_oncall` = 0, `current_sysadmin_oncall` = 0, `current_services_oncall` = 0")
-            transaction.commit_unless_managed()
-
             current_desktop_oncall = form.cleaned_data['desktop_support']
             current_sysadmin_oncall = form.cleaned_data['sysadmin_support']
             current_services_oncall = form.cleaned_data['services_support']
-
-            if current_desktop_oncall != current_sysadmin_oncall != current_services_oncall:
+            if clear_oncall_orm():
                 set_oncall('desktop', current_desktop_oncall)
                 set_oncall('sysadmin', current_sysadmin_oncall)
                 set_oncall('services', current_services_oncall)
-            elif current_desktop_oncall == current_sysadmin_oncall == current_services_oncall:
-                set_oncall('all', current_sysadmin_oncall)
     else:
         form = OncallForm(initial = initial)
     return render(request, 'systems/generic_form.html', {'current_services_oncall':current_services_oncall, 'current_desktop_oncall':current_desktop_oncall,'current_sysadmin_oncall':current_sysadmin_oncall, 'form':form})
+
+def clear_oncall():
+    from django.db import connection, transaction
+    cursor = connection.cursor()
+    cursor.execute("UPDATE `user_profiles` set `current_desktop_oncall` = 0, `current_sysadmin_oncall` = 0, `current_services_oncall` = 0")
+    transaction.commit_unless_managed()
+
+def clear_oncall_orm():
+    from django.contrib.auth.models import User
+    users = User.objects.all()
+    for user in users:
+        try:
+            profile = user.get_profile()
+            profile.current_sysadmin_oncall = 0
+            profile.current_desktop_oncall = 0
+            profile.current_services_oncall = 0
+            profile.save()
+            user.save()
+        except Exception, e:
+            continue
+
+    return True
 def set_oncall(type, username):
     from django.contrib.auth.models import User
     try:
