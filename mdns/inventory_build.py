@@ -10,8 +10,42 @@ import ipaddr
 import re
 import copy
 import pprint
+import pdb
+import string
 
 pp = pprint.PrettyPrinter(indent=2)
+
+def validate_label(label, valid_chars=None):
+    if not valid_chars:
+        valid_chars = string.ascii_letters + "0123456789" + "-"
+
+    for char in label:
+        if char == '.':
+            raise ValidationError("Invalid name {0}. Please do not span "
+                                  "multiple domains when creating records."
+                                    .format(label))
+        if valid_chars.find(char) < 0:
+            raise ValidationError("Ivalid name {0}. Character '{1}' is "
+                                  "invalid.".format(label, char))
+    return True
+
+
+def validate_name(intr):
+    if not intr.hostname:
+        return None
+    for label in intr.hostname.split('.'):
+        if not label:
+            log("Empty label in system {0}".format(print_system(intr.system)),
+                    ERROR)
+            return None
+        try:
+            validate_label(label)
+        except ValidationError, e:
+            log(str(e), ERROR)
+            return None
+    return True
+
+
 
 
 def generate_hostname(nic, site_name):
@@ -28,6 +62,8 @@ def generate_hostname(nic, site_name):
     :return build_hostname: The hostname to use in the A/PTR record.
     :type build_hostname: str
     """
+    if validate_name(nic) is None:
+        return None
     # Hey look Values are stored as strings.
     if nic.dns_auto_hostname is False:
         return nic.hostname
@@ -91,7 +127,10 @@ def inventory_build_sites(sites):
             network, entries = data
             for ip in intr.ips:
                 if ipaddr.IPv4Network(ip).overlaps(network):
-                    intr.hostname = generate_hostname(intr, site_name)
+                    hostname = generate_hostname(intr, site_name)
+                    if hostname is None:
+                        continue
+                    intr.hostname = hostname
                     entries.append(intr)
                     rev_file_name = '.'.join(ip.split('.')[:3])
                     reverse_data = agg_reverse.setdefault(rev_file_name, [])
