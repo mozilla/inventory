@@ -145,7 +145,7 @@
     <table>
     <tr><th>NIC</th><th>IP Address</th><th>Mac Address</th><th>DHCP Scope</th><th>DHCP Hostname</th></tr>
     {% for adapter in adapters %}
-        <tr><td>{{adapter.adapter_name}}</td><td>{{ adapter.ipv4_address }}</td><td>{{ adapter.mac_address }}</td><td>{{ adapter.dhcp_scope }}</td><td>{{ adapter.dhcp_hostname }}</td></tr>
+        <tr><td>{{adapter.adapter_name}}</td><td>{{ adapter.ipv4_address }}</td><td>{{ adapter.mac_address }}</td><td>{{ adapter.dhcp_scope }}</td><td>{{ adapter.option_hostname }}</td></tr>
 
     {% endfor %}
     </table>
