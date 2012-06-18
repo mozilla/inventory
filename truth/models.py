@@ -1,4 +1,7 @@
 from django.db import models
+from systems.models import ScheduledTask
+from django.db import IntegrityError
+import pdb
 
 # Create your models here.
 
@@ -29,3 +32,12 @@ class KeyValue(models.Model):
 
     class Meta:
         db_table = u'truth_key_value'
+
+    def save(self, *args, **kwargs):
+        if self.truth.name == "ip_to_vlan_mapping":
+            try:
+                ScheduledTask(type='dns', task=self.key).save()
+            except IntegrityError, e:
+                print ("Key {0} and Value {1} already existsed in "
+                    "table".format(self.key, self.value))
+        super(KeyValue, self).save(*args, **kwargs)

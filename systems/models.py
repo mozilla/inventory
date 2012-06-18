@@ -151,12 +151,15 @@ class KeyValue(models.Model):
 
         is_nic = re.match('^nic\.\d+\.(.*)\.\d+$', self.key)
         if self.pk:
+            # Make sure that there was actually a change to some data.
             self_ = KeyValue.objects.get(pk=self.pk)
             if self_.value == self.value:
                 ditry = False
             else:
                 dirty = True
         if is_nic and dirty:
+            # If a nic was changed and the changed key type was dns related, we
+            # need to schedule dns to be built.
             nic_type = is_nic.groups(0)
             dns_related_types = ('hostname', 'ipv4_address', 'dns_auto_build',
                     'dns_auto_hostname', 'dns_has_conflict')

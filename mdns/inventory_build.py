@@ -1,6 +1,7 @@
 from truth.models import Truth
 import systems
 from systems.models import System
+from systems.validation import validate_name
 from mdns.build_nics import *
 from settings import FIX_M_C_M_C
 from mdns.utils import *
@@ -14,39 +15,6 @@ import pdb
 import string
 
 pp = pprint.PrettyPrinter(indent=2)
-
-def validate_label(label, valid_chars=None):
-    if not valid_chars:
-        valid_chars = string.ascii_letters + "0123456789" + "-"
-
-    for char in label:
-        if char == '.':
-            raise ValidationError("Invalid name {0}. Please do not span "
-                                  "multiple domains when creating records."
-                                    .format(label))
-        if valid_chars.find(char) < 0:
-            raise ValidationError("Ivalid name {0}. Character '{1}' is "
-                                  "invalid.".format(label, char))
-    return True
-
-
-def validate_name(intr):
-    if not intr.hostname:
-        return None
-    for label in intr.hostname.split('.'):
-        if not label:
-            log("Empty label in system {0}".format(print_system(intr.system)),
-                    ERROR)
-            return None
-        try:
-            validate_label(label)
-        except ValidationError, e:
-            log(str(e), ERROR)
-            return None
-    return True
-
-
-
 
 def generate_hostname(nic, site_name):
     """
@@ -62,7 +30,9 @@ def generate_hostname(nic, site_name):
     :return build_hostname: The hostname to use in the A/PTR record.
     :type build_hostname: str
     """
-    if validate_name(nic) is None:
+    try:
+        validate_name(nic)
+    except ValidationError, e:
         return None
     # Hey look Values are stored as strings.
     if nic.dns_auto_hostname is False:

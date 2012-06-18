@@ -1,0 +1,10 @@
+console.scl3    10.22.0.0/21
+console.pek1    10.24.0.0/21
+console.phx1    10.8.0.0/22
+ops.sjc1    10.2.8.0/22
+ops.scl1    10.12.0.0/22
+ops.pek1    10.24.6.0/23
+ops.phx1    10.8.8.0/22
+
+ops.scl3    10.22.8.0/21
+ops.relange.scl3    10.26.8.0/21

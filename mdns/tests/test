@@ -1,0 +1,10 @@
+'\n;BE SURE TO INCREMENT THE SERIAL IN:\n; zones/mozilla.com/tor1/SOA\n\n\n$INCLUDE foo/bar/inventory ; This include preserves $ORIGIN\n\naruba-master    IN  A       10.242.0.20\ncrashplan   IN  CNAME       backup1.private.tor1.mozilla.com.\ncaadm01     IN  A       10.242.40.11\n'
+
+'\n;BE SURE TO INCREMENT THE SERIAL IN:\n; zones/mozilla.com/tor1/SOA\n\n$INCLUDE foo/bar/inventory ; This include preserves $ORIGIN\n\naruba-master    IN  A       10.242.0.20\ncrashplan   IN  CNAME       backup1.private.tor1.mozilla.com.\ncaadm01     IN  A       10.242.40.11\n'
+
+'\n;BE SURE TO INCREMENT THE SERIAL IN:\n; zones/mozilla.com/tor1/SOA\n\n$INCLUDE zones/mozilla.com/tor1/public\n\n$INCLUDE foo/bar/inventory\n\n$ORIGIN tor1.mozilla.com.\n\n            IN  FOO       10.242.0.20\ncrashplan   IN  CNAME       backup1.private.tor1.mozilla.com.\ncaadm01     IN  FOO       10.242.40.11\n\n$ORIGIN ops.tor1.mozilla.com.\n\nfw1         IN  FOO   10.242.0.1\nwifi1      IN  A       10.242.0.20\nwifi1a     IN  A       10.242.0.21\nwifi1b     IN  A
+10.242.0.22\n\n$ORIGIN private.tor1.mozilla.com.\n\ninfosec1    IN  A       10.240.2.10\n\nfw1         IN  A   10.242.75.1\nadmin1      IN  A   10.242.75.5\nadmin1a     IN  A       10.242.75.6\nadmin1b     IN  A       10.242.75.7\n'
+
+'\n;BE SURE TO INCREMENT THE SERIAL IN:\n; zones/mozilla.com/tor1/SOA\n\n$INCLUDE zones/mozilla.com/tor1/public\n\n\n$ORIGIN tor1.mozilla.com.\n\n            IN  FOO       10.242.0.20\ncrashplan   IN  CNAME
+backup1.private.tor1.mozilla.com.\ncaadm01     IN  FOO       10.242.40.11\n\n$ORIGIN ops.tor1.mozilla.com.\n\nfw1         IN  FOO   10.242.0.1\n\n\n$INCLUDE foo/bar/inventory ; This include preserves $ORIGIN\n\nwifi1      IN  A       10.242.0.20\nwifi1a     IN  A       10.242.0.21\nwifi1b     IN  A       10.242.0.22\n\n$ORIGIN private.tor1.mozilla.com.\n\ninfosec1    IN  A       10.240.2.10\n\nfw1         IN  A   10.242.75.1\nadmin1      IN  A   10.242.75.5\nadmin1a     IN  A
+10.242.75.6\nadmin1b     IN  A       10.242.75.7\n'

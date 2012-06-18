@@ -36,6 +36,20 @@ class Interface(object):
         else:
             return False
 
+    def set_kv(self, key, value):
+        key_str = "nic.{0}.{1}.{2}".format(self.primary, key, self.alias)
+        kv = self.system.keyvalue_set.filter(key=key_str)
+        if kv:
+            kv = kv[0]
+            kv.value = value
+            kv.save()
+        else:
+            kv = system.models.KeyValue(key=key_str, value=str(value))
+            kv.save()
+
+        setattr(self, key, value)
+        return
+
     def pprint(self):
         pp.pformat(vars(self))
 
@@ -94,6 +108,12 @@ def build_nic(sub_nic):
 
             else:
                 setattr(intr, tmp.group(1), nic_data.value)
+    if intr.hostname is None:
+        log("System {0} and nic {1}/{2} hast no hostname key, using hostname "
+            "found on the system.".format(print_system(intr.system), intr.primary,
+            intr.alias), ERROR)
+        intr.hostname = intr.system.hostname
+
     return intr
 
 def get_nic_objs():
