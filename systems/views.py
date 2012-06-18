@@ -469,6 +469,8 @@ def save_network_adapter(request, id):
 @allow_anyone
 def system_show(request, id):
     system = get_object_or_404(models.System, pk=id)
+    system.notes = system.notes.replace("\n", "<br />")
+    show_nics_in_key_value = False
     is_release = False
     try:
         client = Client()
@@ -483,7 +485,11 @@ def system_show(request, id):
             system.server_model.vendor == "HP"):
 
         system.warranty_link = "http://www11.itrc.hp.com/service/ewarranty/warrantyResults.do?productNumber=%s&serialNumber1=%s&country=US" % (system.server_model.part_number, system.serial)
-    key_values = system.keyvalue_set.all()
+    if show_nics_in_key_value:
+        key_values = system.keyvalue_set.all()
+    else:
+        key_values = system.keyvalue_set.exclude(key__istartswith='nic.')
+
     return render_to_response('systems/system_show.html', {
             'system': system,
             'adapters': adapters,
