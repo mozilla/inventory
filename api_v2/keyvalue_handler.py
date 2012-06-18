@@ -344,6 +344,7 @@ class KeyValueHandler(BaseHandler):
                     adapter_name = ''
                     mac_address = ''
                     dhcp_hostname = ''
+                    dhcp_scope = ''
                     dhcp_filename = ''
                     ipv4_address = ''
                     dhcp_domain_name_servers = ''
@@ -355,6 +356,8 @@ class KeyValueHandler(BaseHandler):
                         mac_address = tmp_dict['nic.%s.mac_address.0' % a]
                     if 'nic.%s.dhcp_hostname.0' % a in tmp_dict:
                         dhcp_hostname = tmp_dict['nic.%s.dhcp_hostname.0' % a]
+                    if 'nic.%s.dhcp_scope.0' % a in tmp_dict:
+                        dhcp_scope = tmp_dict['nic.%s.dhcp_scope.0' % a]
                     if 'nic.%s.dhcp_filename.0' % a in tmp_dict:
                         dhcp_filename = tmp_dict['nic.%s.dhcp_filename.0' % a]
                     if 'nic.%s.dhcp_domain_name_servers.0' % a in tmp_dict:
@@ -366,6 +369,7 @@ class KeyValueHandler(BaseHandler):
                                 'adapter_name':adapter_name,
                                 'mac_address':mac_address,
                                 'dhcp_hostname':dhcp_hostname,
+                                'dhcp_scope':dhcp_scope,
                                 'dhcp_filename':dhcp_filename,
                                 'dhcp_domain_name_servers':dhcp_domain_name_servers,
                             }
