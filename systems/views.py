@@ -483,10 +483,11 @@ def system_show(request, id):
             system.server_model.vendor == "HP"):
 
         system.warranty_link = "http://www11.itrc.hp.com/service/ewarranty/warrantyResults.do?productNumber=%s&serialNumber1=%s&country=US" % (system.server_model.part_number, system.serial)
-
+    key_values = system.keyvalue_set.all()
     return render_to_response('systems/system_show.html', {
             'system': system,
             'adapters': adapters,
+            'key_values': key_values,
             'is_release': is_release,
             'read_only': getattr(request, 'read_only', False),
            },

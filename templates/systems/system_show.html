@@ -154,6 +154,21 @@
 <div style="clear:both;"></div>
 </dl>
 </div>
+<dl class="show">
+<dt>Key/Value Store: </dt>
+<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;">
+<pre>
+    <table>
+    <tr><th>Key</th><th>Value</th></tr>
+    {% for key in key_values %}
+        <tr><td>{{key.key}}</td><td>{{ key.value }}</td></tr>
+    {% endfor %}
+    </table>
+
+</pre></dd>
+<div style="clear:both;"></div>
+</dl>
+</div>
 {% if not read_only %}
 <div>
 
