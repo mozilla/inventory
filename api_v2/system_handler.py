@@ -13,7 +13,7 @@ except:
 from django.test.client import Client
 from django.db.models import Q
 from settings import API_ACCESS
-from middleware.restrict_by_api_token import AuthenticatedAPI
+from mozilla_inventory.middleware.restrict_by_api_token import AuthenticatedAPI
 
 class SystemHandler(BaseHandler):
     allowed_methods = API_ACCESS

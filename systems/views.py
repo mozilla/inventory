@@ -15,7 +15,7 @@ except:
 import _mysql_exceptions
 
 import models
-from middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
+from mozilla_inventory.middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 
 import re
 from django.test.client import Client
