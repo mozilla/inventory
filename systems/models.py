@@ -129,7 +129,7 @@ class ApiManager(models.Manager):
         return results
 
 class KeyValue(models.Model):
-    system = models.ForeignKey('System')
+    system = models.ForeignKey('System', related_name='key_values')
     key = models.CharField(max_length=255, blank=True, null=True)
     value = models.CharField(max_length=255, blank=True, null=True)
     objects = models.Manager()
@@ -297,6 +297,7 @@ class System(DirtyFieldsMixin, models.Model):
     is_puppet_server = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     is_nagios_server = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     is_switch = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
+    #key_values = models.ManyToManyField(KeyValue, related_name='system_key_values')
     #network_adapter = models.ForeignKey('NetworkAdapter', blank=True, null=True)
 
 

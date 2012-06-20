@@ -43,6 +43,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'api',
     'api_v2',
     'reports',
+    'tastypie',
 ]
 
 
