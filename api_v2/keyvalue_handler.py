@@ -348,6 +348,7 @@ class KeyValueHandler(BaseHandler):
                     dhcp_filename = ''
                     ipv4_address = ''
                     dhcp_domain_name_servers = ''
+                    option_hostname = ""
                     if 'nic.%s.ipv4_address.0' % a in tmp_dict:
                         ipv4_address = tmp_dict['nic.%s.ipv4_address.0' % a]
                     if 'nic.%s.name.0' % a in tmp_dict:
@@ -374,7 +375,7 @@ class KeyValueHandler(BaseHandler):
                                 'dhcp_domain_name_servers':dhcp_domain_name_servers,
                             }
                             )
-                    except:
+                    except Exception, e:
                         pass
                 #tmp_list.append(tmp_dict)
                 return final_list
