@@ -1,0 +1,13 @@
+{% extends "mozdns/detail.html" %}
+
+{% block dns_content %}
+    {% if object.domain %}
+        <a class="btn" href="{{ object.domain.get_absolute_url() }}">View Domain</a>
+    {% endif %}
+
+    {% if object.reverse_domain %}
+        <a class="btn" href="{{ object.reverse_domain.get_absolute_url() }}">View Reverse Domain</a>
+    {% endif %}
+
+    {{ super() }}
+{% endblock %}

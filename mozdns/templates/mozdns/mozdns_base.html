@@ -1,0 +1,47 @@
+{% extends "mozdns/base.html" %}
+
+{% block site_tabs %}
+        <div class="dns-menu">
+                <div class="logo"><a href="/"><i class="icon-glass"></i></a></div>
+
+                <!-- DNS NAV -->
+                        <span class="nav-item">
+                            <a class="nav-link" href="/mozdns/domain/">Domains</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/mozdns/address_record/">Address Records</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/mozdns/reverse_domain/">Reverse Domains</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/mozdns/mx/">MX</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/mozdns/soa/">SOA</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/mozdns/nameserver/">NS</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/mozdns/reverse_nameserver/">Reverse NS</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/mozdns/srv/">SRV</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/mozdns/txt/">TXT</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/mozdns/cname/">CNAME</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/mozdns/ptr/">PTR</a>
+                        </span>
+
+        </div>
+{% endblock %}
+
+<div class='dns-content'>
+{% block dns_content %}{% endblock %}
+</div>

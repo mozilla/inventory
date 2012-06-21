@@ -1,0 +1,15 @@
+{% extends "mozdns/mozdns_detail.html" %}
+
+{% block title %}
+    {{object.server}}
+{% endblock %}
+
+{% block header %}
+    Nameserver {{object.server}}
+{% endblock %}
+
+{% block nameserver_nav %}
+    {{ super () }}
+
+    {% include "mozdns/detail_nav.inc" %}
+{% endblock %}

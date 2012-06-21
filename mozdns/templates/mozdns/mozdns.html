@@ -1,0 +1,18 @@
+{% extends "mozdns/mozdns_base.html" %}
+
+
+{% block dns_content %}
+    <h1>Moz DNS</h1>
+    <div class="wrap main container-fluid">
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+
+    </div>
+{% endblock %}

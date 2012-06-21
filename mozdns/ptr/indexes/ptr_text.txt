@@ -1,0 +1,3 @@
+{{ object.name }}
+{{ object.data_domain.name }}
+{{ object.ip_str }}

@@ -19,7 +19,7 @@ from mozdns.views import MozdnsCreateView, MozdnsDeleteView, MozdnsListView
 from mozdns.domain.models import Domain
 from mozdns.domain.forms import DomainForm, DomainUpdateForm
 from mozdns.mx.models import MX
-from mozdns.nameserver.nameserver.models import Nameserver
+from mozdns.nameserver.models import Nameserver
 from mozdns.ptr.models import PTR
 from mozdns.soa.models import SOA
 from mozdns.srv.models import SRV

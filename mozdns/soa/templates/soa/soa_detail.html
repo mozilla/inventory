@@ -1,0 +1,24 @@
+{% extends "mozdns/mozdns_detail.html" %}
+
+{% block dns_content %}
+    {% block title %}
+        {{ object.comment }}
+    {% endblock %}
+
+
+
+    {{ super() }}
+
+    {% from "mozdns/tables.html" import render_table %}
+
+    {% if dom_matrix %}
+        <h3> Domains </h3>
+        {{ render_table(dom_headers, dom_matrix, dom_urls) }}
+    {% endif %}
+
+    {% if rdom_matrix %}
+        <h3> Reverse Domains </h3>
+        {{ render_table(rdom_headers, rdom_matrix, rdom_urls) }}
+    {% endif %}
+
+{% endblock %}

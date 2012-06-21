@@ -1,0 +1,37 @@
+{% extends "mozdns/mozdns_detail.html" %}
+
+{% block dns_content %}
+
+<div class='dns-title'>Address Record {{ object.fqdn }}</div>
+    {% if object.domain %}
+        <a class="btn" href="{{ object.domain.get_absolute_url() }}">View Domain</a>
+    {% endif %}
+
+    {% if object.reverse_domain %}
+        <a class="btn" href="{{ object.reverse_domain.get_absolute_url() }}">View Reverse Domain</a>
+    {% endif %}
+
+    {% from "mozdns/tables.html" import render_table %}
+
+    <table class="table">
+        <thead>
+            {% for item, value in object.details() %}
+                <th>{{ item }}</th>
+            {% endfor %}
+        </thead>
+
+        <tbody>
+            <tr>
+            {% for item, value in object.details() %}
+                <td>
+                    {% if interface and value == 'A' %}
+                        A/PTR
+                    {% else %}
+                        {{ value }}
+                    {% endif %}
+                </td>
+            {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}

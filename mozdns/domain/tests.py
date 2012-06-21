@@ -9,7 +9,7 @@ from mozdns.ptr.models import PTR
 from mozdns.domain.models import Domain
 from mozdns.domain.models import ValidationError, _name_to_domain
 from mozdns.ip.models import ipv6_to_longs, Ip
-from mozdns.nameserver.nameserver.models import Nameserver
+from mozdns.nameserver.models import Nameserver
 from mozdns.domain.models import Domain
 from mozdns.domain.models import boot_strap_ipv6_reverse_domain
 from mozdns.soa.models import SOA

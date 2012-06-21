@@ -1,0 +1,14 @@
+{% extends "mozdns/mozdns_detail.html" %}
+
+{% block title %}
+    {{ object.name }}
+{% endblock %}
+
+{% block header %}
+    PTR {{ object.name }}
+{% endblock %}
+
+{% block ptr_nav %}
+    {{ super () }}
+    {#{% include "mozdns/detail_nav.inc" %}#}
+{% endblock %}
