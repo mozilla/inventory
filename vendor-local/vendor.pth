@@ -2,3 +2,4 @@ src/django-piston
 src/django-tastypie
 src/django-multidb-router
 src/mimeparse
+src/django-extensions

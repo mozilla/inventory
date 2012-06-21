@@ -114,8 +114,8 @@ class Contract(models.Model):
 
 class Location(models.Model):
     name = models.CharField(unique=True, max_length=255, blank=True)
-    address = models.TextField(blank=True)
-    note = models.TextField(blank=True)
+    address = models.TextField(blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
 
     def __unicode__(self):
         return self.name
@@ -201,8 +201,8 @@ class Mac(models.Model):
         db_table = u'macs'
 
 class OperatingSystem(models.Model):
-    name = models.CharField(unique=True, max_length=255, blank=True)
-    version = models.CharField(unique=True, max_length=255, blank=True)
+    name = models.CharField(max_length=255, blank=True)
+    version = models.CharField(max_length=255, blank=True)
 
     def __unicode__(self):
         return "%s - %s" % (self.name, self.version)
@@ -214,8 +214,8 @@ class OperatingSystem(models.Model):
 class ServerModel(models.Model):
     vendor = models.CharField(max_length=255, blank=True)
     model = models.CharField(max_length=255, blank=True)
-    description = models.TextField(blank=True)
-    part_number = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True, null=True)
+    part_number = models.CharField(max_length=255, blank=True, null=True)
 
     def __unicode__(self):
         return "%s - %s" % (self.vendor, self.model)
@@ -272,26 +272,26 @@ class System(DirtyFieldsMixin, models.Model):
     (1, 'Yes'),
     )
     hostname = models.CharField(unique=True, max_length=255)
-    serial = models.CharField(max_length=255, blank=True)
+    serial = models.CharField(max_length=255, blank=True, null=True)
     operating_system = models.ForeignKey('OperatingSystem', blank=True, null=True)
     server_model = models.ForeignKey('ServerModel', blank=True, null=True)
     created_on = models.DateTimeField(null=True, blank=True)
     updated_on = models.DateTimeField(null=True, blank=True)
-    oob_ip = models.CharField(max_length=30, blank=True)
-    asset_tag = models.CharField(max_length=255, blank=True)
-    notes = models.TextField(blank=True)
-    licenses = models.TextField(blank=True)
+    oob_ip = models.CharField(max_length=30, blank=True, null=True)
+    asset_tag = models.CharField(max_length=255, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    licenses = models.TextField(blank=True, null=True)
     allocation = models.ForeignKey('Allocation', blank=True, null=True)
     system_rack = models.ForeignKey('SystemRack', blank=True, null=True)
     rack_order = models.DecimalField(null=True, blank=True, max_digits=6, decimal_places=2)
-    switch_ports = models.CharField(max_length=255, blank=True)
-    patch_panel_port = models.CharField(max_length=255, blank=True)
-    oob_switch_port = models.CharField(max_length=255, blank=True)
+    switch_ports = models.CharField(max_length=255, blank=True, null=True)
+    patch_panel_port = models.CharField(max_length=255, blank=True, null=True)
+    oob_switch_port = models.CharField(max_length=255, blank=True, null=True)
     purchase_date = models.DateField(null=True, blank=True)
-    purchase_price = models.CharField(max_length=255, blank=True)
+    purchase_price = models.CharField(max_length=255, blank=True, null=True)
     system_status = models.ForeignKey('SystemStatus', blank=True, null=True)
     change_password = models.DateTimeField(null=True, blank=True)
-    ram = models.CharField(max_length=255, blank=True)
+    ram = models.CharField(max_length=255, blank=True, null=True)
     is_dhcp_server = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     is_dns_server = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     is_puppet_server = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
@@ -418,11 +418,11 @@ class UserProfile(models.Model):
     current_desktop_oncall = models.BooleanField()
     current_sysadmin_oncall = models.BooleanField()
     current_services_oncall = models.BooleanField()
-    irc_nick = models.CharField(max_length=128)
+    irc_nick = models.CharField(max_length=128, null=True, blank=True)
     api_key = models.CharField(max_length=255, null=True, blank=True)
-    pager_type = models.CharField(choices=PAGER_CHOICES, max_length=255, null=False, blank=False)
-    pager_number = models.CharField(max_length=255, null=False, blank=False)
-    epager_address = models.CharField(max_length=255, null=False, blank=False)
+    pager_type = models.CharField(choices=PAGER_CHOICES, max_length=255, null=True, blank=True)
+    pager_number = models.CharField(max_length=255, null=True, blank=True)
+    epager_address = models.CharField(max_length=255, null=True, blank=True)
     objects = QuerySetManager()
     class QuerySet(QuerySet):
         def get_all_desktop_oncall(self):

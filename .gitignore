@@ -17,3 +17,6 @@ tmp/*
 *.mo
 src/
 .vagrant
+private.json
+truth.json
+private_tests.py
