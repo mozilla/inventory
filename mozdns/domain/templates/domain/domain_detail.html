@@ -1,0 +1,48 @@
+{% extends "mozdns/mozdns_detail.html" %}
+
+{% block dns_content %}
+    <div class='dns-title'>The {{ object.name }} Domain</div>
+
+    {% from "mozdns/tables.html" import render_table %}
+
+    {% if ns_matrix %}
+        <h3> Nameservers </h3>
+        {{ render_table(ns_headers, ns_matrix, ns_urls) }}
+    {% endif %}
+
+
+    {% if mx_matrix %}
+        <h3> MX Records </h3>
+        {{ render_table(mx_headers, mx_matrix, mx_urls) }}
+    {% endif %}
+
+    {% if srv_matrix %}
+        <h3> SRV Records </h3>
+        {{ render_table(srv_headers, srv_matrix, srv_urls) }}
+    {% endif %}
+
+    {% if txt_matrix %}
+        <h3> TXT Records </h3>
+        {{ render_table(txt_headers, txt_matrix, txt_urls) }}
+    {% endif %}
+
+    {% if cname_matrix %}
+        <h3> CNAME Records </h3>
+        {{ render_table(cname_headers, cname_matrix, cname_urls) }}
+    {% endif %}
+
+    {% if intr_matrix %}
+        <h3> Interface Records </h3>
+        {{ render_table(intr_headers, intr_matrix, intr_urls) }}
+    {% endif %}
+
+    {% if address_matrix %}
+        <h3> Address Records </h3>
+        {{ render_table(address_headers, address_matrix, address_urls) }}
+    {% endif %}
+
+    {% if ptr_matrix %}
+        <h3> PTR Records </h3>
+        {{ render_table(ptr_headers, ptr_matrix, ptr_urls) }}
+    {% endif %}
+{% endblock %}
