@@ -10,15 +10,18 @@ from mozdns.domain.models import Domain
 from mozdns.domain.models import ValidationError, _name_to_domain
 from mozdns.ip.models import ipv6_to_longs, Ip
 from mozdns.nameserver.nameserver.models import Nameserver
-from mozdns.reverse_domain.models import ReverseDomain
-from mozdns.reverse_domain.models import boot_strap_ipv6_reverse_domain
+from mozdns.domain.models import Domain
+from mozdns.domain.models import boot_strap_ipv6_reverse_domain
 from mozdns.soa.models import SOA
 
+import pdb
 
 class DomainTests(TestCase):
 
     def setUp(self):
-        ReverseDomain.objects.get_or_create(name="128")
+        Domain.objects.get_or_create(name="arpa")
+        Domain.objects.get_or_create(name="in-addr.arpa")
+        Domain.objects.get_or_create(name="128.in-addr.arpa")
 
     def test_remove_domain(self):
         c = Domain( name = 'com')
@@ -103,7 +106,7 @@ class DomainTests(TestCase):
     def test_3_soa_validators(self):
         s1, _ = SOA.objects.get_or_create(primary = "ns1.foo2.gaz", contact = "hostmaster.foo", comment="foo.gaz2")
 
-        r, _ = ReverseDomain.objects.get_or_create(name='9')
+        r, _ = Domain.objects.get_or_create(name='9.in-addr.arpa')
         r.soa = s1
         r.save()
 

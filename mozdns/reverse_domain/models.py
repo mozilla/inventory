@@ -19,23 +19,23 @@ class ReverseDomain(models.Model, ObjectUrlMixin):
     the database.mozdns and it cannot be paired with a reverse domain. The
     solution is to create a reverse domain for the Ip to live in.
 
-    A ``ValidationError`` is raised when you try to delete a reverse
-    domain that has child reverse domains. A reverse domain should only
-    be deleted when it has no child reverse domains.
+        A ``ValidationError`` is raised when you try to delete a reverse
+        domain that has child reverse domains. A reverse domain should only
+        be deleted when it has no child reverse domains.
 
-    All reverse domains should have a master (or parent) reverse domain.
-    A ``ValidationError`` will be raised if you try to create a reverse
-    domain that should have a master reverse domain.
+        All reverse domains should have a master (or parent) reverse domain.
+        A ``ValidationError`` will be raised if you try to create a reverse
+        domain that should have a master reverse domain.
 
-    The ``ip_type`` must be either '4' or '6'. Any other values will
-    cause a ``ValidationError`` to be raised when calling an objects
-    ``full_clean`` method.
+        The ``ip_type`` must be either '4' or '6'. Any other values will
+        cause a ``ValidationError`` to be raised when calling an objects
+        ``full_clean`` method.
 
-    If you are not authoritative for a reverse domain, set the ``soa``
-    field to ``None``.
+        If you are not authoritative for a reverse domain, set the ``soa``
+        field to ``None``.
 
-    The ``name`` field must be unique. Failing to make it unique will
-    raise a ``ValidationError``.
+        The ``name`` field must be unique. Failing to make it unique will
+        raise a ``ValidationError``.
 
     >>> ReverseDomain(name=name)
 
@@ -161,6 +161,7 @@ def ip_to_reverse_domain(ip, ip_type):
     else:
         raise ValidationError("Error Could not find reverse domain for "
                               "ip '{0}'".format(ip))
+
 
 def _name_to_master_reverse_domain(name, ip_type="4"):
     """Given an name return the most specific reverse_domain that the ip
