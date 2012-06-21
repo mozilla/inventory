@@ -1,0 +1,37 @@
+{% extends "mozdns/mozdns_base.html" %}
+
+{% block dns_content %}
+{% block title %}
+    <div class='dns-title'>Reverse Domain {{ object.name }}</div>
+{% endblock %}
+
+
+
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="{{ object.get_edit_url() }}">Edit {{ object.name }}</a>
+    </span>
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="/mozdns/reverse_nameserver/{{ object.pk }}/create/">Create NS</a>
+    </span>
+    <span class="nav-item">
+        <a class="delete-link sub-link nav-link" href="{{ object.get_delete_url() }}">Delete {{ object.name }}</a>
+    </span>
+
+    {% from "mozdns/tables.html" import render_table %}
+
+    {% if object.soa %}
+        SOA: <a href="{{ object.soa.get_absolute_url() }}">{{ object.soa.primary }}</a>
+    {% endif %}
+    <br/>
+
+    {% if object.master_reverse_domain %}
+        Master Reverse Domain: <a href="{{ object.master_reverse_domain.get_absolute_url() }}">{{ object.master_reverse_domain.name }}</a>
+    {% endif %}
+    <br/>
+
+    {% if revns_matrix %}
+        <h3> Reverse Nameservers </h3>
+        {{ render_table( revns_headers, revns_matrix, revns_urls ) }}
+    {% endif %}
+
+{% endblock %}
