@@ -31,6 +31,26 @@ class ServerModelResource(ModelResource):
         resource_name = 'server_model'
         queryset = system_model.ServerModel.objects.all()
 
+class AllocationResource(ModelResource):
+    class Meta:
+        resource_name = 'allocation'
+        queryset = system_model.Allocation.objects.all()
+
+class LocationResource(ModelResource):
+    class Meta:
+        resource_name = 'location'
+        queryset = system_model.Location.objects.all()
+
+class SystemRackResource(ModelResource):
+    class Meta:
+        resource_name = 'system_rack'
+        queryset = system_model.SystemRack.objects.all()
+
+class SystemStatusResource(ModelResource):
+    class Meta:
+        resource_name = 'system_status'
+        queryset = system_model.SystemStatus.objects.all()
+
 class OperatingSystemResource(ModelResource):
     class Meta:
         resource_name = 'operating_system'
