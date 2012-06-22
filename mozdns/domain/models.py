@@ -108,8 +108,12 @@ class Domain(models.Model, ObjectUrlMixin):
 
     def save(self, *args, **kwargs):
         self.full_clean()
+        if self.pk is None:
+            new_domain = True
+        else:
+            new_domain = False
         super(Domain, self).save(*args, **kwargs)
-        if not self.is_reverse:
+        if not self.is_reverse and new_domain:
             self.look_for_data_domains()  # This needs to come after super's
             # save becase when a domain is first created it is not in the db.
             # look_for_data_domains relies on the domain having a pk.

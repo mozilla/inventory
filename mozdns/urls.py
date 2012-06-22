@@ -7,7 +7,6 @@ urlpatterns = patterns('',
 
     url(r'address_record/', include('mozdns.address_record.urls')),
     url(r'cname/', include('mozdns.cname.urls')),
-    url(r'reverse_domain/', include('mozdns.reverse_domain.urls')),
     url(r'domain/', include('mozdns.domain.urls')),
     url(r'mx/', include('mozdns.mx.urls')),
     url(r'nameserver/', include('mozdns.nameserver.urls')),

@@ -46,7 +46,7 @@ def print_system(system):
 >>> ip2dns_form('10.20.30.40', lowercase=True)
 '40.30.20.10.in-addr.arpa'
 """
-def ip2dns_form(ip, lowercase=False):
+def _ip2dns_form(ip, lowercase=False):
     """Convert an ip to dns zone form. The ip is assumed to be in valid dotted
     decimal format."""
     octets = ip.split('.')

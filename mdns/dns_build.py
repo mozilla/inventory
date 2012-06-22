@@ -15,6 +15,7 @@ from settings import RUN_SVN_STATS
 
 import os.path
 import pprint
+import re
 
 DEBUG = 3
 DO_DEBUG = False
@@ -73,68 +74,301 @@ def do_dns_build():
     # The function get_all_sites should generate tuples like:
     #   ('<site-name>', '<network>', '<file_path_to_site_dir>')
 
-    all_sites = set(get_all_sites(MOZ_SITE_PATH))
-    sites_to_build = set()
+    #sites_to_build = set(get_all_sites(MOZ_SITE_PATH))
+    #sites_to_build = set()
 
-    changed_ui = set(get_ui_sites_changed(all_sites))
-    sites_to_build = sites_to_build.union(changed_ui)
+    #changed_ui = set(get_ui_sites_changed(all_sites))
+    #sites_to_build = sites_to_build.union(changed_ui)
 
-    changed_forward = set(get_forward_svn_sites_changed(all_sites,
-        MOZ_SITE_PATH))
-    sites_to_build = sites_to_build.union(changed_forward)
+    #changed_forward = set(get_forward_svn_sites_changed(all_sites,
+    #    MOZ_SITE_PATH))
+    #sites_to_build = sites_to_build.union(changed_forward)
 
-    changed_reverse = set(get_reverse_svn_sites_changed(all_sites,
-        REV_SITE_PATH))
-    sites_to_build = sites_to_build.union(changed_reverse)
-
-    log("====== Sites to build", INFO)
-    for vlan_site, network, site_path in sites_to_build:
-        vlan, site = vlan_site.split('.')
-        log("Building {0} for vlan {1} ({2}). Site is in {3}".format(site, vlan, network,
-            site_path))
-
-    if not sites_to_build:
-        log("No sites to build.", INFO)
-        log("Done.", INFO)
-        return
-
-    inv_forward, inv_reverse = inventory_build_sites(sites_to_build)
-    if DO_DEBUG:
-        log( "=" * 10 + "Forward sites" + "=" * 10 , DEBUG)
-        for site, data in inv_forward.items():
-            log("-" * 10 + site, DEBUG)
-            network, entries = data
-            for thing in entries:
-                log(thing.pprint(), DEBUG)
-
-        log("=" * 10 + "Reverse sites" + "=" * 10, DEBUG)
-        for site, data in inv_reverse.items():
-            site_path, intrs = data
-            log("-" * 10 + site, DEBUG)
-            log(site_path, DEBUG)
-            for intr in intrs:
-                intr.pprint()
-
-    svn_zones = collect_svn_zones(MOZ_SITE_PATH, ZONE_PATH)
+    #changed_reverse = set(get_reverse_svn_sites_changed(all_sites,
+    #    REV_SITE_PATH))
+    #sites_to_build = sites_to_build.union(changed_reverse)
+    #svn_zones = collect_svn_zones(MOZ_SITE_PATH, ZONE_PATH)
     rev_svn_zones = collect_rev_svn_zones(REV_SITE_PATH, ZONE_PATH)
 
-    if RUN_SVN_STATS:
-        # We have the data, let's do some analysis.
-        analyse_svn(svn_zones, rev_svn_zones)
 
-    build_forward(sites_to_build, inv_forward, svn_zones)
-    # The reason why this is done in two different functions rather than one is
-    # we might want to include PTR records that aren't part of a system. If we
-    # do this we will need go and get those from the KV store. That can be done
-    # in the build_reverse function.
-    build_reverse(sites_to_build, inv_reverse, rev_svn_zones)
+    #populate_forward_dns(svn_zones)
+    populate_reverse_dns(rev_svn_zones)
 
-    log("Rebuilding Hashes (SOAs serials were changed).", INFO)
-    # These two functions will update the hashes truth store with fresh hashes.
-    get_forward_svn_sites_changed(all_sites, MOZ_SITE_PATH)
-    get_reverse_svn_sites_changed(all_sites, REV_SITE_PATH)
+from mozdns.address_record.models import AddressRecord
+from mozdns.cname.models import CNAME
+from mozdns.domain.models import Domain
+from mozdns.mx.models import MX
+from mozdns.nameserver.models import Nameserver
+from mozdns.ptr.models import PTR
+from mozdns.soa.models import SOA
+from mozdns.srv.models import SRV
+from mozdns.tests.view_tests import random_label
+from mozdns.txt.models import TXT
+from mozdns.domain.utils import *
+from mozdns.ip.utils import ip2dns_form
 
-    log("Done.", INFO)
+def create_domain(name, ip_type=None, delegated=False):
+    if ip_type is None:
+        ip_type = '4'
+    if name in ('arpa', 'in-addr.arpa', 'ipv6.arpa'):
+        pass
+    else:
+        name = ip2dns_form(name, ip_type=ip_type)
+    d = Domain.objects.get_or_create(name = name, delegated=delegated)
+    return d
+
+
+def populate_reverse_dns(rev_svn_zones):
+    arpa = create_domain( name = 'arpa')
+    i_arpa = create_domain( name = 'in-addr.arpa')
+    i6_arpa = create_domain( name = 'ipv6.arpa')
+
+    for site, data in rev_svn_zones.iteritems():
+        site_path, more_data = data
+        zone, records = more_data
+        print "-" * 15 + " " + site
+
+        for (name, ttl, rdata) in zone.iterate_rdatas('SOA'):
+            print str(name) + " SOA " + str(rdata)
+            exists = SOA.objects.filter(minimum=rdata.minimum,
+                    contact=rdata.rname.to_text().strip('.'),
+                    primary=rdata.mname.to_text().strip('.'),
+                    comment="SOA for {0}.in-addr.arpa".format(site))
+            if exists:
+                soa = exists[0]
+            else:
+                soa = SOA(serial=rdata.serial, minimum=rdata.minimum,
+                        contact=rdata.rname.to_text().strip('.'),
+                        primary=rdata.mname.to_text().strip('.'),
+                        comment="SOA for {0}.in-addr.arpa".format(site))
+                soa.clean()
+                soa.save()
+            name = name.to_text().replace('.IN-ADDR.ARPA.','')
+            domain_split = list(reversed(name.split('.')))
+            for i in range(len(domain_split)):
+                domain_name = domain_split[:i+1]
+                rev_name = ip2dns_form('.'.join(domain_name), ip_type='4')
+                base_domain, created = Domain.objects.get_or_create(name=rev_name)
+            base_domain.soa = soa
+            base_domain.save()
+        for (name, ttl, rdata) in zone.iterate_rdatas('NS'):
+            name = name.to_text().strip('.')
+            name = name.replace('.IN-ADDR.ARPA','')
+            name = name.replace('.in-addr.arpa','')
+            print str(name) + " NS " + str(rdata)
+            domain_name = '.'.join(list(reversed(name.split('.'))))
+            domain = ensure_rev_domain(domain_name)
+            ns, _ = Nameserver.objects.get_or_create(domain=domain,
+                    server=rdata.target.to_text().strip('.'))
+        for (name, ttl, rdata) in zone.iterate_rdatas('PTR'):
+            ip_str = name.to_text().strip('.')
+            ip_str = ip_str.replace('.IN-ADDR.ARPA','')
+            ip_str = ip_str.replace('.in-addr.arpa','')
+            ip_str= '.'.join(list(reversed(ip_str.split('.'))))
+            fqdn = rdata.target.to_text().strip('.')
+            if ip_str == '10.2.171.IN':
+                log("Skipping 10.2.171.IN", WARNING)
+                continue
+            print str(name) + " PTR " + str(fqdn)
+            ptr = PTR.objects.filter(name = fqdn, ip_str = ip_str, ip_type='4')
+            if ptr:
+                continue
+            else:
+                ptr = PTR(name = fqdn, ip_str = ip_str, ip_type='4')
+                ptr.full_clean()
+                ptr.save()
+
+        """
+        for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
+            name = name.to_text().strip('.')
+            print str(name) + " CNAME " + str(rdata)
+            rev_name = ip2dns_form(name, ip_type='4')
+            exists_domain = Domain.objects.filter(name=rev_name)
+            if exists_domain:
+                label = ''
+                domain = exists_domain[0]
+            else:
+                label = name.split('.')[0]
+                domain_name = name.split('.')[1:]
+                domain = ensure_domain('.'.join(domain_name))
+            data = rdata.target.to_text().strip('.')
+
+            if not CNAME.objects.filter(label = label, domain = domain,
+                    data = data).exists():
+                cn = CNAME(label = label, domain = domain,
+                        data = data)
+                cn.full_clean()
+                cn.save()
+        """
+
+def ensure_rev_domain(name):
+    parts = name.split('.')
+    domain_name = ''
+    for i in range(len(parts)):
+        domain_name = domain_name + '.' + parts[i]
+        domain_name = domain_name.strip('.')
+        rev_name = ip2dns_form(domain_name, ip_type='4')
+        domain, created = Domain.objects.get_or_create(name=
+                rev_name)
+        if domain.master_domain and domain.master_domain.soa:
+            domain.soa = domain.master_domain.soa
+            domain.save()
+
+    return domain
+
+def populate_forward_dns(svn_zones):
+    for site, data in svn_zones.iteritems():
+        zone, records = data
+        print "-" * 15 + " " + site
+
+        for (name, ttl, rdata) in zone.iterate_rdatas('SOA'):
+            print str(name) + " SOA " + str(rdata)
+            exists = SOA.objects.filter(minimum=rdata.minimum,
+                    contact=rdata.rname.to_text().strip('.'),
+                    primary=rdata.mname.to_text().strip('.'), comment="SOA for"
+                    " {0}.mozilla.com".format(site))
+            if exists:
+                soa = exists[0]
+            else:
+                soa = SOA(serial=rdata.serial, minimum=rdata.minimum,
+                        contact=rdata.rname.to_text().strip('.'),
+                        primary=rdata.mname.to_text().strip('.'), comment="SOA for"
+                        " {0}.mozilla.com".format(site))
+                soa.clean()
+                soa.save()
+            domain_split = list(reversed(name.to_text().strip('.').split('.')))
+            for i in range(len(domain_split)):
+                domain_name = domain_split[:i+1]
+                base_domain, created = Domain.objects.get_or_create(name=
+                        '.'.join(list(reversed(domain_name))))
+            base_domain.soa = soa
+            base_domain.save()
+
+
+        """
+            Algo for creating names and domains.
+            Get all names.
+            Sort by number of labels, longest first.
+            For each name:
+                if exists_domain(name):
+                    label = ''
+                    domain = name
+                else:
+                    label = name.split('.')[0]
+                    domain_name = name.split('.')[1:]
+                    if domain_name exists:
+                        domain = domain_name
+                    else:
+                        domain = create(domain_name)
+        """
+        # Create list
+        names = []
+        for (name, ttl, rdata) in zone.iterate_rdatas('A'):
+            names.append((name.to_text().strip('.'), rdata))
+        sorted_names = list(sorted(names, cmp=lambda n1, n2: -1 if
+            len(n1[0].split('.'))> len(n2[0].split('.')) else 1))
+
+        for name, rdata in sorted_names:
+            print str(name) + " A " + str(rdata)
+            exists_domain =  Domain.objects.filter(name=name)
+            if exists_domain:
+                label = ''
+                domain = exists_domain[0]
+            else:
+                label = name.split('.')[0]
+                parts = list(reversed(name.split('.')[1:]))
+                domain_name = ''
+                for i in range(len(parts)):
+                    domain_name = parts[i] + '.' + domain_name
+                    domain_name = domain_name.strip('.')
+                    domain, created = Domain.objects.get_or_create(name=
+                            domain_name)
+                    if domain.master_domain and domain.master_domain.soa:
+                        domain.soa = domain.master_domain.soa
+            a, _ = AddressRecord.objects.get_or_create( label = label,
+                domain=domain, ip_str=rdata.to_text(), ip_type='4')
+
+        for (name, ttl, rdata) in zone.iterate_rdatas('NS'):
+            name = name.to_text().strip('.')
+            print str(name) + " NS " + str(rdata)
+            domain = ensure_domain(name)
+            ns, _ = Nameserver.objects.get_or_create(domain=domain,
+                    server=rdata.target.to_text().strip('.'))
+        for (name, ttl, rdata) in zone.iterate_rdatas('MX'):
+            name = name.to_text().strip('.')
+            print str(name) + " MX " + str(rdata)
+            exists_domain = Domain.objects.filter(name=name)
+            if exists_domain:
+                label = ''
+                domain = exists_domain[0]
+            else:
+                label = name.split('.')[0]
+                domain_name = name.split('.')[1:]
+                domain = ensure_domain(domain_name)
+            priority = rdata.preference
+            server = rdata.exchange.to_text().strip('.')
+            mx, _ = MX.objects.get_or_create(label=label, domain=domain,
+                    server= server, priority=priority, ttl="3600")
+        for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
+            name = name.to_text().strip('.')
+            print str(name) + " CNAME " + str(rdata)
+            exists_domain = Domain.objects.filter(name=name)
+            if exists_domain:
+                label = ''
+                domain = exists_domain[0]
+            else:
+                label = name.split('.')[0]
+                domain_name = name.split('.')[1:]
+                domain = ensure_domain('.'.join(domain_name))
+            data = rdata.target.to_text().strip('.')
+
+            if not CNAME.objects.filter(label = label, domain = domain,
+                    data = data).exists():
+                cn = CNAME(label = label, domain = domain,
+                        data = data)
+                cn.full_clean()
+                cn.save()
+
+is_generate1 = re.compile("^.*(\d+){(\+|-)(\d+),(\d+),(.)}.*$")
+is_generate2 = re.compile("^.*(\d+){(\+|-?)(\d+)}.*$")
+is_generate3 = re.compile("^.*(\d+){(\d+),(\d+),(.)}.*$")
+def resolve_generate(name):
+    g1 = is_generate1.match(name)
+    g2 = is_generate2.match(name)
+    g3 = is_generate3.match(name)
+    if g1 or g2 or g3:
+        log("Skipping {0}".format(name), WARNING)
+        # TODO, expand this.
+    if g1:
+        log("Skipping {0}".format(name), WARNING)
+        # TODO, expand this.
+        pdb.set_trace()
+        return False
+    elif g2:
+        log("Skipping {0}".format(name), WARNING)
+        # TODO, expand this.
+        pdb.set_trace()
+        return False
+    elif g3:
+        log("Skipping {0}".format(name), WARNING)
+        # TODO, expand this.
+        return False
+    return True
+
+
+def ensure_domain(name):
+    parts = list(reversed(name.split('.')))
+    domain_name = ''
+    for i in range(len(parts)):
+        domain_name = parts[i] + '.' + domain_name
+        domain_name = domain_name.strip('.')
+        domain, created = Domain.objects.get_or_create(name=
+                domain_name)
+        if domain.master_domain and domain.master_domain.soa:
+            domain.soa = domain.master_domain.soa
+
+    return domain
+
 
 def build_reverse(sites_to_build, inv_reverse, rev_svn_zones):
     final_records = {}
@@ -241,7 +475,6 @@ def generate_reverse_inventory_data_file(network, records, network_file):
         # Insure that the inventory file is included.
         ensure_include(network_file, 'reverse', inventory_file)
     except Exception, e:
-        pdb.set_trace()
         log(str(e), ERROR)
     finally:
         inv_fd.close()
@@ -273,7 +506,6 @@ def generate_forward_inventory_data_file(site, records, site_path):
         # Insure that the inventory file is included.
         ensure_include(private_file, 'forward', inventory_file)
     except Exception, e:
-        pdb.set_trace()
         log(str(e), ERROR)
     finally:
         inv_fd.close()
