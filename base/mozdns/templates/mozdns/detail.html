@@ -1,0 +1,37 @@
+{% extends "mozdns/base.html" %}
+
+
+{% block dns_content %}
+    <div class='dns-title'>{{ object }}</div>
+
+    {% block action_bar %}
+        {% if object.get_edit_url %}
+            <a class="btn btn-primary" href="{{ object.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if object.get_delete_url %}
+            <a class="btn btn-danger" href="{{ object.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+
+        {% from "mozdns/tables.html" import render_table %}
+
+        <table class="table">
+            <thead>
+                {% for item, value in object.details() %}
+                    <th>{{ item }}</th>
+                {% endfor %}
+            </thead>
+
+            <tbody>
+                <tr>
+                {% for item, value in object.details() %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+{% endblock %}

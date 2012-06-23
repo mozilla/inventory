@@ -25,6 +25,9 @@ from libs.jinja import render_to_response as render_to_response
 from jingo import render
 from django.views.decorators.csrf import csrf_exempt
 from Rack import Rack
+
+from core.interface.static_intr.models import StaticInterface
+
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
 def tryint(s):
@@ -234,7 +237,7 @@ def home(request):
     """Index page"""
     return render_to_response('systems/index.html', {
             'read_only': getattr(request, 'read_only', False),
-            'is_build': getattr(request.user.groups.all(), 'build', False),
+            #'is_build': getattr(request.user.groups.all(), 'build', False),
            })
 
 @allow_anyone
@@ -445,8 +448,11 @@ def system_show(request, id):
 
         system.warranty_link = "http://www11.itrc.hp.com/service/ewarranty/warrantyResults.do?productNumber=%s&serialNumber1=%s&country=US" % (system.server_model.part_number, system.serial)
 
+    intrs = StaticInterface.objects.filter(system = system)
+
     return render_to_response('systems/system_show.html', {
             'system': system,
+            'interfaces': intrs,
             'adapters': adapters,
             'is_release': is_release,
             'read_only': getattr(request, 'read_only', False),

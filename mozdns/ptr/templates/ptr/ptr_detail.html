@@ -1,14 +1,40 @@
 {% extends "mozdns/mozdns_detail.html" %}
 
-{% block title %}
-    {{ object.name }}
-{% endblock %}
+{% block dns_content %}
 
-{% block header %}
-    PTR {{ object.name }}
-{% endblock %}
+<div class='dns-title'>PTR {{ object.name }}</div>
+    {% if object.domain %}
+        <a class="btn" href="{{ object.domain.get_absolute_url() }}">View Domain</a>
+    {% endif %}
 
-{% block ptr_nav %}
-    {{ super () }}
-    {#{% include "mozdns/detail_nav.inc" %}#}
+        <a class="btn" href="{{ object.get_edit_url() }}">Edit</a>
+        <a class="btn" href="{{ object.get_delete_url() }}">Delete</a>
+
+    {% from "mozdns/tables.html" import render_table %}
+
+    <table class="table">
+        <thead>
+            {% for item, value in object.details() %}
+                <th>{{ item }}</th>
+            {% endfor %}
+        </thead>
+
+        <tbody>
+            <tr>
+            {% for item, value in object.details() %}
+                <td>
+                    {% if loop.last %}
+                        {% if object.data_domain %}
+                        {{value}}<br><a href='{{ object.data_domain.get_absolute_url() }}'>View {{object.data_domain.name}}</a>
+                        {% else %}
+                            {{ value }}
+                        {% endif %}
+                    {% else %}
+                        {{ value }}
+                    {% endif %}
+                </td>
+            {% endfor %}
+            </tr>
+        </tbody>
+    </table>
 {% endblock %}

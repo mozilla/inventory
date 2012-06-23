@@ -45,6 +45,26 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'api',
     'api_v2',
     'reports',
+    'core',
+    'mozdns',
+    'core',
+    'base',
+    'base.mozdns',
+    'core.interface',
+    'core.interface.static_intr',
+    'mozdns',
+    'mozdns.address_record',
+    'mozdns.cname',
+    'mozdns.domain',
+    'mozdns.ip',
+    'mozdns.mx',
+    'mozdns.nameserver',
+    'mozdns.ptr',
+    'mozdns.soa',
+    'mozdns.srv',
+    'mozdns.txt',
+    'debug_toolbar',
+
 ]
 
 
@@ -54,6 +74,7 @@ JINGO_EXCLUDE_APPS = [
     'build',
     'admin',
     'user_systems',
+    'debug_toolbar',
 ]
 
 DJANGO_TEMPLATE_APPS = [
@@ -82,9 +103,47 @@ AUTH_PROFILE_MODULE = 'systems.UserProfile'
 AUTHENTICATION_BACKENDS = (
         'middleware.restrict_by_api_token.RestrictByToken',
         'django.contrib.auth.backends.RemoteUserBackend',
-    )
+)
 AUTH_PROFILE_MODULE = "systems.UserProfile"
 PISTON_IGNORE_DUPE_MODELS = True
 
 ROOT_URLCONF = 'mozilla_inventory.urls'
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+
+#########################################################
+#                   MOZ DNS                             #
+#########################################################
+
+MOZDNS_BASE_URL = "/mozdns"
+CORE_BASE_URL = "/core"
+JINJA_CONFIG = {'autoescape': False}
+DEBUG_TOOLBAR_PANELS = (
+    'debug_toolbar.panels.version.VersionDebugPanel',
+    'debug_toolbar.panels.timer.TimerDebugPanel',
+    'debug_toolbar.panels.settings_vars.SettingsVarsDebugPanel',
+    'debug_toolbar.panels.headers.HeaderDebugPanel',
+    'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
+    'debug_toolbar.panels.template.TemplateDebugPanel',
+    'debug_toolbar.panels.sql.SQLDebugPanel',
+    'debug_toolbar.panels.signals.SignalDebugPanel',
+    'debug_toolbar.panels.logger.LoggingPanel',
+)
+MIDDLEWARE_CLASSES = (
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+)
+
+INTERNAL_IPS = ('127.0.0.1','10.22.74.139','10.250.2.54')
+
+def custom_show_toolbar(request):
+    return True # Always show toolbar, for example purposes only.
+
+DEBUG_TOOLBAR_CONFIG = {
+    'INTERCEPT_REDIRECTS': False,
+    'SHOW_TOOLBAR_CALLBACK': custom_show_toolbar,
+    'HIDE_DJANGO_SQL': False,
+    'TAG': 'div',
+    'ENABLE_STACKTRACES' : True,
+}

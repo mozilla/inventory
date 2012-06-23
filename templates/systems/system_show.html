@@ -149,6 +149,22 @@
 </pre></dd>
 <div style="clear:both;"></div>
 </dl>
+
+<dl class="show">
+<dt>Interfaces (for DNS): </dt>
+<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.notes }}</pre></dd>
+<pre>
+    <table>
+    <tr><th>FQDN</th><th>IP Address</th><th>Action</th></tr>
+    {% for intr in interfaces %}
+        <tr><td>{{intr.fqdn}}</td><td>{{ intr.ip_str }}</td><td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a><pre></td>
+    {% endfor %}
+    </table>
+</pre></dd>
+<div style="clear:both;"></div>
+<a href="/core/interface/{{system.pk}}/create/">Add Interface</a>
+</dl>
+
 </div>
 {% if not read_only %}
 <div>

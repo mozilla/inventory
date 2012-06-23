@@ -1,0 +1,40 @@
+{% extends "mozdns/base.html" %}
+
+
+
+{% block dns_content %}
+    <div class='dns-title'>{{ form_title }}</div>
+
+    <form class="well form-horizontal" method="post" action="">
+        {{ form }}
+        <input type="submit" value="Submit" />
+    </form>
+    <br >
+    <br >
+    <button type='button' id='ffipbutton' value="Find Free IP">Find Free IP</button>
+    <input id='network' type='network'/>
+    <script type='text/javascript'>
+        function ffip(){
+            $.get( "/en-US/core/find_available_ip_from_network/", 
+                    {'network': $('#network').val()},
+                    function (data) { alert(data); }
+            )
+        };
+
+        /*
+        $.post("/en-US/core/find_available_ip_from_network/",
+            { 
+            network: 'from javascript', 
+            }
+        );
+        */
+        $(document).ready(function() {
+            $("button").click(function() {
+                ffip()
+                });
+        });
+                
+
+    </script>
+
+{% endblock %}

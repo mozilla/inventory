@@ -1,0 +1,73 @@
+{% extends "mozdns/base.html" %}
+
+{% block title %}
+    {{ object_list[0]|humanized_class_name + 's'}}
+{% endblock %}
+
+{% block header %}
+    {{ object_list[0]|humanized_class_name + 's' }}
+{% endblock %}
+
+{% block dns_content %}
+
+{% block action_bar %}
+    {% if object_list %}
+    {# The problem here is that we are getting the create url from the first object. If there is no first object, because nothing has been created, there is no way to find the create url. BUG TODO#}
+    <a class="btn btn-primary" href="{{ object_list[0].get_create_url() }}">Create {{ object_list[0]|humanized_class_name }}</a>
+    {% endif %}
+{% endblock %}
+
+
+    <!-- Basic bootstrap pagination -->
+    <div class="pagination">
+        <ul>
+            <li><a href="?page=1">First</a></li>
+            {% if page_obj.has_previous() %}
+                <li>
+                    <a href="?page={{ page_obj.previous_page_number() }}">Prev</a>
+                </li>
+            {% else %}
+                <li class="disabled">
+                    <a href="#">Prev</a></li>
+            {% endif %}
+                </li>
+
+            {% for page in range(page_obj.next_page_number()-1, page_obj.paginator.num_pages) %}
+                {% if loop.index < 8 %}
+                    {% if page == page_obj.number %}
+                        <li class="active">
+                            <a href="#">{{ page_obj.number }}</a>
+                        </li>
+                    {% else %}
+                        <li><a href="?page={{ page }}">{{ page }}</a></li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next() %}
+                <li>
+                    <a href="?page={{ page_obj.next_page_number() }}">Next</a></li>
+            {% else %}
+                <li class="disabled">
+                    <a href="#">Next</a></li>
+            {% endif %}
+                </li>
+                <li><a href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+        </ul>
+    </div>
+
+    <!-- Basic bootstrap table -->
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>{{ object_list[0]|humanized_class_name }}</th>
+            </tr>
+        </thead>
+
+    <tbody>
+            {% for obj in object_list %}
+                <tr><th><a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a></th></tr>
+            {% endfor %}
+    </tbody>
+    </table>
+{% endblock %}

@@ -1,0 +1,53 @@
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <ul class="nav pull-left">
+
+                <!-- Container dropdown -->
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#"><b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    </ul>
+                </li>
+
+                <!-- Container changer search bar form-->
+                <li>
+                    <form action="/ctnr/change/" method="POST" style="display:inline">
+                        <input class="search-query" type="text" name="ctnr_name" data-items="4" data-provide="typeahead" placeholder="Change container...">
+                    </form>
+                </li>
+
+            </ul>
+
+            <!-- DNS/DHCP nav links -->
+            <ul class="nav">
+                {% if 'cydns' in request.path %} <li class="active">
+                {% else %} <li>
+                {% endif %}
+                    <a href="/cydns/">DNS</a></li>
+                {% if 'cydhcp' in request.path %} <li class="active">
+                {% else %} <li>
+                {% endif %}
+                    <a href="/cydhcp/">DHCP</a></li>
+                    <li><a href="/search/">Search</a></li>
+            </ul>
+
+            <!-- User and container dropdown -->
+            <ul class="nav pull-right">
+                <li class="dropdown">
+                    <ul class="dropdown-menu">
+                        <li><a href="/cyuser/{{ request.user.id }}/">View user profile</a></li>
+
+                        <li class="divider"></li>
+                        {% if request.session.superuser %}
+                            <li><a href="/admin/">Admin page</a></li>
+                            <li class="divider"></li>
+                        {% endif %}
+                        <li><a href="/logout/">Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</div>

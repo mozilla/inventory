@@ -14,8 +14,8 @@
       <link rel="stylesheet" href="{{ MEDIA_URL }}stylesheets/blueprint/ie.css" type="text/css" media="screen, projection">
     <![endif]-->
     <link href="{{ MEDIA_URL }}stylesheets/screen.css" media="screen" rel="stylesheet" type="text/css" />
-     <link rel="shortcut icon" href="/static/images/favicon.ico">           
-     <link rel="icon" href="/static/images/favicon.ico"> 
+     <link rel="shortcut icon" href="/static/images/favicon.ico">
+     <link rel="icon" href="/static/images/favicon.ico">
 
     {% block head %}{% endblock %}
 
@@ -41,12 +41,14 @@
                 <li><a href="/build/">Release</a></li>
                 <li><a href="/misc/">Misc</a></li>
                 <li><a href="/dhcp/show/">DHCP</a></li>
+                <li><a href="/mozdns/">DNS</a></li>
                 <li><a href="/truth/">Truth Database</a></li>
                 <li><a href="/reports/">Reporting</a></li>
                 <li><a href="/systems/oncall/">On Call</a></li>
                 {% endif %}
             </ul>
         </div>
+        {% block site_tabs %} {% endblock %}
     </div>
     <div id="bd">
         {% block content %}{% endblock %}

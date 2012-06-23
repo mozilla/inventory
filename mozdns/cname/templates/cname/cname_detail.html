@@ -1,5 +1,41 @@
 {% extends "mozdns/mozdns_detail.html" %}
 
-{% block title %} {{ object.fqdn }} {% endblock %}
 
-{% block header %} CNAME {{ object.fqdn }} {% endblock %}
+{% block dns_content %}
+
+<div class='dns-title'>CNAME{{ object.fqdn }}</div>
+    {% if object.domain %}
+        <a class="btn" href="{{ object.domain.get_absolute_url() }}">View Domain</a>
+    {% endif %}
+
+        <a class="btn" href="{{ object.get_edit_url() }}">Edit</a>
+        <a class="btn" href="{{ object.get_delete_url() }}">Delete</a>
+
+    {% from "mozdns/tables.html" import render_table %}
+
+    <table class="table">
+        <thead>
+            {% for item, value in object.details() %}
+                <th>{{ item }}</th>
+            {% endfor %}
+        </thead>
+
+        <tbody>
+            <tr>
+            {% for item, value in object.details() %}
+                <td>
+                    {% if loop.last %}
+                        {% if object.data_domain %}
+                        {{value}}<br><a href='{{ object.data_domain.get_absolute_url() }}'>View {{object.data_domain.name}}</a>
+                        {% else %}
+                            {{ value }}
+                        {% endif %}
+                    {% else %}
+                        {{ value }}
+                    {% endif %}
+                </td>
+            {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}
