@@ -36,13 +36,29 @@
 
         <table class="table">
             <thead>
+                {% for attr in attrs %}
+                    <th>{{ attr.key }}</th>
+                {% endfor %}
+            </thead>
+
+            <tbody>
+                <tr>
+                {% for attr in attrs %}
+                    <td>{{ attr.value }}</td>
+                {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="table">
+            <thead>
                     <th>Networks</th>
             </thead>
 
             <tbody>
                 {% for net in site.network_set.all() %}
                 <tr>
-                    <td>{{ net }}</td>
+                    <td><a href='{{ net.get_absolute_url() }}'>{{ net }}</a></td>
                 </tr>
                 {% endfor %}
             </tbody>

@@ -1,3 +1,29 @@
 {% extends "base.html" %}
 
-{% block dns_nav %}{% endblock %}
+
+{% block site_tabs %}
+        <div class="dns-menu">
+                <div class="logo"><a href="/"><i class="icon-glass"></i></a></div>
+
+                <!-- Core NAV -->
+                        <span class="nav-item">
+                            <a class="nav-link" href="/core/site/">Site</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/core/network/">Network</a>
+                        </span>
+                        <span class="nav-item">
+                            <a class="nav-link" href="/core/vlan/">Vlan</a>
+                        </span>
+        </div>
+{% endblock %}
+
+<div class='dns-title'>
+{% block title %} {% endblock %}
+</div>
+
+{% block content %}
+<div class='dns-content'>
+{% block core_content %} {% endblock %}
+</div>
+{% endblock %}

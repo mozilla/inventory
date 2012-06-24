@@ -1,3 +1,16 @@
-{% extends "confirm_delete.html" %}
+{% extends "core/core_base.html" %}
 
-{% block dns_nav %}{% endblock %}
+{% block title %}
+    Confirm Delete
+{% endblock %}
+
+{% block header %}
+    Are you sure?
+{% endblock %}
+
+{% block content %}
+    <form method="post" action="">
+        <p>I have no undo button</p>
+        <input type="submit" name="delete" value="Delete" />
+    </form>
+{% endblock %}

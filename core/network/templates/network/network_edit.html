@@ -16,10 +16,10 @@
         <strong>Attributes</strong><br /><br />
             <ul id="attrs_area">
                 {% for attr in attrs %}
-                    <li>
-                    Attribute: <input name='attr_{{loop.index0}}' id='attr_{{loop.index0}}' type='text' value='{{attr.key}}' />
-                    Value: <input name='attr_{{loop.index0}}_value' id='attr_{{loop.index0}}_value' type='text' value='{{attr.value}}'/>
-                    </li>
+                <li>
+                Attribute: <input name='attr_{{loop.index0}}' id='attr_{{loop.index0}}' type='text' value='{{attr.key}}' />
+                Value: <input name='attr_{{loop.index0}}_value' id='attr_{{loop.index0}}_value' type='text' value='{{attr.value}}'/>
+                </li>
                 {% endfor %}
             </ul>
             <input type="button" value="Add Attribute" onclick='addField("attrs_area","attr_",10);' />

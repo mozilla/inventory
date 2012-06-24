@@ -1,0 +1,78 @@
+{% extends "core/core_base.html" %}
+
+
+{% block core_content %}
+    <div class='dns-title'>{{ network }}</div>
+
+    {% block action_bar %}
+        {% if network.get_edit_url %}
+            <a class="btn btn-primary" href="{{ network.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if network.get_delete_url %}
+            <a class="btn btn-danger" href="{{ network.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+
+
+        <table class="table">
+            <thead>
+                {% for item, value in network.details() %}
+                    <th>{{ item }}</th>
+                {% endfor %}
+            </thead>
+
+            <tbody>
+                <tr>
+                {% for item, value in network.details() %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="table">
+            <thead>
+                    <th>Sites this Network is in.</th>
+            </thead>
+
+            <tbody>
+                {% for site in network.sites.all() %}
+                <tr>
+                    <td><a href='{{ site.get_absolute_url() }}'>{{ site }}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table class="table">
+            <thead>
+                    <th>Eldar Networks.</th>
+            </thead>
+
+            <tbody>
+                {% for eldar in eldars %}
+                <tr>
+                    <td><a href='{{ eldar.get_absolute_url() }}'>{{ eldar }}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <table class="table">
+            <thead>
+                    <th>Sub Networks.</th>
+            </thead>
+
+            <tbody>
+                {% for sub in sub_networks %}
+                <tr>
+                    <td><a href='{{ sub.get_absolute_url() }}'>{{ sub }}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+{% endblock %}

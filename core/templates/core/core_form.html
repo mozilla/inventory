@@ -1,3 +1,16 @@
-{% extends "form.html" %}
+{% extends "core/core_base.html" %}
 
-{% block dns_nav %}{% endblock %}
+{% block title %}
+    {{ form_title }}
+{% endblock %}
+
+{% block header %}
+    {{ form_title }}
+{% endblock %}
+
+{% block core_content %}
+    <form class="well form-horizontal" method="post" action="">
+        {{ form }}
+        <input type="submit" value="Submit" />
+    </form>
+{% endblock %}
