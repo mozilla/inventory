@@ -11,7 +11,12 @@
     <form class="well form-horizontal" method="post" action="">
         {{ form }}
         </br>
-        </br>
+        <h3>Allowed Attributes</h3>
+        <pre>
+        {% for attr, comment in aux_attrs %}
+            {{ attr }}: {{ comment }}
+        {% endfor %}
+        </pre>
         </br>
         <strong>Attributes</strong><br /><br />
             <ul id="attrs_area">

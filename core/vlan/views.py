@@ -40,6 +40,7 @@ class VlanCreateView(VlanView, CoreCreateView):
 def update_vlan(request, vlan_pk):
     vlan = get_object_or_404(Vlan, pk=vlan_pk)
     attrs = vlan.vlankeyvalue_set.all()
+    aux_attrs = VlanKeyValue.aux_attrs
     if request.method == 'POST':
         form = VlanForm(request.POST, instance=vlan)
         if form.is_valid():
@@ -60,14 +61,16 @@ def update_vlan(request, vlan_pk):
                 return render(request, 'vlan/vlan_edit.html', {
                     'vlan': vlan,
                     'form': form,
-                    'attrs': attrs
+                    'attrs': attrs,
+                    'aux_attrs': aux_attrs
                 })
     else:
         form = VlanForm(instance=vlan)
         return render(request, 'vlan/vlan_edit.html', {
             'vlan': vlan,
             'form': form,
-            'attrs': attrs
+            'attrs': attrs,
+            'aux_attrs': aux_attrs
         })
 
 def vlan_detail(request, vlan_pk):

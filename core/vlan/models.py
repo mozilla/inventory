@@ -31,7 +31,7 @@ class Vlan(models.Model, ObjectUrlMixin):
 class VlanKeyValue(KeyValue):
     vlan = models.ForeignKey(Vlan, null=False)
     aux_attrs = (
-        'description',
+        ('description', 'A description of the site'),
         )
     class Meta:
         db_table = 'vlan_key_value'

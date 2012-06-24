@@ -27,7 +27,7 @@ class SiteView(object):
 is_attr = re.compile("^attr_\d+$")
 
 class SiteDeleteView(SiteView, CoreDeleteView):
-    """ """
+    success_url = '/core/site/'
 
 class SiteListView(SiteView, CoreListView):
     """ """
@@ -45,6 +45,7 @@ class SiteUpdateView(SiteView, CoreUpdateView):
 def update_site(request, site_pk):
     site = get_object_or_404(Site, pk=site_pk)
     attrs = site.sitekeyvalue_set.all()
+    aux_attrs = SiteKeyValue.aux_attrs
     if request.method == 'POST':
         form = SiteForm(request.POST, instance=site)
         try:
@@ -76,7 +77,8 @@ def update_site(request, site_pk):
             return render(request, 'site/site_edit.html', {
                 'site': site,
                 'form': form,
-                'attrs': attrs
+                'attrs': attrs,
+                'aux_attrs': aux_attrs
             })
 
     else:
@@ -85,7 +87,8 @@ def update_site(request, site_pk):
         return render(request, 'site/site_edit.html', {
             'site': site,
             'form': form,
-            'attrs': attrs
+            'attrs': attrs,
+            'aux_attrs': aux_attrs
         })
 
 def site_detail(request, site_pk):

@@ -40,6 +40,7 @@ class NetworkCreateView(NetworkView, CoreCreateView):
 def update_network(request, network_pk):
     network = get_object_or_404(Network, pk=network_pk)
     attrs = network.networkkeyvalue_set.all()
+    aux_attrs = NetworkKeyValue.aux_attrs
     if request.method == 'POST':
         form = NetworkForm(request.POST, instance=network)
         try:
@@ -72,7 +73,8 @@ def update_network(request, network_pk):
             return render(request, 'network/network_edit.html', {
                 'network': network,
                 'form': form,
-                'attrs': attrs
+                'attrs': attrs,
+                'aux_attrs': aux_attrs
             })
 
     else:
@@ -81,7 +83,8 @@ def update_network(request, network_pk):
         return render(request, 'network/network_edit.html', {
             'network': network,
             'form': form,
-            'attrs': attrs
+            'attrs': attrs,
+            'aux_attrs': aux_attrs
         })
 
 def network_detail(request, network_pk):

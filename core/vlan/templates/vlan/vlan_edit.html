@@ -12,7 +12,13 @@
         {{ form }}
         </br>
         </br>
-        </br>
+        <h3>Allowed Attributes</h3>
+        <pre>
+        {% for attr, comment in aux_attrs %}
+            {{ attr }}: {{ comment }}
+        {% endfor %}
+        </pre>
+
         <strong>Attributes</strong><br /><br />
             <ul id="attrs_area">
                 {% for attr in attrs %}

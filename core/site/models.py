@@ -2,7 +2,6 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 from core.mixins import ObjectUrlMixin
-
 from core.keyvalue.models import KeyValue
 
 
@@ -29,7 +28,8 @@ class Site(models.Model, ObjectUrlMixin):
 class SiteKeyValue(KeyValue):
     site = models.ForeignKey(Site, null=False)
     aux_attrs = (
-        'address',
+        ('address','A site\'s address'),
+        ('description', 'A description of the site')
         )
     class Meta:
         db_table = 'site_key_value'

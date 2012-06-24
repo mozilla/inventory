@@ -78,7 +78,7 @@ class Network(models.Model, ObjectUrlMixin):
 class NetworkKeyValue(KeyValue):
     network = models.ForeignKey(Network, null=False)
     aux_attrs = (
-        'description',
+        ('description', 'A description of the site'),
         )
     class Meta:
         db_table = 'network_key_value'
