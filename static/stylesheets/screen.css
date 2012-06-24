@@ -199,6 +199,11 @@ dl.show {
 	margin: 5px 10px 0 5px;
 	width: 140px;
 }
+ul
+{
+    list-style-type: none;
+}
+
 
 /* DNS Menu block */
 .dns-title {

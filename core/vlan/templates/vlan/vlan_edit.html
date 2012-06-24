@@ -1,0 +1,28 @@
+{% extends "core/core_base.html" %}
+
+{% block title %}
+    {{ form_title }}
+{% endblock %}
+
+{% block core_content %}
+
+    <script language="Javascript" type="text/javascript" src="/static/javascripts/attribute_adder.js">
+    </script>
+    <form class="well form-horizontal" method="post" action="">
+        {{ form }}
+        </br>
+        </br>
+        </br>
+        <strong>Attributes</strong><br /><br />
+            <ul id="attrs_area">
+                {% for attr in attrs %}
+                    <li>
+                    Attribute: <input name='attr_{{loop.index0}}' id='attr_{{loop.index0}}' type='text' value='{{attr.key}}' />
+                    Value: <input name='attr_{{loop.index0}}_value' id='attr_{{loop.index0}}_value' type='text' value='{{attr.value}}'/>
+                    </li>
+                {% endfor %}
+            </ul>
+            <input type="button" value="Add Attribute" onclick='addField("attrs_area","attr_",10);' />
+        <input type="submit" value="Submit" />
+    </form>
+{% endblock %}

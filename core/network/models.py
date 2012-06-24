@@ -5,6 +5,7 @@ from mozdns.validation import validate_ip_type
 from core.vlan.models import Vlan
 from core.site.models import Site
 from core.mixins import ObjectUrlMixin
+from core.keyvalue.models import KeyValue
 
 import ipaddr
 
@@ -73,3 +74,15 @@ class Network(models.Model, ObjectUrlMixin):
 
     def __repr__(self):
         return "<Network {0}>".format(str(self))
+
+class NetworkKeyValue(KeyValue):
+    network = models.ForeignKey(Network, null=False)
+    aux_attrs = (
+        'description',
+        )
+    class Meta:
+        db_table = 'network_key_value'
+        unique_together = ('key', 'value')
+
+    def description(self):
+        return

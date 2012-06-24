@@ -1,15 +1,9 @@
 from django import forms
 
 from core.site.models import Site
-from core.network.models import Network
-class NetworkForm(forms.ModelForm):
-    sites = forms.ModelMultipleChoiceField(
-            queryset=Site.objects.all(),
-            widget=forms.CheckboxSelectMultiple
-            )
+from core.vlan.models import Vlan
+class VlanForm(forms.ModelForm):
+    #site = forms.ModelChoiceField(queryset=Site.objects.all())
 
     class Meta:
-        model = Network
-        exclude = ('ip_upper','ip_lower', 'prefixlen')
-
-
+        model = Vlan

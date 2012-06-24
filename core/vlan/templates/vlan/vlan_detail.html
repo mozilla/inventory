@@ -1,0 +1,68 @@
+{% extends "core/core_base.html" %}
+
+
+{% block core_content %}
+    <div class='dns-title'>{{ vlan }}</div>
+
+    {% block action_bar %}
+        {% if vlan.get_edit_url %}
+            <a class="btn btn-primary" href="{{ vlan.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if vlan.get_delete_url %}
+            <a class="btn btn-danger" href="{{ vlan.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+
+
+        <table class="table">
+            <thead>
+                {% for item, value in vlan.details() %}
+                    <th>{{ item }}</th>
+                {% endfor %}
+            </thead>
+
+            <tbody>
+                <tr>
+                {% for item, value in vlan.details() %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="table">
+            <thead>
+                {% for attr in attrs %}
+                    <th>{{ attr.key }}</th>
+                {% endfor %}
+            </thead>
+
+            <tbody>
+                <tr>
+                {% for attr in attrs %}
+                    <td>{{ attr.value }}</td>
+                {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+
+        <!--
+        <table class="table">
+            <thead>
+                    <th>Networks</th>
+            </thead>
+
+            <tbody>
+                {# for net in site.network_set.all() %}
+                <tr>
+                    <td><a href='{{ net.get_absolute_url() }}'>{{ net }}</a></td>
+                </tr>
+                {% endfor #}
+            </tbody>
+        </table>
+        -->
+{% endblock %}
