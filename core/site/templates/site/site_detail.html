@@ -1,0 +1,50 @@
+{% extends "core/core_base.html" %}
+
+
+{% block core_content %}
+    <div class='dns-title'>{{ site }}</div>
+
+    {% block action_bar %}
+        {% if site.get_edit_url %}
+            <a class="btn btn-primary" href="{{ site.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if site.get_delete_url %}
+            <a class="btn btn-danger" href="{{ site.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+
+
+        <table class="table">
+            <thead>
+                {% for item, value in site.details() %}
+                    <th>{{ item }}</th>
+                {% endfor %}
+            </thead>
+
+            <tbody>
+                <tr>
+                {% for item, value in site.details() %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="table">
+            <thead>
+                    <th>Networks</th>
+            </thead>
+
+            <tbody>
+                {% for net in site.network_set.all() %}
+                <tr>
+                    <td>{{ net }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+{% endblock %}
