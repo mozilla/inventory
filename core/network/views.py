@@ -35,14 +35,30 @@ class NetworkListView(NetworkView, CoreListView):
     """ """
     template_name = 'core/core_list.html'
 
-class NetworkCreateView(NetworkView, CoreCreateView):
-    """ """
-    template_name = 'core/core_form.html'
 def create_network(request):
+    pdb.set_trace()
     if request.method == 'POST':
-        form = NetworkForm(request.POST, instance=network)
-    else:
         form = NetworkForm(request.POST)
+        try:
+            if form.is_valid():
+                network = form.instance
+                if network.site is None:
+                    parent = calc_parent(network)
+                    if not parent:
+                        return
+                    network.site = parent.site
+                network.save()
+            return redirect(network)
+        except ValidationError, e:
+            return render(request, 'core/core_form.html', {
+                'object': network,
+                'form': form,
+            })
+    else:
+        form = NetworkForm()
+        return render(request, 'core/core_form.html', {
+            'form': form,
+        })
 
 def update_network(request, network_pk):
     network = get_object_or_404(Network, pk=network_pk)
@@ -55,38 +71,7 @@ def update_network(request, network_pk):
                 # Handle key value stuff.
                 kv = get_attrs(request.POST)
                 update_attrs(kv, attrs, NetworkKeyValue, network, 'network')
-
-                network = form.instance
-                sites = form.data.getlist('sites')
-                vlan = form.data.get('vlan')
-                cur_sites = network.sites.all()
-                new_sites = []
-                # Handle new ones.
-                for site_pk in sites:
-                    site = get_object_or_404(Site, pk=site_pk)
-                    new_sites.append(site)
-                    if site in cur_sites:
-                        continue
-                    else:
-                        network.sites.add(site)
-                        network.save()
-                for site in cur_sites:
-                    if site not in new_sites:
-                        # If any of our children are relying on us to be in this
-                        # site, back out.
-                        eldars, sub_networks = calc_networks(network)
-                        for sub_network in sub_networks:
-                            if site in sub_network.sites.all():
-                                raise ValidationError("Network {0} is in Site {1}. "
-                                    "Remove {0} from {1} before removing this "
-                                    "Network from {1}.".format(sub_network, site))
-                            else:
-                                network.sites.remove(site)
-                try:
-                    network.save()
-                except IntegrityError, e:
-                    raise ValidationError("Network {0} already "
-                            "exists.".format(network))
+                network = form.save()
             return redirect(network)
         except ValidationError, e:
             form = NetworkForm(instance=network)
@@ -102,7 +87,6 @@ def update_network(request, network_pk):
 
     else:
         form = NetworkForm(instance=network)
-        form.fields['sites'].initial = network.sites.all()
         return render(request, 'network/network_edit.html', {
             'network': network,
             'form': form,
@@ -121,4 +105,4 @@ def network_detail(request, network_pk):
         'eldars': eldars,
         'sub_networks': sub_networks,
         'attrs': attrs
-    })
+        })

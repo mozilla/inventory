@@ -1,0 +1,116 @@
+{% extends "core/core_base.html" %}
+
+{% block title %}
+    Results
+{% endblock %}
+
+{% block header %}
+    Results
+{% endblock %}
+
+{% block core_content %}
+        {% if found_exact %}
+            <div class='dns-title'>Results for <a href='{{ search_ip.get_absolute_url() }}'>{{ search_ip }}</a></div>
+        {% else %}
+            <div class='dns-title'>Results for {{ search_ip }}</div>
+        {% endif %}
+
+        {% if parent %}
+                <p>Parent Network: <a href='{{ parent.get_absolute_url() }}'>{{ parent }}</a></td><p>
+            {% if parent.vlan %}
+                <p>Vlan: <a href='{{ parent.vlan.get_absolute_url() }}'>{{ parent.vlan }}</a></td><p>
+            {% else %}
+                <p>Vlan: None<p>
+            {% endif %}
+        {% endif %}
+        <h4>Eldar Networks</h4>
+        <table class="table">
+            <thead>
+                    <th>Network</th>
+                    <th>Vlan</th>
+            </thead>
+
+            <tbody>
+                {% for eldar in eldars %}
+                <tr>
+                    <td><a href='{{ eldar.get_absolute_url() }}'>{{ eldar }}</a></td>
+                {% if eldar.vlan %}
+                    <td><a href='{{ eldar.vlan.get_absolute_url() }}'>{{ eldar.vlan }}</a></td>
+                {% else %}
+                    <td>None</td>
+                {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h4>Sub Networks</h4>
+        <table class="table">
+            <thead>
+                    <th>Network</th>
+            </thead>
+
+            <tbody>
+                {% for sub in sub_networks %}
+                <tr>
+                    <td><a href='{{ sub.get_absolute_url() }}'>{{ sub }}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if addr_count %}
+        <p>Found {{ addr_count }} A/AAAA Records</p>
+            {% if not addrs %}
+                <p>Too many to display...</p>
+            {% endif %}
+        {% endif %}
+        {% if addrs %}
+            <h4>AddressRecords</h4>
+            <table class="table">
+                <thead>
+                        <th>FQDN</th>
+                        <th>TYPE</th>
+                        <th>IP</th>
+                </thead>
+
+                <tbody>
+                    {% for addr in addrs %}
+                    <tr>
+                        <td><a href='{{ addr.absolute_url() }}'>{{ addr.fqdn }}</a></td>
+                        <td>{{ addr.record_type() }}</td>
+                        <td>{{ addr.ip_str }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        {% if ptrs_count %}
+            <p>Found {{ ptrs_count }} PTR Records</p>
+            {% if not ptrs %}
+                <p>Too many to display...</p>
+            {% endif %}
+        {% endif %}
+        {% if ptrs %}
+            <h4>Pointer Records</h4>
+            <table class="table">
+                <thead>
+                        <th>FQDN</th>
+                        <th>TYPE</th>
+                        <th>IP</th>
+                </thead>
+
+                <tbody>
+                    {% for ptr in ptrs %}
+                    <tr>
+                        <td><a href='{{ ptr.absolute_url() }}'>{{ ptr.ip_str }}</a></td>
+                        <td>PTR</td>
+                        <td>{{ ptr.name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+{% endblock %}

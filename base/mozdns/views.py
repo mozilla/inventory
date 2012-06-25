@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.forms import ValidationError
+from django.db import IntegrityError
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.generic import DeleteView
 from django.views.generic import DetailView
@@ -42,7 +43,7 @@ class BaseCreateView(CreateView):
             obj = super(BaseCreateView, self).post(request, *args, **kwargs)
 
         # redirect back to form if errors
-        except ValidationError, e:
+        except (IntegrityError, ValidationError), e:
             messages.error(request, str(e))
             request.method = 'GET'
             return super(BaseCreateView, self).get(request, *args, **kwargs)

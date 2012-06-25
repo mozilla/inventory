@@ -1,14 +1,8 @@
 from core.network.models import Network
+import pdb
 
 def get_networks(site):
-    """
-    n(S^i) - All networks that are in a site.
-    """
-    nets = []
-    for network in Network.objects.all():
-        if site in network.sites.all():
-            nets.append(network)
-    return nets
+    return site.network_set.filter(site=site)
 
 def get_vlans(site):
     """
@@ -16,8 +10,8 @@ def get_vlans(site):
     returns a set
     """
     vlans = set()
-    networks = get_networks(site)
-    for network in networks:
+    for network in site.network_set.all():
+        print network
         if network.vlan:
             vlans.add(network.vlan)
     return vlans

@@ -46,7 +46,6 @@ def update_vlan(request, vlan_pk):
         if form.is_valid():
             try:
                 # Handle KV store.
-                pdb.set_trace()
                 kv = get_attrs(request.POST)
                 update_attrs(kv, attrs, VlanKeyValue, vlan, 'vlan')
 

@@ -12,8 +12,10 @@ import ipaddr
 
 class Network(models.Model, ObjectUrlMixin):
     id = models.AutoField(primary_key=True)
-    vlan = models.ForeignKey(Vlan, null=True, blank=True)
-    sites = models.ManyToManyField(Site, null=True, blank=True)
+    vlan = models.ForeignKey(Vlan, null=True,
+            blank=True, on_delete=models.SET_NULL)
+    site = models.ForeignKey(Site, null=True,
+            blank=True,on_delete=models.SET_NULL)
 
     # NETWORK/NETMASK FIELDS
     IP_TYPE_CHOICES = (('4', 'ipv4'), ('6', 'ipv6'))

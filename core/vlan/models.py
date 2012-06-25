@@ -18,6 +18,7 @@ class Vlan(models.Model, ObjectUrlMixin):
                 ('Name', self.name),
                 ('Number', self.number),
                 )
+
     class Meta:
         db_table = 'vlan'
         unique_together = ('name', 'number')
@@ -32,6 +33,11 @@ class VlanKeyValue(KeyValue):
     vlan = models.ForeignKey(Vlan, null=False)
     aux_attrs = (
         ('description', 'A description of the site'),
+        ('router_label', 'In some instances the label on the \n'
+            '\t\t\t\tnetworking equipment differs from the DNS label.  This is that\n'
+            '\t\t\t\tlabel and is relevant to Netops mostly.\n'),
+        ('dns_name', 'label within he FWDN up to the site label.\n'
+            '\t\t\t\tBy default this is assumed to be the vlan name.\n'),
         )
     class Meta:
         db_table = 'vlan_key_value'

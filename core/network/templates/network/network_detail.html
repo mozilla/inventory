@@ -23,6 +23,10 @@
                 {% for item, value in network.details() %}
                     <th>{{ item }}</th>
                 {% endfor %}
+                <th>Vlan</th>
+                {% if network.site %}
+                    <th>Site</th>
+                {% endif %}
             </thead>
 
             <tbody>
@@ -30,6 +34,10 @@
                 {% for item, value in network.details() %}
                     <td>{{ value }}</td>
                 {% endfor %}
+                    <td><a href='{{ network.vlan.get_absolute_url() }}'>{{ network.vlan }}</a></td>
+                {% if network.site %}
+                    <td><a href='{{ network.site.get_absolute_url() }}'>{{ network.site }}</a></td>
+                {% endif %}
                 </tr>
             </tbody>
         </table>
@@ -50,29 +58,22 @@
             </tbody>
         </table>
 
+        <h3>Eldar Networks</h3>
         <table class="table">
             <thead>
-                    <th>Sites this Network is in.</th>
-            </thead>
-
-            <tbody>
-                {% for site in network.sites.all() %}
-                <tr>
-                    <td><a href='{{ site.get_absolute_url() }}'>{{ site }}</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <table class="table">
-            <thead>
-                    <th>Eldar Networks.</th>
+                    <th>Network</th>
+                    <th>Vlan</th>
             </thead>
 
             <tbody>
                 {% for eldar in eldars %}
                 <tr>
                     <td><a href='{{ eldar.get_absolute_url() }}'>{{ eldar }}</a></td>
+                {% if eldar.vlan %}
+                    <td><a href='{{ eldar.vlan.get_absolute_url() }}'>{{ eldar.vlan }}</a></td>
+                {% else %}
+                    <td>None</td>
+                {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

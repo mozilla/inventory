@@ -32,6 +32,14 @@ is_attr = re.compile("^attr_\d+$")
 class SiteDeleteView(SiteView, CoreDeleteView):
     success_url = '/core/site/'
 
+def delete_site(request, site_pk):
+    site = get_object_or_404(Site, pk=site_pk)
+    if request.method == 'POST':
+        return render(request, 'site/site_confirm_delete.html')
+
+    else:
+        return render(request, 'site/site_confirm_delete.html')
+
 class SiteListView(SiteView, CoreListView):
     """ """
     template_name = 'core/core_list.html'
@@ -52,26 +60,12 @@ def update_site(request, site_pk):
     if request.method == 'POST':
         form = SiteForm(request.POST, instance=site)
         try:
-            # Handle KV store.
-            kv = get_attrs(request.POST)
-            update_attrs(kv, attrs, SiteKeyValue, site, 'site')
+            if form.is_valid():
+                # Handle KV store.
+                kv = get_attrs(request.POST)
+                update_attrs(kv, attrs, SiteKeyValue, site, 'site')
+                site = form.save()
 
-            # Do site stuff.
-            networks = form.data.getlist('networks')
-            cur_networks = site.network_set.all()
-            new_networks = []
-            for n_pk in networks:
-                n = get_object_or_404(Network, pk=n_pk)
-                new_networks.append(n)
-                if n in cur_networks:
-                    continue
-                else:
-                    n.sites.add(site)
-                    n.save()
-            for n in cur_networks:
-                if n not in new_networks:
-                    n.sites.remove(site)
-                    n.save()
             return redirect(site)
         except ValidationError, e:
             if form._errors is None:
@@ -86,7 +80,6 @@ def update_site(request, site_pk):
 
     else:
         form = SiteForm(instance=site)
-        form.fields['networks'].initial = site.network_set.all()
         return render(request, 'site/site_edit.html', {
             'site': site,
             'form': form,
@@ -98,11 +91,13 @@ def site_detail(request, site_pk):
     site = get_object_or_404(Site, pk=site_pk)
     attrs = site.sitekeyvalue_set.all()
     vlans = get_vlans(site)
+    no_vlan_networks = Network.objects.filter(site=site, vlan=None)
     if request.method == 'POST':
         pass
     else:
         return render(request, 'site/site_detail.html', {
             'site': site,
             'vlans': vlans,
+            'no_vlan_networks': no_vlan_networks,
             'attrs': attrs
         })

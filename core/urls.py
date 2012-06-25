@@ -6,7 +6,11 @@ from core.interface.static_intr.views import find_available_ip_from_network
 
 from django.views.decorators.csrf import csrf_exempt
 
+from core.views import search_ip
+
 urlpatterns = patterns('',
+
+    url(r'^$', csrf_exempt(search_ip)),
 
     url(r'^interface/(?P<system_pk>[\w-]+)/create/$',
         csrf_exempt(create_static_interface)),
