@@ -337,6 +337,10 @@ class System(DirtyFieldsMixin, models.Model):
             print e
             pass
 
+        if not self.id:
+            self.created_on = datetime.datetime.now()
+        self.updated_on = datetime.datetime.now()
+
         super(System, self).save(*args, **kwargs)
 
     def __unicode__(self):
