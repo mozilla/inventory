@@ -97,7 +97,6 @@ def update_site(request, site_pk):
 def site_detail(request, site_pk):
     site = get_object_or_404(Site, pk=site_pk)
     attrs = site.sitekeyvalue_set.all()
-    pdb.set_trace()
     vlans = get_vlans(site)
     if request.method == 'POST':
         pass

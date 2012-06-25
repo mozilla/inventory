@@ -50,19 +50,17 @@
             </tbody>
         </table>
 
-        <!--
         <table class="table">
             <thead>
                     <th>Networks</th>
             </thead>
 
             <tbody>
-                {# for net in site.network_set.all() %}
+                {% for net in vlan.network_set.all() %}
                 <tr>
                     <td><a href='{{ net.get_absolute_url() }}'>{{ net }}</a></td>
                 </tr>
-                {% endfor #}
+                {% endfor %}
             </tbody>
         </table>
-        -->
 {% endblock %}

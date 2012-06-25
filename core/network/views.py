@@ -77,9 +77,9 @@ def update_network(request, network_pk):
                         eldars, sub_networks = calc_networks(network)
                         for sub_network in sub_networks:
                             if site in sub_network.sites.all():
-                                raise ValidationError("Network {0} is in Site {1}."
+                                raise ValidationError("Network {0} is in Site {1}. "
                                     "Remove {0} from {1} before removing this "
-                                    "Network from {1}".format(sub_network, site))
+                                    "Network from {1}.".format(sub_network, site))
                             else:
                                 network.sites.remove(site)
                 try:
