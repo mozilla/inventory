@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
+
 from mozdns.validation import validate_ip_type
 from core.vlan.models import Vlan
 from core.site.models import Site

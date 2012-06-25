@@ -7,12 +7,15 @@ from django.http import HttpResponse
 
 from core.site.models import Site, SiteKeyValue
 from core.site.forms import SiteForm
+from core.site.utils import get_vlans
+
 from core.vlan.models import Vlan
 from core.network.models import Network
 from core.keyvalue.utils import get_attrs, update_attrs
 
 from core.views import CoreDeleteView, CoreListView
 from core.views import CoreCreateView, CoreUpdateView
+
 
 
 import re
@@ -94,10 +97,13 @@ def update_site(request, site_pk):
 def site_detail(request, site_pk):
     site = get_object_or_404(Site, pk=site_pk)
     attrs = site.sitekeyvalue_set.all()
+    pdb.set_trace()
+    vlans = get_vlans(site)
     if request.method == 'POST':
         pass
     else:
         return render(request, 'site/site_detail.html', {
             'site': site,
+            'vlans': vlans,
             'attrs': attrs
         })
