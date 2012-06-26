@@ -120,12 +120,18 @@ class PTRTests(TestCase):
 
 
     def do_generic_invalid_add( self, ip, fqdn, ip_type, exception, domain = None ):
+        # LOL, looks like I didn't know about assertRaises!
         e = None
         try:
             self.do_generic_add(ip, fqdn, ip_type, domain)
         except exception, e:
             pass
         self.assertEqual(exception, type(e))
+
+    def test_no_domain(self):
+        test_ip = "244.123.123.123"
+        name = "foo"
+        self.do_generic_invalid_add( test_ip, name, '4', ValidationError )
 
     def test_add_invalid_name_ipv6_ptr(self):
         bad_name = "testyfoo.com"

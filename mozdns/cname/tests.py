@@ -16,10 +16,26 @@ from mozdns.txt.models import TXT
 from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
 
+from core.interface.static_intr.models import StaticInterface
+from mozdns.ip.utils import ip2dns_form
+
 import pdb
 
 
 class CNAMETests(TestCase):
+
+    def create_domain(self, name, ip_type=None, delegated=False):
+        if ip_type is None:
+            ip_type = '4'
+        if name in ('arpa', 'in-addr.arpa', 'ipv6.arpa'):
+            pass
+        else:
+            name = ip2dns_form(name, ip_type=ip_type)
+        d = Domain(name = name, delegated=delegated)
+        d.clean()
+        self.assertTrue(d.is_reverse)
+        return d
+
 
     def setUp(self):
         primary = "ns5.oregonstate.edu"
@@ -36,6 +52,13 @@ class CNAMETests(TestCase):
         self.c_g.save()
         self.d = Domain(name = "dz")
         self.d.save()
+
+        self.arpa = self.create_domain( name = 'arpa')
+        self.arpa.save()
+        self.i_arpa = self.create_domain( name = 'in-addr.arpa')
+        self.i_arpa.save()
+        self.r1 = self.create_domain(name="10")
+        self.r1.save()
 
 
     def do_add(self, label, domain, data):
@@ -207,3 +230,33 @@ class CNAMETests(TestCase):
                                             priority=123, ttl=123)
 
         self.assertRaises(ValidationError, rec.save)
+
+    def test_intr_exists(self):
+        label = "tdfestyfoo"
+        data = "waasdft"
+        dom,_ = Domain.objects.get_or_create(name="cd")
+        dom,_ = Domain.objects.get_or_create(name="what.cd")
+
+        intr = StaticInterface(label=label, domain=dom, ip_str = "10.0.0.1",
+                ip_type='4')
+        intr.clean()
+        intr.save()
+
+        cn = CNAME(label = label, domain = dom, data = data)
+        self.assertRaises(ValidationError, cn.full_clean)
+
+    def test_intr_cname_exists(self):
+        # Duplicate test?
+        label = "tesafstyfoo"
+        data = "wadfakt"
+        dom,_ = Domain.objects.get_or_create(name="cd")
+        dom,_ = Domain.objects.get_or_create(name="what.cd")
+
+        cn,_ = CNAME.objects.get_or_create(label = label, domain = dom, data = data)
+        cn.full_clean()
+        cn.save()
+
+        intr = StaticInterface(label=label, domain=dom, ip_str = "10.0.0.2",
+                ip_type='4')
+
+        self.assertRaises(ValidationError, intr.clean)

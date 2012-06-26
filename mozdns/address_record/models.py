@@ -83,7 +83,7 @@ class BaseAddressRecord(Ip):
 
     def delete(self, *args, **kwargs):
         """Address Records that are glue records or that are pointed to
-        by a CNAME should not be removed from the database.mozdns.
+        by a CNAME should not be removed from the database.
         """
         if 'validate_glue' in kwargs:
             validate_glue = kwargs.pop('validate_glue')
@@ -128,7 +128,7 @@ class BaseAddressRecord(Ip):
             return
         # The label of the domain changed. Make sure it's not a glue record
         Nameserver = mozdns.nameserver.models.Nameserver
-        if Nameserver.objects.filter(glue=self).exists():
+        if Nameserver.objects.filter(addr_glue=self).exists():
             raise ValidationError("This record is a glue record for a"
                                   "Nameserver. Change the Nameserver to edit"
                                   "this record.")

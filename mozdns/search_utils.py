@@ -1,4 +1,5 @@
 import mozdns
+import core
 import pdb
 from django.db.models import Q
 
@@ -31,7 +32,7 @@ def fqdn_exists(fqdn, **kwargs):
 
 
 def _build_queries(fqdn, dn=True, mx=True, sr=True, tx=True,
-                    cn=True, ar=True, pt=True, ip=False):
+                    cn=True, ar=True, pt=True, ip=False, intr=True):
     # We import this way to make it easier to import this file without
     # getting cyclic imports.
     qsets = []
@@ -57,5 +58,9 @@ def _build_queries(fqdn, dn=True, mx=True, sr=True, tx=True,
     if pt:
         qsets.append(('PTR', mozdns.ptr.models.PTR.objects.
                             filter(Q(name=fqdn) | Q(ip_str=ip))))
+    if intr:
+        StaticInterface = core.interface.static_intr.models.StaticInterface
+        qsets.append(('StaticInterface', StaticInterface.objects.filter(
+            Q(fqdn=fqdn) | Q(ip_str=ip))))
 
     return qsets
