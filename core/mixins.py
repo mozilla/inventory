@@ -18,6 +18,9 @@ class ObjectUrlMixin(object):
             self._meta.db_table, self.pk
         )
 
+    def absolute_url(self):
+        return self.get_absolute_url()
+
     def get_edit_url(self):
         """
         Return the edit url of an object.

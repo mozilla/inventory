@@ -162,9 +162,6 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
     reverse_domain = models.ForeignKey(Domain, null=True, blank=True,
             related_name='addressrecordomain_set')
 
-    def absolute_url(self):
-        return "/mozdns/address_record/{0}/".format(self.pk)
-
     class Meta:
         db_table = 'address_record'
         unique_together = ('label', 'domain', 'ip_upper','ip_lower', 'ip_type')

@@ -34,9 +34,13 @@
                 {% for item, value in network.details() %}
                     <td>{{ value }}</td>
                 {% endfor %}
-                    <td><a href='{{ network.vlan.get_absolute_url() }}'>{{ network.vlan }}</a></td>
+                {% if network.vlan %}
+                    <td><a href='{{ network.vlan.absolute_url() }}'>{{ network.vlan }}</a></td>
+                {% else %}
+                    <td>None</td>
+                {% endif %}
                 {% if network.site %}
-                    <td><a href='{{ network.site.get_absolute_url() }}'>{{ network.site }}</a></td>
+                    <td><a href='{{ network.site.absolute_url() }}'>{{ network.site }}</a></td>
                 {% endif %}
                 </tr>
             </tbody>
@@ -59,37 +63,9 @@
         </table>
 
         <h3>Eldar Networks</h3>
-        <table class="table">
-            <thead>
-                    <th>Network</th>
-                    <th>Vlan</th>
-            </thead>
+        {% from 'core/core_macros.html' import display_networks %}
+        {{ display_networks(eldars) }}
 
-            <tbody>
-                {% for eldar in eldars %}
-                <tr>
-                    <td><a href='{{ eldar.get_absolute_url() }}'>{{ eldar }}</a></td>
-                {% if eldar.vlan %}
-                    <td><a href='{{ eldar.vlan.get_absolute_url() }}'>{{ eldar.vlan }}</a></td>
-                {% else %}
-                    <td>None</td>
-                {% endif %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <table class="table">
-            <thead>
-                    <th>Sub Networks.</th>
-            </thead>
-
-            <tbody>
-                {% for sub in sub_networks %}
-                <tr>
-                    <td><a href='{{ sub.get_absolute_url() }}'>{{ sub }}</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <h3>Sub Networks.</h3>
+        {{ display_networks(sub_networks) }}
 {% endblock %}

@@ -27,9 +27,6 @@ class PTR(Ip, ObjectUrlMixin):
                     ('Record Type', 'PTR'),
                     ('Name', self.name),
                )
-    def absolute_url(self):
-        return "/mozdns/ptr/{0}/".format(self.pk)
-
 
     class Meta:
         db_table = 'ptr'

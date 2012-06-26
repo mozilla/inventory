@@ -1,0 +1,31 @@
+{% macro display_networks(networks, vlan=True) -%}
+        <table class="table">
+            <thead>
+                    <th>Network</th>
+                    {% if vlan %}
+                    <th>Vlan</th>
+                    {% endif %}
+                    <th>Site</th>
+            </thead>
+
+            <tbody>
+                {% for network in networks %}
+                <tr>
+                        <td><a href='{{ network.absolute_url() }}'>{{ network }}</a></td>
+                    {% if vlan %}
+                        {% if network.vlan %}
+                            <td><a href='{{ network.vlan.absolute_url() }}'>{{ network.vlan }}</a></td>
+                        {% else %}
+                            <td>None</td>
+                        {% endif %}
+                    {% endif %}
+                    {% if network.site %}
+                        <td><a href='{{ network.site.absolute_url() }}'>{{ network.site }}</a></td>
+                    {% else %}
+                        <td>None</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+{%- endmacro %}

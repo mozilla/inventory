@@ -310,3 +310,119 @@ n_str = "10.{0}.76.0/24"
 site_octs = [scl1_oct, scl2_oct, scl3_oct, phx1_oct]
 # Note: for scl1,  label = infra
 create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+
+##### 77 mail ##### 10.DC.77.0/24 #####
+
+v_num = 77
+v_name = "mail"
+router_label = None
+
+n_str = "10.{0}.77.0/24"
+site_octs = [pek1_oct, corp_phx1_oct]
+create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+
+##### 80 static ##### 10.DC.80.0/24 #####
+
+v_num = 80
+v_name = "mail"
+router_label = "web"
+
+n_str = "10.{0}.80.0/24"
+site_octs = [scl2_oct, scl3_oct, pek1_oct, phx1_oct]
+create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+
+##### 81 webapp ##### 10.DC.81.0/24 #####
+
+v_num = 81
+v_name = "webapp"
+router_label = "app-generic"
+
+n_str = "10.{0}.81.0/24"
+site_octs = [scl2_oct, scl3_oct, pek1_oct, phx1_oct]
+create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+
+##### 82 bugs ##### 10.DC.82.0/24 #####
+
+v_num = 82
+v_name = "bugs"
+router_label = "app-bugs"
+
+n_str = "10.{0}.82.0/24"
+site_octs = [scl2_oct, scl3_oct, pek1_oct, phx1_oct]
+create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+
+##### 83 addons ##### 10.DC.83.0/24 #####
+
+v_num = 83
+v_name = "addons"
+router_label = "app-amo"
+
+n_str = "10.{0}.83.0/24"
+# Note: instead of a check, scl has 'addons'
+site_octs = [scl2_oct, scl3_oct, pek1_oct, phx1_oct]
+create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+
+##### 84 dist ##### 10.DC.84.0/24 #####
+
+v_num = 84
+v_name = "dist"
+router_label = "app-dist"
+
+n_str = "10.{0}.84.0/24"
+site_octs = [scl2_oct, scl3_oct, pek1_oct, phx1_oct]
+create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+
+##### 85 stage.bugs ##### 10.DC.85.0/24 #####
+
+v_num = 84
+v_name = "stage.bugs"
+router_label = "app-bugs-stage"
+
+n_str = "10.{0}.85.0/24"
+site_octs = [scl3_oct]
+create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+
+##### 100 metrics ##### 10.DC.100.0/23 #####
+
+v_num = 100
+v_name = "metrics"
+router_label = None
+
+n_str = "10.{0}.100.0/23"
+#site_octs = [mtv1_oct, phx1_oct]
+# TODO, what is the mtv network?
+site_octs = [phx1_oct]
+create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+
+##### 118 labs ##### 10.110.8.0/24 #####
+
+v_num = 118
+v_name = "labs"
+router_label = "labs-pancake"
+
+n_str = "10.{0}.100.0/24"
+#site_octs = [sjc1_oct]
+# TODO, no sjc1 network
+#create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+
+##### 120 ateam ##### 10.DC.120.0/24 #####
+
+v_num = 120
+v_name = "ateam"
+router_label = None
+
+n_str = "10.{0}.120.0/24"
+#site_octs = [mtv1_oct, phx1_oct]
+# TODO, what is the mtv network?
+site_octs = [phx1_oct]
+create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+
+##### 121 bughunter ##### 10.DC.121.0/24 #####
+
+v_num = 121
+v_name = "bughunter"
+router_label = None
+
+n_str = "10.{0}.121.0/24"
+site_octs = [phx1_oct]
+create_network_vlan(v_num, v_name, n_str, site_octs, router_label)

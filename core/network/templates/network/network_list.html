@@ -63,9 +63,8 @@
         </thead>
 
     <tbody>
-            {% for obj in object_list %}
-                <tr><th><a href='{{ obj.absolute_url() }}'>{{ obj }}</a></th></tr>
-            {% endfor %}
+            {% from 'core/core_macros.html' import display_networks %}
+            {{ display_networks(object_list) }}
     </tbody>
     </table>
 {% endblock %}

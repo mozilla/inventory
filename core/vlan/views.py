@@ -31,7 +31,7 @@ class VlanDeleteView(VlanView, CoreDeleteView):
 
 class VlanListView(VlanView, CoreListView):
     """ """
-    template_name = 'core/core_list.html'
+    template_name = 'vlan/vlan_list.html'
 
 class VlanCreateView(VlanView, CoreCreateView):
     """ """

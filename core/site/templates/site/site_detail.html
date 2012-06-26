@@ -62,11 +62,11 @@
                     {% for net in vlan.network_set.filter(site=site) %}
                     <tr>
                     {% if loop.first %}
-                        <td><a href='{{ vlan.get_absolute_url() }}'>{{ vlan }}</a></td>
+                        <td><a href='{{ vlan.absolute_url() }}'>{{ vlan }}</a></td>
                     {% else %}
                         <td> </td>
                     {% endif %}
-                    <td><a href='{{ net.get_absolute_url() }}'>{{ net }}</a></td>
+                    <td><a href='{{ net.absolute_url() }}'>{{ net }}</a></td>
                     </tr>
                     {% endfor %}
                 {% endfor %}
@@ -74,18 +74,7 @@
         </table>
         {% if no_vlan_networks %}
             <h3>Networks with no Vlan</h3>
-            <table class="table">
-                <thead>
-                        <th>Network</th>
-                </thead>
-
-                <tbody>
-                    {% for net in no_vlan_networks %}
-                        <tr>
-                        <td><a href='{{ net.get_absolute_url() }}'>{{ net }}</a></td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        {% from 'core/core_macros.html' import display_networks %}
+        {{ display_networks(no_vlan_networks) }}
         {% endif %}
 {% endblock %}

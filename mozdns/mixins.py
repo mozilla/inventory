@@ -17,6 +17,8 @@ class ObjectUrlMixin(object):
         return MOZDNS_BASE_URL + "/{0}/{1}/".format(
             self._meta.db_table, self.pk
         )
+    def absolute_url(self):
+        return self.get_absolute_url()
 
     def get_edit_url(self):
         """

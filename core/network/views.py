@@ -33,10 +33,9 @@ class NetworkDeleteView(NetworkView, CoreDeleteView):
 
 class NetworkListView(NetworkView, CoreListView):
     """ """
-    template_name = 'core/core_list.html'
+    template_name = 'network/network_list.html'
 
 def create_network(request):
-    pdb.set_trace()
     if request.method == 'POST':
         form = NetworkForm(request.POST)
         try:

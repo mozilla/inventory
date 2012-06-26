@@ -10,15 +10,15 @@
 
 {% block core_content %}
         {% if found_exact %}
-            <div class='dns-title'>Results for <a href='{{ search_ip.get_absolute_url() }}'>{{ search_ip }}</a></div>
+            <div class='dns-title'>Results for <a href='{{ search_ip.absolute_url() }}'>{{ search_ip }}</a></div>
         {% else %}
             <div class='dns-title'>Results for {{ search_ip }}</div>
         {% endif %}
 
         {% if parent %}
-                <p>Parent Network: <a href='{{ parent.get_absolute_url() }}'>{{ parent }}</a></td><p>
+                <p>Parent Network: <a href='{{ parent.absolute_url() }}'>{{ parent }}</a></td><p>
             {% if parent.vlan %}
-                <p>Vlan: <a href='{{ parent.vlan.get_absolute_url() }}'>{{ parent.vlan }}</a></td><p>
+                <p>Vlan: <a href='{{ parent.vlan.absolute_url() }}'>{{ parent.vlan }}</a></td><p>
             {% else %}
                 <p>Vlan: None<p>
             {% endif %}
@@ -33,9 +33,9 @@
             <tbody>
                 {% for eldar in eldars %}
                 <tr>
-                    <td><a href='{{ eldar.get_absolute_url() }}'>{{ eldar }}</a></td>
+                    <td><a href='{{ eldar.absolute_url() }}'>{{ eldar }}</a></td>
                 {% if eldar.vlan %}
-                    <td><a href='{{ eldar.vlan.get_absolute_url() }}'>{{ eldar.vlan }}</a></td>
+                    <td><a href='{{ eldar.vlan.absolute_url() }}'>{{ eldar.vlan }}</a></td>
                 {% else %}
                     <td>None</td>
                 {% endif %}
@@ -53,14 +53,14 @@
             <tbody>
                 {% for sub in sub_networks %}
                 <tr>
-                    <td><a href='{{ sub.get_absolute_url() }}'>{{ sub }}</a></td>
+                    <td><a href='{{ sub.absolute_url() }}'>{{ sub }}</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        {% if addr_count %}
-        <p>Found {{ addr_count }} A/AAAA Records</p>
+        {% if addrs_count %}
+        <p>Found {{ addrs_count }} A/AAAA Records</p>
             {% if not addrs %}
                 <p>Too many to display...</p>
             {% endif %}

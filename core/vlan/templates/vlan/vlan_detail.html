@@ -50,17 +50,6 @@
             </tbody>
         </table>
 
-        <table class="table">
-            <thead>
-                    <th>Networks</th>
-            </thead>
-
-            <tbody>
-                {% for net in vlan.network_set.all() %}
-                <tr>
-                    <td><a href='{{ net.get_absolute_url() }}'>{{ net }}</a></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        {% from 'core/core_macros.html' import display_networks %}
+        {{ display_networks(vlan.network_set.all(), vlan=False) }}
 {% endblock %}
