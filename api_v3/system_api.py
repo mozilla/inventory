@@ -2,13 +2,31 @@ from tastypie import fields
 from tastypie.authorization import DjangoAuthorization
 from tastypie.resources import ModelResource, ALL, ALL_WITH_RELATIONS
 import systems.models as system_model
+from django.conf.urls.defaults import url
+from tastypie.serializers import Serializer
+from django.core.serializers import json as djson
+import json
+class PrettyJSONSerializer(Serializer):
+    json_indent = 2
 
+    def to_json(self, data, options=None):
+        options = options or {}
+        data = self.to_simple(data, options)
+        return json.dumps(data, cls=djson.DjangoJSONEncoder,
+                sort_keys=True, ensure_ascii=False, indent=self.json_indent)
 
 class SystemResource(ModelResource):
     key_value = fields.ToManyField('api_v3.system_api.KeyValueResource', 'key_values', full=True, null=True)
     server_model = fields.ForeignKey('api_v3.system_api.ServerModelResource', 'server_model', null=True, full=True)
     operating_system = fields.ForeignKey('api_v3.system_api.OperatingSystemResource', 'operating_system', null=True, full=True)
+    
+    def prepend_urls(self):
+            return [
+                url(r"^(?P<resource_name>%s)/(?P<id>[\d]+)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
+                url(r"^(?P<resource_name>%s)/(?P<hostname>.*)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
+            ]
     class Meta:
+        serializer = PrettyJSONSerializer()
         filtering = {
                 'hostname': ALL_WITH_RELATIONS,
                 'notes': ALL,
