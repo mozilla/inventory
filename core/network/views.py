@@ -337,7 +337,7 @@ def create_objects(nvars):
         vlan_name = nvars.get('vlan_name', None)
         vlan_number = nvars.get('vlan_number', None)
         vlan = Vlan(name=vlan_name, number=vlan_number)
-    elif nvars.get('vlan_actiol', '') == "existing":
+    elif nvars.get('vlan_action', '') == "existing":
         vlan_number = nvars.get('vlan_pk', '')
         vlan = Vlan.objects.get(pk=vlan_number)
     else:
