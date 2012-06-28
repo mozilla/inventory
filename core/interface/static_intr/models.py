@@ -9,6 +9,7 @@ from core.mixins import ObjectUrlMixin
 from mozdns.address_record.models import BaseAddressRecord
 from mozdns.models import MozdnsRecord
 from mozdns.domain.models import Domain
+from mozdns.cname.models import CNAME
 from mozdns.ip.models import Ip
 from settings import CORE_BASE_URL
 
@@ -64,7 +65,7 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     def get_absolute_url(self):
         return "/systems/show/{0}/".format(self.system.pk)
 
-    def clean(self):
+    def clean(self, *args, **kwargs):
         #if not isinstance(self.mac, basestring):
         #    raise ValidationError("Mac Address not of valid type.")
         #self.mac = self.mac.lower()
@@ -76,15 +77,50 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
                 ).exists():
             raise ValidationError("An A record already uses this Name and IP")
 
-        """
-        TODO, Huge Bug. Glue records are, at this point, only tied to address
-        records. Interfaces can't be glue records. If this is going to be
-        fixed. A lot of tests need to be written.
-        """
+        if 'validate_glue' in kwargs:
+            validate_glue = kwargs.pop('validate_glue')
+        else:
+            validate_glue = True
+
+        if validate_glue:
+            self.check_glue_status()
+
         super(StaticInterface, self).clean(validate_glue=False,
                 update_reverse_domain=True, ignore_interface=True)
 
-    def delete(self):
+    def check_glue_status(self):
+        """If this interface is a 'glue' record for a Nameserver instance,
+        do not allow modifications to this record. The Nameserver will
+        need to point to a different record before this record can
+        be updated.
+        """
+        if self.pk is None:
+            return
+        # First get this object from the database and compare it to the
+        # Nameserver object about to be saved.
+        db_self = StaticInterface.objects.get(pk=self.pk)
+        if db_self.label == self.label and db_self.domain == self.domain:
+            return
+        # The label of the domain changed. Make sure it's not a glue record
+        Nameserver = mozdns.nameserver.models.Nameserver
+        if Nameserver.objects.filter(intr_glue=self).exists():
+            raise ValidationError("This Interface represents aa glue record "
+                    "for a Nameserver. Change the Nameserver to edit this "
+                    "record.")
+
+    def delete(self, *args, **kwargs):
+        if 'validate_glue' in kwargs:
+            validate_glue = kwargs.pop('validate_glue')
+        else:
+            validate_glue = True
+        if validate_glue:
+            if self.intrnameserver_set.exists():
+                raise ValidationError("Cannot delete the record {0}. It is a glue "
+                    "record.".format(self.record_type()))
+            if CNAME.objects.filter(data=self.fqdn):
+                raise ValidationError("A CNAME points to this {0} record. Change "
+                    "the CNAME before deleting this record.".
+                    format(self.record_type()))
         super(StaticInterface, self).delete(validate_glue=False)
 
     def get_absolute_url(self):

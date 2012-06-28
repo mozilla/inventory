@@ -218,6 +218,7 @@ ul
     float: left;
     overflow: hidden; /* will contain if #first is longer than #second */
     margin-left: 1em;
+    margin-top: 1em;
 	width: 600px;
 }
 .dns-menu {

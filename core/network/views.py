@@ -134,12 +134,6 @@ def do_vlan(request):
     })
 
 def network_wizard(request):
-    WIZARD_URL = "/core/network/create_wizard/"
-    start = 0
-    site = 1
-    network = 2
-    vlan = 3
-    done = 4
     if request.method == 'POST':
         action = request.POST.get('action', '')
         if action == "network":

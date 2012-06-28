@@ -8,6 +8,8 @@ from mozdns.mixins import ObjectUrlMixin
 
 from core.interface.static_intr.models import StaticInterface
 
+import pdb
+
 class Nameserver(models.Model, ObjectUrlMixin):
     """Name server for forward domains::
 
@@ -56,14 +58,14 @@ class Nameserver(models.Model, ObjectUrlMixin):
 
     def set_glue(self, glue):
         if isinstance(glue, AddressRecord):
-            addr_glue = glue
-            intr_glue = None
+            self.addr_glue = glue
+            self.intr_glue = None
         elif isinstance(glue, StaticInterface):
-            addr_glue = None
-            intr_glue = glue
+            self.addr_glue = None
+            self.intr_glue = glue
         elif isinstance(glue, type(None)):
-            addr_glue = None
-            intr_glue = None
+            self.addr_glue = None
+            self.intr_glue = None
         else:
             raise ValueError("Cannot assing {0}: Nameserver.glue must be of "
                     "either type AddressRecord or type "
@@ -91,23 +93,27 @@ class Nameserver(models.Model, ObjectUrlMixin):
             #  * Interface records are searched.
             # AddressRecords take higher priority over interface records.
             glue_label = self.server.split('.')[0]  # foo.com -> foo
-            addr_glue = AddressRecord.objects.filter(label = glue_label,
-                    domain = self.domain)
-            intr_glue = StaticInterface.objects.filter(label = glue_label,
-                    domain = self.domain)
-            if not (addr_glue or intr_glue):
-                raise ValidationError(
-                    "This NS needs a glue record. Create a glue "
-                    "record for the server before creating "
-                    "the NS record."
-                )
+            if (self.glue and self.glue.label == glue_label and
+                self.glue.domain == self.domain):
+                # Our glue record is valid. Don't go looking for a new one.
+                pass
             else:
-                if addr_glue:
-                    self.addr_glue = addr_glue[0]
-                    self.intr_glue = None
+                # Ok, our glue record wasn't valid, let's find a new one.
+                addr_glue = AddressRecord.objects.filter(label = glue_label,
+                        domain = self.domain)
+                intr_glue = StaticInterface.objects.filter(label = glue_label,
+                        domain = self.domain)
+                if not (addr_glue or intr_glue):
+                    raise ValidationError(
+                        "This NS needs a glue record. Create a glue "
+                        "record for the server before creating "
+                        "the NS record."
+                    )
                 else:
-                    self.addr_glue = None
-                    self.intr_glue = intr_glue[0]
+                    if addr_glue:
+                        self.glue = addr_glue[0]
+                    else:
+                        self.glue = intr_glue[0]
 
     def check_NS_TLD_condition(ns):
         domain = Domain.objects.filter(name=ns.server)

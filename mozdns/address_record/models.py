@@ -98,7 +98,7 @@ class BaseAddressRecord(Ip):
                 raise ValidationError("A CNAME points to this {0} record. Change "
                     "the CNAME before deleting this record.".
                     format(self.record_type()))
-            super(BaseAddressRecord, self).delete(*args, **kwargs)
+        super(BaseAddressRecord, self).delete(*args, **kwargs)
 
     def set_fqdn(self):
         set_fqdn(self)

@@ -1,8 +1,3 @@
-"""
-OSU IPv6 allocation:
-    2620:105:F000::/40
-"""
-
 from django.test import TestCase
 
 from mozdns.address_record.tests import *
