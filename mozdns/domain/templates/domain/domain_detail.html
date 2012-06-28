@@ -2,6 +2,9 @@
 
 {% block dns_content %}
     <div class='dns-title'>The {{ object.name }} Domain</div>
+    <a class="btn" href="{{ object.get_edit_url() }}">Edit</a>
+    <a class="btn" href="{{ object.get_delete_url() }}">Delete</a>
+
 
     {% from "mozdns/tables.html" import render_table %}
 

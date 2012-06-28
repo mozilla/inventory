@@ -17,6 +17,7 @@ sites.append(s)
 
 site_name = "scl3"
 s,_ = Site.objects.get_or_create(name=site_name)
+scl3 = s
 sites.append(s)
 
 site_name = "ams1"
@@ -25,14 +26,17 @@ sites.append(s)
 
 site_name = "phx1"
 s,_ = Site.objects.get_or_create(name=site_name)
+phx1 = s
 sites.append(s)
 
 site_name = "sjc1"
 s,_ = Site.objects.get_or_create(name=site_name)
 sites.append(s)
 
-site_name = "releng.scl3"
+site_name = "releng"
 s,_ = Site.objects.get_or_create(name=site_name)
+s.parent = scl3
+s.save()
 sites.append(s)
 
 site_name = "mtv1"
@@ -43,8 +47,10 @@ site_name = "pek1"
 s,_ = Site.objects.get_or_create(name=site_name)
 sites.append(s)
 
-site_name = "corp.phx1"
+site_name = "corp"
 s,_ = Site.objects.get_or_create(name=site_name)
+s.parent = phx1
+s.save()
 sites.append(s)
 
 
@@ -253,6 +259,12 @@ v_name = "db"
 n_str = "10.{0}.70.0/24"
 site_octs = [pek1_oct, phx1_oct, corp_phx1_oct]
 create_network_vlan(v_num, v_name, n_str, site_octs)
+
+net = Network.objects.get(network_str = n_str.format(corp_phx1_oct))
+phx1 = Site.objects.get(name="phx1")
+correct_site = Site.objects.get(name="corp", parent=phx1)
+net.site = correct_site
+net.save()
 
 ##### 71 build ##### ????????? #####
 

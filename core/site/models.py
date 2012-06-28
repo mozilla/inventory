@@ -26,6 +26,17 @@ class Site(models.Model, ObjectUrlMixin):
                 target = target.parent
         return full_name.title()
 
+    def get_site_path(self):
+        full_name = self.name
+        target = self
+        while True:
+            if target.parent is None:
+                break
+            else:
+                full_name = target.parent.name + "." + target.name
+                target = target.parent
+        return full_name
+
 
     class Meta:
         db_table = 'site'

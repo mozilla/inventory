@@ -38,7 +38,11 @@ class DomainDeleteView(DomainView, MozdnsDeleteView):
 
 
 class DomainListView(DomainView, MozdnsListView):
+    queryset = Domain.objects.filter(is_reverse=False).order_by('name')
     """ """
+
+class ReverseDomainListView(DomainView, MozdnsListView):
+    queryset = Domain.objects.filter(is_reverse=True).order_by('name')
 
 
 class DomainDetailView(DomainView, DetailView):
