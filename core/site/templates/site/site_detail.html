@@ -2,7 +2,14 @@
 
 
 {% block core_content %}
-    <div class='dns-title'>{{ site }}</div>
+    {% if site.parent %}
+        <div class='dns-title'>{{ site.get_full_name() }}</div>
+        Parent site: <a href='{{ site.parent.get_absolute_url() }}'>{{ site.parent.get_full_name() }}</a>
+        </br>
+    {% else %}
+        <div class='dns-title'>{{ site.get_full_name() }}</div>
+    {% endif %}
+
 
     {% block action_bar %}
         {% if site.get_edit_url %}
@@ -49,6 +56,21 @@
                 </tr>
             </tbody>
         </table>
+        {% if child_sites %}
+        <h3>Child sites</h3>
+            <table class="table">
+                <thead>
+                        <th>Site</th>
+                </thead>
+
+                <tbody>
+                    {% for child_site in child_sites %}
+                        <td><a href='{{ child_site.get_absolute_url() }}'>{{ child_site.get_full_name() }}</a></td>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
 
         <h3>Networks</h3>
         <table class="table">

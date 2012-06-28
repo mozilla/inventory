@@ -91,6 +91,7 @@ def site_detail(request, site_pk):
     site = get_object_or_404(Site, pk=site_pk)
     attrs = site.sitekeyvalue_set.all()
     vlans = get_vlans(site)
+    child_sites = site.site_set.all()
     no_vlan_networks = Network.objects.filter(site=site, vlan=None)
     if request.method == 'POST':
         pass
@@ -99,5 +100,6 @@ def site_detail(request, site_pk):
             'site': site,
             'vlans': vlans,
             'no_vlan_networks': no_vlan_networks,
+            'child_sites': child_sites,
             'attrs': attrs
         })
