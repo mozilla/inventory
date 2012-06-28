@@ -19,16 +19,18 @@ class SystemResource(ModelResource):
     key_value = fields.ToManyField('api_v3.system_api.KeyValueResource', 'key_values', full=True, null=True)
     server_model = fields.ForeignKey('api_v3.system_api.ServerModelResource', 'server_model', null=True, full=True)
     operating_system = fields.ForeignKey('api_v3.system_api.OperatingSystemResource', 'operating_system', null=True, full=True)
+    system_rack = fields.ForeignKey('api_v3.system_api.SystemRackResource', 'system_rack', null=True, full=True)
     
     def prepend_urls(self):
             return [
-                url(r"^(?P<resource_name>%s)/(?P<id>[\d]+)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
-                url(r"^(?P<resource_name>%s)/(?P<hostname>.*)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_dispatch_detail"),
+                url(r"^(?P<resource_name>%s)/(?P<id>[\d]+)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_system_dispatch_by_id_detail"),
+                url(r"^(?P<resource_name>%s)/(?P<hostname>.*)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_system_dispatch_by_hostname_detail"),
             ]
     class Meta:
         serializer = PrettyJSONSerializer()
         filtering = {
                 'hostname': ALL_WITH_RELATIONS,
+                'system_rack': ALL_WITH_RELATIONS,
                 'notes': ALL,
                 'asset_tag': ALL,
                 'key_value': ALL_WITH_RELATIONS,
@@ -46,6 +48,7 @@ class SystemResource(ModelResource):
 
 class ServerModelResource(ModelResource):
     class Meta:
+        serializer = PrettyJSONSerializer()
         resource_name = 'server_model'
         queryset = system_model.ServerModel.objects.all()
 
@@ -64,6 +67,10 @@ class SystemRackResource(ModelResource):
         resource_name = 'system_rack'
         queryset = system_model.SystemRack.objects.all()
 
+        filtering = {
+                'name': ALL_WITH_RELATIONS,
+                'id': ALL_WITH_RELATIONS,
+                }
 class SystemStatusResource(ModelResource):
     class Meta:
         resource_name = 'system_status'
