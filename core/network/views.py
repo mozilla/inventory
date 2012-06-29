@@ -213,10 +213,8 @@ def network_wizard(request):
                 })
             nvars = request.session['net_wiz_vars']
             nvars['site_pk'] = site.pk
-            request.session['net_wiz_state'] = site
             # Validation
             # return the choose or create vlan page.
-            request.session['net_wiz_state'] = vlan
             form = NetworkForm_vlan()
             # return the allocate network block page.
             return render(request, 'network/network_form.html', {
@@ -226,7 +224,6 @@ def network_wizard(request):
 
         elif action == "vlan":
             form = NetworkForm_vlan(request.POST)
-            pdb.set_trace()
             try:
                 form.is_valid()
                 nvars = request.session['net_wiz_vars']
@@ -282,7 +279,6 @@ def network_wizard(request):
             # Return network detail view or fail.
             # Create objects and store to db.
             # Get rid of state var
-            pdb.set_trace()
             site, network, vlan = create_objects(nvars)
             request.session['net_wiz_vars'] = nvars
             return render(request, 'network/wizard_confirm.html', {
@@ -292,7 +288,6 @@ def network_wizard(request):
                 'action': 'confirm',
             })
         elif action == "confirm":
-            pdb.set_trace()
             nvars = request.session['net_wiz_vars']
             site, network, vlan = create_objects(nvars)
             if site:
@@ -307,7 +302,6 @@ def network_wizard(request):
     # Catch everything else.
     # return the allocate network block page.
     form = NetworkForm_network()
-    request.session['net_wiz_state'] = start
     # return the allocate network block page.
     return render(request, 'network/network_form.html', {
         'form': form,

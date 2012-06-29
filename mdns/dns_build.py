@@ -12,6 +12,21 @@ from settings import MOZ_SITE_PATH
 from settings import REV_SITE_PATH
 from settings import ZONE_PATH
 from settings import RUN_SVN_STATS
+from core.network.models import Network
+from core.interface.static_intr.models import StaticInterface
+
+from mozdns.address_record.models import AddressRecord
+from mozdns.cname.models import CNAME
+from mozdns.domain.models import Domain
+from mozdns.mx.models import MX
+from mozdns.nameserver.models import Nameserver
+from mozdns.ptr.models import PTR
+from mozdns.soa.models import SOA
+from mozdns.srv.models import SRV
+from mozdns.tests.view_tests import random_label
+from mozdns.txt.models import TXT
+from mozdns.domain.utils import *
+from mozdns.ip.utils import ip2dns_form
 
 import os.path
 import pprint
@@ -70,9 +85,100 @@ def get_ui_sites_changed(all_sites):
 
     return sites_to_build
 
+def guess(nic):
+    """
+    Search and Guess which object in the database is supposed to correspond
+    with this nic.
+    """
+    log("Attempting to find records for nic {0}".format(nic))
+    if len(nic.ips) != 1:
+        log("nic {0} system {1} doesn't have the right amount of ip's."
+                .format(nic, print_system(nic.system)), ERROR)
+        return None, None, None
+
+    addrs = AddressRecord.objects.filter(ip_str=nic.ips[0])
+    ptrs = PTR.objects.filter(ip_str=nic.ips[0])
+    intrs = StaticInterface.objects.filter(ip_str=nic.ips[0])
+
+    # This script probably put this info here.
+    intr_certainty = False
+    exintr = None
+    for intr in intrs:
+        if intr.fqdn.startswith(nic.hostname):
+            log("Found Interface {0} that matches nic.ip {1} and partially "
+                "nic.hostname {2}".format(intr, nic.ips[0], nic.hostname))
+            intr_certainty = True
+            if exintr:
+                log("Found another Interface {0} that looks a lot like {1}, "
+                    "while searching for nic.ip {2} and nic.hostname {3}."
+                    "{2}".format(intr, exintr, nic.ips[0], nic.hostname),
+                    WARNING)
+            exintr = intr
+
+    # Ok, we have records with the same ip. Look for name matches.
+    addr_certainty = False
+    exaddr = None
+    for addr in addrs:
+        if addr.fqdn.startswith(nic.hostname):
+            # The ip patches and the hostname of the nic lines up with the
+            # name on the Address Record.
+            addr_certainty = True
+            log("Found A {0} that matches nic.ip {1} and partially "
+                "nic.hostname {2}".format(addr, nic.ips[0], nic.hostname))
+            if exaddr:
+                log("Found another A record {0} that looks a lot like {1}, "
+                    "while searching for nic.ip {2} and nic.hostname {3}."
+                    "{2}".format(addr, exaddr, nic.ips[0], nic.hostname),
+                    WARNING)
+            exaddr = addr
+
+    # Search in the ptr space.
+    ptr_certainty = False
+    exptr = None
+    for ptr in ptrs:
+        if ptr.name.startswith(nic.hostname):
+            log("Found PTR {0} that matches nic.ip {1} and partially "
+                "nic.hostname {2}".format(ptr, nic.ips[0],
+                 nic.hostname))
+            ptr_certainty = True
+            if exptr:
+                log("Found another PTR record {0} that looks a lot like {1}, "
+                    "while searching for nic.ip {2} and nic.hostname {3}."
+                    "{2}".format(addr, exaddr, nic.ips[0], nic.hostname),
+                    WARNING)
+            exptr = ptr
+
+    return exintr, exaddr, exptr
+
+def populate_interface():
+    matches = []
+    misses = []
+    for nic in get_nic_objs():
+        log("="*20)
+        intr, addr, ptr = guess(nic)
+        if not (intr or addr or ptr):
+            log("Epic failure. Couldn't find anything for nic.{0}.{1} "
+                    "{2}".format(nic.primary, nic.alias,
+                        print_system(nic.system)), ERROR)
+            misses.append(nic)
+        else:
+            log("SUCCESS: Guess Interface:{0} AddressRecord:{1} PTR:{2}".format(intr, addr, ptr))
+            matches.append((nic, intr, addr, ptr))
+
+    log("-+"*80)
+    log("===== Misses =====")
+    for nic in misses:
+        log(str(nic))
+    log("===== Matches =====")
+    for nic, intr, addr, ptr in matches:
+        log("Nic: {1} Interface:{0} AddressRecord:{1} PTR:{2}".format(nic, intr, addr, ptr))
+    log("Misses: " + str(len(misses)))
+    log("Matches: " + str(len(matches)))
+
 def do_dns_build():
     # The function get_all_sites should generate tuples like:
     #   ('<site-name>', '<network>', '<file_path_to_site_dir>')
+
 
     #sites_to_build = set(get_all_sites(MOZ_SITE_PATH))
     #sites_to_build = set()
@@ -87,25 +193,12 @@ def do_dns_build():
     #changed_reverse = set(get_reverse_svn_sites_changed(all_sites,
     #    REV_SITE_PATH))
     #sites_to_build = sites_to_build.union(changed_reverse)
-    #svn_zones = collect_svn_zones(MOZ_SITE_PATH, ZONE_PATH)
+    svn_zones = collect_svn_zones(MOZ_SITE_PATH, ZONE_PATH)
     rev_svn_zones = collect_rev_svn_zones(REV_SITE_PATH, ZONE_PATH)
 
 
-    #populate_forward_dns(svn_zones)
+    populate_forward_dns(svn_zones)
     populate_reverse_dns(rev_svn_zones)
-
-from mozdns.address_record.models import AddressRecord
-from mozdns.cname.models import CNAME
-from mozdns.domain.models import Domain
-from mozdns.mx.models import MX
-from mozdns.nameserver.models import Nameserver
-from mozdns.ptr.models import PTR
-from mozdns.soa.models import SOA
-from mozdns.srv.models import SRV
-from mozdns.tests.view_tests import random_label
-from mozdns.txt.models import TXT
-from mozdns.domain.utils import *
-from mozdns.ip.utils import ip2dns_form
 
 def create_domain(name, ip_type=None, delegated=False):
     if ip_type is None:
@@ -166,6 +259,9 @@ def populate_reverse_dns(rev_svn_zones):
             ip_str = ip_str.replace('.in-addr.arpa','')
             ip_str= '.'.join(list(reversed(ip_str.split('.'))))
             fqdn = rdata.target.to_text().strip('.')
+            if fqdn.startswith('unused'):
+                print "Skipping "+ip_str+" "+fqdn
+                continue
             if ip_str == '10.2.171.IN':
                 log("Skipping 10.2.171.IN", WARNING)
                 continue
@@ -276,6 +372,8 @@ def populate_forward_dns(svn_zones):
                 domain = exists_domain[0]
             else:
                 label = name.split('.')[0]
+                if label.find('unused') != -1:
+                    continue
                 parts = list(reversed(name.split('.')[1:]))
                 domain_name = ''
                 for i in range(len(parts)):

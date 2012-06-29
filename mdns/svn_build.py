@@ -176,6 +176,8 @@ def collect_rev_svn_zones(svn_rev_site_path, relative_zone_path):
                 log("{0} is missing it's 'SOA' file".format(site),
                         ERROR)
             try:
+                if full_network_path.replace('in-addr','').find('-') != -1:
+                    continue
                 site_zone_data = get_zone_data(rev_domain,
                         full_network_path, relative_zone_path, 'PTR')
             except dns.zone.NoSOA:

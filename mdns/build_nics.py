@@ -53,6 +53,11 @@ class Interface(object):
     def pprint(self):
         pp.pformat(vars(self))
 
+    def __str__(self):
+        return "nic.{0}.{1} IP: {2} Hostname: {3}".format(self.primary,
+                self.alias, self.ips, self.hostname)
+    def __repr__(self):
+        return "<Interface: {0}>".format(self)
 
 is_mac_key = re.compile("^nic\.\d+\.mac_address\.\d+$")
 is_hostname_key = re.compile("^nic\.\d+\.hostname\.\d+$")

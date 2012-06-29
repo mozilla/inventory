@@ -27,10 +27,30 @@ from mozdns.txt.models import TXT
 
 import pdb
 
+def domain_sort(domains):
+    """
+    This is soooooo slow.
+    """
+    roots = domains.filter(master_domain = None)
+    ordered = []
+    for root in roots:
+        ordered += build_tree(root, domains)
+    return ordered
+
+def build_tree(root, domains):
+    if len(domains) == 0:
+        return root
+    ordered = [root]
+    children = domains.filter(master_domain = root)
+    for child in children:
+        ordered += build_tree(child, domains)
+    return ordered
+
 class DomainView(object):
     model = Domain
     queryset = Domain.objects.all().order_by('name')
     form_class = DomainForm
+
 
 
 class DomainDeleteView(DomainView, MozdnsDeleteView):
@@ -38,8 +58,7 @@ class DomainDeleteView(DomainView, MozdnsDeleteView):
 
 
 class DomainListView(DomainView, MozdnsListView):
-    queryset = Domain.objects.filter(is_reverse=False).order_by('name')
-    """ """
+    queryset = Domain.objects.filter(is_reverse=False)
 
 class ReverseDomainListView(DomainView, MozdnsListView):
     queryset = Domain.objects.filter(is_reverse=True).order_by('name')
