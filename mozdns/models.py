@@ -3,6 +3,7 @@ from django.db import models
 
 import mozdns
 from mozdns.domain.models import Domain, _check_TLD_condition
+from mozdns.view.models import View
 from mozdns.mixins import ObjectUrlMixin
 from mozdns.validation import validate_label, validate_name
 from settings import MOZDNS_BASE_URL
@@ -51,6 +52,7 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
                              validators=[validate_label])
     fqdn = models.CharField(max_length=255, blank=True, null=True,
                             validators=[validate_name])
+    views = models.ManyToManyField(View)
     # fqdn = label + domain.name <--- see set_fqdn
 
     class Meta:

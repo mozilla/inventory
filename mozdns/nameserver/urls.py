@@ -9,7 +9,7 @@ urlpatterns = patterns('',
         csrf_exempt(create_ns_delegated)),
     url(r'(?P<domain>[\w-]+)/create/$', csrf_exempt(NSCreateView.as_view())),
     url(r'create/$', csrf_exempt(NSCreateView.as_view())),
-    url(r'(?P<pk>[\w-]+)/update/$', csrf_exempt(NSUpdateView.as_view())),
+    url(r'(?P<nameserver_pk>[\w-]+)/update/$', csrf_exempt(update_ns)),
     url(r'(?P<pk>[\w-]+)/delete/$', csrf_exempt(NSDeleteView.as_view())),
     url(r'(?P<pk>[\w-]+)/$', csrf_exempt(NSDetailView.as_view())),
 )

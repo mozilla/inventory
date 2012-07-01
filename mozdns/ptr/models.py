@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
+from mozdns.view.models import View
 from mozdns.domain.models import Domain, _name_to_domain
 from mozdns.ip.models import Ip
 from mozdns.validation import validate_name
@@ -20,6 +21,7 @@ class PTR(Ip, ObjectUrlMixin):
     reverse_domain = models.ForeignKey(Domain, null=False, blank=True)
     data_domain = models.ForeignKey(Domain, null=True, blank=True,
             related_name='ptrs')
+    views = models.ManyToManyField(View)
 
     def details(self):
         return (

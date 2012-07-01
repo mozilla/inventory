@@ -8,9 +8,9 @@
     {{ form_title }}
 {% endblock %}
 
-{% block content %}
+{% block dns_content %}
     <form class="well form-horizontal" method="post" action="">
-        {{ form }}
+        {{ form.as_p() }}
         <input type="submit" value="Submit" />
     </form>
 {% endblock %}

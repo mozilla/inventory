@@ -14,5 +14,6 @@ urlpatterns = patterns('',
     url(r'soa/', include('mozdns.soa.urls')),
     url(r'srv/', include('mozdns.srv.urls')),
     url(r'txt/', include('mozdns.txt.urls')),
+    url(r'view/', include('mozdns.view.urls')),
 
 )

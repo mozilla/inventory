@@ -5,6 +5,7 @@ from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.validation import validate_label, validate_name
 from mozdns.mixins import ObjectUrlMixin
+from mozdns.view.models import View
 
 from core.interface.static_intr.models import StaticInterface
 
@@ -35,6 +36,8 @@ class Nameserver(models.Model, ObjectUrlMixin):
             related_name='nameserver_set')
     intr_glue = models.ForeignKey(StaticInterface, null=True, blank=True,
             related_name='intrnameserver_set')
+    views = models.ManyToManyField(View, blank=True)
+
 
     class Meta:
         db_table = 'nameserver'

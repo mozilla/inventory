@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 import mozdns
 import core as core
 from mozdns.cname.models import CNAME
+from mozdns.view.models import View
 from mozdns.ip.models import Ip
 from mozdns.models import set_fqdn, check_for_cname, check_for_delegation
 from mozdns.models import check_TLD_condition
@@ -29,6 +30,7 @@ class BaseAddressRecord(Ip):
                              validators=[validate_first_label])
     fqdn = models.CharField(max_length=255, blank=True, null=True,
                             validators=[validate_name])
+    views = models.ManyToManyField(View)
 
     class Meta:
         abstract = True

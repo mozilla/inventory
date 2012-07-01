@@ -66,6 +66,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'mozdns.soa',
     'mozdns.srv',
     'mozdns.txt',
+    'mozdns.view',
     'debug_toolbar',
 
 ]

@@ -34,12 +34,35 @@ class MozdnsCreateView(BaseCreateView):
         # form.fields['domain'].queryset = Domain.objects.filter(name =
         # 'foo.com') This ^ line will change the query set to something
         # controllable find user credentials in self.request
+        """This removes the unhelpful "Hold down the...." help texts for the
+        specified fields for a form."""
+        remove_message = unicode(' Hold down "Control", or "Command" on a Mac, to select more than one.')
+        for field in form.fields:
+            if field in form.base_fields:
+                if form.base_fields[field].help_text:
+                    new_text = form.base_fields[field].help_text.replace(
+                            remove_message, '')
+                    new_text = new_text.strip()
+                    form.base_fields[field].help_text = new_text
         return form
 
 
 class MozdnsUpdateView(BaseUpdateView):
     """ """
     template_name = 'mozdns/mozdns_form.html'
+    def get_form(self, form_class):
+        form = super(MozdnsUpdateView, self).get_form(form_class)
+        """This removes the unhelpful "Hold down the...." help texts for the
+        specified fields for a form."""
+        remove_message = unicode(' Hold down "Control", or "Command" on a Mac, to select more than one.')
+        for field in form.fields:
+            if field in form.base_fields:
+                if form.base_fields[field].help_text:
+                    new_text = form.base_fields[field].help_text.replace(
+                            remove_message, '')
+                    new_text = new_text.strip()
+                    form.base_fields[field].help_text = new_text
+        return form
 
 
 class MozdnsDeleteView(BaseDeleteView):
