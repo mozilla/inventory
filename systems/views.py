@@ -469,7 +469,8 @@ def save_network_adapter(request, id):
 @allow_anyone
 def system_show(request, id):
     system = get_object_or_404(models.System, pk=id)
-    system.notes = system.notes.replace("\n", "<br />")
+    if system.notes:
+        system.notes = system.notes.replace("\n", "<br />")
     show_nics_in_key_value = False
     is_release = False
     try:
