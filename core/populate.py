@@ -188,7 +188,7 @@ def create_network_vlan(v_num, v_name, n_str, site_octs, router_label=None):
 
 ##### 17 console ##### 10.DC.17.0/24 #####
 v_num = 17
-v_name = "consule"
+v_name = "console"
 
 n_str = "10.{0}.17.0/24"
 site_octs = [scl1_oct]

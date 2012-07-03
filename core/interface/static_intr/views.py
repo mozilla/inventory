@@ -10,6 +10,7 @@ from systems.models import System
 from core.interface.static_intr.models import StaticInterface
 from core.interface.static_intr.models import StaticIntrKeyValue
 from core.interface.static_intr.forms import StaticInterfaceForm
+from core.interface.static_intr.forms import StaticInterfaceQuickForm
 from core.keyvalue.utils import get_attrs, update_attrs
 
 from mozdns.domain.models import Domain
@@ -129,23 +130,21 @@ def create_static_interface(request, system_pk):
             'form_title': 'New Interface for System {0}'.format(system)
         })
 
-def find_available_ip_from_network(request):
-    print "-" * 20
-    try:
-        ip = ipaddr.IPv4Network(request.GET['network'])
-    except ipaddr.AddressValueError, e:
-        return HttpResponse("Invalid Network.")
+def find_available_ip_from_ipv4_network(net):
+    net.update_network()
 
-    start = int(ip.network)
-    end = int(ip.broadcast)
+    start = int(net.network.network)
+    end = int(net.network.broadcast)
     if start >= end -1:
         return HttpResponse("Too small of network.")
 
     records = AddressRecord.objects.filter(ip_upper = 0, ip_lower__gte = start,
             ip_lower__lte = end)
-    if not records:
+    intrs = StaticInterface.objects.filter(ip_upper = 0, ip_lower__gte = start,
+            ip_lower__lte = end)
+    if not records and not intrs:
         ip = ipaddr.IPv4Address(start + 10)
-        return HttpResponse(str(ip))
+        return ip
     for i in range(start + 10, end-1):
         taken = False
         for record in records:
@@ -153,6 +152,83 @@ def find_available_ip_from_network(request):
                 taken = True
                 break
         if taken == False:
+            for intr in intrs:
+                if intr.ip_lower == i:
+                    taken = True
+                    break
+        if taken == False:
             ip = ipaddr.IPv4Address(i)
-            return HttpResponse(str(ip))
-    return HttpResponse("None")
+            return ip
+    return None
+
+def quick_create(request, system_pk):
+    # TODO, make sure the user has access to this system
+    system = get_object_or_404(System, pk=system_pk)
+    if request.method == 'POST':
+        interface_form = StaticInterfaceQuickForm(request.POST)
+
+        a, ptr, r = None, None, None
+        if interface_form.is_valid():
+            try:
+                #mac = interface_form.cleaned_data['mac']
+                hostname = interface_form.cleaned_data['hostname']
+                ip_type = interface_form.cleaned_data['ip_type']
+                vlan = interface_form.cleaned_data['vlan']
+                site = interface_form.cleaned_data['site']
+
+                networks = []
+                for network in vlan.network_set.all():
+                    if network.site.get_site_path() == site.get_site_path():
+                        networks.append(network)
+                if not networks:
+                    raise ValidationError("No appropriate networks found. "
+                        "Consider adding this interface manually.")
+
+                for network in networks:
+                    ip = find_available_ip_from_ipv4_network(network)
+                    if ip:
+                        break
+                if ip == None:
+                    raise ValidationError("No appropriate IP found "
+                        "in {0} Vlan {1}. Consider adding this interface "
+                        "manually.".format(site.name, vlan.name))
+
+                expected_name = "{0}.{1}.mozilla.com".format(vlan.name,
+                    site.get_site_path())
+                print "Expected name {0}".format(expected_name)
+                try:
+                    domain = Domain.objects.get(name=expected_name)
+                except ObjectDoesNotExist, e:
+                    raise ValidationError("The domain {0} doesn't seem to "
+                        "exist. Consider creating this interface manually.")
+
+                intr = StaticInterface(label=hostname, domain=domain,
+                        ip_str=str(ip),
+                    #ip_type=ip_type, mac=mac, system=system)
+                    ip_type=ip_type, system=system)
+                intr.full_clean()
+                intr.save()
+            except ValidationError, e:
+                interface_form._errors['__all__'] = ErrorList(e.messages)
+                return render(request, 'static_intr/static_intr_form.html', {
+                    'form': interface_form,
+                    'form_title': 'Quick Interface Create for System {0}'.format(
+                        system)
+                })
+        else:
+            return render(request, 'static_intr/static_intr_form.html', {
+                'form': interface_form,
+                'form_title': 'Quick Interface Create for System {0}'.format(
+                    system)
+            })
+
+        messages.success(request, "Success! Interface Created.")
+        return redirect(system)
+
+    else:
+        interface_form = StaticInterfaceQuickForm()
+        return render(request, 'static_intr/static_intr_form.html', {
+            'form': interface_form,
+                    'form_title': 'Quick Interface Create for System {0}'.format(
+                        system)
+        })
