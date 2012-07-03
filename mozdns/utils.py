@@ -2,6 +2,7 @@
 from django.http import Http404
 
 from mozdns.domain.models import Domain
+import pdb
 
 
 def tablefy(objects):
@@ -27,6 +28,13 @@ def tablefy(objects):
         urls.append( obj.get_absolute_url() )
         for title, value in obj.details():
             row.append( value )
+        views = ""
+        if hasattr(obj, 'views'):
+            for view in obj.views.all():
+                views += view.name + ", "
+            views = views.strip(", ")
+            row.append(views)
+
         matrix.append(row)
 
     return (headers, matrix, urls)

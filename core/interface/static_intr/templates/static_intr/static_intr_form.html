@@ -6,7 +6,7 @@
     <div class='dns-title'>{{ form_title }}</div>
 
     <form class="well form-horizontal" method="post" action="">
-        {{ form }}
+        {{ form.as_p() }}
         <input type="submit" value="Submit" />
     </form>
     <br >

@@ -71,6 +71,14 @@ def get_zone_data(domain, filepath, dirpath, rtype=None):
     os.chdir(cwd)
     return (rzone, data)
 
+def collect_svn_zone(root_domain, zone_path, relative_zone_path):
+    cwd = os.getcwd()
+    os.chdir(relative_zone_path)
+    rzone = zone.from_file(zone_path, root_domain, relativize=False)
+    os.chdir(cwd)
+    return rzone
+
+
 def collect_svn_zones(svn_site_path, relative_zone_path):
     """
     :param svn_site_path: Full path to where reverse sites live. Atm that is in
@@ -110,6 +118,15 @@ def collect_svn_zones(svn_site_path, relative_zone_path):
             log("[Invalid] site dir for site {0}".format(site_dir), WARNING)
             continue
     return sites
+
+def collect_rev_svn_zone(rev_domain, rev_zone_path, relative_zone_path):
+    rev_root_domain = "{0}.IN-ADDR.ARPA".format('.'.join(
+        list(reversed(rev_domain.split('.')))))
+    cwd = os.getcwd()
+    os.chdir(relative_zone_path)
+    rzone = zone.from_file(rev_zone_path, rev_root_domain, relativize=False)
+    os.chdir(cwd)
+    return rzone
 
 def collect_rev_svn_zones(svn_rev_site_path, relative_zone_path):
     """

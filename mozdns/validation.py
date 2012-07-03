@@ -330,7 +330,7 @@ def validate_name(fqdn):
     # Star records are allowed. Remove them during validation.
     if fqdn[0] == '*':
         fqdn = fqdn[1:]
-        fqdn.strip('.')
+        fqdn = fqdn.strip('.')
 
     for label in fqdn.split('.'):
         if not label:

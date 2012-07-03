@@ -10,6 +10,7 @@ from systems.models import System
 from core.interface.static_intr.models import StaticInterface
 from core.interface.static_intr.models import StaticIntrKeyValue
 from core.interface.static_intr.forms import StaticInterfaceForm
+from core.keyvalue.utils import get_attrs, update_attrs
 
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
@@ -22,11 +23,23 @@ import ipaddr
 
 is_attr = re.compile("^attr_\d+$")
 
+
+def delete_attr(request, system_pk, intr_pk, attr_pk):
+    """
+    An view destined to be called by ajax to remove an attr.
+    """
+    #system = get_object_or_404(System, pk=system_pk)
+    #intr = get_object_or_404(StaticInterface, pk=intr_pk)
+    attr = get_object_or_404(StaticIntrKeyValue, pk=attr_pk)
+    attr.delete()
+    return HttpResponse("Attribute Removed.")
+
+
 def edit_static_interface(request, system_pk, intr_pk):
     # TODO, make sure the user has access to this system
     system = get_object_or_404(System, pk=system_pk)
     intr = get_object_or_404(StaticInterface, pk=intr_pk)
-    intr_attrs = intr.staticintrkeyvalue_set.all()
+    attrs = intr.staticintrkeyvalue_set.all()
     if request.method == 'POST':
         interface_form = StaticInterfaceForm(request.POST)
         if interface_form.is_valid():
@@ -37,44 +50,9 @@ def edit_static_interface(request, system_pk, intr_pk):
                 intr.domain = interface_form.cleaned_data['domain']
                 intr.ip_type = interface_form.cleaned_data['ip_type']
 
-                kv = {}
-                # Go through every POST param and find attr_x params and their
-                # corresponding attr_x_value pairs.
-                for param, values in request.POST.iteritems():
-                    if (is_attr.match(param) and
-                        request.POST.has_key("{0}_value".format(param))):
-                            # u'attr_0': [u'<attr>']
-                            # u'key_attr_0': [u'<attr_value>']
-                            key = request.POST[param]
-                            value = request.POST["{0}_value".format(param)]
-
-                            if key in kv:
-                                raise ValidationError("{0} is already an "
-                                    "attribute.".format(key))
-                            kv[key] = value
-
-                # Now update the interfaces KeyValue Store. Catch any
-                # ValidationErrors.
-                intr_attrs = intr.staticintrkeyvalue_set.all()
-                to_save = [] # kv's that need to be saved.
-                for attr, value in kv.iteritems():
-                    if not attr and not value:
-                        continue
-                    if intr_attrs.filter(key=attr):
-                        kv = intr_attrs.get(key=attr)
-                        kv.value = value
-                        to_save.append(kv)
-                    else:
-                        # This kv is new. Let's create it and add it to the
-                        # to_save list for saving!
-                        kv = StaticIntrKeyValue(key=attr, value=value)
-                        to_save.append(kv)
-
-                for kv in to_save:
-                    kv.intr = intr
-                    kv.clean()
-                    kv.save()
-
+                # Handle key value stuff.
+                kv = get_attrs(request.POST)
+                update_attrs(kv, attrs, StaticIntrKeyValue, intr, 'intr')
 
                 # Everything checks out. Clean and Save all the objects.
                 intr.clean()
@@ -83,8 +61,11 @@ def edit_static_interface(request, system_pk, intr_pk):
                 interface_form._errors['__all__'] = ErrorList(e.messages)
                 return render(request, 'static_intr/static_intr_edit.html', {
                     'form': interface_form,
-                    'intr_attrs': intr_attrs,
-                    'form_title': 'Edit Interface for System {0}'.format(system)
+                    'intr': intr,
+                    'intr_attrs': attrs,
+                    'form_title': 'Edit Interface for System {0}'.format(
+                        system),
+                    'domain': intr.domain
                 })
 
         messages.success(request, "Success! Interface Updated.")
@@ -98,7 +79,8 @@ def edit_static_interface(request, system_pk, intr_pk):
         interface_form = StaticInterfaceForm(initial=initial_vals)
         return render(request, 'static_intr/static_intr_edit.html', {
             'form': interface_form,
-            'intr_attrs': intr_attrs,
+            'intr': intr,
+            'intr_attrs': attrs,
             'form_title': 'Edit Interface for System {0}'.format(system),
             'domain': intr.domain
         })
@@ -118,7 +100,8 @@ def create_static_interface(request, system_pk):
                 domain = interface_form.cleaned_data['domain']
                 ip_type = interface_form.cleaned_data['ip_type']
 
-                intr = StaticInterface(label=hostname, domain=domain, ip_str=ip_str,
+                intr = StaticInterface(label=hostname, domain=domain,
+                        ip_str=ip_str,
                     #ip_type=ip_type, mac=mac, system=system)
                     ip_type=ip_type, system=system)
                 intr.clean()
@@ -127,7 +110,8 @@ def create_static_interface(request, system_pk):
                 interface_form._errors['__all__'] = ErrorList(e.messages)
                 return render(request, 'static_intr/static_intr_form.html', {
                     'form': interface_form,
-                    'form_title': 'New Interface for System {0}'.format(system)
+                    'form_title': 'New Interface for System {0}'.format(
+                        system)
                 })
         else:
             return render(request, 'static_intr/static_intr_form.html', {
@@ -154,7 +138,6 @@ def find_available_ip_from_network(request):
 
     start = int(ip.network)
     end = int(ip.broadcast)
-    pdb.set_trace()
     if start >= end -1:
         return HttpResponse("Too small of network.")
 

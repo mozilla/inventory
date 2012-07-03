@@ -61,12 +61,15 @@
         <thead>
             <tr>
                 <th>{{ object_list[0]|humanized_class_name }}</th>
+                {% if object_list[0].views %}
+                {% endif %}
+
             </tr>
         </thead>
 
     <tbody>
             {% for obj in object_list %}
-                <tr><th><a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a></th></tr>
+                <tr><td><a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a></td> </tr>
             {% endfor %}
     </tbody>
     </table>

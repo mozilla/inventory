@@ -1,4 +1,11 @@
 {% extends "mozdns/base.html" %}
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
 
 {% block site_tabs %}
         <div class="dns-menu">

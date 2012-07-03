@@ -1,4 +1,6 @@
 import re
+from django.core.exceptions import ValidationError
+
 
 is_attr = re.compile("^attr_\d+$")
 

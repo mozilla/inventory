@@ -11,13 +11,10 @@ from core.views import search_ip
 urlpatterns = patterns('',
 
     url(r'^$', csrf_exempt(search_ip)),
-
-    url(r'^interface/(?P<system_pk>[\w-]+)/create/$',
-        csrf_exempt(create_static_interface)),
-    url(r'^interface/(?P<system_pk>[\w-]+)/(?P<intr_pk>[\w-]+)/update/$',
-        csrf_exempt(edit_static_interface)),
+    url(r'^interface/',include('core.interface.urls')),
     url(r'^find_available_ip_from_network/$',
         csrf_exempt(find_available_ip_from_network)),
+
 
     url(r'^vlan/',include('core.vlan.urls')),
     url(r'^network/',include('core.network.urls')),

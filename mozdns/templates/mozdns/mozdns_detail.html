@@ -9,5 +9,47 @@
         <a class="btn" href="{{ object.reverse_domain.get_absolute_url() }}">View Reverse Domain</a>
     {% endif %}
 
-    {{ super() }}
+    <div class='dns-title'>{{ object }}</div>
+
+    {% block action_bar %}
+        {% if object.get_edit_url %}
+            <a class="btn btn-primary" href="{{ object.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if object.get_delete_url %}
+            <a class="btn btn-danger" href="{{ object.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+
+        {% from "mozdns/tables.html" import render_table %}
+
+        <table class="table">
+            <thead>
+                {% for item, value in object.details() %}
+                    <th>{{ item }}</th>
+                {% endfor %}
+                {% if object.views %}
+                    <th>Views</th>
+                {% endif %}
+            </thead>
+
+            <tbody>
+                <tr>
+                {% for item, value in object.details() %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+                <td>
+                {% if object.views %}
+                    {% for view in object.views.all() %}
+                        {{ view }}
+                    {% endfor %}
+                {% endif %}
+                </td>
+                </tr>
+            </tbody>
+        </table>
+
 {% endblock %}

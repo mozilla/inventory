@@ -2,7 +2,6 @@ from truth.models import Truth
 
 from mdns.inventory_build import inventory_build_sites
 from mdns.svn_build import collect_svn_zones, collect_rev_svn_zones
-from mdns.svn_build import collect_svn_zone, collect_rev_svn_zone
 from mdns.svn_build import get_forward_svn_sites_changed
 from mdns.svn_build import get_reverse_svn_sites_changed
 from mdns.build_nics import *
@@ -28,7 +27,6 @@ from mozdns.tests.view_tests import random_label
 from mozdns.txt.models import TXT
 from mozdns.domain.utils import *
 from mozdns.ip.utils import ip2dns_form
-from mozdns.view.models import View
 
 import os.path
 import pprint
@@ -39,53 +37,6 @@ DO_DEBUG = False
 
 pp = pprint.PrettyPrinter(indent=2)
 
-def ip_to_site(ip_str, base_site_path):
-    """Given the dotted decimal of an IP address, find the site it corresponds
-    to. If no site is found return None. This function assumes that the ip is
-    in valid format.
-
-    :param ip_str: The ip to use.
-    :type ip_str: str
-    :param base_site_path: The dir containing all other sites (usually MOZ_SITE_PATH)
-    :type base_site_path: str
-    :returns key_value: The kv representing the site the ip belongs in.
-    :type key_value: truth.models.KeyValue
-    """
-    print "IP string" + ip_str
-    ip = ipaddr.IPv4Network(ip_str)  # This will end up being <ip>/32
-    sites = get_all_sites(base_site_path)
-    ip2v = Truth.objects.get(name='ip_to_vlan_mapping').keyvalue_set.all()
-    for kv in ip2v:
-        vlan_site, network_str = kv.key, kv.value
-        if ipaddr.IPv4Network(network_str).overlaps(ip):
-            return kv
-    return None
-
-def get_all_sites(site_path):
-    """
-    Return every site in the ip_to_vlan_mapping truth store.
-    """
-    sites = []
-    ip2v = Truth.objects.get(name='ip_to_vlan_mapping').keyvalue_set.all()
-    for kv in ip2v:
-        vlan_site, network = kv.key, kv.value
-        vlan, site = vlan_site.split('.')
-        full_site_path = os.path.join(site_path, site)
-        sites.append((vlan_site, network, full_site_path))
-    return sites
-
-def get_ui_sites_changed(all_sites):
-    sites_to_build = []
-    tasks = ScheduledTask.objects.filter(type='dns')
-    for site_meta in all_sites:
-        vlan_site, network, site_path = site_meta
-        for t in tasks:
-            if vlan_site == t.task:
-                print vlan_site
-                sites_to_build.append(site_meta)
-                t.delete()
-
-    return sites_to_build
 
 def guess(nic):
     """
@@ -177,31 +128,6 @@ def populate_interface():
     log("Misses: " + str(len(misses)))
     log("Matches: " + str(len(matches)))
 
-def do_dns_build():
-    # The function get_all_sites should generate tuples like:
-    #   ('<site-name>', '<network>', '<file_path_to_site_dir>')
-
-
-    #sites_to_build = set(get_all_sites(MOZ_SITE_PATH))
-    #sites_to_build = set()
-
-    #changed_ui = set(get_ui_sites_changed(all_sites))
-    #sites_to_build = sites_to_build.union(changed_ui)
-
-    #changed_forward = set(get_forward_svn_sites_changed(all_sites,
-    #    MOZ_SITE_PATH))
-    #sites_to_build = sites_to_build.union(changed_forward)
-
-    #changed_reverse = set(get_reverse_svn_sites_changed(all_sites,
-    #    REV_SITE_PATH))
-    #sites_to_build = sites_to_build.union(changed_reverse)
-    svn_zones = collect_svn_zones(MOZ_SITE_PATH, ZONE_PATH)
-    rev_svn_zones = collect_rev_svn_zones(REV_SITE_PATH, ZONE_PATH)
-
-
-    populate_forward_dns(svn_zones)
-    populate_reverse_dns(rev_svn_zones)
-
 def create_domain(name, ip_type=None, delegated=False):
     if ip_type is None:
         ip_type = '4'
@@ -212,23 +138,8 @@ def create_domain(name, ip_type=None, delegated=False):
     d = Domain.objects.get_or_create(name = name, delegated=delegated)
     return d
 
-def do_zone_build(ztype, view, root_domain, zone_path):
 
-    view_obj, _ = View.objects.get_or_create(name=view)
-    if ztype == 'forward':
-        svn_zones = {root_domain.replace('mozilla.com', ''):((collect_svn_zone(root_domain, zone_path,
-            ZONE_PATH)), '')}
-        populate_forward_dns(svn_zones, view=view_obj)
-    elif ztype == 'reverse':
-        rev_svn_zones = {root_domain:('', ((collect_rev_svn_zone(root_domain, zone_path,
-            ZONE_PATH)), ''))}
-        populate_reverse_dns(rev_svn_zones, view=view_obj)
-    else:
-        print "Slob"
-
-
-
-def populate_reverse_dns(rev_svn_zones, view=None):
+def populate_reverse_dns(rev_svn_zones):
     arpa = create_domain( name = 'arpa')
     i_arpa = create_domain( name = 'in-addr.arpa')
     i6_arpa = create_domain( name = 'ipv6.arpa')
@@ -270,9 +181,6 @@ def populate_reverse_dns(rev_svn_zones, view=None):
             domain = ensure_rev_domain(domain_name)
             ns, _ = Nameserver.objects.get_or_create(domain=domain,
                     server=rdata.target.to_text().strip('.'))
-            if view:
-                ns.views.add(view)
-                ns.save()
         for (name, ttl, rdata) in zone.iterate_rdatas('PTR'):
             ip_str = name.to_text().strip('.')
             ip_str = ip_str.replace('.IN-ADDR.ARPA','')
@@ -293,9 +201,6 @@ def populate_reverse_dns(rev_svn_zones, view=None):
                 ptr = PTR(name = fqdn, ip_str = ip_str, ip_type='4')
                 ptr.full_clean()
                 ptr.save()
-                if view:
-                    ptr.views.add(view)
-                    ptr.save()
 
         """
         for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
@@ -335,8 +240,7 @@ def ensure_rev_domain(name):
 
     return domain
 
-def populate_forward_dns(svn_zones, view=None):
-    print svn_zones
+def populate_forward_dns(svn_zones):
     for site, data in svn_zones.iteritems():
         zone, records = data
         print "-" * 15 + " " + site
@@ -409,10 +313,6 @@ def populate_forward_dns(svn_zones, view=None):
                         domain.soa = domain.master_domain.soa
             a, _ = AddressRecord.objects.get_or_create( label = label,
                 domain=domain, ip_str=rdata.to_text(), ip_type='4')
-            if view:
-                a.views.add(view)
-                a.save()
-
 
         for (name, ttl, rdata) in zone.iterate_rdatas('NS'):
             name = name.to_text().strip('.')
@@ -420,9 +320,6 @@ def populate_forward_dns(svn_zones, view=None):
             domain = ensure_domain(name)
             ns, _ = Nameserver.objects.get_or_create(domain=domain,
                     server=rdata.target.to_text().strip('.'))
-            if view:
-                ns.views.add(view)
-                ns.save()
         for (name, ttl, rdata) in zone.iterate_rdatas('MX'):
             name = name.to_text().strip('.')
             print str(name) + " MX " + str(rdata)
@@ -438,9 +335,6 @@ def populate_forward_dns(svn_zones, view=None):
             server = rdata.exchange.to_text().strip('.')
             mx, _ = MX.objects.get_or_create(label=label, domain=domain,
                     server= server, priority=priority, ttl="3600")
-            if mx:
-                mx.views.add(view)
-                mx.save()
         for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
             name = name.to_text().strip('.')
             print str(name) + " CNAME " + str(rdata)
@@ -460,9 +354,6 @@ def populate_forward_dns(svn_zones, view=None):
                         data = data)
                 cn.full_clean()
                 cn.save()
-                if cn:
-                    cn.views.add(view)
-                    cn.save()
 
 is_generate1 = re.compile("^.*(\d+){(\+|-)(\d+),(\d+),(.)}.*$")
 is_generate2 = re.compile("^.*(\d+){(\+|-?)(\d+)}.*$")
