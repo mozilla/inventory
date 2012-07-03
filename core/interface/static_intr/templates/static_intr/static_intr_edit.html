@@ -83,6 +83,10 @@
 
     }
     </script>
+
+    {% if intr.get_delete_url %}
+        <a class="btn btn-danger" href="{{ intr.get_delete_url() }}">Delete</a>
+    {% endif %}
     <form class="well form-horizontal" method="post" action="">
         {{ form.as_p() }}
         </br>

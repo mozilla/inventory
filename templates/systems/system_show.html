@@ -157,7 +157,7 @@
     <table>
     <tr><th>FQDN</th><th>IP Address</th><th>Action</th></tr>
     {% for intr in interfaces %}
-        <tr><td>{{intr.fqdn}}</td><td>{{ intr.ip_str }}</td><td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a><pre></td>
+        <tr><td>{{intr.fqdn}}</td><td>{{ intr.ip_str }}</td><td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a><pre></td>
     {% endfor %}
     </table>
 </pre></dd>

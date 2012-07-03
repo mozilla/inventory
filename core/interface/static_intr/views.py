@@ -12,6 +12,7 @@ from core.interface.static_intr.models import StaticIntrKeyValue
 from core.interface.static_intr.forms import StaticInterfaceForm
 from core.interface.static_intr.forms import StaticInterfaceQuickForm
 from core.keyvalue.utils import get_attrs, update_attrs
+from core.views import CoreDeleteView
 
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
@@ -21,9 +22,20 @@ import re
 import pdb
 import ipaddr
 
+class StaticInterfaceDeleteView(CoreDeleteView):
+    model = StaticInterface
+    queryset = StaticInterface.objects.all()
 
 is_attr = re.compile("^attr_\d+$")
 
+def delete_static_interface(reqeust, intr_pk):
+    intr = get_object_or_404(StaticInterface, pk=intr_pk)
+    system = intr.system
+    try:
+        intr.delete()
+    except ValidationError, e:
+        pass
+    return redirect(system)
 
 def delete_attr(request, system_pk, intr_pk, attr_pk):
     """
@@ -36,10 +48,10 @@ def delete_attr(request, system_pk, intr_pk, attr_pk):
     return HttpResponse("Attribute Removed.")
 
 
-def edit_static_interface(request, system_pk, intr_pk):
+def edit_static_interface(request, intr_pk):
     # TODO, make sure the user has access to this system
-    system = get_object_or_404(System, pk=system_pk)
     intr = get_object_or_404(StaticInterface, pk=intr_pk)
+    system = intr.system
     attrs = intr.staticintrkeyvalue_set.all()
     if request.method == 'POST':
         interface_form = StaticInterfaceForm(request.POST)

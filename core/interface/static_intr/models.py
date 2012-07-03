@@ -59,8 +59,9 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         unique_together = ('ip_upper', 'ip_lower', 'label', 'domain')
 
     def get_edit_url(self):
-        return "/core/interface/{0}/{1}/update/".format(self.system.pk,
-                self.pk)
+        return "/core/interface/{0}/update/".format(self.pk)
+    def get_delete_url(self):
+        return "/core/interface/{0}/delete/".format(self.pk)
 
     def get_absolute_url(self):
         return "/systems/show/{0}/".format(self.system.pk)
