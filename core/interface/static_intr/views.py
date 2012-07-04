@@ -18,15 +18,9 @@ from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
 
-import re
 import pdb
 import ipaddr
 
-class StaticInterfaceDeleteView(CoreDeleteView):
-    model = StaticInterface
-    queryset = StaticInterface.objects.all()
-
-is_attr = re.compile("^attr_\d+$")
 
 def delete_static_interface(reqeust, intr_pk):
     intr = get_object_or_404(StaticInterface, pk=intr_pk)

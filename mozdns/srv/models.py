@@ -5,6 +5,7 @@ from mozdns.domain.models import Domain
 from mozdns.models import MozdnsRecord
 from mozdns.validation import validate_name
 from mozdns.mixins import ObjectUrlMixin
+from mozdns.view.models import View
 
 from mozdns.validation import validate_srv_label, validate_srv_port
 from mozdns.validation import validate_srv_priority, validate_srv_weight
@@ -28,6 +29,8 @@ class SRV(models.Model, ObjectUrlMixin):
     fqdn = models.CharField(max_length=255, blank=True, null=True,
                             validators=[validate_srv_name])
     # fqdn = label + domain.name <--- see set_fqdn
+
+    views = models.ManyToManyField(View)
 
     target = models.CharField(max_length=100,
                               validators=[validate_name])
