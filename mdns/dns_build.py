@@ -346,7 +346,7 @@ def populate_forward_dns(svn_zones, view=None):
             exists = SOA.objects.filter(minimum=rdata.minimum,
                     contact=rdata.rname.to_text().strip('.'),
                     primary=rdata.mname.to_text().strip('.'), comment="SOA for"
-                    " {0}.mozilla.com".format(site))
+                    " {0}mozilla.com".format(site))
             if exists:
                 soa = exists[0]
             else:
@@ -407,6 +407,7 @@ def populate_forward_dns(svn_zones, view=None):
                             domain_name)
                     if domain.master_domain and domain.master_domain.soa:
                         domain.soa = domain.master_domain.soa
+                        domain.save()
             a, _ = AddressRecord.objects.get_or_create( label = label,
                 domain=domain, ip_str=rdata.to_text(), ip_type='4')
             if view:

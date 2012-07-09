@@ -25,9 +25,9 @@ class BaseAddressRecord(Ip):
     # See Ip for all ip fields #
     ############################
 
-    domain = models.ForeignKey(Domain, null=False)
     label = models.CharField(max_length=100, blank=True, null=True,
                              validators=[validate_first_label])
+    domain = models.ForeignKey(Domain, null=False)
     fqdn = models.CharField(max_length=255, blank=True, null=True,
                             validators=[validate_name])
     views = models.ManyToManyField(View)

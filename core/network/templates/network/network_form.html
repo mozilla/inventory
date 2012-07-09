@@ -14,7 +14,7 @@
     <p>Select how to handle the VLAN.</p>
     {% endif %}
     <form class="well form-horizontal" method="post" action="">
-        {{ form }}
+        {{ form.as_p() }}
         <br>
         <input type="submit" value="Submit" />
         <input type="hidden" value="{{ action }}", name="action"/>

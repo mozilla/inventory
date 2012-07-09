@@ -57,17 +57,24 @@
     </div>
 
     <!-- Basic bootstrap table -->
-    foo
     <table style="float:right" align="right" class="table table-bordered table-striped">
         <thead>
             <tr>
                 <th>{{ object_list[0]|humanized_class_name }}</th>
+                <th>SOA</th>
             </tr>
         </thead>
 
-    <tbody>
+        <tbody>
             {% for obj in object_list %}
-                <tr><th><a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a></th></tr>
+            <tr>
+                <td><a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a></td>
+                {% if obj.soa %}
+                <td><a href='{{ obj.soa.get_absolute_url() }}'>{{ obj.soa }}</a></td>
+                {% else %}
+                <td>None</td>
+                {% endif %}
+            </tr>
             {% endfor %}
     </tbody>
     </table>

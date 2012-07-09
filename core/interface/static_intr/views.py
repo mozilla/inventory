@@ -48,18 +48,19 @@ def edit_static_interface(request, intr_pk):
     system = intr.system
     attrs = intr.staticintrkeyvalue_set.all()
     if request.method == 'POST':
-        interface_form = StaticInterfaceForm(request.POST)
+        interface_form = StaticInterfaceForm(request.POST, instance=intr)
         if interface_form.is_valid():
             try:
-                intr.ip_str = interface_form.cleaned_data['ip']
+                #intr.ip_str = interface_form.cleaned_data['ip']
                 #intr.mac = interface_form.cleaned_data['mac']
-                intr.label = interface_form.cleaned_data['hostname']
-                intr.domain = interface_form.cleaned_data['domain']
-                intr.ip_type = interface_form.cleaned_data['ip_type']
+                #intr.label = interface_form.cleaned_data['hostname']
+                #intr.domain = interface_form.cleaned_data['domain']
+                #intr.ip_type = interface_form.cleaned_data['ip_type']
 
                 # Handle key value stuff.
                 kv = get_attrs(request.POST)
                 update_attrs(kv, attrs, StaticIntrKeyValue, intr, 'intr')
+                intr = interface_form.save()
 
                 # Everything checks out. Clean and Save all the objects.
                 intr.clean()
@@ -74,16 +75,14 @@ def edit_static_interface(request, intr_pk):
                         system),
                     'domain': intr.domain
                 })
+        else:
+            raise ValidationError(interface_form.errors)
 
         messages.success(request, "Success! Interface Updated.")
         return redirect(system)
 
     else:
-        initial_vals = {'ip':intr.ip_str, 'ip_type':intr.ip_type,
-                #'mac':intr.mac, 'hostname':intr.label,
-                'hostname':intr.label,
-                'domain': intr.domain}
-        interface_form = StaticInterfaceForm(initial=initial_vals)
+        interface_form = StaticInterfaceForm(instance=intr)
         return render(request, 'static_intr/static_intr_edit.html', {
             'form': interface_form,
             'intr': intr,

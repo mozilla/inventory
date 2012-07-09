@@ -72,8 +72,8 @@ class PTR(Ip, ObjectUrlMixin):
             1.1.193.128     PTR         FOO.BAR.COM
             ^-- PTR's shouldn't point to CNAMES
         """
-    pass
-    #TODO, impliment this function and call it in clean()
+        pass
+        #TODO, impliment this function and call it in clean()
 
     def clean(self, *args, **kwargs):
         # We need to check if there is an interface using our ip and name
@@ -83,6 +83,7 @@ class PTR(Ip, ObjectUrlMixin):
             raise ValidationError("An Interface has already used this IP and "
                 "Name.")
         if 'update_reverse_domain' in kwargs:  # TODO, clean this up
+            pdb.set_trace()
             urd = kwargs.pop('update_reverse_domain')
             self.clean_ip(update_reverse_domain=urd)
         else:

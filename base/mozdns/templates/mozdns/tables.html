@@ -1,4 +1,4 @@
-{% macro render_table(headers, matrix, urls) %}
+{% macro render_table(headers, matrix, urls, views=True) %}
 
 <!-- Bootstrap table for displaying data -->
 <table class="table table-bordered table-striped">
@@ -8,7 +8,9 @@
                 {# print header #}
                 <th>{{ header }}</th>
             {% endfor %}
+            {% if views %}
                 <th>Views</th>
+            {% endif %}
         </tr>
     </thead>
 

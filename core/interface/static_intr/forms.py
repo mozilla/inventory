@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 from core.interface.static_intr.models import StaticInterface
 from mozdns.domain.models import Domain
+from mozdns.view.models import View
 from mozdns.validation import validate_label
 from core.vlan.models import Vlan
 from core.site.models import Site
@@ -21,13 +22,16 @@ def validate_ip(ip):
         except ipaddr.AddressValueError, e:
             raise ValidationError("IP address not in valid form.")
 
-class StaticInterfaceForm(forms.Form):
+class StaticInterfaceForm(forms.ModelForm):
     #mac = forms.CharField(validators=[validate_mac])
-    hostname = forms.CharField(validators=[validate_label])
-    domain = forms.ModelChoiceField(queryset=Domain.objects.all())
-    ip = forms.CharField(validators=[validate_ip])
-    IP_TYPE = (('4', 'IPv4'), ('6', 'IPv6'))
-    ip_type = forms.ChoiceField(choices=IP_TYPE)
+    views = forms.ModelMultipleChoiceField(queryset=View.objects.all(),
+            widget=forms.widgets.CheckboxSelectMultiple, required=False)
+
+    class Meta:
+        model = StaticInterface
+        exclude = ('ip_upper', 'ip_lower', 'reverse_domain',
+                'system', 'fqdn')
+
 
 class StaticInterfaceQuickForm(forms.Form):
     #mac = forms.CharField(validators=[validate_mac])
@@ -36,3 +40,5 @@ class StaticInterfaceQuickForm(forms.Form):
     ip_type = forms.ChoiceField(choices=IP_TYPE)
     vlan = forms.ModelChoiceField(queryset=Vlan.objects.all())
     site = forms.ModelChoiceField(queryset=Site.objects.all())
+    views = forms.ModelMultipleChoiceField(queryset=View.objects.all(),
+            widget=forms.widgets.CheckboxSelectMultiple, required=False)

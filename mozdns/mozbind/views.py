@@ -1,8 +1,8 @@
-from cyder.cybind.build import *
-from django.shortcuts import render_to_response
+from mozdns.mozbind.build import *
+from django.shortcuts import render_to_response, get_object_or_404
 
-def sample_build(request):
-    DEBUG_BUILD_STRING = ''
-    DEBUG_BUILD_STRING += build_forward_zone_files()
-    DEBUG_BUILD_STRING += build_reverse_zone_files()
-    return render_to_response('sample_build.html', {'data':DEBUG_BUILD_STRING})
+def build_forward_soa(request, soa_pk):
+    soa = get_object_or_404(SOA, pk=soa_pk)
+    DEBUG_BUILD_STRING = gen_moz_forward_zone(soa, NOWRITE=True)
+    return render_to_response('mozbind/sample_build.html',
+            {'data':DEBUG_BUILD_STRING, 'soa': soa})

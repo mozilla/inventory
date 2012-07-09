@@ -15,7 +15,8 @@ def render_mx(mx_set):
                         type_just=type_just, prio_just=prio_just, data_just=data_just)
     for mx in mx_set:
         BUILD_STR += "$TTL %s\n" % (mx.ttl)
-        name = mx.fqdn if mx.label != '' else '@'
+        #name = mx.fqdn + '.' if mx.label != '' else '@'
+        name = mx.fqdn + '.'
         BUILD_STR += template.format(name=name, rclass='IN', rtype='MX', prio=str(mx.priority),
                                     server=mx.server)
     return BUILD_STR
@@ -34,12 +35,14 @@ def render_address_record(addressrecord_set):
     template = Template("{name:$name_just} {rclass:$class_just} {rtype:$type_just} {address:$data_just}\n")
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
+    BUILD_STR += "$TTL %s\n" % (3600)
     for rec in addressrecord_set:
         if rec.ip_type == '4':
             rec_type = 'A'
         else:
             rec_type = 'AAAA'
-        name = rec.fqdn if rec.label != '' else '@'
+        #name = rec.fqdn + '.' if rec.label != '' else '@'
+        name = rec.fqdn + '.'
         BUILD_STR += template.format(name=name, rclass='IN', rtype=rec_type, address=rec.ip_str)
     return BUILD_STR
 
@@ -50,7 +53,8 @@ def render_cname(cname_set):
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
     for cname in cname_set:
-        name = cname.fqdn if cname.label != '' else '@'
+        #name = cname.fqdn+'.' if cname.label != '' else '@'
+        name = cname.fqdn + '.'
         BUILD_STR += template.format(name=name, rclass='IN', rtype='CNAME', data=cname.data)
     return BUILD_STR
 
@@ -60,7 +64,9 @@ def render_srv(srv_set):
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, prio_just=prio_just, extra_just=extra_just)
     for srv in srv_set:
-        BUILD_STR += template.format(name=srv.fqdn, rclass='IN', rtype='SRV', prio=str(srv.priority), weight=str(srv.weight), port=str(srv.port), target=str(srv.target))
+        #name = srv.fqdn + '.' if srv.label != '' else '@'
+        name = srv.fqdn + '.'
+        BUILD_STR += template.format(name=name, rclass='IN', rtype='SRV', prio=str(srv.priority), weight=str(srv.weight), port=str(srv.port), target=str(srv.target))
     return BUILD_STR
 
 def render_txt(txt_set):
@@ -70,7 +76,8 @@ def render_txt(txt_set):
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
     for txt in txt_set:
-        name = txt.fqdn if txt.label != '' else '@'
+        #name = txt.fqdn + '.' if txt.label != '' else '@'
+        name = txt.fqdn + '.'
         BUILD_STR += template.format(name=name, rclass='IN', rtype='TXT', data=txt.txt_data)
     return BUILD_STR
 

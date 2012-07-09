@@ -29,7 +29,7 @@ class SOADetailView(SOAView, MozdnsDetailView):
         if not soa:
             return soa
 
-        dom_objects = soa.domain_set.all()
+        dom_objects = soa.domain_set.all().order_by('master_domain').select_related()
         dom_headers, dom_matrix, dom_urls = tablefy(dom_objects)
 
         context = dict({

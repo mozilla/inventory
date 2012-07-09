@@ -42,13 +42,14 @@
         input1.id = field+count;
         input1.name = field+count;
         input1.type = "text";
+        input1.size = "8";
 
 
         var label2 = document.createElement('label');
         var input2 = document.createElement('input');
 
         label2.for = field+count;
-        label2.innerHTML = "Value: ";
+        label2.innerHTML = " Value: ";
         label2.style.display = "inline";
         input2.id = field+count+"_value";
         input2.name = field+count+"_value";
@@ -76,9 +77,7 @@
     }
     function remove_attr(attr_id, attr_pk, system_pk, intr_pk) {
         post_url = "/core/interface/"+system_pk+"/"+intr_pk+"/remove_attr/"+attr_pk+"/"
-        $.post( post_url,
-            function (data) { alert("The attribute has been removed."); }
-        )
+        $.post(post_url)
         remove(document.getElementById(attr_id));
 
     }
@@ -95,11 +94,11 @@
         <strong>Attributes</strong><br /><br />
             <ul id="attrs_area">
                 {% for attr in intr_attrs %}
-                <li>
-                Attribute: <input name='attr_{{loop.index0}}' id='attr_{{loop.index0}}' type='text' value='{{attr.key}}' />
+                <p><li>
+                Attribute: <input size='8' name='attr_{{loop.index0}}' id='attr_{{loop.index0}}' type='text' value='{{attr.key}}' />
                 Value: <input name='attr_{{loop.index0}}_value' id='attr_{{loop.index0}}_value' type='text' value='{{attr.value}}'/>
                 <a style='cursor' onclick='remove_attr("attr_{{loop.index0}}", {{attr.pk}}, {{intr.system.pk}},{{intr.pk}})'>Remove</a>
-                </li>
+                </li></p>
                 {% endfor %}
             </ul>
             <input type="button" value="Add Attribute" onclick='addField("attrs_area","attr_",10);' />

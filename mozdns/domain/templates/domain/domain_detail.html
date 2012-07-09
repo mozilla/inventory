@@ -2,6 +2,9 @@
 
 {% block dns_content %}
     <div class='dns-title'>The {{ object.name }} Domain</div>
+    {% if object.soa %}
+    <p><a class="btn" href="{{ object.soa.get_absolute_url() }}">View SOA</a></p>
+    {% endif %}
     <a class="btn" href="{{ object.get_edit_url() }}">Edit</a>
     <a class="btn" href="{{ object.get_delete_url() }}">Delete</a>
 

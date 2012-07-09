@@ -8,6 +8,7 @@ from core.keyvalue.models import KeyValue
 from core.mixins import ObjectUrlMixin
 from mozdns.address_record.models import BaseAddressRecord
 from mozdns.models import MozdnsRecord
+from mozdns.view.models import View
 from mozdns.domain.models import Domain
 from mozdns.cname.models import CNAME
 from mozdns.ip.models import Ip
@@ -85,6 +86,11 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
 
         if validate_glue:
             self.check_glue_status()
+
+        if self.ip_str.startswith('10.'):
+            p = View.objects.filter(name='private')
+            if p:
+                self.views.add(p[0])
 
         super(StaticInterface, self).clean(validate_glue=False,
                 update_reverse_domain=True, ignore_interface=True)
