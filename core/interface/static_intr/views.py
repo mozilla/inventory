@@ -51,12 +51,6 @@ def edit_static_interface(request, intr_pk):
         interface_form = StaticInterfaceForm(request.POST, instance=intr)
         if interface_form.is_valid():
             try:
-                #intr.ip_str = interface_form.cleaned_data['ip']
-                #intr.mac = interface_form.cleaned_data['mac']
-                #intr.label = interface_form.cleaned_data['hostname']
-                #intr.domain = interface_form.cleaned_data['domain']
-                #intr.ip_type = interface_form.cleaned_data['ip_type']
-
                 # Handle key value stuff.
                 kv = get_attrs(request.POST)
                 update_attrs(kv, attrs, StaticIntrKeyValue, intr, 'intr')
@@ -101,14 +95,12 @@ def create_static_interface(request, system_pk):
         if interface_form.is_valid():
             try:
                 ip_str = interface_form.cleaned_data['ip']
-                #mac = interface_form.cleaned_data['mac']
-                hostname = interface_form.cleaned_data['hostname']
+                label = interface_form.cleaned_data['label']
                 domain = interface_form.cleaned_data['domain']
                 ip_type = interface_form.cleaned_data['ip_type']
 
-                intr = StaticInterface(label=hostname, domain=domain,
+                intr = StaticInterface(label=label, domain=domain,
                         ip_str=ip_str,
-                    #ip_type=ip_type, mac=mac, system=system)
                     ip_type=ip_type, system=system)
                 intr.clean()
                 intr.save()
@@ -176,7 +168,7 @@ def quick_create(request, system_pk):
         if interface_form.is_valid():
             try:
                 #mac = interface_form.cleaned_data['mac']
-                hostname = interface_form.cleaned_data['hostname']
+                label = interface_form.cleaned_data['label']
                 ip_type = interface_form.cleaned_data['ip_type']
                 vlan = interface_form.cleaned_data['vlan']
                 site = interface_form.cleaned_data['site']
@@ -207,7 +199,7 @@ def quick_create(request, system_pk):
                     raise ValidationError("The domain {0} doesn't seem to "
                         "exist. Consider creating this interface manually.")
 
-                intr = StaticInterface(label=hostname, domain=domain,
+                intr = StaticInterface(label=label, domain=domain,
                         ip_str=str(ip),
                     #ip_type=ip_type, mac=mac, system=system)
                     ip_type=ip_type, system=system)

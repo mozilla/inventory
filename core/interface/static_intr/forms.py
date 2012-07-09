@@ -35,7 +35,7 @@ class StaticInterfaceForm(forms.ModelForm):
 
 class StaticInterfaceQuickForm(forms.Form):
     #mac = forms.CharField(validators=[validate_mac])
-    hostname = forms.CharField(validators=[validate_label])
+    label = forms.CharField(validators=[validate_label])
     IP_TYPE = (('4', 'IPv4'), ('6', 'IPv6'))
     ip_type = forms.ChoiceField(choices=IP_TYPE)
     vlan = forms.ModelChoiceField(queryset=Vlan.objects.all())
