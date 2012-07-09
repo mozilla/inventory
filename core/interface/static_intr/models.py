@@ -20,26 +20,21 @@ import pdb
 class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     """The StaticInterface Class.
 
-        >>> a = AddressRecord(label=label, domain=domain, ip_str=ip_str,
+        >>> s = StaticInterface(label=label, domain=domain, ip_str=ip_str,
         ... ip_type=ip_type)
-        >>> a.save()
-        >>> ptr = PTR(ip_str=ip_str, ip_type=ip_type, name=a.fqdn)
-        >>> ptr.save()
-        >>> StaticInterface(address_record=a, ptr=ptr, mac=mac_address)
+        >>> s.full_clean()
+        >>> s.save()
 
-    This class is the main interface to DNS and DHCP in mozdns. A static
-    interface consists of three key pieces of information: Ip address, Mac
+    This class is the main interface to DNS in mozdns. A static
+    interface consists of three key pieces of information: Ip address
     Address, and Hostname (the hostname is comprised of a label and a domain).
-    From these three peices of information, three things are ensured: An A or
-    AAAA DNS record, a PTR record, and a `host` statement in the DHCP builds
-    that grants the mac address of the interface the correct IP address and
-    hostname.
+    From these three peices of information, two things are ensured: An A or
+    AAAA DNS record and a PTR record.
 
-    If you want an A/AAAA, PTR, and a DHCP lease, create on of these objects.
 
     In terms of DNS, a static interface represents a PTR and A record and must
     adhear to the requirements of those classes. The interface inherits from
-    AddressRecord and will call it's clean method with 'update_reverse_domain'
+    BaseAddressRecord and will call it's clean method with 'update_reverse_domain'
     set to True. This will ensure that it's A record is valid *and* that it's
     PTR record is valid.
     """
@@ -87,13 +82,15 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         if validate_glue:
             self.check_glue_status()
 
-        if self.ip_str.startswith('10.'):
+        super(StaticInterface, self).clean(validate_glue=False,
+                update_reverse_domain=True, ignore_interface=True)
+
+        if self.pk and self.ip_str.startswith('10.'):
             p = View.objects.filter(name='private')
             if p:
                 self.views.add(p[0])
-
-        super(StaticInterface, self).clean(validate_glue=False,
-                update_reverse_domain=True, ignore_interface=True)
+                super(StaticInterface, self).clean(validate_glue=False,
+                        update_reverse_domain=True, ignore_interface=True)
 
     def check_glue_status(self):
         """If this interface is a 'glue' record for a Nameserver instance,
@@ -160,3 +157,11 @@ class StaticIntrKeyValue(KeyValue):
             return
         else:
             raise ValidationError("Name must be eth[0..] or mgmt[0..]")
+
+    def primary(self):
+        if not self.value.isdigit():
+            raise ValidationError("The primary number must be a number.")
+
+    def alias(self):
+        if not self.value.isdigit():
+            raise ValidationError("The alias number must be a number.")
