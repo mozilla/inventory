@@ -44,6 +44,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'api_v2',
     'reports',
     'tastypie',
+    'tastytools',
 ]
 
 
@@ -53,6 +54,7 @@ JINGO_EXCLUDE_APPS = [
     'build',
     'admin',
     'user_systems',
+    'tastytools',
 ]
 
 DJANGO_TEMPLATE_APPS = [
