@@ -25,7 +25,7 @@ import ipaddr
 
 class NetworkView(object):
     model = Network
-    queryset = Network.objects.all()
+    queryset = Network.objects.select_related('site').all()
     form_class = NetworkForm
 
 is_attr = re.compile("^attr_\d+$")
@@ -63,7 +63,6 @@ def create_network(request):
 def update_network(request, network_pk):
     network = get_object_or_404(Network, pk=network_pk)
     attrs = network.networkkeyvalue_set.all()
-    aux_attrs = NetworkKeyValue.aux_attrs
     if request.method == 'POST':
         form = NetworkForm(request.POST, instance=network)
         try:
@@ -82,7 +81,6 @@ def update_network(request, network_pk):
                 'network': network,
                 'form': form,
                 'attrs': attrs,
-                'aux_attrs': aux_attrs
             })
 
     else:
@@ -91,7 +89,6 @@ def update_network(request, network_pk):
             'network': network,
             'form': form,
             'attrs': attrs,
-            'aux_attrs': aux_attrs
         })
 
 
@@ -100,8 +97,10 @@ def network_detail(request, network_pk):
     network.update_network()
     attrs = network.networkkeyvalue_set.all()
     eldars, sub_networks = calc_networks(network)
+    ranges = network.range_set.all()
     return render(request, 'network/network_detail.html', {
         'network': network,
+        'ranges': ranges,
         'eldars': eldars,
         'sub_networks': sub_networks,
         'attrs': attrs

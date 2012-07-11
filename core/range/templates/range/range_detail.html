@@ -1,0 +1,69 @@
+{% extends "core/core_base.html" %}
+
+
+{% block core_content %}
+
+    <span class='dns-title'>Range: Start {{ range.start_str }} End: {{ range.end_str}}</span>
+
+
+    {% block action_bar %}
+        {% if range.get_edit_url %}
+            <a class="btn btn-primary" href="{{ range.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if range.get_delete_url %}
+            <a class="btn btn-danger" href="{{ range.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+    <br>
+    <p>This range is in the network <a href='{{ range.network.get_absolute_url()}}'>{{ range.network.network_str }}</a>
+    {% if range.network.vlan %}
+    , which is associated with the vlan <a href="{{ range.network.vlan.get_absolute_url() }}">{{ range.network.vlan.name }} ({{ range.network.vlan.number }})</a>
+    {% endif %}
+
+    {% if range.network.site %}
+    in <a href="{{ range.network.site.get_absolute_url() }}">{{ range.network.site.get_full_name() }}</a>.
+    {% else %}
+    .
+    {% endif %}
+
+    {% if range_data %}
+        <table class="table">
+            <thead>
+                    <th>IP</th>
+                    <th>Object</th>
+            </thead>
+
+            <tbody>
+                {% for object in range_data %}
+                    <tr>
+                        <td>
+                            {{ object[1] }}
+                        </td>
+
+                        <td>
+                        {% if object[0] == "A/PTR" %}
+                        {{ object[3].fqdn }} (<a href="{{ object[2].get_absolute_url() }}">A</a>/<a href="{{ object[3].get_absolute_url() }}">PTR</a>)
+                        {% elif object[0] == "Interface" %}
+                        Interface (<a href="{{ object[2].get_absolute_url() }}">{{ object[2].fqdn }}</a>) for System <a href="{{ object[2].system.get_absolute_url() }}">{{ object[2].system }}</a>
+                        {% elif object[0] == "A" %}
+                        A <a href="{{ object[2].get_absolute_url() }}">{{ object[2].fqdn }}</a>
+                        {% elif object[0] == "PTR" %}
+                        PTR <a href="{{ object[2].get_absolute_url() }}">{{ object[2].name }}</a>
+                        {% else %}
+                        <b>Free</b>: Create <a href="/mozdns/address_record/create/?ip_str={{ object[1]}}&ip_type=4">A Record</a>
+                                    <a href="/mozdns/ptr/create/?ip_str={{ object[1]}}&ip_type=4">PTR Record</a>
+                                    <a href="/core/interface/create/?ip_str={{ object[1]}}&ip_type=4">Interface</a>
+                        {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+
+{% endblock %}

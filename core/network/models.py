@@ -42,12 +42,25 @@ class Network(models.Model, ObjectUrlMixin):
         self.update_network()
         super(Network, self).save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        if self.range_set.all().exists():
+            raise ValidationError("Cannot delete this network because it has "
+                "child ranges")
+        super(Network, self).delete(*args, **kwargs)
+
+
     def clean(self):
-        # Check for overlaps in all other subnets.
-        # If this every becomes a performance bottleneck, there are
-        # things that can be done. By storing the end of the subnet we could
-        # do this check in SQL rather than using the ipaddr library.
         self.update_network()
+        # Look at all ranges that claim to be in this subnet, are they actually
+        # in the subnet?
+        for range_ in self.range_set.all():
+            if range_.start < int(self.network.network):
+                raise ValidationError("Resizing this subnet to the requested "
+                        "network prefix would orphan existing ranges.")
+            if range_.end > int(self.network.broadcast):
+                raise ValidationError("Resizing this subnet to the requested "
+                        "network prefix would orphan existing ranges.")
+
 
     def update_network(self):
         """This function will look at the value of network_str to update other
@@ -82,7 +95,7 @@ class NetworkKeyValue(KeyValue):
     network = models.ForeignKey(Network, null=False)
     aux_attrs = (
         ('description', 'A description of the site'),
-        )
+    )
     class Meta:
         db_table = 'network_key_value'
         unique_together = ('key', 'value')

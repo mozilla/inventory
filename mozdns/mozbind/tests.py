@@ -16,6 +16,8 @@ from mozdns.nameserver.models import Nameserver
 from core.interface.static_intr.models import StaticInterface
 from mozdns.mozbind.build import *
 
+from systems.models import System
+
 class BuildTests(TestCase):
     def setUp(self):
         Domain.objects.get_or_create(name="arpa")
@@ -40,6 +42,8 @@ class BuildTests(TestCase):
         self.rsoa.dirty = False
         self.rdom.dirty = False
 
+        self.s = System()
+        self.s.save()
 
     def test_dirty_a(self):
         self.soa.dirty = False
@@ -54,7 +58,8 @@ class BuildTests(TestCase):
         self.soa.dirty = False
         self.dom.dirty = False
         a, _ = StaticInterface.objects.get_or_create(label="asfd",
-                domain=self.dom, ip_str = "123.1.1.1", ip_type='4')
+                domain=self.dom, ip_str = "123.1.1.1", ip_type='4',
+                system=self.s)
         a.save()
         self.assertTrue(self.dom.dirty)
         self.assertFalse(self.soa.dirty)

@@ -24,6 +24,7 @@ from mozdns.ptr.models import PTR
 from mozdns.soa.models import SOA
 from mozdns.srv.models import SRV
 from mozdns.txt.models import TXT
+from mozdns.view.models import View
 
 import pdb
 
@@ -84,8 +85,13 @@ class DomainDetailView(DomainView, DetailView):
         txt_objects = domain.txt_set.all().order_by('label')
         txt_headers, txt_matrix, txt_urls = tablefy(txt_objects)
 
-        cname_objects = domain.cname_set.all().order_by('label')
-        cname_headers, cname_matrix, cname_urls = tablefy(cname_objects)
+        cname_objects = domain.cname_set.order_by('label')
+        if cname_objects.count() > 50:
+            cname_views = False
+        else:
+            cname_views = True
+        cname_headers, cname_matrix, cname_urls = tablefy(cname_objects,
+                cname_views)
 
         # TODO, include Static Registrations
         ptr_objects = domain.ptr_set.all().order_by('ip_str')
@@ -98,8 +104,12 @@ class DomainDetailView(DomainView, DetailView):
         intr_headers, intr_matrix, intr_urls = tablefy(intr_objects)
 
         address_objects = domain.addressrecord_set.all().order_by('label')
-        adr_headers, adr_matrix, adr_urls = tablefy(address_objects)
-
+        # This takes too long to load more than 50.
+        if address_objects.count() > 50:
+            adr_views = False
+        else:
+            adr_views = True
+        adr_headers, adr_matrix, adr_urls = tablefy(address_objects, adr_views)
 
         ns_objects = domain.nameserver_set.all().order_by('server')
         ns_headers, ns_matrix, ns_urls = tablefy(ns_objects)
@@ -113,6 +123,7 @@ class DomainDetailView(DomainView, DetailView):
             "address_headers": adr_headers,
             "address_matrix": adr_matrix,
             "address_urls": adr_urls,
+            "address_views": adr_views,
 
             "mx_headers": mx_headers,
             "mx_matrix": mx_matrix,
@@ -129,6 +140,7 @@ class DomainDetailView(DomainView, DetailView):
             "cname_headers": cname_headers,
             "cname_matrix": cname_matrix,
             "cname_urls": cname_urls,
+            "cname_views": cname_views,
 
             "ptr_headers": ptr_headers,
             "ptr_matrix": ptr_matrix,

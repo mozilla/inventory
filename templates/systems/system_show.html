@@ -157,7 +157,11 @@
     <table>
     <tr><th>FQDN</th><th>IP Address</th><th>Action</th></tr>
     {% for intr in interfaces %}
-        <tr><td>{{intr.fqdn}}</td><td>{{ intr.ip_str }}</td><td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a><pre></td>
+        {% if intr.label == "" %}
+        <tr><td><a href='{{ intr.domain.get_absolute_url() }}'>{{intr.fqdn}}</a></td><td>{{ intr.ip_str }}</td><td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a><pre></td>
+        {% else %}
+        <tr><td>{{ intr.label }}.<a href='{{ intr.domain.get_absolute_url() }}'>{{ intr.domain }}</a></td><td>{{ intr.ip_str }}</td><td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a><pre></td>
+        {% endif %}
     {% endfor %}
     </table>
 </pre></dd>

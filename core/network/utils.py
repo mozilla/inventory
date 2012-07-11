@@ -1,5 +1,8 @@
 from core.network.models import Network
 
+import ipaddr
+import pdb
+
 def calc_networks(network):
     network.update_network()
     eldars = []

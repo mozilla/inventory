@@ -14,4 +14,5 @@ urlpatterns = patterns('',
     url(r'^vlan/',include('core.vlan.urls')),
     url(r'^network/',include('core.network.urls')),
     url(r'^site/',include('core.site.urls')),
+    url(r'^range/',include('core.range.urls')),
 )

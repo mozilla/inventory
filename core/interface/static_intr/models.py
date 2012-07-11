@@ -66,6 +66,9 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         #if not isinstance(self.mac, basestring):
         #    raise ValidationError("Mac Address not of valid type.")
         #self.mac = self.mac.lower()
+        if not self.system:
+            raise ValidationError("An interface means nothing without it's "
+                "system.")
         from mozdns.ptr.models import PTR
         if PTR.objects.filter(ip_str=self.ip_str, name=self.fqdn).exists():
             raise ValidationError("A PTR already uses this Name and IP")

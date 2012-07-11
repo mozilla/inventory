@@ -2,7 +2,9 @@ from core.site.models import Site
 from core.vlan.models import Vlan
 from core.network.models import Network
 from core.network.utils import calc_parent
+from core.range.models import Range
 import pdb
+import ipaddr
 
 
 sites = []
@@ -184,6 +186,12 @@ def create_network_vlan(v_num, v_name, n_str, site_octs, router_label=None):
         if parent:
             n.site = parent.site
         n.save()
+        ip = ipaddr.IPv4Network(n_str.format(so))
+        if int(n_str[-2:]) >= 22:
+            r, _ = Range.objects.get_or_create(start_str =
+                    str(ipaddr.IPv4Address(int(ip.network) + 10)), end_str =
+                    str(ipaddr.IPv4Address(int(ip.broadcast)
+                    - 2)), network = n)
 
 
 ##### 17 console ##### 10.DC.17.0/24 #####

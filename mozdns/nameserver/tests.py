@@ -9,6 +9,7 @@ from mozdns.ip.models import ipv6_to_longs, Ip
 from mozdns.ip.utils import ip2dns_form
 
 from core.interface.static_intr.models import StaticInterface
+from systems.models import System
 
 import pdb
 
@@ -45,6 +46,9 @@ class NSTestsModels(TestCase):
 
         self._128 = self.create_domain(name = '128', ip_type= '4')
         self._128.save()
+
+        self.s = System()
+        self.s.save()
 
     def do_add(self, domain, server):
         ns = Nameserver(domain = domain, server = server)
@@ -120,7 +124,7 @@ class NSTestsModels(TestCase):
     def test_disallow_name_update_of_glue_Intr(self):
         # Glue records should not be allowed to change their name.
         glue = StaticInterface(label='ns24', domain = self.f_r, ip_str =
-                '128.193.99.10', ip_type='4')
+                '128.193.99.10', ip_type='4', system=self.s)
         glue.clean()
         glue.save()
         data = {'domain':self.f_r , 'server':'ns24.foo.ru'}
@@ -134,7 +138,7 @@ class NSTestsModels(TestCase):
     def test_disallow_delete_of_glue_intr(self):
         # Interface glue records should not be allowed to be deleted.
         glue = StaticInterface(label='ns24', domain = self.f_r, ip_str =
-                '128.193.99.10', ip_type='4')
+                '128.193.99.10', ip_type='4', system=self.s)
         glue.clean()
         glue.save()
         data = {'domain':self.f_r , 'server':'ns24.foo.ru'}
@@ -148,7 +152,7 @@ class NSTestsModels(TestCase):
         # Test that assigning a different glue record doesn't get overriden by
         # the auto assinging during the Nameserver's clean function.
         glue = StaticInterface(label='ns25', domain = self.f_r, ip_str =
-                '128.193.99.10', ip_type='4')
+                '128.193.99.10', ip_type='4', system=self.s)
         glue.clean()
         glue.save()
         data = {'domain':self.f_r, 'server':'ns25.foo.ru'}
@@ -183,7 +187,7 @@ class NSTestsModels(TestCase):
     def testtest_add_ns_in_domain_intr(self):
         # Use an Interface as a glue record.
         glue = StaticInterface(label='ns232', domain = self.r, ip_str =
-                '128.193.99.10', ip_type='4')
+                '128.193.99.10', ip_type='4', system=self.s)
         glue.clean()
         glue.save()
         data = {'domain':self.r , 'server':'ns232.ru'}
@@ -192,7 +196,8 @@ class NSTestsModels(TestCase):
         self.assertEqual(ns.server, ns.glue.fqdn)
         self.assertRaises(ValidationError, glue.delete)
 
-        glue = StaticInterface(label='ns332', domain = self.f_r, ip_str = '128.193.1.10', ip_type='4')
+        glue = StaticInterface(label='ns332', domain = self.f_r, ip_str =
+                '128.193.1.10', ip_type='4', system=self.s)
         glue.clean()
         glue.save()
         data = {'domain':self.f_r , 'server':'ns332.foo.ru'}
@@ -206,7 +211,8 @@ class NSTestsModels(TestCase):
         self.assertFalse(ns.glue)
 
     def test_update_glue_to_no_intr(self):
-        glue = StaticInterface(label='ns34', domain = self.r, ip_str = '128.193.1.10', ip_type='4')
+        glue = StaticInterface(label='ns34', domain = self.r, ip_str =
+                '128.193.1.10', ip_type='4', system=self.s)
         glue.save()
         data = {'domain':self.r , 'server':'ns34.ru'}
         ns = self.do_add(**data)

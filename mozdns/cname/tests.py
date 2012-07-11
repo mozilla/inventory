@@ -19,6 +19,8 @@ from mozdns.address_record.models import AddressRecord
 from core.interface.static_intr.models import StaticInterface
 from mozdns.ip.utils import ip2dns_form
 
+from systems.models import System
+
 import pdb
 
 
@@ -59,6 +61,9 @@ class CNAMETests(TestCase):
         self.i_arpa.save()
         self.r1 = self.create_domain(name="10")
         self.r1.save()
+
+        self.s = System()
+        self.s.save()
 
 
     def do_add(self, label, domain, data):
@@ -238,7 +243,7 @@ class CNAMETests(TestCase):
         dom,_ = Domain.objects.get_or_create(name="what.cd")
 
         intr = StaticInterface(label=label, domain=dom, ip_str = "10.0.0.1",
-                ip_type='4')
+                ip_type='4', system=self.s)
         intr.clean()
         intr.save()
 

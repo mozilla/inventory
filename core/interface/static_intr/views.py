@@ -10,9 +10,12 @@ from systems.models import System
 from core.interface.static_intr.models import StaticInterface
 from core.interface.static_intr.models import StaticIntrKeyValue
 from core.interface.static_intr.forms import StaticInterfaceForm
+from core.interface.static_intr.forms import FullStaticInterfaceForm
 from core.interface.static_intr.forms import StaticInterfaceQuickForm
 from core.keyvalue.utils import get_attrs, update_attrs
-from core.views import CoreDeleteView
+from core.views import CoreDeleteView, CoreCreateView
+from core.range.models import Range
+from core.network.utils import calc_parent_str
 
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
@@ -21,6 +24,55 @@ from mozdns.ptr.models import PTR
 import pdb
 import ipaddr
 
+
+def create_no_system_static_interface(request):
+    if request.method == "POST":
+        interface_form = FullStaticInterfaceForm(request.POST)
+        try:
+            if not interface_form.is_valid():
+                return render(request, 'core/core_form.html', {
+                    'form': interface_form,
+                })
+
+            intr = interface_form.save()
+        except ValidationError, e:
+            interface_form._errors['__all__'] = ErrorList(e.messages)
+            return render(request, 'core/core_form.html', {
+                'form': interface_form,
+            })
+
+        return redirect(intr.system.get_absolute_url())
+
+    else:
+        initial = {}
+        if 'ip_type' in request.GET and 'ip_str' in request.GET:
+            ip_str = request.GET['ip_str']
+            ip_type = request.GET['ip_type']
+            network = calc_parent_str(ip_str, ip_type)
+            if network and network.vlan and network.site:
+                expected_name = "{0}.{1}.mozilla.com".format(network.vlan.name,
+                    network.site.get_site_path())
+                try:
+                    domain = Domain.objects.get(name=expected_name)
+                except ObjectDoesNotExist, e:
+                    domain = None
+
+            if domain:
+                initial['initial'] = {'ip_str': ip_str, 'domain':domain, 'ip_type':ip_type}
+            else:
+                initial['initial'] = {'ip_str': ip_str, 'ip_type':ip_type}
+
+        interface_form = FullStaticInterfaceForm(**initial)
+
+        return render(request, 'core/core_form.html', {
+            'form': interface_form,
+        })
+
+
+def detail_static_interface(reqeust, intr_pk):
+    intr = get_object_or_404(StaticInterface, pk=intr_pk)
+    system = intr.system
+    return redirect(system)
 
 def delete_static_interface(reqeust, intr_pk):
     intr = get_object_or_404(StaticInterface, pk=intr_pk)
@@ -94,15 +146,9 @@ def create_static_interface(request, system_pk):
         a, ptr, r = None, None, None
         if interface_form.is_valid():
             try:
-                ip_str = interface_form.cleaned_data['ip']
-                label = interface_form.cleaned_data['label']
-                domain = interface_form.cleaned_data['domain']
-                ip_type = interface_form.cleaned_data['ip_type']
-
-                intr = StaticInterface(label=label, domain=domain,
-                        ip_str=ip_str,
-                    ip_type=ip_type, system=system)
-                intr.clean()
+                intr = interface_form.instance
+                intr.system = system
+                intr.full_clean()
                 intr.save()
             except ValidationError, e:
                 interface_form._errors['__all__'] = ErrorList(e.messages)
@@ -168,10 +214,16 @@ def quick_create(request, system_pk):
         if interface_form.is_valid():
             try:
                 #mac = interface_form.cleaned_data['mac']
-                label = interface_form.cleaned_data['label']
-                ip_type = interface_form.cleaned_data['ip_type']
-                vlan = interface_form.cleaned_data['vlan']
-                site = interface_form.cleaned_data['site']
+                if 'label' in interface_form.cleaned_data:
+                    label = interface_form.cleaned_data['label']
+                else:
+                    label = ""
+                mrange_pk = interface_form.cleaned_data['range']
+                mrange = get_object_or_404(Range, pk=mrange_pk)
+                network = mrange.network
+                ip_type = network.ip_type
+                vlan = network.vlan
+                site = network.site
 
                 networks = []
                 for network in vlan.network_set.all():
@@ -196,8 +248,9 @@ def quick_create(request, system_pk):
                 try:
                     domain = Domain.objects.get(name=expected_name)
                 except ObjectDoesNotExist, e:
-                    raise ValidationError("The domain {0} doesn't seem to "
-                        "exist. Consider creating this interface manually.")
+                    raise ValidationError("The domain '{0}' doesn't seem to "
+                        "exist. Consider creating this interface "
+                        "manually.".format(expected_name))
 
                 intr = StaticInterface(label=label, domain=domain,
                         ip_str=str(ip),

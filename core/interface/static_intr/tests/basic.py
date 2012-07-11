@@ -11,7 +11,7 @@ from mozdns.ip.utils import ip2dns_form, nibbilize
 
 import pdb
 
-class StaticRegTests(TestCase):
+class StaticInterTests(TestCase):
     def create_domain(self, name, ip_type=None, delegated=False):
         if ip_type is None:
             ip_type = '4'
@@ -147,3 +147,13 @@ class StaticRegTests(TestCase):
         i = self.do_add(**kwargs)
         i.ip_str = "9.0.0.1"
         self.assertRaises(ValidationError,i.clean)
+
+    def test1_no_system(self):
+        mac = "15:22:33:44:55:66"
+        label = "8888foo"
+        domain = self.f_c
+        ip_str = "10.0.0.1"
+        ip_type = '4'
+        r = StaticInterface(label=label, domain=domain, ip_str=ip_str,
+                ip_type=ip_type, system=None)
+        self.assertRaises(ValidationError,r.clean)

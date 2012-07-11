@@ -34,7 +34,8 @@
 
     {% if cname_matrix %}
         <h3> CNAME Records </h3>
-        {{ render_table(cname_headers, cname_matrix, cname_urls) }}
+        {{ render_table(cname_headers, cname_matrix, cname_urls,
+        views=cname_views) }}
     {% endif %}
 
     {% if intr_matrix %}
@@ -44,7 +45,8 @@
 
     {% if address_matrix %}
         <h3> Address Records </h3>
-        {{ render_table(address_headers, address_matrix, address_urls) }}
+        {{ render_table(address_headers, address_matrix, address_urls,
+        address_views) }}
     {% endif %}
 
     {% if ptr_matrix %}

@@ -1,8 +1,9 @@
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 from core.site.models import Site
 from core.mixins import ObjectUrlMixin
+from mozdns.domain.models import Domain
 
 from core.keyvalue.models import KeyValue
 
@@ -28,6 +29,27 @@ class Vlan(models.Model, ObjectUrlMixin):
 
     def __repr__(self):
         return "<Vlan {0}>".format(str(self))
+
+    def find_domain(self):
+        """
+        This memeber function will look at all the Domain objects and attempt
+        to find an approriate domain that corresponds to this VLAN.
+        """
+        import pdb
+        for network in self.network_set.all():
+            if network.site:
+                expected_name = "{0}.{1}.mozilla.com".format(self.name,
+                    network.site.get_site_path())
+                try:
+                    domain = Domain.objects.get(name=expected_name)
+                except ObjectDoesNotExist, e:
+                    continue
+
+                return domain.name
+
+        return None
+
+
 
 class VlanKeyValue(KeyValue):
     vlan = models.ForeignKey(Vlan, null=False)

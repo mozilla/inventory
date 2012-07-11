@@ -5,7 +5,7 @@ from mozdns.domain.models import Domain
 import pdb
 
 
-def tablefy(objects):
+def tablefy(objects, views=True):
     """Given a list of objects, build a matrix that is can be printed as a table. Also return
     the headers for that table. Populate the given url with the pk of the object. Return all
     headers, field array, and urls in a seperate lists.
@@ -20,20 +20,23 @@ def tablefy(objects):
         return (None, None, None)
     # Build the headers
     for title, value in objects[0].details():
-        headers.append( title )
+        headers.append(title)
+    if views:
+        headers.append("Views")
 
     # Build the matrix and urls
     for obj in objects:
         row = []
-        urls.append( obj.get_absolute_url() )
+        urls.append(obj.get_absolute_url())
         for title, value in obj.details():
-            row.append( value )
-        views = ""
-        if hasattr(obj, 'views'):
-            for view in obj.views.all():
-                views += view.name + ", "
-            views = views.strip(", ")
-            row.append(views)
+            row.append(value)
+        if views:
+            views = ""
+            if hasattr(obj, 'views'):
+                for view in obj.views.all():
+                    views += view.name + ", "
+                views = views.strip(", ")
+                row.append(views)
 
         matrix.append(row)
 

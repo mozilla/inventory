@@ -68,4 +68,20 @@
 
         <h3>Sub Networks.</h3>
         {{ display_networks(sub_networks) }}
+
+
+        <h3>Ranges</h3>
+        <table class="table">
+            <thead>
+                    <th>Info</th>
+            </thead>
+
+            <tbody>
+                <tr>
+                {% for range in ranges %}
+                <td>Start: <a href='{{range.get_absolute_url()}}'>{{ range.start_str }}</a> End: <a href='{{range.get_absolute_url()}}'>{{ range.end_str }}</a></td>
+                {% endfor %}
+                </tr>
+            </tbody>
+        </table>
 {% endblock %}
