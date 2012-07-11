@@ -70,7 +70,11 @@ def range_detail(request, range_pk):
                 break
 
         if ptr_taken and adr_taken:
-            range_data.append(('A/PTR', ip_str, ptr_taken, adr_taken))
+            if ptr_taken.name == adr_taken.fqdn:
+                range_data.append(('A/PTR', ip_str, ptr_taken, adr_taken))
+            else:
+                range_data.append(('PTR', ip_str, ptr_taken))
+                range_data.append(('A', ip_str, adr_taken))
             taken = True
         elif ptr_taken and not adr_taken:
             range_data.append(('PTR', ip_str, ptr_taken))

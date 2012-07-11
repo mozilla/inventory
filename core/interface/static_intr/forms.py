@@ -9,6 +9,7 @@ from core.range.models import Range
 from mozdns.validation import validate_label
 from core.vlan.models import Vlan
 from core.site.models import Site
+from systems.models import System
 #from mozdns.mozdhcp.validation import validate_mac
 
 import ipaddr
@@ -22,6 +23,9 @@ def validate_ip(ip):
             ipaddr.IPv6Address(ip)
         except ipaddr.AddressValueError, e:
             raise ValidationError("IP address not in valid form.")
+
+class CombineForm(forms.Form):
+    system = forms.ModelChoiceField(queryset=System.objects.all())
 
 class StaticInterfaceForm(forms.ModelForm):
     #mac = forms.CharField(validators=[validate_mac])

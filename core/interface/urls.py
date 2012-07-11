@@ -7,6 +7,8 @@ from django.views.decorators.csrf import csrf_exempt
 urlpatterns = patterns('',
     url(r'^create/$',
         csrf_exempt(create_no_system_static_interface)),
+    url(r'^combine_a_ptr_to_interface/(?P<addr_pk>[\w-]+)/(?P<ptr_pk>[\w-]+)/$',
+        csrf_exempt(combine_a_ptr_to_interface)),
     url(r'^(?P<system_pk>[\w-]+)/create/$',
         csrf_exempt(create_static_interface)),
     url(r'^(?P<system_pk>[\w-]+)/quick_create/$',

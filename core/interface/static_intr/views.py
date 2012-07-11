@@ -12,6 +12,7 @@ from core.interface.static_intr.models import StaticIntrKeyValue
 from core.interface.static_intr.forms import StaticInterfaceForm
 from core.interface.static_intr.forms import FullStaticInterfaceForm
 from core.interface.static_intr.forms import StaticInterfaceQuickForm
+from core.interface.static_intr.forms import CombineForm
 from core.keyvalue.utils import get_attrs, update_attrs
 from core.views import CoreDeleteView, CoreCreateView
 from core.range.models import Range
@@ -23,6 +24,57 @@ from mozdns.ptr.models import PTR
 
 import pdb
 import ipaddr
+
+
+def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
+    """
+    When a PTR/AddressRecord have the same ip/name it's likely that they could
+    become an interface attached to a system. This view (function) takes an
+    AddressRecord (addr) and PTR (ptr) and using their data creates an
+    StaticInterface. Finally, addr and ptr are deleted.
+    """
+    addr = get_object_or_404(AddressRecord, pk=addr_pk)
+    ptr = get_object_or_404(PTR, pk=ptr_pk)
+    if request.method == "POST":
+        form = CombineForm(request.POST)
+        try:
+            if (addr.ip_str != ptr.ip_str or addr.fqdn != ptr.name or
+                addr.ip_type != ptr.ip_type):
+                raise ValidationError("This A and PTR have different data.")
+            if not form.is_valid():
+                form._errors['__all__'] = ErrorList(e.messages)
+                return render(request, 'static_intr/combine.html', {
+                    'addr': addr,
+                    'ptr': ptr,
+                    'form': form
+                })
+            system = form.cleaned_data['system']
+            intr = StaticInterface(label=addr.label, domain=addr.domain,
+                    ip_str=addr.ip_str, ip_type=addr.ip_type, system=system)
+            addr_deteled = False
+            ptr_deteled = False
+
+            addr.delete()
+            addr_deteled = True
+            ptr.delete()
+            ptr_deteled = True
+            intr.full_clean()
+            intr.save()
+            return redirect(intr)
+        except ValidationError, e:
+            form.errors['__all__'] = ErrorList(e.messages)
+            return render(request, 'static_intr/combine.html', {
+                'addr': addr,
+                'ptr': ptr,
+                'form': form
+            })
+    else:
+        form = CombineForm()
+        return render(request, 'static_intr/combine.html', {
+            'form': form,
+            'addr': addr,
+            'ptr': ptr,
+        })
 
 
 def create_no_system_static_interface(request):

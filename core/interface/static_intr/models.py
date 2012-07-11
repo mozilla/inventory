@@ -130,14 +130,6 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
                     format(self.record_type()))
         super(StaticInterface, self).delete(validate_glue=False)
 
-    def get_absolute_url(self):
-        """
-        Return the absolute url of an object.
-        """
-        return CORE_BASE_URL + "/{0}/interface/{1}/".format(
-            'systems', self.system.pk
-        )
-
     def __repr__(self):
         return "<StaticInterface: {0}>".format(str(self))
     def __str__(self):

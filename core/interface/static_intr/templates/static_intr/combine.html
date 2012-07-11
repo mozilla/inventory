@@ -1,0 +1,16 @@
+{% extends "mozdns/base.html" %}
+
+
+{% block dns_content %}
+    <div class='dns-title'>{{ form_title }}</div>
+
+    <p>You are trying to combine the A Record '<a href="{{ addr.get_absolute_url() }}">{{ addr }}</a>' and
+    the PTR Record '<a href="{{ ptr.get_absolute_url() }}">{{ ptr }}</a>' to create an Interface record.
+    Please choose a system to associate the interface with.<i>This action will deleted both the A and PTR
+    objects.</i></p>
+
+    <form class="well form-horizontal" method="post" action="">
+        {{ form.as_p() }}
+        <input type="submit" value="Submit" />
+    </form>
+{% endblock %}

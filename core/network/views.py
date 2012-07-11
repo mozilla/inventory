@@ -13,10 +13,12 @@ from core.vlan.models import Vlan
 from core.site.models import Site
 from core.site.forms import SiteForm
 from core.keyvalue.utils import get_attrs, update_attrs
+from core.range.forms import RangeForm
 
 from core.views import CoreDeleteView, CoreListView
 from core.views import CoreCreateView
 from mozdns.ip.models import ipv6_to_longs
+from django.forms.formsets import formset_factory
 
 
 import re
@@ -106,32 +108,6 @@ def network_detail(request, network_pk):
         'attrs': attrs
         })
 
-def do_network(request):
-    form = NetworkForm_network()
-    # return the allocate network block page.
-    return render(request, 'network/network_form.html', {
-        'form': form,
-    })
-
-def do_site(request, parent = None):
-    form = NetworkForm_site()
-    if parent:
-        form.fields['site'].initial = parent
-    else:
-        form = SiteForm()
-    # return the allocate network block page.
-    return render(request, 'network/network_form.html', {
-        'form': form,
-    })
-
-def do_vlan(request):
-    form = NetworkForm_vlan()
-    # return the allocate network block page.
-    return render(request, 'network/network_form.html', {
-        'form': form,
-        'action': 'vlan',
-    })
-
 def network_wizard(request):
     if request.method == 'POST':
         action = request.POST.get('action', '')
@@ -168,7 +144,7 @@ def network_wizard(request):
                 if form._errors is None:
                     form._errors = ErrorDict()
                 form._errors['__all__'] = ErrorList(e.messages)
-                return render(request, 'network/network_form.html', {
+                return render(request, 'network/wizard_form.html', {
                     'form': form,
                     'action': 'network'
                 })
@@ -185,7 +161,7 @@ def network_wizard(request):
             else:
                 form = NetworkForm_site()
 
-            return render(request, 'network/network_form.html', {
+            return render(request, 'network/wizard_form.html', {
                 'form': form,
                 'action': 'site'
             })
@@ -193,30 +169,33 @@ def network_wizard(request):
         elif action == "site":
             # We are looking for the user to choose a site.
             form = NetworkForm_site(request.POST)
+            nvars = request.session['net_wiz_vars']
             try:
+                form.is_valid()
                 site = form.data.get('site', False)
                 if not site:
-                    raise ValidationError("Please choose a site.")
-                try:
-                    site = Site.objects.get(pk=site)
-                except ObjectDoesNotExist, e:
-                    raise ValidationError("That site does not exist. Try again.")
+                    site = None
+                    nvars['site_pk'] = None
+                else:
+                    try:
+                        site = Site.objects.get(pk=site)
+                        nvars['site_pk'] = site.pk
+                    except ObjectDoesNotExist, e:
+                        raise ValidationError("That site does not exist. Try again.")
             except ValidationError, e:
                 form = NetworkForm_site(request.POST)
                 if form._errors is None:
                     form._errors = ErrorDict()
                 form._errors['__all__'] = ErrorList(e.messages)
-                return render(request, 'network/network_form.html', {
+                return render(request, 'network/wizard_form.html', {
                     'form': form,
-                    'action': 'vlan'
+                    'action': 'site'
                 })
-            nvars = request.session['net_wiz_vars']
-            nvars['site_pk'] = site.pk
             # Validation
             # return the choose or create vlan page.
             form = NetworkForm_vlan()
             # return the allocate network block page.
-            return render(request, 'network/network_form.html', {
+            return render(request, 'network/wizard_form.html', {
                 'form': form,
                 'action': 'vlan',
             })
@@ -256,6 +235,9 @@ def network_wizard(request):
                 elif create_choice == 'existing':
                     nvars['vlan_action'] = "existing"
                     vlan = form.data.get('vlan','')
+                    if not vlan:
+                        raise ValidationError("You selected to use an existing vlan. "
+                            "Pleasechoose a vlan.")
                     try:
                         vlan = Vlan.objects.get(pk=vlan)
                     except ObjectDoesNotExist, e:
@@ -265,27 +247,48 @@ def network_wizard(request):
                 else:
                     nvars['vlan_action'] = "none"
 
+                site, network, vlan = create_objects(nvars)
             except ValidationError, e:
                 form = NetworkForm_vlan(request.POST)
                 if form._errors is None:
                     form._errors = ErrorDict()
                 form._errors['__all__'] = ErrorList(e.messages)
-                return render(request, 'network/network_form.html', {
+                return render(request, 'network/wizard_form.html', {
                     'form': form,
                     'action': 'vlan'
                 })
-            # Validation
-            # Return network detail view or fail.
-            # Create objects and store to db.
-            # Get rid of state var
-            site, network, vlan = create_objects(nvars)
-            request.session['net_wiz_vars'] = nvars
-            return render(request, 'network/wizard_confirm.html', {
-                'site': site,
+
+            return render(request, 'network/wizard_range.html', {
                 'network': network,
                 'vlan': vlan,
                 'action': 'confirm',
             })
+            """
+            # Soon.
+            RangeFormSet = formset_factory(RangeForm, extra=4)
+            request.session['net_wiz_vars'] = nvars
+            network.update_network()
+            #range_formset = RangeFormSet(initial = {
+            #    'start_str':str(network.network.network),
+            #    'end_str':str(network.network.broadcast)
+            #})
+            range_formset = RangeFormSet(initial=[
+                {'network':network,
+                'start_str': str(network.network.network),
+                'end_str': str(ipaddr.IPv4Address(int(network.network.broadcast - 1)))
+                }])
+            return render(request, 'network/wizard_range.html', {
+                'network': network,
+                'vlan': vlan,
+                'site': vlan,
+                'action': 'ranges',
+                'range_formset': range_formset,
+            })
+
+        elif action == "ranges":
+            nvars = request.session['net_wiz_vars']
+            pass
+            """
         elif action == "confirm":
             nvars = request.session['net_wiz_vars']
             site, network, vlan = create_objects(nvars)
@@ -302,7 +305,7 @@ def network_wizard(request):
     # return the allocate network block page.
     form = NetworkForm_network()
     # return the allocate network block page.
-    return render(request, 'network/network_form.html', {
+    return render(request, 'network/wizard_form.html', {
         'form': form,
         'action': 'network',
     })
@@ -316,7 +319,10 @@ def create_objects(nvars):
     network.update_network()
 
     site_pk = nvars.get('site_pk','')
-    site = Site.objects.get(pk=site_pk)
+    if not site_pk:
+        site = None
+    else:
+        site = Site.objects.get(pk=site_pk)
 
     network.site = site
 
@@ -326,6 +332,9 @@ def create_objects(nvars):
         vlan = Vlan(name=vlan_name, number=vlan_number)
     elif nvars.get('vlan_action', '') == "existing":
         vlan_number = nvars.get('vlan_pk', '')
+        if not vlan_number:
+            raise ValidationError("You selected to use an existing vlan. "
+                "Pleasechoose a vlan.")
         vlan = Vlan.objects.get(pk=vlan_number)
     else:
         vlan = None

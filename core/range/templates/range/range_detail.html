@@ -35,6 +35,7 @@
             <thead>
                     <th>IP</th>
                     <th>Object</th>
+                    <th>Action</th>
             </thead>
 
             <tbody>
@@ -44,21 +45,40 @@
                             {{ object[1] }}
                         </td>
 
-                        <td>
                         {% if object[0] == "A/PTR" %}
-                        {{ object[3].fqdn }} (<a href="{{ object[2].get_absolute_url() }}">A</a>/<a href="{{ object[3].get_absolute_url() }}">PTR</a>)
-                        {% elif object[0] == "Interface" %}
-                        Interface (<a href="{{ object[2].get_absolute_url() }}">{{ object[2].fqdn }}</a>) for System <a href="{{ object[2].system.get_absolute_url() }}">{{ object[2].system }}</a>
-                        {% elif object[0] == "A" %}
-                        A <a href="{{ object[2].get_absolute_url() }}">{{ object[2].fqdn }}</a>
-                        {% elif object[0] == "PTR" %}
-                        PTR <a href="{{ object[2].get_absolute_url() }}">{{ object[2].name }}</a>
-                        {% else %}
-                        <b>Free</b>: Create <a href="/mozdns/address_record/create/?ip_str={{ object[1]}}&ip_type=4">A Record</a>
-                                    <a href="/mozdns/ptr/create/?ip_str={{ object[1]}}&ip_type=4">PTR Record</a>
-                                    <a href="/core/interface/create/?ip_str={{ object[1]}}&ip_type=4">Interface</a>
-                        {% endif %}
+                        <td>
+                            {{ object[3].fqdn }} (<a href="{{ object[3].get_absolute_url() }}">A</a>/<a href="{{ object[2].get_absolute_url() }}">PTR</a>)
                         </td>
+                        <td>
+                            <b>Combine</b> <a href="/core/interface/combine_a_ptr_to_interface/{{ object[3].pk}}/{{ object[2].pk }}/">A/PTR to Interface.</a>
+                        </td>
+                        {% elif object[0] == "Interface" %}
+                        <td>
+                            Interface (<a href="{{ object[2].get_absolute_url() }}">{{ object[2].fqdn }}</a>) for System
+                            <a href="{{ object[2].system.get_absolute_url() }}">{{ object[2].system }}</a>
+                        </td>
+                        <td>
+                        </td>
+                        {% elif object[0] == "A" %}
+                            <td>
+                                A <a href="{{ object[2].get_absolute_url() }}">{{ object[2].fqdn }}</a>
+                            </td>
+                        {% elif object[0] == "PTR" %}
+                            <td>
+                                PTR <a href="{{ object[2].get_absolute_url() }}">{{ object[2].name }}</a>
+                            <td>
+                        <td>
+                        </td>
+                        {% else %}
+                        <td>
+                            <b>Free</b>
+                        </td>
+                        <td>
+                            Create <a href="/mozdns/address_record/create/?ip_str={{ object[1]}}&ip_type=4">A</a> 
+                                    <a href="/mozdns/ptr/create/?ip_str={{ object[1]}}&ip_type=4">PTR</a> 
+                                    <a href="/core/interface/create/?ip_str={{ object[1]}}&ip_type=4">Interface</a>
+                        </td>
+                        {% endif %}
                     </tr>
                 {% endfor %}
             </tbody>

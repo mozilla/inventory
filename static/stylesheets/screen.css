@@ -219,7 +219,7 @@ ul
     overflow: hidden; /* will contain if #first is longer than #second */
     margin-left: 1em;
     margin-top: 1em;
-	width: 650px;
+	width: 700px;
 }
 .dns-menu {
     padding-top:.75em;
