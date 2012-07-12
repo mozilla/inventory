@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+import pdb
 
 class KeyValue(models.Model):
     """How this KeyValue class works:
@@ -29,6 +30,9 @@ class KeyValue(models.Model):
         'force_validation'.
 
         Subclass this class and include a Foreign Key when needed.
+
+        Validation functions can start with '_aa_'. 'aa' stands for auxililary
+        attribute.
     """
     id = models.AutoField(primary_key=True)
     key = models.CharField(max_length=255)
@@ -40,13 +44,18 @@ class KeyValue(models.Model):
 
     def clean(self, require_validation=True):
         key_attr = self.key.replace('-','_')
-        if not hasattr(self, key_attr):
+        # aa stands for auxilarary attribute.
+        if not hasattr(self, key_attr) and not hasattr(self, "_aa_"+key_attr):
             # ??? Do we want this?
             if self.force_validation and require_validation:
                 raise ValidationError("No validator for key %s" % self.key)
             else:
                 return
-        validate = getattr(self, key_attr)
+        if hasattr(self, key_attr):
+            validate = getattr(self, key_attr)
+        else:
+            validate = getattr(self, "_aa_"+key_attr)
+
         if not callable(validate):
             raise ValidationError("No validator for key %s not callable" %
                     key_attr)

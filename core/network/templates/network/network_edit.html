@@ -11,23 +11,42 @@
     <form class="well form-horizontal" method="post" action="">
         {{ form.as_p() }}
         </br>
-        <h3>Allowed Attributes</h3>
-        <pre>
-        {% for attr, comment in aux_attrs %}
-            {{ attr }}: {{ comment }}
-        {% endfor %}
-        </pre>
-        </br>
-        <strong>Attributes</strong><br /><br />
-            <ul id="attrs_area">
-                {% for attr in attrs %}
-                <li>
-                Attribute: <input name='attr_{{loop.index0}}' id='attr_{{loop.index0}}' type='text' value='{{attr.key}}' />
-                Value: <input name='attr_{{loop.index0}}_value' id='attr_{{loop.index0}}_value' type='text' value='{{attr.value}}'/>
-                </li>
-                {% endfor %}
-            </ul>
-            <input type="button" value="Add Attribute" onclick='addField("attrs_area","attr_",10);' />
+        {% if attrs %}
+            <b>Note</b>: <i>Order matters.</i>
+            <br>
+            <strong>Attributes</strong><br /><br />
+                <ul id="attrs_area">
+                    {% for attr in attrs %}
+                    <li>
+                    Attribute: <input name='attr_{{loop.index0}}' id='attr_{{loop.index0}}' type='text' value='{{attr.key}}' />
+                    Value: <input name='attr_{{loop.index0}}_value' id='attr_{{loop.index0}}_value' type='text' value='{{attr.value}}'/>
+                    </li>
+                    {% endfor %}
+                </ul>
+        {% endif %}
+        <input type="button" value="Add Attribute" onclick='addAttr("attrs_area","attr_",10, {{ aa | safe }});' />
         <input type="submit" value="Submit" />
+        <br/>
+        <br/>
+        <br/>
+        <h3>Network Attributes</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Attribute</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for attr, doc in docs %}
+            <tr>
+                <td valign="top"><b>{{ attr }}</b></td>
+                <td><span width="200px"><pre>{{ doc }}</pre></span></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </br>
     </form>
 {% endblock %}

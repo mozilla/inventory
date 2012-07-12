@@ -4,6 +4,14 @@ from django.core.exceptions import ValidationError
 
 is_attr = re.compile("^attr_\d+$")
 
+def get_aa(obj):
+    members = dir(obj)
+    aa = []
+    for member in members:
+        if member.startswith("_aa"):
+            aa.append(member[4:])
+    return aa
+
 def get_attrs(query_dict):
     kv = {}
     for param, values in query_dict.iteritems():

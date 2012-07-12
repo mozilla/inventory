@@ -7,6 +7,7 @@ from core.vlan.models import Vlan
 from core.site.models import Site
 from core.mixins import ObjectUrlMixin
 from core.keyvalue.models import KeyValue
+from core.network.base_option import CommonOption
 
 import ipaddr
 
@@ -91,7 +92,7 @@ class Network(models.Model, ObjectUrlMixin):
     def __repr__(self):
         return "<Network {0}>".format(str(self))
 
-class NetworkKeyValue(KeyValue):
+class NetworkKeyValue(CommonOption):
     network = models.ForeignKey(Network, null=False)
     aux_attrs = (
         ('description', 'A description of the site'),
@@ -100,5 +101,86 @@ class NetworkKeyValue(KeyValue):
         db_table = 'network_key_value'
         unique_together = ('key', 'value')
 
-    def description(self):
-        return
+    """The NetworkOption Class.
+
+        "DHCP option statements always start with the option keyword, followed by
+        an option name, followed by option data." -- The man page for dhcpd-options
+
+        In this class, options are stored without the 'option' keyword. If it
+        is an option, is option should be set.
+    """
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super(NetworkKeyValue, self).save(*args, **kwargs)
+
+    def _aa_description(self):
+        """A descrition of this network"""
+        pass
+
+    def _aa_filename(self):
+        """
+        filename filename;
+
+            The filename statement can be used to specify the name of the initial boot
+            file which is to be loaded by a client. The filename should be a filename
+            recognizable to whatever file transfer protocol the client can be expected to
+            use to load the file. 
+        """
+        self.is_statement = True
+        self.is_option = False
+        self.has_validator = True
+        # TODO
+
+    def _aa_next_server(self):
+        """
+        The next-server statement
+
+            next-server server-name;
+
+                The next-server statement is used to specify the host address of the server
+                from which the initial boot file (specified in the filename statement) is to be
+                loaded. Server-name should be a numeric IP address or a domain name. If no
+                next-server parameter applies to a given client, the DHCP server's IP address
+                is used.
+        """
+        self.has_validator = True
+        self.is_statement = True
+        self.is_option = False
+        self._single_ip()
+
+    def _aa_dns_servers(self):
+        """A list of DNS servers for this network."""
+        self.is_statement = False
+        self.is_option = False
+        self._ip_list()
+
+    def _ip_list(self):
+        """Use this if the value is supposed to be a list of ip addresses.
+        """
+        self.ip_option = True
+        self.has_validator = True
+        ips = self._get_value()
+        ips = ips.split(',')
+        for router in ips:
+            router = router.strip()
+            try:
+                if self.network.ip_type == '4':
+                    ipaddr.IPv4Address(router)
+                else:
+                    raise NotImplemented
+            except ipaddr.AddressValueError, e:
+                raise ValidationError("Invalid option ({0}) parameter "
+                    "({1})'".format(self.key, router))
+
+    def _single_ip(self):
+        ip = self._get_value()
+        try:
+            if self.network.ip_type == '4':
+                ipaddr.IPv4Address(ip)
+            else:
+                raise NotImplemented
+        except ipaddr.AddressValueError, e:
+            raise ValidationError("Invalid option ({0}) parameter "
+                "({1})'".format(self.key, ip))
+
