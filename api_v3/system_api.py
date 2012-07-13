@@ -33,6 +33,7 @@ class CustomAPIResource(ModelResource):
     class Meta:
         serializer = PrettyJSONSerializer()
         authorization= Authorization()
+        authentication = BasicAuthentication()
         allowed_methods = ['get', 'post', 'put', 'delete', 'patch', 'PATCH']
 
 class SystemResource(CustomAPIResource):
