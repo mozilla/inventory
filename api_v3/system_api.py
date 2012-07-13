@@ -33,7 +33,10 @@ class CustomAPIResource(ModelResource):
         allowed_methods = ['get', 'post', 'put', 'delete', 'patch', 'PATCH']
 
 class SystemResource(CustomAPIResource):
-    key_value = fields.ToManyField('api_v3.system_api.KeyValueResource', 'key_values', full=True, null=True)
+
+    def __init__(self, *args, **kwargs):
+        super(SystemResource, self).__init__(*args, **kwargs)
+    key_value = fields.ToManyField('api_v3.system_api.KeyValueResource', 'keyvalue_set', full=True, null=True)
     server_model = fields.ForeignKey('api_v3.system_api.ServerModelResource', 'server_model', null=True, full=True)
     operating_system = fields.ForeignKey('api_v3.system_api.OperatingSystemResource', 'operating_system', null=True, full=True)
     system_rack = fields.ForeignKey('api_v3.system_api.SystemRackResource', 'system_rack', null=True, full=True)
@@ -113,7 +116,7 @@ class OperatingSystemData(CustomAPIResource):
         data.set('version', '6.2')
         return data
 class KeyValueResource(CustomAPIResource):
-    system = fields.ToOneField(SystemResource, 'system', full=False)
+    #system = fields.ToOneField(SystemResource, 'system', full=True)
 
     class Meta(CustomAPIResource.Meta):
         filtering = {
