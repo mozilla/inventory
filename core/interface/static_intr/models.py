@@ -43,6 +43,8 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
             related_name='staticintrdomain_set')
 
     system = models.ForeignKey(System, null=True, blank=True)
+    dhcp_enabled = models.BooleanField(default=True)
+    dns_enabled = models.BooleanField(default=True)
 
     def details(self):
         return (

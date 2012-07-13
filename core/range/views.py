@@ -4,14 +4,17 @@ from django.shortcuts import render
 
 
 from core.range.forms import RangeForm
-from core.range.models import Range
+from core.range.models import Range, RangeKeyValue
 from core.interface.static_intr.models import StaticInterface
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
 from core.views import CoreDeleteView, CoreDetailView
 from core.views import CoreCreateView, CoreUpdateView, CoreListView
+from core.keyvalue.utils import get_attrs, update_attrs, get_aa, get_docstrings
+from core.keyvalue.utils import get_docstrings
 
 import ipaddr
+import simplejson as json
 import pdb
 
 class RangeView(object):
@@ -103,6 +106,53 @@ def range_detail(request, range_pk):
 
 class RangeCreateView(RangeView, CoreCreateView):
     """ """
+
+def update_range(request, range_pk):
+    mrange = get_object_or_404(Range, pk=range_pk)
+    attrs = mrange.rangekeyvalue_set.all()
+    docs = get_docstrings(RangeKeyValue())
+    aa = get_aa(RangeKeyValue())
+    if request.method == 'POST':
+        form = RangeForm(request.POST, instance=mrange)
+        try:
+            if not form.is_valid():
+                if form._errors is None:
+                    form._errors = ErrorDict()
+                form._errors['__all__'] = ErrorList(e.messages)
+                return render(request, 'range/range_edit.html', {
+                    'range': mrange,
+                    'form': form,
+                    'attrs': attrs,
+                    'docs': docs,
+                    'aa': json.dumps(aa)
+                })
+            else:
+                # Handle key value stuff.
+                kv = get_attrs(request.POST)
+                update_attrs(kv, attrs, RangeKeyValue, mrange, 'range')
+                mrange = form.save()
+                return redirect(mrange.get_edit_url())
+        except ValidationError, e:
+            if form._errors is None:
+                form._errors = ErrorDict()
+            form._errors['__all__'] = ErrorList(e.messages)
+            return render(request, 'range/range_edit.html', {
+                'range': mrange,
+                'form': form,
+                'attrs': attrs,
+                'docs': docs,
+                'aa': json.dumps(aa)
+            })
+
+    else:
+        form = RangeForm(instance=mrange)
+        return render(request, 'range/range_edit.html', {
+            'range': mrange,
+            'form': form,
+            'attrs': attrs,
+            'docs': docs,
+            'aa': json.dumps(aa)
+        })
 
 
 class RangeUpdateView(RangeView, CoreUpdateView):

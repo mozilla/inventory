@@ -7,7 +7,7 @@ from core.vlan.models import Vlan
 from core.site.models import Site
 from core.mixins import ObjectUrlMixin
 from core.keyvalue.models import KeyValue
-from core.network.base_option import CommonOption
+from core.keyvalue.base_option import CommonOption
 
 import ipaddr
 
@@ -28,6 +28,10 @@ class Network(models.Model, ObjectUrlMixin):
     network_str = models.CharField(max_length=39, editable=True)
     prefixlen = models.PositiveIntegerField(null=False)
 
+    dhcpd_raw_include = models.TextField(null=True, blank=True, help_text="""The
+            config options in this box will be included *as is* in the
+            dhcpd.conf file for this subnet.""")
+
     network = None
 
     def details(self):
@@ -40,8 +44,23 @@ class Network(models.Model, ObjectUrlMixin):
         unique_together = ('ip_upper', 'ip_lower', 'prefixlen')
 
     def save(self, *args, **kwargs):
+        if not self.pk:
+            add_routers = True
+        else:
+            add_routers = False
         self.update_network()
         super(Network, self).save(*args, **kwargs)
+
+        self.update_network()  # Gd forbid this hasn't already been called.
+        if add_routers:
+            if self.ip_type == '4':
+                router = str(ipaddr.IPv4Address(int(network.network.network)+1))
+            else:
+                router = str(ipaddr.IPv6Address(int(network.network.network)+1))
+            kv = NetworkKeyValue(key="routers", value=router)
+            kv.clean()
+            kv.save()
+
 
     def delete(self, *args, **kwargs):
         if self.range_set.all().exists():
@@ -147,40 +166,11 @@ class NetworkKeyValue(CommonOption):
         self.has_validator = True
         self.is_statement = True
         self.is_option = False
-        self._single_ip()
+        self._single_ip(self.network.ip_type)
 
     def _aa_dns_servers(self):
         """A list of DNS servers for this network."""
         self.is_statement = False
         self.is_option = False
-        self._ip_list()
-
-    def _ip_list(self):
-        """Use this if the value is supposed to be a list of ip addresses.
-        """
-        self.ip_option = True
-        self.has_validator = True
-        ips = self._get_value()
-        ips = ips.split(',')
-        for router in ips:
-            router = router.strip()
-            try:
-                if self.network.ip_type == '4':
-                    ipaddr.IPv4Address(router)
-                else:
-                    raise NotImplemented
-            except ipaddr.AddressValueError, e:
-                raise ValidationError("Invalid option ({0}) parameter "
-                    "({1})'".format(self.key, router))
-
-    def _single_ip(self):
-        ip = self._get_value()
-        try:
-            if self.network.ip_type == '4':
-                ipaddr.IPv4Address(ip)
-            else:
-                raise NotImplemented
-        except ipaddr.AddressValueError, e:
-            raise ValidationError("Invalid option ({0}) parameter "
-                "({1})'".format(self.key, ip))
+        self._ip_list(self.network.ip_type)
 

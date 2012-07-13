@@ -29,3 +29,42 @@
             </tbody>
         </table>
 {%- endmacro %}
+
+
+{% macro draw_attrs(attrs, aa, delete_url) -%}
+{#
+    Parameters:
+
+        attrs - The list of existing attrs.
+
+        aa - The list of known validated attributes.
+
+        delete_url - The url an AJAX request will be POSTed to when a user requests to delete the attribute.
+                    The url will be {{ delete_url }}/{{ attr.pk}}/delete
+#}
+
+    <script language="Javascript" type="text/javascript" src="/static/javascripts/attribute_adder.js">
+    </script>
+
+    <br>
+    <h3>Attributes</h3>
+    <b>Note</b>: <i>Order matters.</i>
+        <ul id="attrs_area">
+            {% for attr in attrs %}
+            <li>
+            <label for='attr_{{loop.index0}}_value' />{{ attr.key}}</label>
+            <input name='attr_{{loop.index0}}' id='attr_{{loop.index0}}' type='hidden' value='{{attr.key}}' /> 
+            <input name='attr_{{loop.index0}}_value' id='attr_{{loop.index0}}_value' type='text' value='{{attr.value}}'/>
+            <a style='cursor' onclick='remove_attr("attr_{{loop.index0}}", "{{ delete_url }}/{{ attr.pk }}/delete/")'>Remove</a>
+            </li>
+            {% endfor %}
+        </ul>
+    <input type="button" value="Add Attribute" onclick='addAttr("attrs_area","attr_",10, {{ aa | safe }});' />
+    <br/>
+    <br/>
+    <ul id="adhoc_attrs_area">
+    </ul>
+    <br/>
+    <!-- Let's hope we never have more that 200 attr's on an object! -->
+    <input type="button" value="Add Adhoc (Un-Validated) Attribute" onclick='addField("adhoc_attrs_area","attr_",10, 200);' />
+{%- endmacro %}

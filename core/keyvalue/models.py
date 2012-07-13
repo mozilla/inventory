@@ -37,7 +37,7 @@ class KeyValue(models.Model):
     id = models.AutoField(primary_key=True)
     key = models.CharField(max_length=255)
     value = models.CharField(max_length=255)
-    force_validation = True # Make this a field.
+    force_validation = False # Make this a field.
 
     class Meta:
         abstract = True

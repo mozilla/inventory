@@ -21,6 +21,7 @@ def calc_networks(network):
 def calc_parent(network):
     eldars, sub_net = calc_networks(network)
     if not eldars:
+        # Why!?! stupid.
         return []
     parent = list(reversed(sorted(eldars, key=lambda n: n.prefixlen)))[0]
     return parent

@@ -353,7 +353,7 @@ def populate_forward_dns(svn_zones, view=None):
                 soa = SOA(serial=rdata.serial, minimum=rdata.minimum,
                         contact=rdata.rname.to_text().strip('.'),
                         primary=rdata.mname.to_text().strip('.'), comment="SOA for"
-                        " {0}.mozilla.com".format(site))
+                        " {0}mozilla.com".format(site))
                 soa.clean()
                 soa.save()
             domain_split = list(reversed(name.to_text().strip('.').split('.')))

@@ -11,5 +11,6 @@ urlpatterns = patterns('',
     url(r'^(?P<network_pk>[\w-]+)/$', network_detail),
     url(r'^(?P<network_pk>[\w-]+)/update/$', update_network),
     url(r'^(?P<pk>[\w-]+)/delete/$', NetworkDeleteView.as_view()),
+    url(r'^attr/(?P<attr_pk>[\w-]+)/delete/$', delete_network_attr),
 
 )

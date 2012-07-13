@@ -155,13 +155,19 @@
 <dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.notes }}</pre></dd>
 <pre>
     <table>
-    <tr><th>FQDN</th><th>IP Address</th><th>Action</th></tr>
+    <tr><th>FQDN</th><th>IP Address</th><th>DHCP Enabled</th><th>DNS Enabled</th><th>Action</th></tr>
     {% for intr in interfaces %}
+        <tr>
         {% if intr.label == "" %}
-        <tr><td><a href='{{ intr.domain.get_absolute_url() }}'>{{intr.fqdn}}</a></td><td>{{ intr.ip_str }}</td><td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a><pre></td>
+        <td><a href='{{ intr.domain.get_absolute_url() }}'>{{intr.fqdn}}</a></td>
         {% else %}
-        <tr><td>{{ intr.label }}.<a href='{{ intr.domain.get_absolute_url() }}'>{{ intr.domain }}</a></td><td>{{ intr.ip_str }}</td><td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a><pre></td>
+        <td>{{ intr.label }}.<a href='{{ intr.domain.get_absolute_url() }}'>{{ intr.domain }}</a></td>
         {% endif %}
+        <td>{{ intr.ip_str }}</td>
+        <td>{{ intr.dhcp_enabled }}</td>
+        <td>{{ intr.dns_enabled }}</td>
+        <td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a><pre></td>
+        <tr>
     {% endfor %}
     </table>
 </pre></dd>

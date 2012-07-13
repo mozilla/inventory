@@ -60,3 +60,12 @@ def update_attrs(kv, attrs, KVClass, obj, obj_name):
         setattr(kv, obj_name, obj)
         kv.clean()
         kv.save()
+
+def get_docstrings(obj):
+    members = dir(obj)
+    docs = []
+    for member in members:
+        if member.startswith("_aa"):
+            docs.append((member[4:], getattr(obj, member).__doc__))
+
+    return docs

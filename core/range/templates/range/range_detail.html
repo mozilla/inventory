@@ -29,6 +29,23 @@
     {% else %}
     .
     {% endif %}
+    {% if attrs %}
+    <table class="table">
+        <thead>
+            {% for attr in attrs %}
+                <th>{{ attr.key }}</th>
+            {% endfor %}
+        </thead>
+
+        <tbody>
+            <tr>
+            {% for attr in attrs %}
+                <td>{{ attr.value }}</td>
+            {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
 
     {% if range_data %}
         <table class="table">

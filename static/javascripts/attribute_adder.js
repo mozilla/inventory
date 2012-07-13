@@ -123,7 +123,7 @@ function addAttr(area, field, limit, aa) {
 }
 
 
-function addField(area, field, limit) {
+function addField(area, field, limit, offset) {
     if(!document.getElementById) return; //Prevent older browsers from getting any further.
     var field_area = document.getElementById(area);
     var all_inputs = field_area.getElementsByTagName("input"); //Get all the input fields in the given area.
@@ -132,7 +132,7 @@ function addField(area, field, limit) {
     if(all_inputs.length > 0){
         var last_item = all_inputs.length - 1;
         var last = all_inputs[last_item].id;
-        var count = Number(last.split("_")[1]) + 1;
+        var count = Number(last.split("_")[1]) + Number(offset) + 1;
         if(count > limit && limit > 0) return;
     } else {
         var last_item = 0;
@@ -187,8 +187,7 @@ function addField(area, field, limit) {
 function remove(link) {
         link.parentNode.parentNode.removeChild(link.parentNode);
 }
-function remove_attr(attr_id, attr_pk, system_pk, intr_pk) {
-    post_url = "/core/interface/"+system_pk+"/"+intr_pk+"/remove_attr/"+attr_pk+"/"
+function remove_attr(attr_id, post_url) {
     $.post(post_url)
     remove(document.getElementById(attr_id));
 

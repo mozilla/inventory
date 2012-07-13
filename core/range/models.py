@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 
 from core.network.models import Network
 from core.mixins import ObjectUrlMixin
-from core.keyvalue.models import KeyValue
+from core.keyvalue.base_option import CommonOption
 
 import ipaddr
 
@@ -38,6 +38,7 @@ class Range(models.Model, ObjectUrlMixin):
     start_str = models.CharField(max_length=39, editable=True)
     end = models.PositiveIntegerField(null=True)
     end_str = models.CharField(max_length=39, editable=True)
+    dhcpd_raw_include = models.TextField(null=True, blank=True)
 
     network = models.ForeignKey(Network, null=False)
 
@@ -107,14 +108,10 @@ class Range(models.Model, ObjectUrlMixin):
     def __repr__(self):
         return "<Range: {0}>".format(str(self))
 
-class RangeKeyValue(KeyValue):
+
+class RangeKeyValue(CommonOption):
     range = models.ForeignKey(Range, null=False)
-    aux_attrs = (
-        ('type', 'The type of range.'),
-    )
+
     class Meta:
         db_table = 'range_key_value'
         unique_together = ('key', 'value')
-
-    def type(self):
-        return

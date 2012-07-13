@@ -7,6 +7,7 @@ from mozdns.domain.models import Domain
 
 from core.keyvalue.models import KeyValue
 
+import pdb
 
 class Vlan(models.Model, ObjectUrlMixin):
     id = models.AutoField(primary_key=True)
@@ -35,7 +36,6 @@ class Vlan(models.Model, ObjectUrlMixin):
         This memeber function will look at all the Domain objects and attempt
         to find an approriate domain that corresponds to this VLAN.
         """
-        import pdb
         for network in self.network_set.all():
             if network.site:
                 expected_name = "{0}.{1}.mozilla.com".format(self.name,

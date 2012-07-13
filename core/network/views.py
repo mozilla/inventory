@@ -12,7 +12,8 @@ from core.network.utils import calc_networks, calc_parent_str
 from core.vlan.models import Vlan
 from core.site.models import Site
 from core.site.forms import SiteForm
-from core.keyvalue.utils import get_attrs, update_attrs, get_aa
+from core.keyvalue.utils import get_attrs, update_attrs, get_aa, get_docstrings
+from core.keyvalue.utils import get_docstrings
 from core.range.forms import RangeForm
 
 from core.views import CoreDeleteView, CoreListView
@@ -40,6 +41,14 @@ class NetworkListView(NetworkView, CoreListView):
     """ """
     template_name = 'network/network_list.html'
 
+def delete_network_attr(request, attr_pk):
+    """
+    An view destined to be called by ajax to remove an attr.
+    """
+    attr = get_object_or_404(NetworkKeyValue, pk=attr_pk)
+    attr.delete()
+    return HttpResponse("Attribute Removed.")
+
 def create_network(request):
     if request.method == 'POST':
         form = NetworkForm(request.POST)
@@ -63,14 +72,6 @@ def create_network(request):
             'form': form,
         })
 
-def get_docstrings(obj):
-    members = dir(obj)
-    docs = []
-    for member in members:
-        if member.startswith("_aa"):
-            docs.append((member[4:], getattr(obj, member).__doc__))
-
-    return docs
 
 def update_network(request, network_pk):
     network = get_object_or_404(Network, pk=network_pk)
@@ -96,7 +97,7 @@ def update_network(request, network_pk):
                 kv = get_attrs(request.POST)
                 update_attrs(kv, attrs, NetworkKeyValue, network, 'network')
                 network = form.save()
-                return redirect(network)
+                return redirect(network.get_edit_url())
         except ValidationError, e:
             if form._errors is None:
                 form._errors = ErrorDict()

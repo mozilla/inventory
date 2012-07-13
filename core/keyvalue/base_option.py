@@ -25,7 +25,8 @@ class CommonOption(KeyValue):
         """
         See allow.
         """
-        choices = ["unknown-clients", "bootp", "booting", "duplicates", "declines", "client-updates"]
+        choices = ["unknown-clients", "bootp", "booting", "duplicates",
+                "declines", "client-updates", "dynamic bootp clients"]
         self.is_statement = True
         self.is_option = False
         self.has_validator = True
@@ -63,9 +64,13 @@ class CommonOption(KeyValue):
 
             allow client-updates;
             deny client-updates;
+
+            allow dynamic bootp clients;
+            deny dynamic bootp clients;
         """
 
-        choices = ["unknown-clients", "bootp", "booting", "duplicates", "declines", "client-updates"]
+        choices = ["unknown-clients", "bootp", "booting", "duplicates",
+                "declines", "client-updates", "dynamic bootp clients"]
         self.is_statement = True
         self.is_option = False
         self.has_validator = True
@@ -89,7 +94,7 @@ class CommonOption(KeyValue):
         self.is_option = True
         self.is_statement = False
         self.has_validator = True
-        self._ip_list()
+        self._ip_list(self.network.ip_type)
 
     def _aa_ntp_servers(self):
         """
@@ -102,7 +107,7 @@ class CommonOption(KeyValue):
         self.is_option = True
         self.is_statement = False
         self.has_validator = True
-        self._ip_list()
+        self._ip_list(self.network.ip_type)
 
     def _aa_domain_name_servers(self):
         """
@@ -115,14 +120,71 @@ class CommonOption(KeyValue):
         self.is_option = True
         self.is_statement = False
         self.has_validator = True
-        self._ip_list()
+        self._ip_list(self.network.ip_type)
 
     def _aa_domain_name(self):
-        """See domain name servers."""
+        """
+        option domain-name text;
+
+            The 'text' should be a space seperated domain names. I.E.: phx.mozilla.com phx1.mozilla.com
+            This option specifies the domain name that client should use when resolving
+            hostnames via the Domain Name System.
+        """
         self.is_option = True
         self.is_statement = False
         self.has_validator = True
         value = self._get_value()
-        validate_name(value)
+        for name in value.split(' '):
+            validate_name(name)
+        self.value = value
 
+    def _aa_search_domain(self):
+        """
+        The domain-search option specifies a 'search list' of Domain Names to
+        be used by the client to locate not-fully-qualified domain names. The
+        difference between this option and historic use of the domain-name option for
+        the same ends is that this option is encoded in RFC1035 compressed labels on
+        the wire. For example:
 
+            option domain-search "example.com", "sales.example.com", "eng.example.com";
+        """
+        self.is_option = True
+        self.is_statement = False
+        self.has_validator = True
+        value = self.value.strip(';')
+        value = value.strip()
+        for name in value.split(','):
+            # Bug here. Ex: "asf, "'asdf"'
+            name = name.strip()
+            name = name.strip("\"")
+            name = name.strip("\'")
+            validate_name(name)
+
+    def _ip_list(self, ip_type):
+        """Use this if the value is supposed to be a list of ip addresses.
+        """
+        self.ip_option = True
+        self.has_validator = True
+        ips = self._get_value()
+        ips = ips.split(',')
+        for router in ips:
+            router = router.strip()
+            try:
+                if ip_type == '4':
+                    ipaddr.IPv4Address(router)
+                else:
+                    raise NotImplemented
+            except ipaddr.AddressValueError, e:
+                raise ValidationError("Invalid option ({0}) parameter "
+                    "({1})'".format(self.key, router))
+
+    def _single_ip(self, ip_type):
+        ip = self._get_value()
+        try:
+            if ip_type == '4':
+                ipaddr.IPv4Address(ip)
+            else:
+                raise NotImplemented
+        except ipaddr.AddressValueError, e:
+            raise ValidationError("Invalid option ({0}) parameter "
+                "({1})'".format(self.key, ip))

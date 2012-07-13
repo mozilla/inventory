@@ -279,6 +279,8 @@ def quick_create(request, system_pk):
 
                 networks = []
                 for network in vlan.network_set.all():
+                    if not network.site:
+                        continue
                     if network.site.get_site_path() == site.get_site_path():
                         networks.append(network)
                 if not networks:
