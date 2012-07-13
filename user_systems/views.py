@@ -462,7 +462,10 @@ def user_system_csv(request):
                     'Operating System', 'Model', 'Date Purchased', 'Cost'])
 
     for s in systems:
-        location = s.owner.user_location
+        try:
+            location = s.owner.user_location
+        except AttributeError:
+            location = ''
         writer.writerow([s.owner, location, s.serial, s.asset_tag,
                 s.operating_system, s.server_model, s.date_purchased, s.cost])
 
