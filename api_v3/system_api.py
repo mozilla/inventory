@@ -1,12 +1,14 @@
 from tastypie import fields
 from tastypie.authorization import DjangoAuthorization
-from tastytools.resources import ModelResource
+#from tastytools.resources import ModelResource
+from tastypie.resources import ModelResource
 from tastypie.resources import ALL, ALL_WITH_RELATIONS
 import systems.models as system_model
 from django.conf.urls.defaults import url
 from tastypie.serializers import Serializer
 from django.core.serializers import json as djson
 from tastytools.test.resources import ResourceTestData
+from tastypie.authorization import Authorization
 import json
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
@@ -24,8 +26,11 @@ class CustomAPIResource(ModelResource):
             return super(CustomAPIResource, self).determine_format(request)
         else: 
             return "application/json"
+
     class Meta:
         serializer = PrettyJSONSerializer()
+        authorization= Authorization()
+        allowed_methods = ['get', 'post', 'put', 'delete', 'patch', 'PATCH']
 
 class SystemResource(CustomAPIResource):
     key_value = fields.ToManyField('api_v3.system_api.KeyValueResource', 'key_values', full=True, null=True)
@@ -92,6 +97,9 @@ class SystemStatusResource(CustomAPIResource):
 class OperatingSystemResource(CustomAPIResource):
         
     class Meta(CustomAPIResource.Meta):
+        def __init__(self, *args, **kwargs):
+            import pdb; pdb.set_trace()
+            super(Meta, self).__init(*args, **kwargs)
         resource_name = 'operating_system'
         queryset = system_model.OperatingSystem.objects.all()
 

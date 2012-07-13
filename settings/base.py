@@ -87,3 +87,4 @@ AUTHENTICATION_BACKENDS = (
 AUTH_PROFILE_MODULE = "systems.UserProfile"
 PISTON_IGNORE_DUPE_MODELS = True
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+ROOT_URLCONF = 'inventory.urls'
