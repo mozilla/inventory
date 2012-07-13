@@ -1,5 +1,6 @@
 from tastypie import fields
 from tastypie.authorization import DjangoAuthorization
+from tastypie.authentication import BasicAuthentication
 #from tastytools.resources import ModelResource
 from tastypie.resources import ModelResource
 from tastypie.resources import ALL, ALL_WITH_RELATIONS
@@ -33,6 +34,7 @@ class CustomAPIResource(ModelResource):
     class Meta:
         serializer = PrettyJSONSerializer()
         authorization= Authorization()
+        authentication = BasicAuthentication()
         allowed_methods = ['get', 'post', 'put', 'delete', 'patch', 'PATCH']
 
 class SystemResource(CustomAPIResource):
