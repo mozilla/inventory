@@ -1,0 +1,243 @@
+{% extends "tastytools/base.html" %}
+{% load staticlink %}
+
+{% block extra_head %}
+    {% staticlink js:tastytools/lib/SyntaxHighlighter/shCore.js %}
+    {% staticlink js:tastytools/lib/SyntaxHighlighter/shBrushPython.js %}
+
+    {% staticlink css:tastytools/lib/SyntaxHighlighter/shCore.css %}
+    {% staticlink css:tastytools/lib/SyntaxHighlighter/shThemeDefault %}
+
+    {% staticlink css:tastytools/api.howto %}
+
+    <script type='text/javascript'>
+        $(document).ready(function(){
+            console.log("hola");
+            SyntaxHighlighter.highlight()
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class='content'>
+    <h1>TastyTools</h1>
+
+    <h2>Registering Resources</h2>
+
+    <p>File <strong>/api/application.py</strong></p>
+    <pre class='brush: py'>
+from tastytools.api import Api
+from resources import CommentResource, AnotherResource, YetAnotherResource
+import other_resources
+
+api = Api()
+api.register(CommentResource)
+api.register(resources=[AnotherResource, YetAnotherResource])
+api.register(modules=[other_resources])
+    </pre>
+
+    <h2>Adding Automatic tests</h2>
+    <p>File <strong>/api/tests.py</strong></p>
+    <pre class='brush: py'>
+from tastytools.test.definitions import resources, fields
+from api.application import api
+
+ResourceTests = resources.generate(api)
+ResourceFieldTests = fields.generate(api)
+    </pre>
+
+
+    <h2>Defining Test Data</h2>
+    <pre class='brush: py'>
+from tastytools.test.resources import ResourceTestData, Related, TestData
+
+class CommentTestData(ResourceTestData):
+
+    def __init__(self, api):
+        ResourceTestData.__init__(self, api, 'comment')
+
+    def sample_data(self, related=Related.Model, force=False):
+        data = TestData(self.api, force, related)
+
+        data.set('post', resource='post', force={'comments': []})
+        data.set('author', resource='user')
+        data.set('published', '2010-12-24T06:23:48')
+        data.set('content', 'Lorem ipsum...')
+
+        return data
+    </pre>
+
+    <h2>Avoiding extra data generation in circular references</h2>
+    <p>Say that you are generating your tests data for your blog post model, you may
+       want to generate some comments as well, so the test post won't look so lonely
+       all by itself.<p>
+    <p>But take a look at our sample data generator funcion for the comments. If you've
+       been paying attention, you'll notice that it generates a parent post on its own,
+       which will in turn call the posts' own data generator function, and create yet
+       <strong>another</strong> post.
+
+    <p>This circular dependency issue is easily resolved when creating comments, because
+    the generated parent post is forced to be comment-less on creation, thus avoiding
+    the comments' generator function to be called again.<p>
+
+    <p>However, when creating the test post, it would need to pass itself as the parent
+    for the newly created comments, which cannot be done since the actual model doesn't
+    exist yet.</p>
+
+    <p>To solve this, it suffices to specify the <strong>related_name</strong> parameter,
+    which indicates the reverse relation between the two models. Any related resource
+    set with this parameter will be created after the test resources has been saved,
+    and its related attribute will be forced to be the current model being created.</p>
+
+    <pre class='brush: py, highlight: [15]'>
+from tastytools.test.resources import ResourceTestData, Related, TestData
+
+class PostTestData(ResourceTestData):
+
+    def __init__(self, api):
+        ResourceTestData.__init__(self, api, 'post')
+
+    def sample_data(self, related=Related.Model, force=False):
+        data = TestData(self.api, force, related)
+
+        data.set('title', 'The best day ever.')
+        data.set('author', resource='user')
+        data.set('published', '2010-12-24T06:23:48')
+        data.set('content', 'Lorem ipsum...')
+        data.set('comments', resource='comment', count=5, related_name='post')
+
+        return data
+    </pre>
+
+    <h2>Using named test data sets</h2>
+    <p>You may run into the situation where you need the ability to create
+      anonymous distinct test data for a given resource but also be able to 
+      refer to a known and consistent test data object.
+    </p>
+    <p>A good example is a user model. You probably want the test data to be 
+      able to create several users for some tests, but you want to have 
+      certain resources refer to the logged in user for authorized access
+    </p>
+    <p>The snippets below show how this can be achieved by using test data 
+      ids. They assume a case where there is a resource named Group, and where 
+      only the Group's owner (a User instance) is able to GET it, based on 
+      the authenticated user in the GET request.</p>
+    <p>File <strong>/your/api/resources.py</strong></p>
+    <p><em>The user test data acknowledges a special id "session" and provides
+      a consistent object for it. Other anonymous objects have a simple
+      incremental-based username created (they will all be different users)
+    </em></p>
+    <pre class='brush: py'>
+      class UserTestData(ResourceTestData):
+          resource ='user'
+
+          def get_data(self, data):
+              global user_counter
+              if data.id == 'session':
+                  suffix = ''
+              else:
+                  user_counter += 1
+                  suffix = '%02d' % user_counter
+
+              username = 'tester%s' % suffix
+
+              data.set('username', username)
+              data.set('password', "sha1$test$%s" % get_hexdigest('sha1', 'test', username))
+              data.set('email', 'tester@localhost')
+              return data
+    </pre>
+    <p>File <strong>/your/api/resources.py</strong></p>
+    <p><em>All group test objects will belong to the "session" user defined 
+      above. This is achieved by tagging the related owner user with the 
+      "session" id.
+    </em></p>
+    <pre class='brush: py'>
+      class GroupTestData(ResourceTestData):
+          resource = "pool"
+
+          def get_data(self, data):
+              data.set('owner', resource='user', id="session")
+              data.set('name', 'Test' )
+              return data
+    </pre>
+    <p>File <strong>/your/api/tests.py</strong></p>
+    <p><em>Finally we provide a setup function to be called before running each 
+      generated test. The setup function logs in the test client using the
+      credentials for the "session" user. It is expecting that the user's 
+      password will be the same as its username.</em></p>
+    <pre class='brush: py'>
+      from tastytools.test.definitions import resources, fields
+      from . import api
+      from django.contrib.auth.models import User
+
+      def setUp(self, *args, **kwargs):
+          uri, user = api.resource('user').create_test_resource(id='session')
+          self.assertTrue(self.client.login(
+              username=user.username, 
+              password=user.username
+              ),
+              "Could not login as %s/%s" % (user.username, user.username)
+          )
+
+      ResourceTests =   resources.generate(api, setUp=setUp)
+      ResourceFieldTests = fields.generate(api, setUp=setUp)
+    </pre>
+
+
+    <h2>Defining resources</h2>
+    <pre class='brush: py, highlight: [1, 26]'>
+from tastytools.resources import ModelResource
+from tastytools.authentication import AuthenticationByMethod
+
+class CommentResource(ModelResource):
+
+    post = fields.ForeignKey("api.resources.InstantResource",
+        attribute="post", help_text="Instant this comment belongs to.",
+        full=False)
+    author = fields.ForeignKey("api.resources.UserResource",
+        attribute="author", help_text="Author of the comment.",
+        full=True)
+    published = fields.DateField(attribute='published', readonly=True,
+        help_text="Date of publication.")
+    content = fields.CharField(attribute="content",
+        help_text="The actual comment.")
+
+    class Meta:
+        resource_name = "comment"
+        authorization = Authorization()
+
+        #requires authentication on all methods except GET
+        authentication = AuthenticationByMethod("GET")
+
+        object_class = Comment
+        queryset = Comment.objects.all()
+        example_class = CommentTestData
+
+        allowed_methods = ['get', 'post', 'put', 'patch']
+        excludes = ['id']
+    </pre>
+
+    <h2>TastyTools Documentation</h2>
+    <p>In order to enable: <code>/tastytools/doc</code> and <code>/tastytools/howto</code> on your site:</p>
+    <p>File <strong>/your/project/settings.py</strong></p>
+    <pre class='brush: py, highlight: [2]'>
+    INSTALLED_APPS = (
+      ...
+      'tastytools',
+    )
+    </pre>
+    
+    <p>File <strong>/your/project/urls.py</strong></p>
+    <pre class='brush: py, highlight: [2]'>
+from django.conf.urls.defaults import patterns, include, url
+
+api_name = '{{api_name}}' # OR WHATEVER YOUR API'S NAME IS
+
+urlpatterns = patterns('',
+        ...
+        (r'^tastytools/', include('tastytools.urls'), {'api_name': api_name}),
+)
+    </pre>
+
+</div>
+{% endblock %}
