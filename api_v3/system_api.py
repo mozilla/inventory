@@ -20,6 +20,9 @@ class PrettyJSONSerializer(Serializer):
                 sort_keys=True, ensure_ascii=False, indent=self.json_indent)
 
 class CustomAPIResource(ModelResource):
+    def __init__(self, *args, **kwargs):
+        super(CustomAPIResource, self).__init__(*args, **kwargs)
+
     def determine_format(self, request):
         format = request.GET.get('format')
         if format:
@@ -34,8 +37,6 @@ class CustomAPIResource(ModelResource):
 
 class SystemResource(CustomAPIResource):
 
-    def __init__(self, *args, **kwargs):
-        super(SystemResource, self).__init__(*args, **kwargs)
     key_value = fields.ToManyField('api_v3.system_api.KeyValueResource', 'keyvalue_set', full=True, null=True)
     server_model = fields.ForeignKey('api_v3.system_api.ServerModelResource', 'server_model', null=True, full=True)
     operating_system = fields.ForeignKey('api_v3.system_api.OperatingSystemResource', 'operating_system', null=True, full=True)
