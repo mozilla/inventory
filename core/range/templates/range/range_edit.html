@@ -10,12 +10,16 @@
     </script>
     <script language="Javascript" type="text/javascript" src="/static/javascripts/dhcp_raw_include.js">
     </script>
-    <span class="dns-title">Edit {{ range }}</span>
-    <span>Back to <a href="{{ range.get_absolute_url() }}">{{ range }}</a></span>
+    <span class="dns-title">Edit Range {{ range.start_str }} - {{ range.end_str }}</span>
+    <span>Back to <a href="{{ range.get_absolute_url() }}">Range Details</a> 
+        Network <a href="{{ range.network.get_absolute_url() }}">{{ range.network }}</a></span> 
+        <span>See <a href="/core/build/{{range.network.pk}}/">DHCP Build Output</a>.</span>
+
     <br>
     <form class="well form-horizontal" method="post" action="">
         {{ form.as_p() }}
         <input type="button" value="Hide/Display DHCP Range raw include." onclick='hide_text_area("id_dhcpd_raw_include")' />
+        </br>
         </br>
         {% from "core/core_macros.html" import draw_attrs %}
         {{ draw_attrs(attrs, aa, "/core/range/attr") }}

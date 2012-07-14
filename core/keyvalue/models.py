@@ -42,6 +42,12 @@ class KeyValue(models.Model):
     class Meta:
         abstract = True
 
+    def __repr__(self):
+        return "<{0}>".format(self)
+
+    def __str__(self):
+        return "Key: {0} Value {1}".format(self.key, self.value)
+
     def clean(self, require_validation=True):
         key_attr = self.key.replace('-','_')
         # aa stands for auxilarary attribute.

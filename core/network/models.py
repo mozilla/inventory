@@ -118,7 +118,7 @@ class NetworkKeyValue(CommonOption):
     )
     class Meta:
         db_table = 'network_key_value'
-        unique_together = ('key', 'value')
+        unique_together = ('key', 'value', 'network')
 
     """The NetworkOption Class.
 

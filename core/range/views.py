@@ -1,6 +1,7 @@
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
+from django.http import HttpResponse
 
 
 from core.range.forms import RangeForm
@@ -12,6 +13,7 @@ from core.views import CoreDeleteView, CoreDetailView
 from core.views import CoreCreateView, CoreUpdateView, CoreListView
 from core.keyvalue.utils import get_attrs, update_attrs, get_aa, get_docstrings
 from core.keyvalue.utils import get_docstrings
+from django.forms.util import ErrorList, ErrorDict
 
 import ipaddr
 import simplejson as json
@@ -41,6 +43,14 @@ class RangeDetailView(RangeView, CoreDetailView):
         if self.extra_context:
             context = dict(context.items() + self.extra_context.items())
         return context
+
+def delete_range_attr(request, attr_pk):
+    """
+    An view destined to be called by ajax to remove an attr.
+    """
+    attr = get_object_or_404(RangeKeyValue, pk=attr_pk)
+    attr.delete()
+    return HttpResponse("Attribute Removed.")
 
 def range_detail(request, range_pk):
     mrange = get_object_or_404(Range, pk=range_pk)

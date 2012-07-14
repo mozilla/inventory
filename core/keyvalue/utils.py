@@ -1,6 +1,7 @@
-import re
 from django.core.exceptions import ValidationError
 
+import re
+import pdb
 
 is_attr = re.compile("^attr_\d+$")
 
@@ -9,7 +10,8 @@ def get_aa(obj):
     aa = []
     for member in members:
         if member.startswith("_aa"):
-            aa.append(member[4:])
+            member_name = member[4:].replace('_','-')
+            aa.append(member_name)
     return aa
 
 def get_attrs(query_dict):
@@ -66,6 +68,10 @@ def get_docstrings(obj):
     docs = []
     for member in members:
         if member.startswith("_aa"):
-            docs.append((member[4:], getattr(obj, member).__doc__))
+            if obj.is_option or obj.is_statement:
+                member_name = member[4:].replace('_','-')
+            else:
+                member_name = member[4:]
+            docs.append((member_name, getattr(obj, member).__doc__))
 
     return docs

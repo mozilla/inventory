@@ -114,4 +114,11 @@ class RangeKeyValue(CommonOption):
 
     class Meta:
         db_table = 'range_key_value'
-        unique_together = ('key', 'value')
+        unique_together = ('key', 'value', 'range')
+
+    def _aa_failover(self):
+        self.is_statement = True
+        self.is_option = False
+        if self.value != "peer \"dhcp-failover\"":
+            raise ValidationError("Invalid failover option. Try `peer "
+                "\"dhcp-failover\"`")

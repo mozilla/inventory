@@ -20,7 +20,7 @@ def render_ptr(ptr_set):
         BUILD_STR += template.format(ip=ptr.ip_str, rclass='IN', rtype='PTR', name=ptr.name)
     return BUILD_STR
 
-def render_reverse_domain( default_ttl, nameserver_set, ptr_set ):
+def render_reverse_domain(default_ttl, nameserver_set, ptr_set):
     BUILD_STR = ''
     BUILD_STR += render_ns(nameserver_set)
     BUILD_STR += render_ptr(ptr_set)

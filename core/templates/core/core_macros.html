@@ -46,6 +46,9 @@
     <script language="Javascript" type="text/javascript" src="/static/javascripts/attribute_adder.js">
     </script>
 
+    <input type="button" value="Add Attribute" onclick='addAttr("attrs_area","attr_",0, {{ aa | safe }});' />
+    <input type="button" value="Add Adhoc (Un-Validated) Attribute" onclick='addField("attrs_area","attr_",0, 200);' />
+    <br>
     <br>
     <h3>Attributes</h3>
     <b>Note</b>: <i>Order matters.</i>
@@ -55,16 +58,15 @@
             <label for='attr_{{loop.index0}}_value' />{{ attr.key}}</label>
             <input name='attr_{{loop.index0}}' id='attr_{{loop.index0}}' type='hidden' value='{{attr.key}}' /> 
             <input name='attr_{{loop.index0}}_value' id='attr_{{loop.index0}}_value' type='text' value='{{attr.value}}'/>
-            <a style='cursor' onclick='remove_attr("attr_{{loop.index0}}", "{{ delete_url }}/{{ attr.pk }}/delete/")'>Remove</a>
+            <a style='cursor' onclick='remove_attr("attr_{{loop.index0}}", "{{ delete_url }}/{{ attr.pk }}/delete/")'>Delete</a>
             </li>
             {% endfor %}
         </ul>
-    <input type="button" value="Add Attribute" onclick='addAttr("attrs_area","attr_",10, {{ aa | safe }});' />
     <br/>
     <br/>
     <ul id="adhoc_attrs_area">
+        <li></li>
     </ul>
     <br/>
     <!-- Let's hope we never have more that 200 attr's on an object! -->
-    <input type="button" value="Add Adhoc (Un-Validated) Attribute" onclick='addField("adhoc_attrs_area","attr_",10, 200);' />
 {%- endmacro %}
