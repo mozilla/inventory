@@ -141,11 +141,11 @@ def list_all_systems_ajax(request):
                 search_q = Q(hostname__icontains=search_term)
         else:
             search_q = Q(hostname__icontains=search_term)
-        search_q |= Q(serial__contains=search_term)
-        search_q |= Q(notes__contains=search_term)
+        search_q |= Q(serial__icontains=search_term)
+        search_q |= Q(notes__icontains=search_term)
         search_q |= Q(asset_tag=search_term)
-        search_q |= Q(oob_ip__contains=search_term)
-        search_q |= Q(keyvalue__value__contains=search_term)
+        search_q |= Q(oob_ip__icontains=search_term)
+        search_q |= Q(keyvalue__value__icontains=search_term)
         try:
             total_count = models.System.with_related.filter(search_q).distinct('hostname').count()
         except:
@@ -469,7 +469,8 @@ def save_network_adapter(request, id):
 @allow_anyone
 def system_show(request, id):
     system = get_object_or_404(models.System, pk=id)
-    system.notes = system.notes.replace("\n", "<br />")
+    if system.notes:
+        system.notes = system.notes.replace("\n", "<br />")
     show_nics_in_key_value = False
     is_release = False
     try:
