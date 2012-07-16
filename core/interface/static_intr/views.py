@@ -110,9 +110,10 @@ def create_no_system_static_interface(request):
                     domain = None
 
             if domain:
-                initial['initial'] = {'ip_str': ip_str, 'domain':domain, 'ip_type':ip_type}
+                initial['initial'] = {'ip_str': ip_str, 'domain': domain,
+                        'ip_type': ip_type}
             else:
-                initial['initial'] = {'ip_str': ip_str, 'ip_type':ip_type}
+                initial['initial'] = {'ip_str': ip_str, 'ip_type': ip_type}
 
         interface_form = FullStaticInterfaceForm(**initial)
 
@@ -126,6 +127,7 @@ def detail_static_interface(reqeust, intr_pk):
     system = intr.system
     return redirect(system)
 
+
 def delete_static_interface(reqeust, intr_pk):
     intr = get_object_or_404(StaticInterface, pk=intr_pk)
     system = intr.system
@@ -134,6 +136,7 @@ def delete_static_interface(reqeust, intr_pk):
     except ValidationError, e:
         pass
     return redirect(system)
+
 
 def delete_attr(request, system_pk, intr_pk, attr_pk):
     """
@@ -189,6 +192,7 @@ def edit_static_interface(request, intr_pk):
             'domain': intr.domain
         })
 
+
 def create_static_interface(request, system_pk):
     # TODO, make sure the user has access to this system
     system = get_object_or_404(System, pk=system_pk)
@@ -225,22 +229,23 @@ def create_static_interface(request, system_pk):
             'form_title': 'New Interface for System {0}'.format(system)
         })
 
+
 def find_available_ip_from_ipv4_network(net):
     net.update_network()
 
     start = int(net.network.network)
     end = int(net.network.broadcast)
-    if start >= end -1:
+    if start >= end - 1:
         return HttpResponse("Too small of network.")
 
-    records = AddressRecord.objects.filter(ip_upper = 0, ip_lower__gte = start,
-            ip_lower__lte = end)
-    intrs = StaticInterface.objects.filter(ip_upper = 0, ip_lower__gte = start,
-            ip_lower__lte = end)
+    records = AddressRecord.objects.filter(ip_upper=0, ip_lower__gte=start,
+            ip_lower__lte=end)
+    intrs = StaticInterface.objects.filter(ip_upper=0, ip_lower__gte=start,
+            ip_lower__lte=end)
     if not records and not intrs:
         ip = ipaddr.IPv4Address(start + 10)
         return ip
-    for i in range(start + 10, end-1):
+    for i in range(start + 10, end - 1):
         taken = False
         for record in records:
             if record.ip_lower == i:
@@ -255,6 +260,7 @@ def find_available_ip_from_ipv4_network(net):
             ip = ipaddr.IPv4Address(i)
             return ip
     return None
+
 
 def quick_create(request, system_pk):
     # TODO, make sure the user has access to this system
@@ -316,8 +322,8 @@ def quick_create(request, system_pk):
                 interface_form._errors['__all__'] = ErrorList(e.messages)
                 return render(request, 'static_intr/static_intr_form.html', {
                     'form': interface_form,
-                    'form_title': 'Quick Interface Create for System {0}'.format(
-                        system)
+                    'form_title': "Quick Interface Create for System "
+                        "{0}".format(system)
                 })
         else:
             return render(request, 'static_intr/static_intr_form.html', {
@@ -333,6 +339,6 @@ def quick_create(request, system_pk):
         interface_form = StaticInterfaceQuickForm()
         return render(request, 'static_intr/static_intr_form.html', {
             'form': interface_form,
-                    'form_title': 'Quick Interface Create for System {0}'.format(
-                        system)
+            'form_title': 'Quick Interface Create for System {0}'.format(
+                system)
         })

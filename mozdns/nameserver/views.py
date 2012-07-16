@@ -16,6 +16,7 @@ from mozdns.domain.models import Domain
 
 import pdb
 
+
 class NSView(object):
     model = Nameserver
     form_class = NameserverForm
@@ -37,9 +38,9 @@ class NSListView(NSView, MozdnsListView):
     # Wooo. Huge speed boost because of select_related
 
 
-
 class NSCreateView(NSView, MozdnsCreateView):
     """ """
+
 
 def update_ns(request, nameserver_pk):
     nameserver = get_object_or_404(Nameserver, pk=nameserver_pk)
@@ -57,7 +58,7 @@ def update_ns(request, nameserver_pk):
                         elif glue_type == 'intr':
                             glue = StaticInterface.objects.get(pk=glue_pk)
                     except ObjectDoesNotExists, e:
-                        raise ValidationError("Couldn't find glue: "+str(e))
+                        raise ValidationError("Couldn't find glue: " + str(e))
                     nameserver.glue = glue
                 nameserver.server = server
                 nameserver.domain = domain
@@ -77,9 +78,9 @@ def update_ns(request, nameserver_pk):
     })
 
 
-
 class NSUpdateView(NSView, MozdnsUpdateView):
     """ """
+
 
 def create_ns_delegated(request, domain):
     if request.method == "POST":
@@ -107,4 +108,3 @@ def create_ns_delegated(request, domain):
     form = NSDelegated()
     return render_to_response("nameserver/ns_delegated.html",
             {'form': form, 'request': request})
-

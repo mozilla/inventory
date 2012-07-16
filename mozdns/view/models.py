@@ -2,6 +2,7 @@ from django.db import models
 
 from mozdns.mixins import ObjectUrlMixin
 
+
 class View(models.Model, ObjectUrlMixin):
     """
     >>> View(name=name)
@@ -14,6 +15,7 @@ class View(models.Model, ObjectUrlMixin):
         return (
                 ('Name', self.name),
                )
+
     def __str__(self):
         return self.name
 

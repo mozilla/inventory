@@ -16,6 +16,7 @@ from django.shortcuts import render
 import ipaddr
 import pdb
 
+
 class CoreListView(BaseListView):
     """ """
     template_name = 'core/core_list.html'
@@ -30,6 +31,7 @@ class CoreCreateView(BaseCreateView):
     """ """
     template_name = 'core/core_form.html'
 
+
 class CoreUpdateView(BaseUpdateView):
     """ """
     template_name = 'core/core_form.html'
@@ -39,6 +41,7 @@ class CoreDeleteView(BaseDeleteView):
     """ """
     template_name = 'core/core_confirm_delete.html'
     succcess_url = '/core/'
+
 
 def search_ip(request):
     if request.method == "POST":
@@ -70,42 +73,41 @@ def search_ip(request):
                 eldars, sub_networks = calc_networks(network)
                 if ip_type == '6':
                     sip_upper, sip_lower == ipv6_to_longs(network.network.ip)
-                    eip_upper, eip_lower == ipv6_to_longs(network.network.broadcast)
+                    eip_upper, eip_lower == ipv6_to_longs(
+                            network.network.broadcast)
                 else:
                     sip_upper, sip_lower = 0, int(network.network.ip)
                     eip_upper, eip_lower = 0, int(network.network.broadcast)
 
                 addrs_count = AddressRecord.objects.filter(
-                    ip_upper__gte = sip_upper,
-                    ip_lower__gte = sip_lower,
-                    ip_upper__lte = eip_upper,
-                    ip_lower__lte = eip_lower).count()
+                    ip_upper__gte=sip_upper,
+                    ip_lower__gte=sip_lower,
+                    ip_upper__lte=eip_upper,
+                    ip_lower__lte=eip_lower).count()
 
                 if addrs_count > 100:
-                    addrs = None # This is too much
+                    addrs = None  # This is too much
                 else:
                     addrs = AddressRecord.objects.filter(
-                        ip_upper__gte = sip_upper,
-                        ip_lower__gte = sip_lower,
-                        ip_upper__lte = eip_upper,
-                        ip_lower__lte = eip_lower)
+                        ip_upper__gte=sip_upper,
+                        ip_lower__gte=sip_lower,
+                        ip_upper__lte=eip_upper,
+                        ip_lower__lte=eip_lower)
 
                 ptrs_count = PTR.objects.filter(
-                    ip_upper__gte = sip_upper,
-                    ip_lower__gte = sip_lower,
-                    ip_upper__lte = eip_upper,
-                    ip_lower__lte = eip_lower).count()
+                    ip_upper__gte=sip_upper,
+                    ip_lower__gte=sip_lower,
+                    ip_upper__lte=eip_upper,
+                    ip_lower__lte=eip_lower).count()
 
                 if ptrs_count > 100:
-                    ptrs = None # This is too much
+                    ptrs = None  # This is too much
                 else:
                     ptrs = PTR.objects.filter(
-                        ip_upper__gte = sip_upper,
-                        ip_lower__gte = sip_lower,
-                        ip_upper__lte = eip_upper,
-                        ip_lower__lte = eip_lower)
-
-
+                        ip_upper__gte=sip_upper,
+                        ip_lower__gte=sip_lower,
+                        ip_upper__lte=eip_upper,
+                        ip_lower__lte=eip_lower)
 
             return render(request, 'core/core_results.html', {
                 'search_ip': search_ip,
@@ -128,4 +130,3 @@ def search_ip(request):
         return render(request, 'core/core_form.html', {
             'form': form
             })
-

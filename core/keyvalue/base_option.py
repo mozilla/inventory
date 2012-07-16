@@ -7,6 +7,7 @@ from core.keyvalue.models import KeyValue
 import pdb
 import ipaddr
 
+
 class CommonOption(KeyValue):
     is_option = models.BooleanField(default=False)
     is_statement = models.BooleanField(default=False)
@@ -113,9 +114,9 @@ class CommonOption(KeyValue):
         """
         option domain-name-servers ip-address [, ip-address... ];
 
-            The domain-name-servers option specifies a list of Domain Name System (STD
-            13, RFC 1035) name servers available to the client. Servers should be listed in
-            order of preference.
+            The domain-name-servers option specifies a list of Domain Name
+            System (STD 13, RFC 1035) name servers available to the client.
+            Servers should be listed in order of preference.
         """
         self.is_option = True
         self.is_statement = False
@@ -126,9 +127,10 @@ class CommonOption(KeyValue):
         """
         option domain-name text;
 
-            The 'text' should be a space seperated domain names. I.E.: phx.mozilla.com phx1.mozilla.com
-            This option specifies the domain name that client should use when resolving
-            hostnames via the Domain Name System.
+            The 'text' should be a space seperated domain names. I.E.:
+            phx.mozilla.com phx1.mozilla.com This option specifies the domain
+            name that client should use when resolving hostnames via the Domain
+            Name System.
         """
         self.is_option = True
         self.is_statement = False
@@ -142,11 +144,11 @@ class CommonOption(KeyValue):
         """
         The domain-search option specifies a 'search list' of Domain Names to
         be used by the client to locate not-fully-qualified domain names. The
-        difference between this option and historic use of the domain-name option for
-        the same ends is that this option is encoded in RFC1035 compressed labels on
-        the wire. For example:
+        difference between this option and historic use of the domain-name
+        option for the same ends is that this option is encoded in RFC1035
+        compressed labels on the wire. For example:
 
-            option domain-search "example.com", "sales.example.com", "eng.example.com";
+            option domain-search "example.com", "sales.example.com";
         """
         self.is_option = True
         self.is_statement = False
@@ -159,7 +161,8 @@ class CommonOption(KeyValue):
             if not name:
                 raise ValidationError("Each name needs to be a non empty "
                     "domain name surrounded by \"\"")
-            if name[0] != '"' and name[len(name)-1] != '"':
+
+            if name[0] != '"' and name[len(name) - 1] != '"':
                 raise ValidationError("Each name needs to be a non empty "
                     "domain name surrounded by \"\"")
             validate_name(name.strip('"'))

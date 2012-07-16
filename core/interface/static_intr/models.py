@@ -17,6 +17,7 @@ from settings import CORE_BASE_URL
 import re
 import pdb
 
+
 class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     """The StaticInterface Class.
 
@@ -34,9 +35,9 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
 
     In terms of DNS, a static interface represents a PTR and A record and must
     adhear to the requirements of those classes. The interface inherits from
-    BaseAddressRecord and will call it's clean method with 'update_reverse_domain'
-    set to True. This will ensure that it's A record is valid *and* that it's
-    PTR record is valid.
+    BaseAddressRecord and will call it's clean method with
+    'update_reverse_domain' set to True. This will ensure that it's A record is
+    valid *and* that it's PTR record is valid.
     """
     id = models.AutoField(primary_key=True)
     reverse_domain = models.ForeignKey(Domain, null=True, blank=True,
@@ -52,12 +53,14 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
                 ('DNS Type', 'A/PTR'),
                 ('IP', self.ip_str),
                 )
+
     class Meta:
         db_table = 'static_interface'
         unique_together = ('ip_upper', 'ip_lower', 'label', 'domain')
 
     def get_edit_url(self):
         return "/core/interface/{0}/update/".format(self.pk)
+
     def get_delete_url(self):
         return "/core/interface/{0}/delete/".format(self.pk)
 
@@ -124,16 +127,17 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
             validate_glue = True
         if validate_glue:
             if self.intrnameserver_set.exists():
-                raise ValidationError("Cannot delete the record {0}. It is a glue "
-                    "record.".format(self.record_type()))
+                raise ValidationError("Cannot delete the record {0}. It is a "
+                    "glue record.".format(self.record_type()))
             if CNAME.objects.filter(data=self.fqdn):
-                raise ValidationError("A CNAME points to this {0} record. Change "
-                    "the CNAME before deleting this record.".
+                raise ValidationError("A CNAME points to this {0} record. "
+                    "Change the CNAME before deleting this record.".
                     format(self.record_type()))
         super(StaticInterface, self).delete(validate_glue=False)
 
     def __repr__(self):
         return "<StaticInterface: {0}>".format(str(self))
+
     def __str__(self):
         #return "IP:{0} Full Name:{1} Mac:{2}".format(self.ip_str,
         #        self.fqdn, self.mac)
@@ -141,24 +145,19 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
                 self.fqdn)
 
 
-is_eth = re.compile("^eth\d+$")
-is_mgmt = re.compile("^mgmt\d+$")
 class StaticIntrKeyValue(KeyValue):
     intr = models.ForeignKey(StaticInterface, null=False)
+
     class Meta:
         db_table = 'static_inter_key_value'
         unique_together = ('key', 'value')
 
-    def name(self):
-        if is_eth.match(self.value) or is_mgmt.match(self.value):
-            return
-        else:
-            raise ValidationError("Name must be eth[0..] or mgmt[0..]")
-
-    def primary(self):
+    def _aa_primary(self):
+        """"""
         if not self.value.isdigit():
             raise ValidationError("The primary number must be a number.")
 
-    def alias(self):
+    def _aa_alias(self):
+        """"""
         if not self.value.isdigit():
             raise ValidationError("The alias number must be a number.")

@@ -11,6 +11,7 @@ from core.interface.static_intr.models import StaticInterface
 
 import pdb
 
+
 class Nameserver(models.Model, ObjectUrlMixin):
     """Name server for forward domains::
 
@@ -37,7 +38,6 @@ class Nameserver(models.Model, ObjectUrlMixin):
     intr_glue = models.ForeignKey(StaticInterface, null=True, blank=True,
             related_name='intrnameserver_set')
     views = models.ManyToManyField(View, blank=True)
-
 
     class Meta:
         db_table = 'nameserver'
@@ -102,10 +102,10 @@ class Nameserver(models.Model, ObjectUrlMixin):
                 pass
             else:
                 # Ok, our glue record wasn't valid, let's find a new one.
-                addr_glue = AddressRecord.objects.filter(label = glue_label,
-                        domain = self.domain)
-                intr_glue = StaticInterface.objects.filter(label = glue_label,
-                        domain = self.domain)
+                addr_glue = AddressRecord.objects.filter(label=glue_label,
+                        domain=self.domain)
+                intr_glue = StaticInterface.objects.filter(label=glue_label,
+                        domain=self.domain)
                 if not (addr_glue or intr_glue):
                     raise ValidationError(
                         "This NS needs a glue record. Create a glue "

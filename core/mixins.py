@@ -1,5 +1,6 @@
 from settings import CORE_BASE_URL
 
+
 class ObjectUrlMixin(object):
     """
     This is a mixin that adds important url methods to a model. This

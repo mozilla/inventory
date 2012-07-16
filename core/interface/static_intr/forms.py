@@ -15,6 +15,7 @@ from systems.models import System
 import ipaddr
 import pdb
 
+
 def validate_ip(ip):
     try:
         ipaddr.IPv4Address(ip)
@@ -24,8 +25,10 @@ def validate_ip(ip):
         except ipaddr.AddressValueError, e:
             raise ValidationError("IP address not in valid form.")
 
+
 class CombineForm(forms.Form):
     system = forms.ModelChoiceField(queryset=System.objects.all())
+
 
 class StaticInterfaceForm(forms.ModelForm):
     #mac = forms.CharField(validators=[validate_mac])
@@ -36,6 +39,7 @@ class StaticInterfaceForm(forms.ModelForm):
         model = StaticInterface
         exclude = ('ip_upper', 'ip_lower', 'reverse_domain',
                 'system', 'fqdn')
+
 
 class FullStaticInterfaceForm(forms.ModelForm):
     #mac = forms.CharField(validators=[validate_mac])
@@ -51,15 +55,13 @@ class FullStaticInterfaceForm(forms.ModelForm):
 class StaticInterfaceQuickForm(forms.Form):
     #mac = forms.CharField(validators=[validate_mac])
     label = forms.CharField(validators=[validate_label])
-    #ranges = Range.objects.none()  # Get empty Q set
-    #vlans = list(Vlan.objects.all())
-    ranges = Range.objects.all().select_related(depth=4).filter(network__vlan__id__isnull=False)
+    ranges = Range.objects.all().select_related(depth=4).filter(
+            network__vlan__id__isnull=False)
     ranges = sorted(ranges, cmp=lambda a, b: 1 if
             str(a.network.site.get_full_name()) >
             str(b.network.site.get_full_name()) else -1)
     range_choices = []
     for r in ranges:
-        print r
         range_choices.append((str(r.pk), r.display()))
 
     range = forms.ChoiceField(choices=range_choices)

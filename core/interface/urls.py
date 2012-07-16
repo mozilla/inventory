@@ -22,4 +22,3 @@ urlpatterns = patterns('',
     url(r'^(?P<system_pk>[\w-]+)/(?P<intr_pk>[\w-]+)/remove_attr/(?P<attr_pk>[\w-]+)/$',
         csrf_exempt(delete_attr)),
 )
-

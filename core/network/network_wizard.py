@@ -20,10 +20,10 @@ from core.views import CoreCreateView
 from mozdns.ip.models import ipv6_to_longs
 from django.forms.formsets import formset_factory
 
-
 import re
 import pdb
 import ipaddr
+
 
 def network_wizard(request):
     if request.method == 'POST':
@@ -66,9 +66,8 @@ def network_wizard(request):
                     'action': 'network'
                 })
 
-
-            request.session['net_wiz_vars'] = {'ip_type':ip_type,
-                    'network_str':str(network)}
+            request.session['net_wiz_vars'] = {'ip_type': ip_type,
+                    'network_str': str(network)}
             parent = calc_parent_str(network_str, ip_type=ip_type)
 
             # Now build the form with the correct site.
@@ -82,7 +81,6 @@ def network_wizard(request):
                 'form': form,
                 'action': 'site'
             })
-
         elif action == "site":
             # We are looking for the user to choose a site.
             form = NetworkForm_site(request.POST)
@@ -98,7 +96,8 @@ def network_wizard(request):
                         site = Site.objects.get(pk=site)
                         nvars['site_pk'] = site.pk
                     except ObjectDoesNotExist, e:
-                        raise ValidationError("That site does not exist. Try again.")
+                        raise ValidationError("That site does not exist. Try"
+                                " again.")
             except ValidationError, e:
                 form = NetworkForm_site(request.POST)
                 if form._errors is None:
@@ -146,19 +145,20 @@ def network_wizard(request):
                         raise ValidationError("The Vlan {0} {1} already "
                             "exists.".format(vlan_name, vlan_number))
                     else:
-                         nvars['vlan_action'] = "new"
-                         nvars['vlan_name'] = vlan_name
-                         nvars['vlan_number'] = vlan_number
+                        nvars['vlan_action'] = "new"
+                        nvars['vlan_name'] = vlan_name
+                        nvars['vlan_number'] = vlan_number
                 elif create_choice == 'existing':
                     nvars['vlan_action'] = "existing"
-                    vlan = form.data.get('vlan','')
+                    vlan = form.data.get('vlan', '')
                     if not vlan:
-                        raise ValidationError("You selected to use an existing vlan. "
-                            "Pleasechoose a vlan.")
+                        raise ValidationError("You selected to use an existing"
+                                "vlan. Pleasechoose a vlan.")
                     try:
                         vlan = Vlan.objects.get(pk=vlan)
                     except ObjectDoesNotExist, e:
-                        raise ValidationError("That Vlan does not exist. Try again.")
+                        raise ValidationError("That Vlan does not exist. Try "
+                                "again.")
                     nvars['vlan_pk'] = vlan.pk
                     nvars['vlan_action'] = "existing"
                 else:
@@ -192,7 +192,8 @@ def network_wizard(request):
             range_formset = RangeFormSet(initial=[
                 {'network':network,
                 'start_str': str(network.network.network),
-                'end_str': str(ipaddr.IPv4Address(int(network.network.broadcast - 1)))
+                'end_str': str(ipaddr.IPv4Address(int(network.network.broadcast
+                                - 1)))
                 }])
             return render(request, 'network/wizard_range.html', {
                 'network': network,
@@ -227,6 +228,7 @@ def network_wizard(request):
         'action': 'network',
     })
 
+
 def create_objects(nvars):
     # There needs to be major exception handling here. Things can go pretty
     # wrong.
@@ -235,7 +237,7 @@ def create_objects(nvars):
     network = Network(network_str=network_str, ip_type=ip_type)
     network.update_network()
 
-    site_pk = nvars.get('site_pk','')
+    site_pk = nvars.get('site_pk', '')
     if not site_pk:
         site = None
     else:

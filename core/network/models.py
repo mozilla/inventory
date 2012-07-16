@@ -12,12 +12,13 @@ from core.keyvalue.base_option import CommonOption
 import ipaddr
 import pdb
 
+
 class Network(models.Model, ObjectUrlMixin):
     id = models.AutoField(primary_key=True)
     vlan = models.ForeignKey(Vlan, null=True,
             blank=True, on_delete=models.SET_NULL)
     site = models.ForeignKey(Site, null=True,
-            blank=True,on_delete=models.SET_NULL)
+            blank=True, on_delete=models.SET_NULL)
 
     # NETWORK/NETMASK FIELDS
     IP_TYPE_CHOICES = (('4', 'ipv4'), ('6', 'ipv6'))
@@ -29,9 +30,9 @@ class Network(models.Model, ObjectUrlMixin):
     network_str = models.CharField(max_length=39, editable=True)
     prefixlen = models.PositiveIntegerField(null=False)
 
-    dhcpd_raw_include = models.TextField(null=True, blank=True, help_text="""The
-            config options in this box will be included *as is* in the
-            dhcpd.conf file for this subnet.""")
+    dhcpd_raw_include = models.TextField(null=True, blank=True, help_text="""
+        The config options in this box will be included *as is* in the
+        dhcpd.conf file for this subnet.""")
 
     network = None
 
@@ -55,20 +56,18 @@ class Network(models.Model, ObjectUrlMixin):
         self.update_network()  # Gd forbid this hasn't already been called.
         if add_routers:
             if self.ip_type == '4':
-                router = str(ipaddr.IPv4Address(int(self.network.network)+1))
+                router = str(ipaddr.IPv4Address(int(self.network.network) + 1))
             else:
-                router = str(ipaddr.IPv6Address(int(self.network.network)+1))
+                router = str(ipaddr.IPv6Address(int(self.network.network) + 1))
             kv = NetworkKeyValue(key="routers", value=router, network=self)
             kv.clean()
             kv.save()
-
 
     def delete(self, *args, **kwargs):
         if self.range_set.all().exists():
             raise ValidationError("Cannot delete this network because it has "
                 "child ranges")
         super(Network, self).delete(*args, **kwargs)
-
 
     def clean(self):
         self.update_network()
@@ -81,7 +80,6 @@ class Network(models.Model, ObjectUrlMixin):
             if range_.end > int(self.network.broadcast):
                 raise ValidationError("Resizing this subnet to the requested "
                         "network prefix would orphan existing ranges.")
-
 
     def update_network(self):
         """This function will look at the value of network_str to update other
@@ -113,19 +111,22 @@ class Network(models.Model, ObjectUrlMixin):
     def __repr__(self):
         return "<Network {0}>".format(str(self))
 
+
 class NetworkKeyValue(CommonOption):
     network = models.ForeignKey(Network, null=False)
     aux_attrs = (
         ('description', 'A description of the site'),
     )
+
     class Meta:
         db_table = 'network_key_value'
         unique_together = ('key', 'value', 'network')
 
     """The NetworkOption Class.
 
-        "DHCP option statements always start with the option keyword, followed by
-        an option name, followed by option data." -- The man page for dhcpd-options
+        "DHCP option statements always start with the option keyword, followed
+        by an option name, followed by option data." -- The man page for
+        dhcpd-options
 
         In this class, options are stored without the 'option' keyword. If it
         is an option, is option should be set.
@@ -143,15 +144,15 @@ class NetworkKeyValue(CommonOption):
         """
         filename filename;
 
-            The filename statement can be used to specify the name of the initial boot
-            file which is to be loaded by a client. The filename should be a filename
-            recognizable to whatever file transfer protocol the client can be expected to
-            use to load the file. 
+            The filename statement can be used to specify the name of the
+            initial boot file which is to be loaded by a client. The filename
+            should be a filename recognizable to whatever file transfer
+            protocol the client can be expected to use to load the file.
         """
         self.is_statement = True
         self.is_option = False
         self.has_validator = True
-        # TODO
+        # Anything else?
 
     def _aa_next_server(self):
         """
@@ -159,11 +160,12 @@ class NetworkKeyValue(CommonOption):
 
             next-server server-name;
 
-                The next-server statement is used to specify the host address of the server
-                from which the initial boot file (specified in the filename statement) is to be
-                loaded. Server-name should be a numeric IP address or a domain name. If no
-                next-server parameter applies to a given client, the DHCP server's IP address
-                is used.
+            The next-server statement is used to specify the host address
+            of the server from which the initial boot file (specified in
+            the filename statement) is to be loaded. Server-name should be
+            a numeric IP address or a domain name. If no next-server
+            parameter applies to a given client, the DHCP server's IP
+            address is used.
         """
         self.has_validator = True
         self.is_statement = True

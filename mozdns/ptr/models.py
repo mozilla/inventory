@@ -10,6 +10,7 @@ from core.interface.static_intr.models import StaticInterface
 
 import pdb
 
+
 class PTR(Ip, ObjectUrlMixin):
     """A PTR is used to map an IP to a domain name.
 

@@ -21,25 +21,29 @@ from core.views import CoreCreateView
 from mozdns.ip.models import ipv6_to_longs
 from django.forms.formsets import formset_factory
 
-
 import re
 import pdb
 import ipaddr
 import simplejson as json
+
 
 class NetworkView(object):
     model = Network
     queryset = Network.objects.select_related('site').all()
     form_class = NetworkForm
 
+
 is_attr = re.compile("^attr_\d+$")
+
 
 class NetworkDeleteView(NetworkView, CoreDeleteView):
     """ """
 
+
 class NetworkListView(NetworkView, CoreListView):
     """ """
     template_name = 'network/network_list.html'
+
 
 def delete_network_attr(request, attr_pk):
     """
@@ -48,6 +52,7 @@ def delete_network_attr(request, attr_pk):
     attr = get_object_or_404(NetworkKeyValue, pk=attr_pk)
     attr.delete()
     return HttpResponse("Attribute Removed.")
+
 
 def create_network(request):
     if request.method == 'POST':
@@ -132,4 +137,3 @@ def network_detail(request, network_pk):
         'sub_networks': sub_networks,
         'attrs': attrs,
         })
-

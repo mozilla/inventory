@@ -3,7 +3,6 @@ from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
 from django.http import HttpResponse
 
-
 from core.range.forms import RangeForm
 from core.range.models import Range, RangeKeyValue
 from core.interface.static_intr.models import StaticInterface
@@ -18,6 +17,7 @@ from django.forms.util import ErrorList, ErrorDict
 import ipaddr
 import simplejson as json
 import pdb
+
 
 class RangeView(object):
     model = Range
@@ -44,6 +44,7 @@ class RangeDetailView(RangeView, CoreDetailView):
             context = dict(context.items() + self.extra_context.items())
         return context
 
+
 def delete_range_attr(request, attr_pk):
     """
     An view destined to be called by ajax to remove an attr.
@@ -52,22 +53,23 @@ def delete_range_attr(request, attr_pk):
     attr.delete()
     return HttpResponse("Attribute Removed.")
 
+
 def range_detail(request, range_pk):
     mrange = get_object_or_404(Range, pk=range_pk)
     attrs = mrange.rangekeyvalue_set.all()
 
     start = mrange.start
     end = mrange.end
-    records = AddressRecord.objects.filter(ip_upper = 0, ip_lower__gte = start,
-            ip_lower__lte = end)
-    ptrs = PTR.objects.filter(ip_upper = 0, ip_lower__gte = start,
-            ip_lower__lte = end)
-    intrs = StaticInterface.objects.filter(ip_upper = 0, ip_lower__gte = start,
-            ip_lower__lte = end)
+    records = AddressRecord.objects.filter(ip_upper=0, ip_lower__gte=start,
+            ip_lower__lte=end)
+    ptrs = PTR.objects.filter(ip_upper=0, ip_lower__gte=start,
+            ip_lower__lte=end)
+    intrs = StaticInterface.objects.filter(ip_upper=0, ip_lower__gte=start,
+            ip_lower__lte=end)
 
     range_data = []
     # This won't work for IPv6 yet.
-    for i in range(start + 10, end-1):
+    for i in range(start + 10, end - 1):
         taken = False
         adr_taken = None
         ip_str = str(ipaddr.IPv4Address(i))
@@ -112,10 +114,9 @@ def range_detail(request, range_pk):
     })
 
 
-
-
 class RangeCreateView(RangeView, CoreCreateView):
     """ """
+
 
 def update_range(request, range_pk):
     mrange = get_object_or_404(Range, pk=range_pk)
@@ -153,7 +154,6 @@ def update_range(request, range_pk):
                 'docs': docs,
                 'aa': json.dumps(aa)
             })
-
     else:
         form = RangeForm(instance=mrange)
         return render(request, 'range/range_edit.html', {

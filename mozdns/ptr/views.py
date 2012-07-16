@@ -46,9 +46,10 @@ class PTRCreateView(PTRView, MozdnsCreateView):
                     domain = None
 
             if domain:
-                initial['initial'] = {'ip_str': ip_str, 'name':"."+domain.name, 'ip_type':ip_type}
+                initial['initial'] = {'ip_str': ip_str,
+                        'name': "." + domain.name, 'ip_type': ip_type}
             else:
-                initial['initial'] = {'ip_str': ip_str, 'ip_type':ip_type}
+                initial['initial'] = {'ip_str': ip_str, 'ip_type': ip_type}
 
         return PTRForm(**initial)
 

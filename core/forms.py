@@ -1,5 +1,6 @@
 from django import forms
 
+
 class IpSearchForm(forms.Form):
     IP_TYPES = (
             ('4', 'IPv4'),

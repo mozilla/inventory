@@ -57,7 +57,6 @@ class SOA(models.Model, ObjectUrlMixin):
     # This indicates if this SOA needs to be rebuilt
     dirty = models.BooleanField(default=False)
 
-
     class Meta:
         db_table = 'soa'
         # We are using the comment field here to stop the same SOA from

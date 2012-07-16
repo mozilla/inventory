@@ -9,6 +9,7 @@ import ipaddr
 
 import pdb
 
+
 class Range(models.Model, ObjectUrlMixin):
     """The Range class.
 
@@ -94,10 +95,10 @@ class Range(models.Model, ObjectUrlMixin):
                 "ranges.")
 
     def __str__(self):
-        return "Site: {0} Vlan: {1} Network: {2} Range: Start - {3} End - {4}".format(
-                #'self.network.site', 'self.network.vlan', self.network,
-                self.network.site, self.network.vlan, self.network,
-                self.start_str, self.end_str)
+        x = "Site: {0} Vlan: {1} Network: {2} Range: Start - {3} End -  {4}"
+        x.format(self.network.site, self.network.vlan, self.network,
+            self.start_str, self.end_str)
+        return x
 
     def display(self):
         return "Range: {3} to {4}  {0} -- {2} -- {1}  ".format(

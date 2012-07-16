@@ -20,6 +20,7 @@ def ip2dns_form(ip, ip_type='4', uppercase=False):
     name = '.'.join(list(reversed(octets))) + name
     return name
 
+
 """
 >>> nibblize('2620:0105:F000::1')
 '2.6.2.0.0.1.0.5.F.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1'
@@ -28,11 +29,13 @@ def ip2dns_form(ip, ip_type='4', uppercase=False):
 >>> nibblize('2620:0105:F000:9:0:1::1')
 '2.6.2.0.0.1.0.5.f.0.0.0.0.0.0.9.0.0.0.0.0.0.0.1.0.0.0.0.0.0.0.1'
 """
+
+
 def nibbilize(addr):
     """Given an IPv6 address is 'colon' format, return the address in
     'nibble' form::
 
-        nibblize('2620:0105:F000::1') 
+        nibblize('2620:0105:F000::1')
         '2.6.2.0.0.1.0.5.F.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1'
 
     :param addr: The ip address to convert
@@ -43,5 +46,4 @@ def nibbilize(addr):
     except ipaddr.AddressValueError:
         raise ValidationError("Error: Invalid IPv6 address {0}.".format(addr))
 
-    return '.'.join(list(ip_str.replace(':','')))
-
+    return '.'.join(list(ip_str.replace(':', '')))
