@@ -218,6 +218,7 @@ RecordExistsError
 An AddressRecord is an example of a model that raises this Exception.
 """
 
+
 def validate_first_label(label, valid_chars=None):
     """This function is just :fun:`validate_label` except it is called on just
     the first label. The first label *can* start with a '*' while a normal
@@ -229,6 +230,7 @@ def validate_first_label(label, valid_chars=None):
             validate_label(label[1:])
     else:
         validate_label(label)
+
 
 def validate_label(label, valid_chars=None):
     """Validate a label.
@@ -369,6 +371,7 @@ def validate_reverse_name(reverse_name, ip_type):
                                       "'{1}' is invalid."
                                         .format(reverse_name, nibble))
 
+
 def validate_ttl(ttl):
     """
         "It is hereby specified that a TTL value is an unsigned number,
@@ -379,11 +382,13 @@ def validate_ttl(ttl):
         :type   ttl: int
         :raises: ValidationError
     """
-    if ttl < 0 or ttl > 2147483647: # See RFC 2181
+    if ttl < 0 or ttl > 2147483647:  # See RFC 2181
         raise ValidationError("TTLs must be within the 0 to "
                               "2147483647 range.")
 
 # Works for labels too.
+
+
 def _name_type_check(name):
     if type(name) not in (str, unicode):
         raise ValidationError("Error: A name must be of type str.")
@@ -392,6 +397,7 @@ def _name_type_check(name):
 #               Functions that Validate SRV fields                #
 ###################################################################
 
+
 def validate_srv_port(port):
     """Port must be within the 0 to 65535 range."""
     if port > 65535 or port < 0:
@@ -399,11 +405,14 @@ def validate_srv_port(port):
                               "See RFC 1035")
 
 #TODO, is this a duplicate of MX ttl?
+
+
 def validate_srv_priority(priority):
     """Priority must be within the 0 to 65535 range."""
     if priority > 65535 or priority < 0:
         raise ValidationError("SRV priority must be within 0 and 65535. "
                               "See RFC 1035")
+
 
 def validate_srv_weight(weight):
     """Weight must be within the 0 to 65535 range."""
@@ -411,13 +420,15 @@ def validate_srv_weight(weight):
         raise ValidationError("SRV weight must be within 0 and 65535. "
                               "See RFC 1035")
 
+
 def validate_srv_label(srv_label):
     """This function is the same as :func:`validate_label` expect
     :class:`SRV` records can have a ``_`` preceding its label.
     """
     if srv_label and srv_label[0] != '_':
         raise ValidationError("Error: SRV label must start with '_'")
-    validate_label(srv_label[1:]) # Get rid of '_'
+    validate_label(srv_label[1:])  # Get rid of '_'
+
 
 def validate_srv_name(srv_name):
     """This function is the same as :func:`validate_name` expect
@@ -427,12 +438,13 @@ def validate_srv_name(srv_name):
         raise ValidationError("Error: SRV label must start with '_'")
     if not srv_name:
         raise ValidationError("Error: SRV label must not be None")
-    mod_srv_name = srv_name[1:] # Get rid of '_'
+    mod_srv_name = srv_name[1:]  # Get rid of '_'
     validate_name(mod_srv_name)
 
 ###################################################################
 #               Functions that Validate MX fields                 #
 ###################################################################
+
 
 def validate_mx_priority(priority):
     """
@@ -447,6 +459,7 @@ def validate_mx_priority(priority):
 ###################################################################
 #               Functions Validate ip_type fields                 #
 ###################################################################
+
 
 def validate_ip_type(ip_type):
     """

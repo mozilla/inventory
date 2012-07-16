@@ -13,7 +13,7 @@ from core.vlan.models import Vlan
 from core.site.models import Site
 from core.site.forms import SiteForm
 from core.keyvalue.utils import get_attrs, update_attrs, get_aa, get_docstrings
-from core.keyvalue.utils import get_docstrings
+from core.keyvalue.utils import get_docstrings, dict_to_kv
 from core.range.forms import RangeForm
 
 from core.views import CoreDeleteView, CoreListView
@@ -82,9 +82,6 @@ def update_network(request, network_pk):
         form = NetworkForm(request.POST, instance=network)
         try:
             if not form.is_valid():
-                if form._errors is None:
-                    form._errors = ErrorDict()
-                form._errors['__all__'] = ErrorList(e.messages)
                 return render(request, 'network/network_edit.html', {
                     'network': network,
                     'form': form,
@@ -102,6 +99,7 @@ def update_network(request, network_pk):
             if form._errors is None:
                 form._errors = ErrorDict()
             form._errors['__all__'] = ErrorList(e.messages)
+            attrs = dict_to_kv(kv, NetworkKeyValue)
             return render(request, 'network/network_edit.html', {
                 'network': network,
                 'form': form,
@@ -119,6 +117,7 @@ def update_network(request, network_pk):
             'docs': docs,
             'aa': json.dumps(aa)
         })
+
 
 def network_detail(request, network_pk):
     network = get_object_or_404(Network, pk=network_pk)

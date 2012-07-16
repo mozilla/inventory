@@ -10,6 +10,7 @@ from core.keyvalue.models import KeyValue
 from core.keyvalue.base_option import CommonOption
 
 import ipaddr
+import pdb
 
 class Network(models.Model, ObjectUrlMixin):
     id = models.AutoField(primary_key=True)
@@ -54,10 +55,10 @@ class Network(models.Model, ObjectUrlMixin):
         self.update_network()  # Gd forbid this hasn't already been called.
         if add_routers:
             if self.ip_type == '4':
-                router = str(ipaddr.IPv4Address(int(network.network.network)+1))
+                router = str(ipaddr.IPv4Address(int(self.network.network)+1))
             else:
-                router = str(ipaddr.IPv6Address(int(network.network.network)+1))
-            kv = NetworkKeyValue(key="routers", value=router)
+                router = str(ipaddr.IPv6Address(int(self.network.network)+1))
+            kv = NetworkKeyValue(key="routers", value=router, network=self)
             kv.clean()
             kv.save()
 
@@ -98,7 +99,8 @@ class Network(models.Model, ObjectUrlMixin):
                 raise ValidationError("Could not determine IP type of network"
                         " %s" % (self.network_str))
         except (ipaddr.AddressValueError, ipaddr.NetmaskValueError), e:
-            raise ValidationError(str(e))
+            raise ValidationError("Invalid network for ip type of "
+                    "'{0}'.".format(self, self.ip_type))
         # Update fields
         self.ip_upper = int(self.network) >> 64
         self.ip_lower = int(self.network) & (1 << 64) - 1  # Mask off
@@ -174,3 +176,8 @@ class NetworkKeyValue(CommonOption):
         self.is_option = False
         self._ip_list(self.network.ip_type)
 
+    def _aa_routers(self):
+        self._routers(self.network.ip_type)
+
+    def _aa_ntp_servers(self):
+        self._ntp_servers(self.network.ip_type)

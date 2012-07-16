@@ -83,7 +83,7 @@ class CommonOption(KeyValue):
                 raise ValidationError("Invalid option ({0}) parameter "
                     "({1})'".format(self.key, self.value))
 
-    def _aa_routers(self):
+    def _routers(self, ip_type):
         """
         option routers ip-address [, ip-address... ];
 
@@ -94,9 +94,9 @@ class CommonOption(KeyValue):
         self.is_option = True
         self.is_statement = False
         self.has_validator = True
-        self._ip_list(self.network.ip_type)
+        self._ip_list(ip_type)
 
-    def _aa_ntp_servers(self):
+    def _ntp_servers(self, ip_type):
         """
         option ntp-servers ip-address [, ip-address... ];
 
@@ -107,7 +107,7 @@ class CommonOption(KeyValue):
         self.is_option = True
         self.is_statement = False
         self.has_validator = True
-        self._ip_list(self.network.ip_type)
+        self._ip_list(ip_type)
 
     def _aa_domain_name_servers(self):
         """

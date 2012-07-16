@@ -6,6 +6,7 @@ from mozdns.models import MozdnsRecord
 from mozdns.validation import validate_name, find_root_domain
 from mozdns.search_utils import fqdn_exists
 
+
 class CNAME(MozdnsRecord):
     """CNAMES can't point to an any other records. Said another way,
     CNAMES can't be at the samle level as any other record. This means
@@ -43,8 +44,8 @@ class CNAME(MozdnsRecord):
             if db_self.label == self.label and db_self.domain == self.domain:
                 kwargs['no_build'] = True
             else:
-                kwargs['no_build'] = False # Either nothing has changed or
-                                           # just data_domain. We want rebuild.
+                kwargs['no_build'] = False  # Either nothing has changed or
+                                        # just data_domain. We want rebuild.
         super(CNAME, self).save(*args, **kwargs)
 
     def clean(self, *args, **kwargs):

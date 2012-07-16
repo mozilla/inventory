@@ -63,6 +63,14 @@ def update_attrs(kv, attrs, KVClass, obj, obj_name):
         kv.clean()
         kv.save()
 
+def dict_to_kv(kv, KVClass):
+    # All attrs wraps the new and old kv pairs in a KVClass to ensure
+    # that the template knows how to render them.
+    all_attrs = []
+    for k, v in kv.iteritems():
+        all_attrs.append(KVClass(key=k, value=v))
+    return all_attrs
+
 def get_docstrings(obj):
     members = dir(obj)
     docs = []

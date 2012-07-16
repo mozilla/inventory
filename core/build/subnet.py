@@ -34,7 +34,7 @@ def build_subnet(network):
 
     if network_raw_include:
         for line in network_raw_include.split('\n'):
-            build_str +="\t{0}".format(line)
+            build_str +="\t{0}\n".format(line)
     build_str += "\n"
 
     for mrange in ranges:

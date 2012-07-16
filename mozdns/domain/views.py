@@ -28,30 +28,33 @@ from mozdns.view.models import View
 
 import pdb
 
+
 def domain_sort(domains):
     """
     This is soooooo slow.
     """
-    roots = domains.filter(master_domain = None)
+
+    roots = domains.filter(master_domain=None)
     ordered = []
     for root in roots:
         ordered += build_tree(root, domains)
     return ordered
 
+
 def build_tree(root, domains):
     if len(domains) == 0:
         return root
     ordered = [root]
-    children = domains.filter(master_domain = root)
+    children = domains.filter(master_domain=root)
     for child in children:
         ordered += build_tree(child, domains)
     return ordered
+
 
 class DomainView(object):
     model = Domain
     queryset = Domain.objects.all().order_by('name')
     form_class = DomainForm
-
 
 
 class DomainDeleteView(DomainView, MozdnsDeleteView):
@@ -61,6 +64,7 @@ class DomainDeleteView(DomainView, MozdnsDeleteView):
 class DomainListView(DomainView, MozdnsListView):
     queryset = Domain.objects.filter(is_reverse=False)
     template_name = "domain/domain_list.html"
+
 
 class ReverseDomainListView(DomainView, MozdnsListView):
     queryset = Domain.objects.filter(is_reverse=True).order_by('name')
@@ -100,7 +104,7 @@ class DomainDetailView(DomainView, DetailView):
         # TODO, include Static Registrations
         all_static_intr = StaticInterface.objects.all()
         intr_objects = domain.staticinterface_set.all().order_by(
-                'name') .order_by( 'ip_str')
+                'name').order_by('ip_str')
         intr_headers, intr_matrix, intr_urls = tablefy(intr_objects)
 
         address_objects = domain.addressrecord_set.all().order_by('label')
@@ -173,8 +177,8 @@ class DomainCreateView(DomainView, CreateView):
         try:
             domain.save()
         except ValidationError, e:
-            return render(request, "mozdns/mozdns_form.html", {'form': domain_form,
-                'form_title': 'Create Domain'})
+            return render(request, "mozdns/mozdns_form.html", {'form':
+                domain_form, 'form_title': 'Create Domain'})
         # Success. Redirect.
         messages.success(request, "{0} was successfully created.".
                          format(domain.name))
@@ -220,7 +224,8 @@ class DomainUpdateView(DomainView, UpdateView):
         except ValidationError, e:
             domain_form = DomainUpdateForm(instance=domain)
             messages.error(request, str(e))
-            return render(request, "domain/domain_update.html", {"form": domain_form})
+            return render(request, "domain/domain_update.html", {"form":
+                domain_form})
 
         messages.success(request, '{0} was successfully updated.'.
                          format(domain.name))

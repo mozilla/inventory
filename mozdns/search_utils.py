@@ -11,7 +11,8 @@ def fqdn_search(fqdn, *args, **kwargs):
 
     :param fqdn: The name to search for.
     :type   fqdn: str
-    :return: (type, Querysets) tuples containing all the objects that matched during
+    :return: (type, Querysets) tuples containing all the objects that matched
+        during
     the search are returned.
     """
     return _build_queries(fqdn, *args, **kwargs)

@@ -122,3 +122,9 @@ class RangeKeyValue(CommonOption):
         if self.value != "peer \"dhcp-failover\"":
             raise ValidationError("Invalid failover option. Try `peer "
                 "\"dhcp-failover\"`")
+
+    def _aa_routers(self):
+        self._routers(self.range.network.ip_type)
+
+    def _aa_ntp_servers(self):
+        self._ntp_servers(self.range.network.ip_type)

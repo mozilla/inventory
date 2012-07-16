@@ -16,5 +16,4 @@ urlpatterns = patterns('',
     url(r'txt/', include('mozdns.txt.urls')),
     url(r'view/', include('mozdns.view.urls')),
     url(r'bind/', include('mozdns.mozbind.urls')),
-
 )

@@ -9,6 +9,7 @@ from core.network.utils import calc_parent_str
 
 import pdb
 
+
 class AddressRecordView(object):
     model = AddressRecord
     form_class = AddressRecordForm
@@ -34,8 +35,6 @@ class AddressRecordDetailView(AddressRecordView, MozdnsDetailView):
     template_name = 'address_record/addressrecord_detail.html'
 
 
-
-
 class AddressRecordCreateView(AddressRecordView, MozdnsCreateView):
     """ """
     def get_form(self, *args, **kwargs):
@@ -45,7 +44,8 @@ class AddressRecordCreateView(AddressRecordView, MozdnsCreateView):
             ip_type = self.request.GET['ip_type']
             network = calc_parent_str(ip_str, ip_type)
             if network and network.vlan and network.site:
-                expected_name = "{0}.{1}.mozilla.com".format(network.vlan.name,
+                expected_name = "{0}.{1}.mozilla.com".format(
+                    network.vlan.name,
                     network.site.get_site_path())
                 try:
                     domain = Domain.objects.get(name=expected_name)
@@ -53,12 +53,12 @@ class AddressRecordCreateView(AddressRecordView, MozdnsCreateView):
                     domain = None
 
             if domain:
-                initial['initial'] = {'ip_str': ip_str, 'domain':domain, 'ip_type':ip_type}
+                initial['initial'] = {'ip_str': ip_str, 'domain': domain,
+                        'ip_type': ip_type}
             else:
-                initial['initial'] = {'ip_str': ip_str, 'ip_type':ip_type}
+                initial['initial'] = {'ip_str': ip_str, 'ip_type': ip_type}
 
         return AddressRecordForm(**initial)
-
 
 
 class AddressRecordUpdateView(AddressRecordView, MozdnsUpdateView):

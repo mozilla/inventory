@@ -14,7 +14,6 @@ from mozdns.domain.utils import name_to_domain
 import pdb
 
 
-
 class Domain(models.Model, ObjectUrlMixin):
     """A Domain is used as a foreign key for most DNS records.
 
@@ -146,7 +145,7 @@ class Domain(models.Model, ObjectUrlMixin):
                                       "exist {0}".format(objects))
 
     def __str__(self):
-       return "{0}".format(self.name)
+        return "{0}".format(self.name)
 
     def __repr__(self):
         return "<Domain '{0}'>".format(self.name)
@@ -217,6 +216,7 @@ class Domain(models.Model, ObjectUrlMixin):
             ptr.reverse_domain = self.master_domain
             ptr.save()
 
+
 def boot_strap_ipv6_reverse_domain(ip, soa=None):
     """
     This function is here to help create IPv6 reverse domains.
@@ -232,13 +232,14 @@ def boot_strap_ipv6_reverse_domain(ip, soa=None):
     """
     validate_reverse_name(ip, '6')
 
-    for i in range(1,len(ip)+1,2):
+    for i in range(1, len(ip) + 1, 2):
         cur_reverse_domain = ip[:i]
-        reverse_domain = Domain(name = ip2dns_form(cur_reverse_domain,
+        reverse_domain = Domain(name=ip2dns_form(cur_reverse_domain,
             ip_type='6'))
         reverse_domain.soa = soa
         reverse_domain.save()
     return reverse_domain
+
 
 def reassign_reverse_ptrs(reverse_domain_1, reverse_domain_2, ip_type):
     """There are some formalities that need to happen when a reverse
@@ -302,8 +303,10 @@ def name_to_master_domain(name):
             master_domain = possible_master_domain[0]
     return master_domain
 
+
 def _name_to_domain(fqdn):
     return name_to_domain(fqdn)
+
 
 def _check_TLD_condition(record):
     domain = Domain.objects.filter(name=record.fqdn)

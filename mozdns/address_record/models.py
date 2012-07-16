@@ -14,6 +14,7 @@ from mozdns.mixins import ObjectUrlMixin
 
 import pdb
 
+
 class BaseAddressRecord(Ip):
     """AddressRecord is the class that generates A and AAAA records
 
@@ -57,13 +58,11 @@ class BaseAddressRecord(Ip):
             validate_glue = True
         if validate_glue:
             self.check_glue_status()
-
         set_fqdn(self)
         check_TLD_condition(self)
         if self.domain.delegated:
             self.validate_delegation_conditions()
         check_for_cname(self)
-
         if 'ignore_interface' in kwargs:
             ignore_interface = kwargs.pop('ignore_interface')
         else:
@@ -73,15 +72,14 @@ class BaseAddressRecord(Ip):
             from core.interface.static_intr.models import StaticInterface
             if StaticInterface.objects.filter(fqdn=self.fqdn,
                     ip_str=self.ip_str).exists():
-                raise ValidationError("A Static Interface has already reserved "
-                        "this A record.")
+                raise ValidationError("A Static Interface has already "
+                    "reserved this A record.")
 
         if 'update_reverse_domain' in kwargs:
             urd = kwargs.pop('update_reverse_domain')
             self.clean_ip(update_reverse_domain=urd)
         else:
-            self.clean_ip(update_reverse_domain=False)  # Function from Ip class.
-
+            self.clean_ip(update_reverse_domain=False)  # Funct from Ip class.
 
     def delete(self, *args, **kwargs):
         """Address Records that are glue records or that are pointed to
@@ -94,11 +92,11 @@ class BaseAddressRecord(Ip):
 
         if validate_glue:
             if self.nameserver_set.exists():
-                raise ValidationError("Cannot delete the record {0}. It is a glue "
-                    "record.".format(self.record_type()))
+                raise ValidationError("Cannot delete the record {0}. It is "
+                    "a glue record.".format(self.record_type()))
             if CNAME.objects.filter(data=self.fqdn):
-                raise ValidationError("A CNAME points to this {0} record. Change "
-                    "the CNAME before deleting this record.".
+                raise ValidationError("A CNAME points to this {0} record. "
+                    "Change the CNAME before deleting this record.".
                     format(self.record_type()))
         super(BaseAddressRecord, self).delete(*args, **kwargs)
 
@@ -150,6 +148,7 @@ class BaseAddressRecord(Ip):
     def __repr__(self):
         return "<Address Record '{0}'>".format(str(self))
 
+
 class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
     """AddressRecord is the class that generates A and AAAA records
 
@@ -166,4 +165,5 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
 
     class Meta:
         db_table = 'address_record'
-        unique_together = ('label', 'domain', 'ip_upper','ip_lower', 'ip_type')
+        unique_together = ('label', 'domain', 'ip_upper', 'ip_lower',
+                'ip_type')

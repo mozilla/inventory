@@ -1,6 +1,7 @@
 from mozdns.validation import validate_domain_name, _name_type_check
 import mozdns
 
+
 def name_to_domain(fqdn):
     """
     This function doesn't through an exception if nothing is found.
@@ -14,4 +15,3 @@ def name_to_domain(fqdn):
         if longest_match:
             return longest_match[0]
     return None
-
