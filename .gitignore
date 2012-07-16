@@ -20,3 +20,4 @@ src/
 private.json
 truth.json
 private_tests.py
+tastytools/*.pyc
