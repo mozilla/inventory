@@ -163,7 +163,7 @@
         {% else %}
         <td>{{ intr.label }}.<a href='{{ intr.domain.get_absolute_url() }}'>{{ intr.domain }}</a></td>
         {% endif %}
-        <td>{{ intr.ip_str }}</td>
+        <td><a href='{{ intr.reverse_domain.get_absolute_url() }}'>{{ intr.ip_str }}</a></td>
         <td>{{ intr.dhcp_enabled }}</td>
         <td>{{ intr.dns_enabled }}</td>
         <td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a><pre></td>
