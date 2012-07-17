@@ -13,7 +13,8 @@ from core.interface.static_intr.forms import StaticInterfaceForm
 from core.interface.static_intr.forms import FullStaticInterfaceForm
 from core.interface.static_intr.forms import StaticInterfaceQuickForm
 from core.interface.static_intr.forms import CombineForm
-from core.keyvalue.utils import get_attrs, update_attrs
+from core.keyvalue.utils import get_attrs, update_attrs, get_aa, get_docstrings
+from core.keyvalue.utils import get_docstrings, dict_to_kv
 from core.views import CoreDeleteView, CoreCreateView
 from core.range.models import Range
 from core.network.utils import calc_parent_str
@@ -24,6 +25,7 @@ from mozdns.ptr.models import PTR
 
 import pdb
 import ipaddr
+import simplejson as json
 
 
 def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
@@ -154,11 +156,13 @@ def edit_static_interface(request, intr_pk):
     intr = get_object_or_404(StaticInterface, pk=intr_pk)
     system = intr.system
     attrs = intr.staticintrkeyvalue_set.all()
+    aa = get_aa(StaticIntrKeyValue())
     if request.method == 'POST':
         interface_form = StaticInterfaceForm(request.POST, instance=intr)
         if interface_form.is_valid():
             try:
                 # Handle key value stuff.
+                kv = None
                 kv = get_attrs(request.POST)
                 update_attrs(kv, attrs, StaticIntrKeyValue, intr, 'intr')
                 intr = interface_form.save()
@@ -168,10 +172,13 @@ def edit_static_interface(request, intr_pk):
                 intr.save()
             except ValidationError, e:
                 interface_form._errors['__all__'] = ErrorList(e.messages)
+                if kv:
+                    attrs = dict_to_kv(kv, NetworkKeyValue)
                 return render(request, 'static_intr/static_intr_edit.html', {
                     'form': interface_form,
                     'intr': intr,
-                    'intr_attrs': attrs,
+                    'attrs': attrs,
+                    'aa': json.dumps(aa),
                     'form_title': 'Edit Interface for System {0}'.format(
                         system),
                     'domain': intr.domain
@@ -180,14 +187,15 @@ def edit_static_interface(request, intr_pk):
             raise ValidationError(interface_form.errors)
 
         messages.success(request, "Success! Interface Updated.")
-        return redirect(system)
+        return redirect(intr.get_edit_url())
 
     else:
         interface_form = StaticInterfaceForm(instance=intr)
         return render(request, 'static_intr/static_intr_edit.html', {
             'form': interface_form,
             'intr': intr,
-            'intr_attrs': attrs,
+            'attrs': attrs,
+            'aa': json.dumps(aa),
             'form_title': 'Edit Interface for System {0}'.format(system),
             'domain': intr.domain
         })

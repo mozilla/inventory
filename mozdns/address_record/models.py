@@ -52,10 +52,7 @@ class BaseAddressRecord(Ip):
         super(BaseAddressRecord, self).save(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
-        if 'validate_glue' in kwargs:
-            validate_glue = kwargs.pop('validate_glue')
-        else:
-            validate_glue = True
+        validate_glue = kwargs.pop('validate_glue', True)
         if validate_glue:
             self.check_glue_status()
         set_fqdn(self)
@@ -63,10 +60,8 @@ class BaseAddressRecord(Ip):
         if self.domain.delegated:
             self.validate_delegation_conditions()
         check_for_cname(self)
-        if 'ignore_interface' in kwargs:
-            ignore_interface = kwargs.pop('ignore_interface')
-        else:
-            ignore_interface = False
+
+        ignore_interface = kwargs.pop('ignore_interface', False)
 
         if not ignore_interface:
             from core.interface.static_intr.models import StaticInterface
@@ -75,22 +70,14 @@ class BaseAddressRecord(Ip):
                 raise ValidationError("A Static Interface has already "
                     "reserved this A record.")
 
-        if 'update_reverse_domain' in kwargs:
-            urd = kwargs.pop('update_reverse_domain')
-            self.clean_ip(update_reverse_domain=urd)
-        else:
-            self.clean_ip(update_reverse_domain=False)  # Funct from Ip class.
+        urd = kwargs.pop('update_reverse_domain', False)
+        self.clean_ip(update_reverse_domain=urd)
 
     def delete(self, *args, **kwargs):
         """Address Records that are glue records or that are pointed to
         by a CNAME should not be removed from the database.
         """
-        if 'validate_glue' in kwargs:
-            validate_glue = kwargs.pop('validate_glue')
-        else:
-            validate_glue = True
-
-        if validate_glue:
+        if kwargs.pop('validate_glue', True):
             if self.nameserver_set.exists():
                 raise ValidationError("Cannot delete the record {0}. It is "
                     "a glue record.".format(self.record_type()))
@@ -130,8 +117,7 @@ class BaseAddressRecord(Ip):
         Nameserver = mozdns.nameserver.models.Nameserver
         if Nameserver.objects.filter(addr_glue=self).exists():
             raise ValidationError("This record is a glue record for a"
-                                  "Nameserver. Change the Nameserver to edit"
-                                  "this record.")
+                    "Nameserver. Change the Nameserver to edit this record.")
 
     def record_type(self):
         # If PTR didn't share this field, we would use 'A' and 'AAAA'

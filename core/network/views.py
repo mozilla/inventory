@@ -96,6 +96,7 @@ def update_network(request, network_pk):
                 })
             else:
                 # Handle key value stuff.
+                kv = None
                 kv = get_attrs(request.POST)
                 update_attrs(kv, attrs, NetworkKeyValue, network, 'network')
                 network = form.save()
@@ -104,7 +105,8 @@ def update_network(request, network_pk):
             if form._errors is None:
                 form._errors = ErrorDict()
             form._errors['__all__'] = ErrorList(e.messages)
-            attrs = dict_to_kv(kv, NetworkKeyValue)
+            if kv:
+                attrs = dict_to_kv(kv, NetworkKeyValue)
             return render(request, 'network/network_edit.html', {
                 'network': network,
                 'form': form,

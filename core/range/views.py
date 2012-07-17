@@ -11,7 +11,7 @@ from mozdns.ptr.models import PTR
 from core.views import CoreDeleteView, CoreDetailView
 from core.views import CoreCreateView, CoreUpdateView, CoreListView
 from core.keyvalue.utils import get_attrs, update_attrs, get_aa, get_docstrings
-from core.keyvalue.utils import get_docstrings
+from core.keyvalue.utils import get_docstrings, dict_to_kv
 from django.forms.util import ErrorList, ErrorDict
 
 import ipaddr
@@ -139,6 +139,7 @@ def update_range(request, range_pk):
                 })
             else:
                 # Handle key value stuff.
+                kv = None
                 kv = get_attrs(request.POST)
                 update_attrs(kv, attrs, RangeKeyValue, mrange, 'range')
                 mrange = form.save()
@@ -146,6 +147,8 @@ def update_range(request, range_pk):
         except ValidationError, e:
             if form._errors is None:
                 form._errors = ErrorDict()
+            if kv:
+                attrs = dict_to_kv(kv, RangeKeyValue)
             form._errors['__all__'] = ErrorList(e.messages)
             return render(request, 'range/range_edit.html', {
                 'range': mrange,
