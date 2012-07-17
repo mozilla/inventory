@@ -35,7 +35,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.admin',
     'django_nose',
     #'piston',
-    'south',
+    #'south',
     'systems',
     'mdns',
     'user_systems',
