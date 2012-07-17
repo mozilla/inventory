@@ -154,3 +154,9 @@ DEBUG_TOOLBAR_CONFIG = {
     'TAG': 'div',
     'ENABLE_STACKTRACES' : True,
 }
+
+#############################################################
+#                       MOZ DNS                             #
+#############################################################
+MOZDNS_BASE_URL = "/mozdns"
+CORE_BASE_URL = "/core"
