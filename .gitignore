@@ -19,3 +19,4 @@ src/
 .vagrant
 build/
 .*_auto__.*
+*/*/migrations/*
