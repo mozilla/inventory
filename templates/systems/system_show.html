@@ -155,9 +155,10 @@
 <dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.notes }}</pre></dd>
 <pre>
     <table>
-    <tr><th>FQDN</th><th>IP Address</th><th>DHCP Enabled</th><th>DNS Enabled</th><th>Action</th></tr>
+    <tr><th>Interface Name</th><th>FQDN</th><th>IP Address</th><th>DHCP Enabled</th><th>DNS Enabled</th><th>Action</th></tr>
     {% for intr in interfaces %}
         <tr>
+        <td>{{ intr.interface_name() }}</td>
         {% if intr.label == "" %}
         <td><a href='{{ intr.domain.get_absolute_url() }}'>{{intr.fqdn}}</a></td>
         {% else %}

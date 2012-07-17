@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 
 import re
 import pdb
@@ -6,13 +7,21 @@ import pdb
 is_attr = re.compile("^attr_\d+$")
 
 
-def get_aa(obj):
+def get_dhcp_aa(obj):
     members = dir(obj)
     aa = []
     for member in members:
         if member.startswith("_aa"):
             member_name = member[4:].replace('_', '-')
             aa.append(member_name)
+    return aa
+
+def get_aa(obj):
+    members = dir(obj)
+    aa = []
+    for member in members:
+        if member.startswith("_aa"):
+            aa.append(member[4:])
     return aa
 
 
@@ -76,7 +85,7 @@ def dict_to_kv(kv, KVClass):
     return all_attrs
 
 
-def get_docstrings(obj):
+def get_dhcp_docstrings(obj):
     members = dir(obj)
     docs = []
     for member in members:
@@ -86,5 +95,83 @@ def get_docstrings(obj):
             else:
                 member_name = member[4:]
             docs.append((member_name, getattr(obj, member).__doc__))
-
     return docs
+
+
+def get_docstrings(obj):
+    members = dir(obj)
+    docs = []
+    for member in members:
+        if member.startswith("_aa"):
+            member_name = member[4:]
+            docs.append((member_name, getattr(obj, member).__doc__))
+    return docs
+
+
+class AuxAttr(object):
+    """
+    """
+
+    def __init__(self, KeyValueClass, obj, obj_name):
+        # Bypass our overrides.
+        super(AuxAttr, self).__setattr__('obj', obj)
+        super(AuxAttr, self).__setattr__('obj_name', obj_name)
+        super(AuxAttr, self).__setattr__('KVClass', KeyValueClass)
+        super(AuxAttr, self).__setattr__('cache', {})
+
+    def _get_aa(self, attr):
+        if attr in self.cache:
+            return self.cache[attr]
+        else:
+            try:
+                kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
+                    self.obj})
+            except ObjectDoesNotExist, e:
+                raise AttributeError("{0} AuxAttr has no attribute "
+                        "{1}".format(self.KVClass, attr))
+            self.cache[attr] = kv.value
+            return kv.value
+        raise AttributeError()
+
+    def __getattr__(self, attr):
+        raise AttributeError()
+
+    def __getattribute__(self, attr):
+        try:
+            return super(AuxAttr, self).__getattribute__(attr)
+        except AttributeError:
+            pass
+        return self._get_aa(attr)
+
+    def __setattr__(self, attr, value):
+        try:
+            if super(AuxAttr, self).__getattribute__(attr):
+                return super(AuxAttr, self).__setattr__(attr, value)
+        except AttributeError:
+            pass
+        try:
+            kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
+                self.obj})
+        except ObjectDoesNotExist, e:
+            kv = self.KVClass(**{'key': attr, self.obj_name: self.obj})
+        kv.value = value
+        kv.clean()
+        kv.save()
+        self.cache[attr] = value
+        return
+
+    def __delattr__(self, attr):
+        try:
+            if super(AuxAttr, self).__getattribute__(attr):
+                return super(AuxAttr, self).__delattr__(attr)
+        except AttributeError:
+            pass
+        if hasattr(self, attr):
+            self.cache.pop(attr)
+            kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
+                self.obj})
+            kv.delete()
+            return
+        else:
+            raise AttributeError("{0} AuxAttr has no attribute "
+                    "{1}".format(self.KVClass, attr))

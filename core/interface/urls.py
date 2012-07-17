@@ -19,6 +19,6 @@ urlpatterns = patterns('',
         csrf_exempt(edit_static_interface)),
     url(r'^(?P<intr_pk>[\w-]+)/delete/$',
         csrf_exempt(delete_static_interface)),
-    url(r'^(?P<system_pk>[\w-]+)/(?P<intr_pk>[\w-]+)/remove_attr/(?P<attr_pk>[\w-]+)/$',
+    url(r'^attr/(?P<attr_pk>[\w-]+)/delete/$',
         csrf_exempt(delete_attr)),
 )

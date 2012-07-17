@@ -140,7 +140,7 @@ def delete_static_interface(reqeust, intr_pk):
     return redirect(system)
 
 
-def delete_attr(request, system_pk, intr_pk, attr_pk):
+def delete_attr(request, attr_pk):
     """
     An view destined to be called by ajax to remove an attr.
     """
@@ -157,6 +157,7 @@ def edit_static_interface(request, intr_pk):
     system = intr.system
     attrs = intr.staticintrkeyvalue_set.all()
     aa = get_aa(StaticIntrKeyValue())
+    docs = get_docstrings(StaticIntrKeyValue())
     if request.method == 'POST':
         interface_form = StaticInterfaceForm(request.POST, instance=intr)
         if interface_form.is_valid():
@@ -173,12 +174,13 @@ def edit_static_interface(request, intr_pk):
             except ValidationError, e:
                 interface_form._errors['__all__'] = ErrorList(e.messages)
                 if kv:
-                    attrs = dict_to_kv(kv, NetworkKeyValue)
+                    attrs = dict_to_kv(kv, StaticIntrKeyValue)
                 return render(request, 'static_intr/static_intr_edit.html', {
                     'form': interface_form,
                     'intr': intr,
                     'attrs': attrs,
                     'aa': json.dumps(aa),
+                    'docs': docs,
                     'form_title': 'Edit Interface for System {0}'.format(
                         system),
                     'domain': intr.domain
@@ -196,6 +198,7 @@ def edit_static_interface(request, intr_pk):
             'intr': intr,
             'attrs': attrs,
             'aa': json.dumps(aa),
+            'docs': docs,
             'form_title': 'Edit Interface for System {0}'.format(system),
             'domain': intr.domain
         })

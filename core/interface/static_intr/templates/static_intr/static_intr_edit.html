@@ -12,6 +12,8 @@
     <script language="Javascript" type="text/javascript" src="/static/javascripts/attribute_adder.js">
     </script>
 
+    <a class="btn btn-danger" href="{{ intr.system.get_absolute_url() }}">Back to system {{ intr.system }}</a>
+    <br>
     {% if intr.get_delete_url %}
         <a class="btn btn-danger" href="{{ intr.get_delete_url() }}">Delete</a>
     {% endif %}
@@ -20,7 +22,7 @@
         </br>
         </br>
         {% from "core/core_macros.html" import draw_attrs %}
-        {{ draw_attrs(attrs, aa, "/core/interface") }}
+        {{ draw_attrs(attrs, aa, "/core/interface/attr") }}
         <br/>
         <br/>
         <input type="submit" value="Submit" />

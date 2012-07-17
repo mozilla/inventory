@@ -5,6 +5,7 @@ from systems.models import System
 
 import mozdns
 from core.keyvalue.models import KeyValue
+from core.keyvalue.utils import AuxAttr
 from core.mixins import ObjectUrlMixin
 from mozdns.address_record.models import BaseAddressRecord
 from mozdns.models import MozdnsRecord
@@ -47,6 +48,11 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     dhcp_enabled = models.BooleanField(default=True)
     dns_enabled = models.BooleanField(default=True)
 
+    attrs = None
+
+    def update_attrs(self):
+        self.attrs = AuxAttr(StaticIntrKeyValue, self, 'intr')
+
     def details(self):
         return (
                 ('Name', self.fqdn),
@@ -67,6 +73,16 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     def get_absolute_url(self):
         return "/systems/show/{0}/".format(self.system.pk)
 
+    def interface_name(self):
+        self.update_attrs()
+        try:
+            itype = self.attrs.interface_type
+            primary = self.attrs.primary
+            alias = self.attrs.alias
+        except AttributeError:
+            return "No Name"
+        return "{0}{1}.{2}".format(itype, primary, alias)
+
     def clean(self, *args, **kwargs):
         #if not isinstance(self.mac, basestring):
         #    raise ValidationError("Mac Address not of valid type.")
@@ -82,12 +98,7 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
                 ).exists():
             raise ValidationError("An A record already uses this Name and IP")
 
-        if 'validate_glue' in kwargs:
-            validate_glue = kwargs.pop('validate_glue')
-        else:
-            validate_glue = True
-
-        if validate_glue:
+        if kwargs.pop('validate_glue', True):
             self.check_glue_status()
 
         super(StaticInterface, self).clean(validate_glue=False,
@@ -121,11 +132,7 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
                     "record.")
 
     def delete(self, *args, **kwargs):
-        if 'validate_glue' in kwargs:
-            validate_glue = kwargs.pop('validate_glue')
-        else:
-            validate_glue = True
-        if validate_glue:
+        if kwargs.pop('validate_glue', True):
             if self.intrnameserver_set.exists():
                 raise ValidationError("Cannot delete the record {0}. It is a "
                     "glue record.".format(self.record_type()))
@@ -145,19 +152,31 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
                 self.fqdn)
 
 
+is_eth = re.compile("^eth$")
+is_mgmt = re.compile("^mgmt$")
+
+
 class StaticIntrKeyValue(KeyValue):
     intr = models.ForeignKey(StaticInterface, null=False)
 
     class Meta:
         db_table = 'static_inter_key_value'
-        unique_together = ('key', 'value')
+        unique_together = ('key', 'value', 'intr')
 
     def _aa_primary(self):
-        """"""
+        """The primary number of this interface (I.E. eth1.0 would have a primary
+        number of '1')"""
         if not self.value.isdigit():
             raise ValidationError("The primary number must be a number.")
 
     def _aa_alias(self):
-        """"""
+        """The alias of this interface (I.E. eth1.0 would have a primary
+        number of '0')."""
         if not self.value.isdigit():
             raise ValidationError("The alias number must be a number.")
+
+    def _aa_interface_type(self):
+        """Either eth (ethernet) of mgmt (mgmt)."""
+        if not (is_eth.match(self.value) or is_mgmt.match(self.value)):
+            raise ValidationError("Interface type must either be 'eth' "
+                "or 'mgmt'")

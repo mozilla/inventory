@@ -12,8 +12,8 @@ from core.network.utils import calc_networks, calc_parent_str
 from core.vlan.models import Vlan
 from core.site.models import Site
 from core.site.forms import SiteForm
-from core.keyvalue.utils import get_attrs, update_attrs, get_aa, get_docstrings
-from core.keyvalue.utils import get_docstrings, dict_to_kv
+from core.keyvalue.utils import get_attrs, update_attrs, get_dhcp_aa
+from core.keyvalue.utils import get_dhcp_docstrings, dict_to_kv
 from core.range.forms import RangeForm
 
 from core.views import CoreDeleteView, CoreListView
@@ -81,8 +81,8 @@ def create_network(request):
 def update_network(request, network_pk):
     network = get_object_or_404(Network, pk=network_pk)
     attrs = network.networkkeyvalue_set.all()
-    docs = get_docstrings(NetworkKeyValue())
-    aa = get_aa(NetworkKeyValue())
+    docs = get_dhcp_docstrings(NetworkKeyValue())
+    aa = get_dhcp_aa(NetworkKeyValue())
     if request.method == 'POST':
         form = NetworkForm(request.POST, instance=network)
         try:
