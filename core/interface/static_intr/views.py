@@ -241,11 +241,9 @@ def create_static_interface(request, system_pk):
         })
 
 
-def find_available_ip_from_ipv4_network(net):
-    net.update_network()
-
-    start = int(net.network.network)
-    end = int(net.network.broadcast)
+def find_available_ip_from_ipv4_range(mrange):
+    start = mrange.start
+    end = mrange.end
     if start >= end - 1:
         return HttpResponse("Too small of network.")
 
@@ -304,14 +302,12 @@ def quick_create(request, system_pk):
                     raise ValidationError("No appropriate networks found. "
                         "Consider adding this interface manually.")
 
-                for network in networks:
-                    ip = find_available_ip_from_ipv4_network(network)
-                    if ip:
-                        break
+                ip = find_available_ip_from_ipv4_range(mrange)
                 if ip == None:
                     raise ValidationError("No appropriate IP found "
-                        "in {0} Vlan {1}. Consider adding this interface "
-                        "manually.".format(site.name, vlan.name))
+                        "in {0} Vlan {1} Range {2} - {3}. Consider adding this interface "
+                        "manually.".format(site.name, vlan.name,
+                            mrange.start_str, mrange.end_str))
 
                 expected_name = "{0}.{1}.mozilla.com".format(vlan.name,
                     site.get_site_path())

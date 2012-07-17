@@ -53,7 +53,7 @@ class StaticInterTests(TestCase):
         r.delete()
         self.assertFalse(AddressRecord.objects.filter(ip_str=ip_str, fqdn=fqdn))
 
-    def test1_create(self):
+    def test1_create_basic(self):
         mac = "11:22:33:44:55:66"
         label = "foo"
         domain = self.f_c
@@ -61,7 +61,7 @@ class StaticInterTests(TestCase):
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
         self.do_add(**kwargs)
 
-    def test2_create(self):
+    def test2_create_basic(self):
         mac = "11:22:33:44:55:66"
         label = "foo1"
         domain = self.f_c
@@ -69,7 +69,7 @@ class StaticInterTests(TestCase):
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
         self.do_add(**kwargs)
 
-    def test3_create(self):
+    def test3_create_basic(self):
         mac = "11:22:33:44:55:66"
         label = "foo1"
         domain = self.f_c
@@ -77,7 +77,7 @@ class StaticInterTests(TestCase):
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
         self.do_add(**kwargs)
 
-    def test4_create(self):
+    def test4_create_basic(self):
         mac = "12:22:33:44:55:66"
         label = "foo1"
         domain = self.f_c
@@ -95,7 +95,7 @@ class StaticInterTests(TestCase):
         self.do_delete(r)
 
 
-    def test1_dup_create(self):
+    def test1_dup_create_basic(self):
         mac = "11:22:33:44:55:66"
         label = "foo3"
         domain = self.f_c
