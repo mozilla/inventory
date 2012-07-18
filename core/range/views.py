@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
@@ -59,18 +60,22 @@ def range_detail(request, range_pk):
     mrange = get_object_or_404(Range, pk=range_pk)
     attrs = mrange.rangekeyvalue_set.all()
 
-    start = mrange.start
-    end = mrange.end
-    records = AddressRecord.objects.filter(ip_upper=0, ip_lower__gte=start,
-            ip_lower__lte=end)
-    ptrs = PTR.objects.filter(ip_upper=0, ip_lower__gte=start,
-            ip_lower__lte=end)
-    intrs = StaticInterface.objects.filter(ip_upper=0, ip_lower__gte=start,
-            ip_lower__lte=end)
+    start_upper, start_lower = mrange.start_upper, mrange.start_lower
+    end_upper, end_lower = mrange.end_upper, mrange.end_lower
+
+    gt_start = Q(ip_upper=start_upper, ip_lower__gte=start_lower)
+    gt_start = gt_start | Q(ip_upper__gte=start_upper)
+
+    lt_end = Q(ip_upper=end_upper, ip_lower__lte=end_lower)
+    lt_end = lt_end | Q(ip_upper__lte=end_upper)
+
+    records = AddressRecord.objects.filter(gt_start, lt_end)
+    ptrs = PTR.objects.filter(gt_start, lt_end)
+    intrs = StaticInterface.objects.filter(gt_start, lt_end)
 
     range_data = []
-    # This won't work for IPv6 yet.
-    for i in range(start + 10, end - 1):
+    for i in range((start_upper << 64) + start_lower, (end_upper << 64) +
+            end_lower - 1):
         taken = False
         adr_taken = None
         ip_str = str(ipaddr.IPv4Address(i))
@@ -174,7 +179,7 @@ def redirect_to_range_from_ip(request, ip_str, ip_type):
             ip_upper, ip_lower = 0, int(ipaddr.IPv4Address(ip_str))
         except ipaddr.AddressValueError, e:
             return HttpResonse("Failure to recognize {0} as an IPv4 "
-                    "Address.".format(ip_str)
+                    "Address.".format(ip_str))
     else:
         try:
             ip_upper, ip_lower = ipv6_to_longs(ip_str)

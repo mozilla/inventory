@@ -209,6 +209,7 @@ def create_static_interface(request, system_pk):
     system = get_object_or_404(System, pk=system_pk)
     if request.method == 'POST':
         interface_form = StaticInterfaceForm(request.POST)
+        interface_form.instance.system = system
 
         a, ptr, r = None, None, None
         if interface_form.is_valid():

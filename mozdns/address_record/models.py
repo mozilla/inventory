@@ -61,17 +61,16 @@ class BaseAddressRecord(Ip):
             self.validate_delegation_conditions()
         check_for_cname(self)
 
-        ignore_interface = kwargs.pop('ignore_interface', False)
-
-        if not ignore_interface:
-            from core.interface.static_intr.models import StaticInterface
-            if StaticInterface.objects.filter(fqdn=self.fqdn,
-                    ip_str=self.ip_str).exists():
-                raise ValidationError("A Static Interface has already "
-                    "reserved this A record.")
 
         urd = kwargs.pop('update_reverse_domain', False)
         self.clean_ip(update_reverse_domain=urd)
+
+        if not kwargs.pop('ignore_interface', False):
+            from core.interface.static_intr.models import StaticInterface
+            if StaticInterface.objects.filter(fqdn=self.fqdn,
+                    ip_upper=self.ip_upper, ip_lower=self.ip_lower).exists():
+                raise ValidationError("A Static Interface has already "
+                    "reserved this A record.")
 
     def delete(self, *args, **kwargs):
         """Address Records that are glue records or that are pointed to

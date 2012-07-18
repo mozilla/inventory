@@ -9,7 +9,7 @@ import pdb
 class RangeForm(forms.ModelForm):
     class Meta:
         model = Range
-        exclude = ('start', 'end')
+        exclude = ('start_upper', 'start_lower', 'end_upper', 'end_lower')
 
     def __init__(self, *args, **kwargs):
         super(RangeForm, self).__init__(*args, **kwargs)

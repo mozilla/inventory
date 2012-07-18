@@ -77,19 +77,15 @@ class PTR(Ip, ObjectUrlMixin):
         #TODO, impliment this function and call it in clean()
 
     def clean(self, *args, **kwargs):
+        urd = kwargs.pop('update_reverse_domain', True)
+        self.clean_ip(update_reverse_domain=urd)
+        self.data_domain = _name_to_domain(self.name)
         # We need to check if there is an interface using our ip and name
         # because that interface will generate a ptr record.
         if (StaticInterface.objects.filter(fqdn=self.name,
-            ip_str=self.ip_str).exists()):
+            ip_upper=self.ip_upper, ip_lower=self.ip_lower).exists()):
             raise ValidationError("An Interface has already used this IP and "
                 "Name.")
-        if 'update_reverse_domain' in kwargs:  # TODO, clean this up
-            pdb.set_trace()
-            urd = kwargs.pop('update_reverse_domain')
-            self.clean_ip(update_reverse_domain=urd)
-        else:
-            self.clean_ip()
-        self.data_domain = _name_to_domain(self.name)
 
     def __str__(self):
         return "{0} {1} {2}".format(str(self.ip_str), 'PTR', self.name)
