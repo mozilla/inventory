@@ -186,6 +186,9 @@ def create_network_vlan(v_num, v_name, n_str, site_octs, router_label=None):
         if parent:
             n.site = parent.site
         n.save()
+        if str(so) == str(20):
+            n.site = Site.objects.get(name="phx1")
+            n.save()
         ip = ipaddr.IPv4Network(n_str.format(so))
         if int(n_str[-2:]) >= 22:
             r, _ = Range.objects.get_or_create(start_str =
