@@ -106,21 +106,40 @@
     <div>Search: <input type='text' name='system_search' id='system_search' style='width: 159px;' value=''></div>
 </div>
     <script type='text/javascript'>
+        function update_link(obj, system_id, hostname){
+            link_text = '<a href="/systems/view/' + system_id + '/">' + hostname + '</a>';
+            obj.closest('td').prev('td').html('System ' + link_text);   
+            obj.closest('td').html(' ');
+        }
         $(document).ready(function() {
             $(".combine_to_system").click(function(){
                 var prev_hostname = $(this).closest('td').prev('td').html().trim().split(" (")[0].replace(/\.mozilla\.com|net|org/g, '');
                 $("#system_search").val(prev_hostname);
-                var rel_arr = $(this).attr('rel');
+                var the_rel = $(this).attr('rel');
+                var rel_arr = the_rel.split("|");
                 var addr_pk = rel_arr[0];
                 var ptr_pk = rel_arr[1];
+
 
                 var d = $( "#add-dialog" ).dialog({
                         title: 'Associate to System',
                         autoShow: false,
                         buttons: {
                             "Save": function() {
-                                self.location = '/systems/show/' + system_id;
-                                    $( this ).dialog( "close" );
+                            $.post('/core/interface/combine_a_ptr_to_interface/' + addr_pk + '/' + ptr_pk + '/',
+                                { 'is_ajax': '1', 'system_hostname': $("#system_search").val() },
+                                function(data){
+                                    var obj = jQuery.parseJSON(data);
+                                    if(obj.success == true){
+                                        update_link($("a[rel=" + the_rel + "]"), obj.id, obj.hostname);
+                                    } else {
+
+                                        alert(obj.error);
+
+                                    }
+                                });
+                                
+                                $( this ).dialog( "close" );
                             },
                             Cancel: function() {
                                 $( this ).dialog( "close" );

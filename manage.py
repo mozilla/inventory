@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env pnython
 import os
 import sys
 

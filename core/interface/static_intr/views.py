@@ -57,40 +57,47 @@ def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
     """
     addr = get_object_or_404(AddressRecord, pk=addr_pk)
     ptr = get_object_or_404(PTR, pk=ptr_pk)
-
     is_ajax = request.POST.get('is_ajax')
     system_hostname = request.POST.get('system_hostname')
     if is_ajax and system_hostname:
         system = None
         try:
-            system = system.objects.get(hostname=system_hostname)
+            system = System.objects.get(hostname=system_hostname)
         except:
             try:
                 system_hostname = re.sub('mozilla\.[com|net|org]','', 
                         system_hostname)
-                system = system.objects.get(hostname=system_hostname)
+                system = System.objects.get(hostname=system_hostname)
             except:
                 system = None
         if system:
-            intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(
-                    addr, ptr, system)
-            return json.dumps({'success': True})
+            try:
+                intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(
+                        addr, ptr, system)
+            except ValidationError, e:
+                return HttpResponse(json.dumps({'success': False, 'error': e.messages[0]}))
+            ret_dict = {}
+            ret_dict['success'] = True
+            ret_dict['hostname'] = system.hostname
+            ret_dict['id'] = system.id
+            return HttpResponse(json.dumps(ret_dict))
         else:
-            return json.dumps({'success': False})
+            return HttpResponse(json.dumps({'success': False, 'error': 'Unable to find system'}))
 
     if request.method == "POST":
         form = CombineForm(request.POST)
-        system = form.cleaned_data['system']
-        try:
-            intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(addr, ptr, system)
-            return redirect(intr)
-        except ValidationError, e:
-            form.errors['__all__'] = ErrorList(e.messages)
-            return render(request, 'static_intr/combine.html', {
-                'addr': addr,
-                'ptr': ptr,
-                'form': form
-            })
+        if form.is_valid():
+            system = form.cleaned_data['system']
+            try:
+                intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(addr, ptr, system)
+                return redirect(intr)
+            except ValidationError, e:
+                form.errors['__all__'] = ErrorList(e.messages)
+                return render(request, 'static_intr/combine.html', {
+                    'addr': addr,
+                    'ptr': ptr,
+                    'form': form
+                })
     else:
         form = CombineForm()
         return render(request, 'static_intr/combine.html', {
