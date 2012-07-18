@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 
 
 from mozdns.validation import validate_ip_type
+from mozdns.ip.models import ipv6_to_longs
 from core.vlan.models import Vlan
 from core.site.models import Site
 from core.mixins import ObjectUrlMixin
@@ -27,7 +28,7 @@ class Network(models.Model, ObjectUrlMixin):
     ip_upper = models.BigIntegerField(null=False, blank=True)
     ip_lower = models.BigIntegerField(null=False, blank=True)
     # This field is here so ES can search this model easier.
-    network_str = models.CharField(max_length=39, editable=True)
+    network_str = models.CharField(max_length=49, editable=True)
     prefixlen = models.PositiveIntegerField(null=False)
 
     dhcpd_raw_include = models.TextField(null=True, blank=True, help_text="""
@@ -60,8 +61,8 @@ class Network(models.Model, ObjectUrlMixin):
             else:
                 router = str(ipaddr.IPv6Address(int(self.network.network) + 1))
             kv = NetworkKeyValue(key="routers", value=router, network=self)
-            kv.clean()
-            kv.save()
+            #kv.clean()
+            #kv.save()
 
     def delete(self, *args, **kwargs):
         if self.range_set.all().exists():
@@ -74,12 +75,42 @@ class Network(models.Model, ObjectUrlMixin):
         # Look at all ranges that claim to be in this subnet, are they actually
         # in the subnet?
         for range_ in self.range_set.all():
-            if range_.start < int(self.network.network):
+            """
+                I was writing checks to make sure that subnets wouldn't orphan
+                ranges. IPv6 needs support.
+            """
+            fail = False
+            # Check the start addresses.
+            if range_.start_upper < self.ip_upper:
+                fail = True
+            elif (range_.start_upper > self.ip_upper and range_.start_lower <
+                self.ip_lower):
+                fail = True
+            elif (range_.start_upper == self.ip_upper and range_.start_lower
+                    < self.ip_lower):
+                fail = True
+
+            if self.ip_type == '4':
+                IPClass = ipaddr.IPv4Network
+            else:
+                IPClass = ipaddr.IPv6Network
+            brdcst_upper, brdcst_lower = ipv6_to_longs(str(
+                self.network.broadcast))
+
+            # Check the end addresses.
+            if range_.end_upper > brdcst_upper:
+                fail = True
+            elif (range_.end_upper < brdcst_upper and range_.end_lower >
+                brdcst_lower):
+                fail = True
+            elif (range_.end_upper == brdcst_upper and range_.end_lower
+                    > brdcst_lower):
+                fail = True
+
+            if fail:
                 raise ValidationError("Resizing this subnet to the requested "
                         "network prefix would orphan existing ranges.")
-            if range_.end > int(self.network.broadcast):
-                raise ValidationError("Resizing this subnet to the requested "
-                        "network prefix would orphan existing ranges.")
+
 
     def update_network(self):
         """This function will look at the value of network_str to update other

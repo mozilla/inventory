@@ -7,7 +7,7 @@ from core.range.models import Range
 
 import pdb
 
-class RangeTests(TestCase):
+class V4RangeTests(TestCase):
 
     def setUp(self):
         self.d = Domain(name="com")

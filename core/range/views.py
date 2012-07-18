@@ -8,6 +8,7 @@ from core.range.models import Range, RangeKeyValue
 from core.interface.static_intr.models import StaticInterface
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
+from mozdns.ip.models import ipv6_to_longs
 from core.views import CoreDeleteView, CoreDetailView
 from core.views import CoreCreateView, CoreUpdateView, CoreListView
 from core.keyvalue.utils import get_attrs, update_attrs, get_aa, get_docstrings
@@ -167,6 +168,20 @@ def update_range(request, range_pk):
             'aa': json.dumps(aa)
         })
 
+def redirect_to_range_from_ip(request, ip_str, ip_type):
+    if ip_type == '4':
+        try:
+            ip_upper, ip_lower = 0, int(ipaddr.IPv4Address(ip_str))
+        except ipaddr.AddressValueError, e:
+            return HttpResonse("Failure to recognize {0} as an IPv4 "
+                    "Address.".format(ip_str)
+    else:
+        try:
+            ip_upper, ip_lower = ipv6_to_longs(ip_str)
+        except ValidationError, e:
+            return HttpResponse(e)
+
+    ranges = Range.objects.filter(start__lte=ip)
 
 class RangeUpdateView(RangeView, CoreUpdateView):
     """ """

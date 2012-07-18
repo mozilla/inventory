@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from core.network.models import Network
 from core.range.models import Range
 from mozdns.domain.models import Domain
+from mozdns.ip.models import ipv6_to_longs
 
 import random
 import ipaddr
@@ -18,6 +19,27 @@ class NetworkTests(TestCase):
         self.assertTrue(s)
         return s
 
+
+    def test1_create_ipv6(self):
+        network = "f::"
+        prefixlen = "24"
+        kwargs = {'network':network , 'prefixlen':prefixlen, 'ip_type':'6'}
+        s = self.do_basic_add(**kwargs)
+        str(s)
+        s.__repr__()
+        self.assertTrue(s)
+
+    def test2_create_ipv6(self):
+        network = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
+        prefixlen = "24"
+        kwargs = {'network':network , 'prefixlen':prefixlen, 'ip_type':'6'}
+        s = self.do_basic_add(**kwargs)
+        str(s)
+        s.__repr__()
+        self.assertTrue(s)
+        ip_upper, ip_lower = ipv6_to_longs(network)
+        self.assertEqual(s.ip_upper, ip_upper)
+        self.assertEqual(s.ip_lower, ip_lower)
 
     def test_bad_resize(self):
         network = "129.0.0.0"
@@ -65,6 +87,7 @@ class NetworkTests(TestCase):
         ip_type = '4'
 
         r = Range(start_str=start_str, end_str=end_str, network=network)
+        r.clean()
         r.save()
 
         self.assertEqual(r.network, s)

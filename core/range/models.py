@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from core.network.models import Network
 from core.mixins import ObjectUrlMixin
 from core.keyvalue.base_option import CommonOption
+from mozdns.ip.models import ipv6_to_longs
 
 import ipaddr
 
@@ -35,17 +36,22 @@ class Range(models.Model, ObjectUrlMixin):
          range does not overlap.
     """
     id = models.AutoField(primary_key=True)
-    start = models.PositiveIntegerField(null=True)
+
+    start_upper = models.BigIntegerField(null=True)
+    start_lower = models.BigIntegerField(null=True)
     start_str = models.CharField(max_length=39, editable=True)
-    end = models.PositiveIntegerField(null=True)
+
+    end_lower = models.BigIntegerField(null=True)
+    end_upper = models.BigIntegerField(null=True)
     end_str = models.CharField(max_length=39, editable=True)
+
     dhcpd_raw_include = models.TextField(null=True, blank=True)
 
     network = models.ForeignKey(Network, null=False)
 
     class Meta:
         db_table = 'range'
-        unique_together = ('start', 'end')
+        unique_together = ('start_upper', 'start_lower', 'end_upper', 'end_lower')
 
     def save(self, *args, **kwargs):
         self.clean()
@@ -56,25 +62,69 @@ class Range(models.Model, ObjectUrlMixin):
             raise ValidationError("ERROR: No network found")
         try:
             if self.network.ip_type == '4':
-                self.start = int(ipaddr.IPv4Address(self.start_str))
-                self.end = int(ipaddr.IPv4Address(self.end_str))
+                self.start_upper, self.start_lower = 0 ,int(
+                        ipaddr.IPv4Address(self.start_str))
+                self.end_upper, self.end_lower = 0 ,int(
+                        ipaddr.IPv4Address(self.end_str))
             elif self.network.ip_type == '6':
-                raise NotImplemented
+                self.start_upper, self.start_lower = ipv6_to_longs(
+                        self.start_str)
+                self.end_upper, self.end_lower = ipv6_to_longs(
+                        self.end_str)
             else:
                 raise ValidationError("ERROR: could not determine the ip type")
         except ipaddr.AddressValueError, e:
             raise ValidationError(str(e))
 
-        if self.start >= self.end:
+        """
+        Some notes:
+        start = s1 s2
+        end = e1 e2
+
+        if s1 > e1:
+            start > end
+            # Bad
+        if e1 > s1:
+            end > start
+            # Good
+        if s1 == e1 and s2 > e2:
+            start > end
+            # Bad
+        if s1 == e1 and s2 < e2:
+            end > start
+            # Good
+        if s1 == e1 and s2 == e2:
+            end == start
+            # Bad
+        """
+        fail = False
+        if self.start_upper > self.end_upper:
+            # start > end
+            fail = True
+        if (self.start_upper == self.end_upper and self.start_lower >
+            self.end_lower):
+            # start > end
+            fail = True
+        if (self.start_upper == self.end_upper and self.start_lower ==
+            self.end_lower):
+            # end == start
+            fail = True
+
+        if fail:
             raise ValidationError("The start of a range cannot be greater than"
                     " or equal to the end of the range.")
 
         self.network.update_network()
-        if self.start < int(self.network.network.network):
-        #lol, network.network.network.network.network....
+        if self.network.ip_type == '4':
+            IPClass = ipaddr.IPv4Address
+        else:
+            IPClass = ipaddr.IPv6Address
+
+        if IPClass(self.start_str) < self.network.network.network:
+            #lol, network.network.network.network.network....
             raise ValidationError("The start of a range cannot be less than "
                 "it's network's network address.")
-        if self.end > int(self.network.network.broadcast):
+        if IPClass(self.end_str) > self.network.network.broadcast:
             raise ValidationError("The end of a range cannot be more than "
                 "it's network's broadcast address.")
 
@@ -87,18 +137,26 @@ class Range(models.Model, ObjectUrlMixin):
         for range_ in self.network.range_set.all():
             if range_.pk == self.pk:
                 continue
-            if self.start > range_.end:
+
+            # start > end
+            if self.start_upper > range_.end_upper:
                 continue
-            if self.end < range_.start:
+            if (self.start_upper == range_.end_upper and self.start_lower >
+                range_.end_lower):
+                continue
+            # end < start
+            if self.end_upper < range_.start_upper:
+                continue
+            if (self.end_upper == range_.start_upper and self.end_lower <
+                range_.start_lower):
                 continue
             raise ValidationError("Ranges cannot exist inside of other "
                 "ranges.")
 
     def __str__(self):
         x = "Site: {0} Vlan: {1} Network: {2} Range: Start - {3} End -  {4}"
-        x.format(self.network.site, self.network.vlan, self.network,
+        return x.format(self.network.site, self.network.vlan, self.network,
             self.start_str, self.end_str)
-        return x
 
     def display(self):
         return "Range: {3} to {4}  {0} -- {2} -- {1}  ".format(
