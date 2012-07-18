@@ -188,6 +188,7 @@ def redirect_to_range_from_ip(request, ip_str, ip_type):
 
     ranges = Range.objects.filter(start__lte=ip)
 
+
 class RangeUpdateView(RangeView, CoreUpdateView):
     """ """
 

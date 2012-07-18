@@ -24,8 +24,28 @@ from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
 
 import pdb
+import re
 import ipaddr
 import simplejson as json
+
+
+def do_combine_a_ptr_to_interface(addr, ptr, system):
+    if (addr.ip_str != ptr.ip_str or addr.fqdn != ptr.name or
+        addr.ip_type != ptr.ip_type):
+        raise ValidationError("This A and PTR have different data.")
+
+    intr = StaticInterface(label=addr.label, domain=addr.domain,
+            ip_str=addr.ip_str, ip_type=addr.ip_type, system=system)
+    addr_deleted = False
+    ptr_deleted = False
+
+    addr.delete()
+    addr_deleted = True
+    ptr.delete()
+    ptr_deleted = True
+    intr.full_clean()
+    intr.save()
+    return intr, addr_deleted, ptr_deleted
 
 
 def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
@@ -37,31 +57,32 @@ def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
     """
     addr = get_object_or_404(AddressRecord, pk=addr_pk)
     ptr = get_object_or_404(PTR, pk=ptr_pk)
+
+    is_ajax = request.POST.get('is_ajax')
+    system_hostname = request.POST.get('system_hostname')
+    if is_ajax and system_hostname:
+        system = None
+        try:
+            system = system.objects.get(hostname=system_hostname)
+        except:
+            try:
+                system_hostname = re.sub('mozilla\.[com|net|org]','', 
+                        system_hostname)
+                system = system.objects.get(hostname=system_hostname)
+            except:
+                system = None
+        if system:
+            intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(
+                    addr, ptr, system)
+            return json.dumps({'success': True})
+        else:
+            return json.dumps({'success': False})
+
     if request.method == "POST":
         form = CombineForm(request.POST)
+        system = form.cleaned_data['system']
         try:
-            if (addr.ip_str != ptr.ip_str or addr.fqdn != ptr.name or
-                addr.ip_type != ptr.ip_type):
-                raise ValidationError("This A and PTR have different data.")
-            if not form.is_valid():
-                form._errors['__all__'] = ErrorList(e.messages)
-                return render(request, 'static_intr/combine.html', {
-                    'addr': addr,
-                    'ptr': ptr,
-                    'form': form
-                })
-            system = form.cleaned_data['system']
-            intr = StaticInterface(label=addr.label, domain=addr.domain,
-                    ip_str=addr.ip_str, ip_type=addr.ip_type, system=system)
-            addr_deteled = False
-            ptr_deteled = False
-
-            addr.delete()
-            addr_deteled = True
-            ptr.delete()
-            ptr_deteled = True
-            intr.full_clean()
-            intr.save()
+            intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(addr, ptr, system)
             return redirect(intr)
         except ValidationError, e:
             form.errors['__all__'] = ErrorList(e.messages)
