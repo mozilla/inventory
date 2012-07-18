@@ -18,5 +18,5 @@ tmp/*
 src/
 .vagrant
 build/
-.*_auto__.*
+*/*.*_auto__.*
 */*/migrations/*
