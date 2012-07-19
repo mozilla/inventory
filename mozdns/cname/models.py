@@ -42,9 +42,9 @@ class CNAME(MozdnsRecord):
         if self.pk:  # We need to exist in the db first.
             db_self = CNAME.objects.get(pk=self.pk)
             if db_self.label == self.label and db_self.domain == self.domain:
-                kwargs['no_build'] = True
+                kwargs['no_build'] = False
             else:
-                kwargs['no_build'] = False  # Either nothing has changed or
+                kwargs['no_build'] = True  # Either nothing has changed or
                                         # just data_domain. We want rebuild.
         super(CNAME, self).save(*args, **kwargs)
 

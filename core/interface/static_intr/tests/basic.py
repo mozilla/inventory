@@ -6,6 +6,7 @@ from systems.models import System
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
+from mozdns.view.models import View
 
 from mozdns.ip.utils import ip2dns_form, nibbilize
 
@@ -39,12 +40,17 @@ class StaticInterTests(TestCase):
         self.n = System()
         self.n.clean()
         self.n.save()
+        View.objects.get_or_create(name="private")
 
     def do_add(self, mac, label, domain, ip_str, ip_type='4'):
         r = StaticInterface(mac=mac, label=label, domain=domain, ip_str=ip_str,
                 ip_type=ip_type, system=self.n)
         r.clean()
         r.save()
+        r.details()
+        r.get_edit_url()
+        r.get_delete_url()
+        r.get_absolute_url()
         repr(r)
         return r
 
@@ -60,7 +66,26 @@ class StaticInterTests(TestCase):
         domain = self.f_c
         ip_str = "10.0.0.2"
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
-        self.do_add(**kwargs)
+        i = self.do_add(**kwargs)
+        i.update_attrs()
+        self.assertEqual('None',i.interface_name())
+        i.attrs.interface_type = "eth"
+        self.assertEqual('None',i.interface_name())
+        i.attrs.primary = "0"
+        self.assertEqual('eth0',i.interface_name())
+        i.attrs.alias = "0"
+        self.assertEqual('eth0.0',i.interface_name())
+        i.clean()
+        def bad_assign():
+            i.attrs.interface_type = "wee"
+        self.assertRaises(ValidationError, bad_assign)
+        def bad_assign():
+            i.attrs.primary = "wee"
+        self.assertRaises(ValidationError, bad_assign)
+        def bad_assign():
+            i.attrs.alias = "wee"
+        self.assertRaises(ValidationError, bad_assign)
+
 
     def test2_create_basic(self):
         mac = "11:22:33:44:55:66"
@@ -68,7 +93,8 @@ class StaticInterTests(TestCase):
         domain = self.f_c
         ip_str = "10.0.0.1"
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
-        self.do_add(**kwargs)
+        i = self.do_add(**kwargs)
+        i.clean()
 
     def test3_create_basic(self):
         mac = "11:22:33:44:55:66"

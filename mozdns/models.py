@@ -76,7 +76,6 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
             # Mark the domain as dirty so it can be rebuilt.
             self.domain.dirty = True
             self.domain.save()
-        self.full_clean()
 
     def set_fqdn(self):
         set_fqdn(self)

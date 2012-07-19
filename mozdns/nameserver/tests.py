@@ -228,6 +228,18 @@ class NSTestsModels(TestCase):
         ns.save()
         self.assertTrue(ns.glue == None)
 
+    def test_update_glue_record_intr(self):
+        # Glue records can't change their name.
+        glue = StaticInterface(label='ns788', domain = self.r, ip_str =
+                '128.193.1.10', ip_type='4', system=self.s,
+                mac="11:22:33:44:55:66")
+        glue.save()
+        data = {'domain':self.r , 'server':'ns788.ru'}
+        ns = self.do_add(**data)
+        self.assertTrue(ns.glue)
+        glue.label = "asdfasdf"
+        self.assertRaises(ValidationError, glue.clean)
+
     def test_update_glue_to_no_glue(self):
         glue = AddressRecord(label='ns3', domain = self.r, ip_str = '128.193.1.10', ip_type='4')
         glue.save()

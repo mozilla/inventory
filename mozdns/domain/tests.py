@@ -40,6 +40,7 @@ class DomainTests(TestCase):
         f_c = Domain( name = 'foo.com')
         f_c.save()
         f_c.save()
+        f_c.details()
         self.assertTrue( f_c.get_absolute_url() )
         self.assertTrue( f_c.get_edit_url() )
         self.assertTrue( f_c.get_delete_url() )
@@ -326,3 +327,8 @@ class DomainTests(TestCase):
         ptr = PTR.objects.get(pk=ptr.pk)
         self.assertTrue( cn.data_domain == b_dom )
         self.assertTrue( ptr.data_domain == b_dom )
+        cn.label = "fooooobar"
+        cn.full_clean()
+        cn.save()
+
+        # This is to hit some LOC for coverage purposes.

@@ -88,11 +88,12 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
             alias = self.attrs.alias
         except AttributeError:
             pass
-        if not itype and not primary:
+        if itype == '' or primary == '':
             return "None"
-        if not alias:
+        elif alias == '':
             return "{0}{1}".format(itype, primary)
-        return "{0}{1}.{2}".format(itype, primary, alias)
+        else:
+            return "{0}{1}.{2}".format(itype, primary, alias)
 
     def clean(self, *args, **kwargs):
         #if not isinstance(self.mac, basestring):
@@ -138,7 +139,7 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         # The label of the domain changed. Make sure it's not a glue record
         Nameserver = mozdns.nameserver.models.Nameserver
         if Nameserver.objects.filter(intr_glue=self).exists():
-            raise ValidationError("This Interface represents aa glue record "
+            raise ValidationError("This Interface represents a glue record "
                     "for a Nameserver. Change the Nameserver to edit this "
                     "record.")
 

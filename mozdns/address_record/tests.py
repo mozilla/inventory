@@ -10,6 +10,7 @@ from mozdns.ip.models import ipv6_to_longs
 from mozdns.nameserver.models import Nameserver
 from mozdns.domain.models import boot_strap_ipv6_reverse_domain
 from mozdns.ip.utils import ip2dns_form
+from mozdns.cname.models import CNAME
 
 import pdb
 
@@ -336,6 +337,8 @@ class AddressRecordTests(TestCase):
         self.assertTrue(rec.get_delete_url())
         self.assertTrue(rec.details())
 
+    ### GLOB * ### Records
+
     def test_add_A_address_glob_records(self):
         # Test the glob form: *.foo.com A 10.0.0.1
         rec = AddressRecord( label = '', domain = self.o_e , ip_str= "128.193.0.1", ip_type='4')
@@ -552,4 +555,15 @@ class AddressRecordTests(TestCase):
         glue.ip_str = "192.192.12.12"
         glue.save()
 
-    ### GLOB * ### Records
+    def test_delete_with_cname_pointing_to_a(self):
+        label = 'foo100'
+        a = AddressRecord(label=label, domain = self.o_e, ip_str =
+                '128.193.1.10', ip_type = '4')
+        a.clean()
+        a.save()
+        cn = CNAME(label="foomom", domain=self.o_e, data = label + "." +
+                self.o_e.name)
+        cn.clean()
+        cn.save()
+        self.assertRaises(ValidationError, a.delete)
+        a.delete(check_cname=False)
