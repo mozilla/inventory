@@ -167,7 +167,6 @@
 
         $("a.goto_range").click(function (){
             var args = $(this).attr("rel").split('|');
-            alert(args);
             var ip_str = args[0];
             var ip_type = args[1];
             $.get('/core/range/find_range/?ip_str='+ip_str+'&ip_type=' + ip_type, do_redirect);
