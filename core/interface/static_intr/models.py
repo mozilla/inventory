@@ -82,11 +82,16 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     def interface_name(self):
         self.update_attrs()
         try:
+            itype, primary, alias = '', '', ''
             itype = self.attrs.interface_type
             primary = self.attrs.primary
             alias = self.attrs.alias
         except AttributeError:
-            return "No Name"
+            pass
+        if not itype and not primary:
+            return "None"
+        if not alias:
+            return "{0}{1}".format(itype, primary)
         return "{0}{1}.{2}".format(itype, primary, alias)
 
     def clean(self, *args, **kwargs):
