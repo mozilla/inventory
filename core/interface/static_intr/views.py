@@ -29,12 +29,12 @@ import ipaddr
 import simplejson as json
 
 
-def do_combine_a_ptr_to_interface(addr, ptr, system):
+def do_combine_a_ptr_to_interface(addr, ptr, system, mac_address):
     if (addr.ip_str != ptr.ip_str or addr.fqdn != ptr.name or
         addr.ip_type != ptr.ip_type):
         raise ValidationError("This A and PTR have different data.")
 
-    intr = StaticInterface(label=addr.label, domain=addr.domain,
+    intr = StaticInterface(label=addr.label, mac=mac_address, domain=addr.domain,
             ip_str=addr.ip_str, ip_type=addr.ip_type, system=system)
     addr_deleted = False
     ptr_deleted = False
@@ -72,8 +72,9 @@ def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
                 system = None
         if system:
             try:
+                ### Come up with way to get mac address
                 intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(
-                        addr, ptr, system)
+                        addr, ptr, system, '00:00:00:00:00:00')
             except ValidationError, e:
                 return HttpResponse(json.dumps({'success': False, 'error': e.messages[0]}))
             ret_dict = {}

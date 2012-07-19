@@ -107,7 +107,7 @@
 </div>
     <script type='text/javascript'>
         function update_link(obj, system_id, hostname){
-            link_text = '<a href="/systems/view/' + system_id + '/">' + hostname + '</a>';
+            link_text = '<a href="/systems/show/' + system_id + '/">' + hostname + '</a>';
             obj.closest('td').prev('td').html('System ' + link_text);   
             obj.closest('td').html(' ');
         }
