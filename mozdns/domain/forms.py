@@ -10,9 +10,6 @@ class DomainUpdateForm(ModelForm):
 
 
 class DomainForm(ModelForm):
-    choices = ((1, 'Yes'), (0, 'No'))
-    inherit_soa = forms.ChoiceField(widget=forms.RadioSelect, choices=choices)
-
     class Meta:
         model = Domain
-        exclude = ('master_domain',)
+        exclude = ('master_domain','is_reverse', 'dirty')

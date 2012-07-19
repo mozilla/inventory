@@ -39,7 +39,7 @@ def do_combine_a_ptr_to_interface(addr, ptr, system, mac_address):
     addr_deleted = False
     ptr_deleted = False
 
-    addr.delete()
+    addr.delete(check_cname=False)
     addr_deleted = True
     ptr.delete()
     ptr_deleted = True
