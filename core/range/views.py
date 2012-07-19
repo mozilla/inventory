@@ -173,20 +173,33 @@ def update_range(request, range_pk):
             'aa': json.dumps(aa)
         })
 
-def redirect_to_range_from_ip(request, ip_str, ip_type):
+def redirect_to_range_from_ip(request):
+    ip_str = request.GET.get('ip_str')
+    ip_type = request.GET.get('ip_type')
+    if not (ip_str and ip_type):
+        return HttpResonse(json.dumps({'failure':"Slob"}))
+
     if ip_type == '4':
         try:
             ip_upper, ip_lower = 0, int(ipaddr.IPv4Address(ip_str))
         except ipaddr.AddressValueError, e:
-            return HttpResonse("Failure to recognize {0} as an IPv4 "
-                    "Address.".format(ip_str))
+            return HttpResonse(json.dumps({'failure':"Failure to recognize {0} as an IPv4 "
+                    "Address.".format(ip_str)}))
     else:
         try:
             ip_upper, ip_lower = ipv6_to_longs(ip_str)
         except ValidationError, e:
-            return HttpResponse(e)
+            return HttpResponse(json.dumps({'failure': 'Invalid IP'}))
 
-    ranges = Range.objects.filter(start__lte=ip)
+    range_ = Range.objects.filter(start_upper__lte=ip_upper,
+            start_lower__lte=ip_lower, end_upper__gte=ip_upper,
+            end_lower__gte=ip_lower)
+    if not len(range_) == 1:
+        return HttpResponse(json.dumps({'failure':"Failture to find range"}))
+    else:
+        return HttpResponse(json.dumps(
+            {'success': True,range_[0].get_absolute_url()}))
+
 
 class RangeUpdateView(RangeView, CoreUpdateView):
     """ """

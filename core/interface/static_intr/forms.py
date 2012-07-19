@@ -10,7 +10,7 @@ from mozdns.validation import validate_label
 from core.vlan.models import Vlan
 from core.site.models import Site
 from systems.models import System
-#from mozdns.mozdhcp.validation import validate_mac
+from core.validation import validate_mac
 
 import ipaddr
 import pdb
@@ -27,11 +27,11 @@ def validate_ip(ip):
 
 
 class CombineForm(forms.Form):
+    mac = forms.CharField(validators=[validate_mac])
     system = forms.ModelChoiceField(queryset=System.objects.all())
 
 
 class StaticInterfaceForm(forms.ModelForm):
-    #mac = forms.CharField(validators=[validate_mac])
     views = forms.ModelMultipleChoiceField(queryset=View.objects.all(),
             widget=forms.widgets.CheckboxSelectMultiple, required=False)
 
@@ -42,7 +42,6 @@ class StaticInterfaceForm(forms.ModelForm):
 
 
 class FullStaticInterfaceForm(forms.ModelForm):
-    #mac = forms.CharField(validators=[validate_mac])
     views = forms.ModelMultipleChoiceField(queryset=View.objects.all(),
             widget=forms.widgets.CheckboxSelectMultiple, required=False)
 
@@ -53,7 +52,7 @@ class FullStaticInterfaceForm(forms.ModelForm):
 
 
 class StaticInterfaceQuickForm(forms.Form):
-    #mac = forms.CharField(validators=[validate_mac])
+    mac = forms.CharField(validators=[validate_mac])
     label = forms.CharField(validators=[validate_label])
     ranges = Range.objects.all().select_related(depth=4).filter(
             network__vlan__id__isnull=False)

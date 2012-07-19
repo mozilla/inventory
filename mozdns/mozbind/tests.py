@@ -57,9 +57,9 @@ class BuildTests(TestCase):
     def test_dirty_intr(self):
         self.soa.dirty = False
         self.dom.dirty = False
-        a, _ = StaticInterface.objects.get_or_create(label="asfd",
-                domain=self.dom, ip_str = "123.1.1.1", ip_type='4',
-                system=self.s)
+        a, _ = StaticInterface.objects.get_or_create(mac="11:22:33:44:55:66",
+                label="asfd", domain=self.dom, ip_str = "123.1.1.1",
+                ip_type='4', system=self.s)
         a.save()
         self.assertTrue(self.dom.dirty)
         self.assertFalse(self.soa.dirty)

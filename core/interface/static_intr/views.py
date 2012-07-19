@@ -51,8 +51,9 @@ def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
                     'form': form
                 })
             system = form.cleaned_data['system']
-            intr = StaticInterface(label=addr.label, domain=addr.domain,
-                    ip_str=addr.ip_str, ip_type=addr.ip_type, system=system)
+            intr = StaticInterface(mac=form.cleaned_data['mac'],
+                    label=addr.label, domain=addr.domain, ip_str=addr.ip_str,
+                    ip_type=addr.ip_type, system=system)
             addr_deteled = False
             ptr_deteled = False
 

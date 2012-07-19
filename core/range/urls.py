@@ -5,6 +5,7 @@ from core.range.views import *
 
 urlpatterns = patterns('',
     url(r'^$', csrf_exempt(RangeListView.as_view())),
+    url(r'find_range/', csrf_exempt(redirect_to_range_from_ip)),
     url(r'create/$', csrf_exempt(RangeCreateView.as_view())),
     url(r'(?P<range_pk>[\w-]+)/update/$', csrf_exempt(update_range)),
     url(r'attr/(?P<attr_pk>[\w-]+)/delete/$', csrf_exempt(delete_range_attr)),

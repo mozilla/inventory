@@ -43,7 +43,8 @@ class V6StaticInterTests(TestCase):
         self.n.save()
 
     def do_add(self, mac, label, domain, ip_str, ip_type='6'):
-        r = StaticInterface(label=label, domain=domain, ip_str=ip_str, ip_type=ip_type, system=self.n)
+        r = StaticInterface(mac=mac, label=label, domain=domain, ip_str=ip_str,
+                ip_type=ip_type, system=self.n)
         r.clean()
         r.save()
         repr(r)

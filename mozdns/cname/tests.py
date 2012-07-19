@@ -243,7 +243,7 @@ class CNAMETests(TestCase):
         dom,_ = Domain.objects.get_or_create(name="what.cd")
 
         intr = StaticInterface(label=label, domain=dom, ip_str = "10.0.0.1",
-                ip_type='4', system=self.s)
+                ip_type='4', system=self.s, mac="11:22:33:44:55:66")
         intr.clean()
         intr.save()
 

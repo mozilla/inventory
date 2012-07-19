@@ -7,6 +7,7 @@ import mozdns
 from core.keyvalue.models import KeyValue
 from core.keyvalue.utils import AuxAttr
 from core.mixins import ObjectUrlMixin
+from core.validation import validate_mac
 from mozdns.address_record.models import BaseAddressRecord
 from mozdns.models import MozdnsRecord
 from mozdns.view.models import View
@@ -27,20 +28,25 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         >>> s.full_clean()
         >>> s.save()
 
-    This class is the main interface to DNS in mozdns. A static
-    interface consists of three key pieces of information: Ip address
+    This class is the main interface to DNS and DHCP in mozinv. A static
+    interface consists of three key pieces of information: Ip address, Mac
     Address, and Hostname (the hostname is comprised of a label and a domain).
-    From these three peices of information, two things are ensured: An A or
-    AAAA DNS record and a PTR record.
+    From these three peices of information, three things are ensured: An A or
+    AAAA DNS record, a PTR record, and a `host` statement in the DHCP builds
+    that grants the mac address of the interface the correct IP address and
+    hostname.
 
+    If you want an A/AAAA, PTR, and a DHCP lease, create on of these objects.
 
     In terms of DNS, a static interface represents a PTR and A record and must
     adhear to the requirements of those classes. The interface inherits from
-    BaseAddressRecord and will call it's clean method with
-    'update_reverse_domain' set to True. This will ensure that it's A record is
-    valid *and* that it's PTR record is valid.
+    AddressRecord and will call it's clean method with 'update_reverse_domain'
+    set to True. This will ensure that it's A record is valid *and* that it's
+    PTR record is valid.
+
     """
     id = models.AutoField(primary_key=True)
+    mac = models.CharField(max_length=17, validators=[validate_mac])
     reverse_domain = models.ForeignKey(Domain, null=True, blank=True,
             related_name='staticintrdomain_set')
 

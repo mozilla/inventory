@@ -124,7 +124,8 @@ class NSTestsModels(TestCase):
     def test_disallow_name_update_of_glue_Intr(self):
         # Glue records should not be allowed to change their name.
         glue = StaticInterface(label='ns24', domain = self.f_r, ip_str =
-                '128.193.99.10', ip_type='4', system=self.s)
+                '128.193.99.10', ip_type='4', system=self.s,
+                mac="11:22:33:44:55:66")
         glue.clean()
         glue.save()
         data = {'domain':self.f_r , 'server':'ns24.foo.ru'}
@@ -138,7 +139,8 @@ class NSTestsModels(TestCase):
     def test_disallow_delete_of_glue_intr(self):
         # Interface glue records should not be allowed to be deleted.
         glue = StaticInterface(label='ns24', domain = self.f_r, ip_str =
-                '128.193.99.10', ip_type='4', system=self.s)
+                '128.193.99.10', ip_type='4', system=self.s,
+                mac="11:22:33:44:55:66")
         glue.clean()
         glue.save()
         data = {'domain':self.f_r , 'server':'ns24.foo.ru'}
@@ -152,7 +154,8 @@ class NSTestsModels(TestCase):
         # Test that assigning a different glue record doesn't get overriden by
         # the auto assinging during the Nameserver's clean function.
         glue = StaticInterface(label='ns25', domain = self.f_r, ip_str =
-                '128.193.99.10', ip_type='4', system=self.s)
+                '128.193.99.10', ip_type='4', system=self.s,
+                mac="11:22:33:44:55:66")
         glue.clean()
         glue.save()
         data = {'domain':self.f_r, 'server':'ns25.foo.ru'}
@@ -187,7 +190,8 @@ class NSTestsModels(TestCase):
     def testtest_add_ns_in_domain_intr(self):
         # Use an Interface as a glue record.
         glue = StaticInterface(label='ns232', domain = self.r, ip_str =
-                '128.193.99.10', ip_type='4', system=self.s)
+                '128.193.99.10', ip_type='4', system=self.s,
+                mac="12:23:45:45:45:45")
         glue.clean()
         glue.save()
         data = {'domain':self.r , 'server':'ns232.ru'}
@@ -197,7 +201,8 @@ class NSTestsModels(TestCase):
         self.assertRaises(ValidationError, glue.delete)
 
         glue = StaticInterface(label='ns332', domain = self.f_r, ip_str =
-                '128.193.1.10', ip_type='4', system=self.s)
+                '128.193.1.10', ip_type='4', system=self.s,
+                mac="11:22:33:44:55:66")
         glue.clean()
         glue.save()
         data = {'domain':self.f_r , 'server':'ns332.foo.ru'}
@@ -212,7 +217,8 @@ class NSTestsModels(TestCase):
 
     def test_update_glue_to_no_intr(self):
         glue = StaticInterface(label='ns34', domain = self.r, ip_str =
-                '128.193.1.10', ip_type='4', system=self.s)
+                '128.193.1.10', ip_type='4', system=self.s,
+                mac="11:22:33:44:55:66")
         glue.save()
         data = {'domain':self.r , 'server':'ns34.ru'}
         ns = self.do_add(**data)
