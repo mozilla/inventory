@@ -133,52 +133,11 @@
 <div style="clear:both;"></div>
 </dl>
 
-<dl class="show">
-<dt>Network Adapters: </dt>
-<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;">
-<pre>
-    {{ adapter }} 
-    <table>
-    <tr><th>Adapter Name</th><th>IP Address</th><th>Mac Address</th></tr>
-    {% for adapter in adapters %}
-        <tr><td>{{adapter.adapter_name}}</td><td>{{ adapter.ipv4_address }}</td><td>{{ adapter.mac_address }}</td></tr>
-
-    {% endfor %}
-    </table>
-
-</pre></dd>
 <div style="clear:both;"></div>
-</dl>
-
-<script type='text/javascript'>
-    function goto_range(ip_str, ip_type){
-        $.get('/core/range/find_range/?ip_str='+ip_str+'&ip_type=' + ip_type, do_redirect);
-    }
-    function do_redirect(e) {
-        var obj = jQuery.parseJSON(e);
-        if (obj.success){
-            window.open(obj.redirect_url);
-        } else {
-            alert(obj.message);
-        }
-    }
-
-    $(document).ready(function() {
-
-        $("a.goto_range").click(function (){
-            var args = $(this).attr("rel").split('|');
-            var ip_str = args[0];
-            var ip_type = args[1];
-            $.get('/core/range/find_range/?ip_str='+ip_str+'&ip_type=' + ip_type, do_redirect);
-        });
-    });
-</script>
 <dl class="show">
 <dt>Interfaces (for DNS): </dt>
-<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.notes }}</pre></dd>
-<pre>
     <table>
-    <tr><th>Interface</th><th>MAC</th><th>FQDN</th><th>IP Address</th><th>DHCP Enabled</th><th>DNS Enabled</th><th>Action</th></tr>
+    <tr><th>Int</th><th>MAC</th><th>FQDN</th><th>IP Address</th><th>DHCP</th><th>DNS</th><th>Action</th></tr>
     {% for intr in interfaces %}
         <tr>
         <td>{{ intr.interface_name() }}</td>
@@ -191,8 +150,8 @@
         <td>{{ intr.ip_str }} <a href='{{ intr.reverse_domain.get_absolute_url() }}'>View Domain</a> <a target="_blank" style='cursor:pointer;' rel='{{intr.ip_str}}|{{intr.ip_type}}' class="goto_range">View Range</a></td>
         <td>{{ intr.dhcp_enabled }}</td>
         <td>{{ intr.dns_enabled }}</td>
-        <td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a><pre></td>
-        <tr>
+        <td><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a></td>
+        </tr>
     {% endfor %}
     </table>
 </pre></dd>
@@ -218,4 +177,27 @@
 <a href="{{ "systems.views.system_edit"|url(system.id) }}">Edit</a>
 {% endif %}
 <a href="{{ "systems.views.home"|url() }}">Back</a>
+<script type='text/javascript'>
+    function goto_range(ip_str, ip_type){
+        $.get('/core/range/find_range/?ip_str='+ip_str+'&ip_type=' + ip_type, do_redirect);
+    }
+    function do_redirect(e) {
+        var obj = jQuery.parseJSON(e);
+        if (obj.success){
+            window.open(obj.redirect_url);
+        } else {
+            alert(obj.message);
+        }
+    }
+
+    $(document).ready(function() {
+
+        $("a.goto_range").click(function (){
+            var args = $(this).attr("rel").split('|');
+            var ip_str = args[0];
+            var ip_type = args[1];
+            $.get('/core/range/find_range/?ip_str='+ip_str+'&ip_type=' + ip_type, do_redirect);
+        });
+    });
+</script>
 {% endblock %}
