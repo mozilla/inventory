@@ -203,6 +203,7 @@ class SystemHandler(BaseHandler):
                             except:
                                 pass
                 if 'system_rack' in request.POST:
+                    sr = None
                     if request.POST['system_rack'] == '':
                         s.system_rack = None
                     else:
@@ -210,7 +211,15 @@ class SystemHandler(BaseHandler):
                             sr = SystemRack.objects.get(id=request.POST['system_rack'])
                             s.system_rack = sr
                         except:
-                            pass
+                            sr = None
+                        try:
+                            sr_post = request.POST.get('system_rack').replace(" ","")
+                            sr_location = sr_post.split("-")[0]
+                            sr_rack = "%s-%s" % (sr_post.split("-")[1], sr_post.split("-")[2])
+                            sr = SystemRack.objects.get(name=sr_rack, location__name=sr_location)
+                            s.system_rack = sr
+                        except:
+                            sr = None
                         #resp = rc.NOT_FOUND
                         #resp.write("System Rack Not Found") 
                 if 'location' in request.POST:
