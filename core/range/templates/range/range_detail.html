@@ -68,7 +68,7 @@
                             {{ object[3].fqdn }} (<a href="{{ object[3].get_absolute_url() }}">A</a>/<a href="{{ object[2].get_absolute_url() }}">PTR</a>)
                         </td>
                         <td>
-                            <b>Combine</b> <a href="/core/interface/combine_a_ptr_to_interface/{{ object[3].pk}}/{{ object[2].pk }}/">A/PTR to Interface.</a>
+                            <b>Combine</b> <a class='combine_to_system' rel="{{ object[3].pk}}|{{ object[2].pk }}" href="/core/interface/combine_a_ptr_to_interface/{{ object[3].pk}}/{{ object[2].pk }}/">A/PTR to Interface.</a>
                         </td>
                         {% elif object[0] == "Interface" %}
                         <td>
@@ -102,6 +102,72 @@
             </tbody>
         </table>
     {% endif %}
+<div id="add-dialog" title="Add System to Rack" style='display: none;'>
+    <div>Search: <input type='text' name='system_search' id='system_search' style='width: 159px;' value=''></div>
+</div>
+    <script type='text/javascript'>
+        function update_link(obj, system_id, hostname){
+            link_text = '<a href="/systems/view/' + system_id + '/">' + hostname + '</a>';
+            obj.closest('td').prev('td').html('System ' + link_text);   
+            obj.closest('td').html(' ');
+        }
+        $(document).ready(function() {
+            $(".combine_to_system").click(function(){
+                var prev_hostname = $(this).closest('td').prev('td').html().trim().split(" (")[0].replace(/\.mozilla\.com|net|org/g, '');
+                $("#system_search").val(prev_hostname);
+                var the_rel = $(this).attr('rel');
+                var rel_arr = the_rel.split("|");
+                var addr_pk = rel_arr[0];
+                var ptr_pk = rel_arr[1];
 
+
+                var d = $( "#add-dialog" ).dialog({
+                        title: 'Associate to System',
+                        autoShow: false,
+                        buttons: {
+                            "Save": function() {
+                            $.post('/core/interface/combine_a_ptr_to_interface/' + addr_pk + '/' + ptr_pk + '/',
+                                { 'is_ajax': '1', 'system_hostname': $("#system_search").val() },
+                                function(data){
+                                    var obj = jQuery.parseJSON(data);
+                                    if(obj.success == true){
+                                        update_link($("a[rel=" + the_rel + "]"), obj.id, obj.hostname);
+                                    } else {
+
+                                        alert(obj.error);
+
+                                    }
+                                });
+                                
+                                $( this ).dialog( "close" );
+                            },
+                            Cancel: function() {
+                                $( this ).dialog( "close" );
+                            }
+                        }
+                        
+                        });
+                d.show();
+                return false;
+            });
+
+    var ac = $('#system_search').autocomplete({
+                serviceUrl:'/en-US/systems/system_auto_complete_ajax/',
+                minChars:2,
+                deferRequestBy: 500,
+                maxHeight:400
+            });
+});
+</script>
+<script type="text/javascript" src="/static/js/jquery-ui-1.8.11.custom.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.autocomplete-min.js"></script>
+<link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
+<style type='text/css'>
+    .autocomplete-w1 { border-right: 1 px solid #F0F0F0; position:absolute; top:0px; width: 150px; left:0px; margin:6px 0 0 6px; /* IE6 fix: */ _background:none; _margin:1px 0 0 0; }
+    .autocomplete { background:#FFF; cursor:default; text-align:left; max-height:350px; background-color: #FEFEFE; width: 150px; margin:-6px 6px 6px -6px;}
+    .autocomplete .selected { background:#F0F0F0; }
+    .autocomplete div { border-bottom: 1px solid #999; border-left: 1px solid #999; border-right: 1px solid #999; padding:2px 5px; white-space:nowrap; width: 149px; overflow:visible; background-color: #FEFEFE;}
+    .autocomplete strong { font-weight:normal; color:#3399FF; }
+</style>
 
 {% endblock %}

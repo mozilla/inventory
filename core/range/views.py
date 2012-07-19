@@ -204,6 +204,7 @@ def redirect_to_range_from_ip(request):
              'redirect_url':range_[0].get_absolute_url()}))
 
 
+
 class RangeUpdateView(RangeView, CoreUpdateView):
     """ """
 
