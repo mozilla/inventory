@@ -10,7 +10,7 @@ from mozdns.ip.utils import ip2dns_form, nibbilize
 
 import pdb
 
-class StaticRegTests(TestCase):
+class PTRStaticRegTests(TestCase):
     def create_domain(self, name, ip_type=None, delegated=False):
         if ip_type is None:
             ip_type = '4'

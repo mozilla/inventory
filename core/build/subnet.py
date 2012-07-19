@@ -44,7 +44,7 @@ def build_subnet(network):
 
     for intr in intrs:
         build_str += "\thost {0} {{\n".format(intr.fqdn)
-        #build_str += "\t\thardware ethernet {0};\n".format(intr.mac)
+        build_str += "\t\thardware ethernet {0};\n".format(intr.mac)
         build_str += "\t\tfixed-address {0};\n".format(intr.ip_str)
         build_str += "\t}\n\n"
 

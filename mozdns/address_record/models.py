@@ -80,6 +80,7 @@ class BaseAddressRecord(Ip):
             if self.nameserver_set.exists():
                 raise ValidationError("Cannot delete the record {0}. It is "
                     "a glue record.".format(self.record_type()))
+        if kwargs.pop('check_cname', True):
             if CNAME.objects.filter(data=self.fqdn):
                 raise ValidationError("A CNAME points to this {0} record. "
                     "Change the CNAME before deleting this record.".

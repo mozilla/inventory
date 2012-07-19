@@ -142,16 +142,17 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
                     "for a Nameserver. Change the Nameserver to edit this "
                     "record.")
 
+    def record_type(self):
+        return "A/PTR"
+
     def delete(self, *args, **kwargs):
         if kwargs.pop('validate_glue', True):
             if self.intrnameserver_set.exists():
                 raise ValidationError("Cannot delete the record {0}. It is a "
                     "glue record.".format(self.record_type()))
-            if CNAME.objects.filter(data=self.fqdn):
-                raise ValidationError("A CNAME points to this {0} record. "
-                    "Change the CNAME before deleting this record.".
-                    format(self.record_type()))
-        super(StaticInterface, self).delete(validate_glue=False)
+        check_cname = kwargs.pop("check_cname", True)
+        super(StaticInterface, self).delete(validate_glue=False,
+                check_cname=check_cname)
 
     def __repr__(self):
         return "<StaticInterface: {0}>".format(str(self))
