@@ -145,6 +145,39 @@ def get_nic_objs():
                 interfaces.append(interface)
     return interfaces
 
+def build_nics_from_system(system):
+    """
+    Pass a :class:`System` instance to this function and it will return a list
+    of :class:`Interface` objects. Use the interface objects as a proxy for the
+    KV store. I.E:
+
+        >>> system = <System: try-mac-slave07>
+        >>> nics = build_nics(
+        >>> nics
+        [<Interface: nic.0.0 IP: [u'10.2.90.239'] Hostname: try-mac-slave07>]
+        >>> nics[0].alias
+        u'0'
+        >>> nics[0].primary
+        u'0'
+        >>> nics[0].mac
+        u'00:16:cb:a7:36:4a'
+        >>> nics[0].ips
+        [u'10.2.90.239']
+        >>> nics[0].name
+        u'nic0'
+        >>> nics[0].hostname
+        u'try-mac-slave07'
+    """
+    raw_nics = system.keyvalue_set.all()
+    formated_nics = transform_nics(raw_nics)
+    interfaces = []
+    for primary_nic_number, primary_nic in formated_nics.items():
+        for sub_nic_number, sub_nic in primary_nic['sub_nics'].items():
+            interface = build_nic(sub_nic)
+            if not interface:
+                continue
+            interfaces.append(interface)
+    return interfaces
 
 def get_dns_data():
     dns_data, nic_objs = _get_dns_data()
