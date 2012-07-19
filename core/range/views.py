@@ -183,13 +183,15 @@ def redirect_to_range_from_ip(request):
         try:
             ip_upper, ip_lower = 0, int(ipaddr.IPv4Address(ip_str))
         except ipaddr.AddressValueError, e:
-            return HttpResonse(json.dumps({'failure':"Failure to recognize {0} as an IPv4 "
-                    "Address.".format(ip_str)}))
+            return HttpResonse(json.dumps({'success': False,
+                'message':"Failure to recognize {0} as an IPv4 "
+                "Address.".format(ip_str)}))
     else:
         try:
             ip_upper, ip_lower = ipv6_to_longs(ip_str)
         except ValidationError, e:
-            return HttpResponse(json.dumps({'failure': 'Invalid IP'}))
+            return HttpResponse(json.dumps({'success': False,
+                'message': 'Invalid IP'}))
 
     range_ = Range.objects.filter(start_upper__lte=ip_upper,
             start_lower__lte=ip_lower, end_upper__gte=ip_upper,
@@ -198,7 +200,8 @@ def redirect_to_range_from_ip(request):
         return HttpResponse(json.dumps({'failure':"Failture to find range"}))
     else:
         return HttpResponse(json.dumps(
-            {'success': True,range_[0].get_absolute_url()}))
+            {'success': True,
+             'redirect_url':range_[0].get_absolute_url()}))
 
 
 class RangeUpdateView(RangeView, CoreUpdateView):

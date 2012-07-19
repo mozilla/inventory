@@ -156,10 +156,10 @@
     }
     function do_redirect(e) {
         var obj = jQuery.parseJSON(e);
-        if ('success' in obj){
-            window.open(obj["success"]);
+        if (obj.success){
+            window.open(obj.redirect_url);
         } else {
-            alert(obj["failture"]);
+            alert(obj.message);
         }
     }
 
