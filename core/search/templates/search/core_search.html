@@ -1,0 +1,20 @@
+{% extends "core/core_base.html" %}
+{% block core_content %}
+
+<style type="text/css">
+.center{
+    text-align: center;
+}
+</style>
+<div class="center">
+<h1>Inventory</h1>
+    <form method="post">
+    <input id="id_search" type="text" maxlength="50" name="search">
+    <br>
+    <input value="Search" title="Search" type="submit" id="btn_s">
+    <input value="I'm Feeling Lucky" title="I'm Feeling Lucky" name="lucky" type="submit" id="btn_i">
+    </form>
+</div>
+<div class="results">
+</div>
+{% endblock %}
