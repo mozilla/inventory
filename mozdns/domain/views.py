@@ -171,7 +171,6 @@ class DomainCreateView(DomainView, CreateView):
                 'form': domain_form,
                 'form_title': 'Create Domain'
         })
-        pdb.set_trace()
 
         try:
             if domain.master_domain and domain.master_domain.soa:
