@@ -70,6 +70,13 @@ class SystemResource(CustomAPIResource):
 
 class ServerModelResource(CustomAPIResource):
     class Meta(CustomAPIResource.Meta):
+        filtering = {
+            'name': ALL,
+            'vendor': ALL,
+            'model': ALL
+
+
+        }
         serializer = PrettyJSONSerializer()
         resource_name = 'server_model'
         queryset = system_model.ServerModel.objects.all()
