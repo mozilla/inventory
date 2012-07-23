@@ -17,7 +17,7 @@ def build_subnet(network):
     ip_lower_end = int(network.network.broadcast) - 1
     intrs = StaticInterface.objects.filter(ip_upper=0,
             ip_lower__gte=ip_lower_start, ip_lower__lte=ip_lower_end,
-            dhcp_enabled=True)
+            dhcp_enabled=True, ip_type='4')
     ranges = network.range_set.all()
 
     # Let's assume all options need a ';' appended.
