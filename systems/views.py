@@ -25,9 +25,10 @@ from libs.jinja import render_to_response as render_to_response
 from jingo import render
 from django.views.decorators.csrf import csrf_exempt
 from Rack import Rack
-
 from core.interface.static_intr.models import StaticInterface
 
+from MozInvAuthorization.KeyValueACL import KeyValueACL 
+>>>>>>> master
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
 def tryint(s):
@@ -143,15 +144,15 @@ def list_all_systems_ajax(request):
                 search_q = Q(hostname__icontains=search_term)
         else:
             search_q = Q(hostname__icontains=search_term)
-        search_q |= Q(serial__contains=search_term)
-        search_q |= Q(notes__contains=search_term)
+        search_q |= Q(serial__icontains=search_term)
+        search_q |= Q(notes__icontains=search_term)
         search_q |= Q(asset_tag=search_term)
-        search_q |= Q(oob_ip__contains=search_term)
+        search_q |= Q(oob_ip__icontains=search_term)
+        search_q |= Q(keyvalue__value__icontains=search_term)
         try:
-            total_count = models.System.with_related.filter(search_q).count()
+            total_count = models.System.with_related.filter(search_q).distinct('hostname').count()
         except:
             total_count = 0
-        search_q |= Q(keyvalue__value__contains=search_term)
         end_display = int(iDisplayStart) + int(iDisplayLength)
         try:
             systems = models.System.with_related.filter(search_q).order_by('hostname').distinct('hostname')[iDisplayStart:end_display]
@@ -286,11 +287,48 @@ def delete_key_value(request, id, system_id):
 @csrf_exempt
 def save_key_value(request, id):
     system_id = None
+    validated = True
+    resp = {'success': True, 'errorMessage' : ''}
+    post_key = request.POST.get('key').strip()
+    post_value = request.POST.get('value').strip()
+    """
+        Create the key value acl object.
+        We can use it to validate based on criteria below
+    """
+    try:
+        tmp = models.KeyValue.objects.get(id=id)
+        system = tmp.system
+    except Exception, e:
+        print e
+        pass
+
+        
+    acl = KeyValueACL(request)
+    if post_key == 'shouldfailvalidation':
+        resp['success'] = False
+        resp['errorMessage'] = 'Validation Failed'
+        validated = False
     kv = models.KeyValue.objects.get(id=id)
-    if kv is not None:
+    if kv is not None and validated:
         ##Here we eant to check if the existing key is a network adapter. If so we want to find out if it has a dhcp scope. If so then we want to add it to ScheduledTasks so that the dhcp file gets regenerated
         matches = re.search('^nic\.(\d+)', str(kv.key).strip() )
+        """
+            Check to see if we have a network adapter
+            If so we need to flag the dhcp zone file to be regenerated
+        """
         if matches and matches.group(1):
+            """
+                Check to see if it's an ipv4_address key
+                run KeyValueACL.check_ip_not_exist_other_system
+            """
+            #import pdb; pdb.set_trace()
+            if re.search('^nic\.(\d+)\.ipv4_address', str(post_key).strip() ):
+                try:
+                    acl.check_ip_not_exist_other_system(system, post_value)
+                except Exception, e:
+                    resp['success'] = False
+                    resp['errorMessage'] = str(e)
+                    return HttpResponse(json.dumps(resp))
             try:
                 existing_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
                 if existing_dhcp_scope is not None:
@@ -307,7 +345,7 @@ def save_key_value(request, id):
             kv.key = request.POST.get('key').strip()
             kv.value = request.POST.get('value').strip()
             system_id = str(kv.system_id)
-            kv.save() # This is going to be throwing usefull exceptions. We should figure out a way to forward them to users.
+            kv.save()
         except:
             kv.key = None
             kv.value = None
@@ -342,7 +380,8 @@ def save_key_value(request, id):
                         pass
 
 
-    return HttpResponseRedirect('/en-US/systems/get_key_value_store/' + system_id + '/')
+    return HttpResponse(json.dumps(resp));
+    #return HttpResponseRedirect('/en-US/systems/get_key_value_store/' + system_id + '/')
 
 @csrf_exempt
 def create_key_value(request, id):
@@ -433,6 +472,9 @@ def save_network_adapter(request, id):
 @allow_anyone
 def system_show(request, id):
     system = get_object_or_404(models.System, pk=id)
+    if system.notes:
+        system.notes = system.notes.replace("\n", "<br />")
+    show_nics_in_key_value = False
     is_release = False
     try:
         client = Client()
@@ -447,6 +489,10 @@ def system_show(request, id):
             system.server_model.vendor == "HP"):
 
         system.warranty_link = "http://www11.itrc.hp.com/service/ewarranty/warrantyResults.do?productNumber=%s&serialNumber1=%s&country=US" % (system.server_model.part_number, system.serial)
+    if show_nics_in_key_value:
+        key_values = system.keyvalue_set.all()
+    else:
+        key_values = system.keyvalue_set.exclude(key__istartswith='nic.')
 
     intrs = StaticInterface.objects.filter(system = system)
 
@@ -454,6 +500,7 @@ def system_show(request, id):
             'system': system,
             'interfaces': intrs,
             'adapters': adapters,
+            'key_values': key_values,
             'is_release': is_release,
             'read_only': getattr(request, 'read_only', False),
            },
@@ -659,14 +706,20 @@ def racks(request):
 
 def getoncall(request, type):
     from django.contrib.auth.models import User
+    return_irc_nick = ''
     if type == 'desktop':
         try:
             return_irc_nick = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].get_profile().irc_nick
         except:
             return_irc_nick = ''
-    if type == 'sysadmin':
+    elif type == 'sysadmin':
         try:
             return_irc_nick = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].get_profile().irc_nick
+        except:
+            return_irc_nick = ''
+    elif type == 'services':
+        try:
+            return_irc_nick = User.objects.select_related().filter(userprofile__current_services_oncall=1)[0].get_profile().irc_nick
         except:
             return_irc_nick = ''
     return HttpResponse(return_irc_nick)
@@ -674,6 +727,7 @@ def oncall(request):
     from forms import OncallForm
     from django.contrib.auth.models import User
     #current_desktop_oncall = models.UserProfile.objects.get_current_desktop_oncall
+    #import pdb; pdb.set_trace()
     try:
         current_desktop_oncall = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].username
     except IndexError:
@@ -682,9 +736,15 @@ def oncall(request):
         current_sysadmin_oncall = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].username
     except IndexError:
         current_sysadmin_oncall = ''
+    try:
+        current_services_oncall = User.objects.select_related().filter(userprofile__current_services_oncall=1)[0].username
+    except IndexError:
+        current_services_oncall = ''
+
     initial = {
         'desktop_support':current_desktop_oncall,
         'sysadmin_support':current_sysadmin_oncall,
+        'services_support':current_services_oncall,
             }
     if request.method == 'POST':
         form = OncallForm(request.POST, initial=initial)
@@ -692,38 +752,38 @@ def oncall(request):
             """
                Couldn't get the ORM to update properly so running a manual transaction. For some reason, the model refuses to refresh
             """
-            from django.db import connection, transaction
-            cursor = connection.cursor()
-            cursor.execute("UPDATE `user_profiles` set `current_desktop_oncall` = 0, `current_sysadmin_oncall` = 0")
-            transaction.commit_unless_managed()
-
-            ## There should only be one set oncall, but just in case it's cheap to loop through
-            ## @TODO Figure out why the orm won't update correctly after this transaction
-            """current_sysadmin_oncalls = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)
-            for c in current_sysadmin_oncalls:
-                c.get_profile().current_sysadmin_oncall = 0
-                c.get_profile().current_desktop_oncall = 0
-                c.get_profile().save()
-                c.save()
-            User.objects.update()
-            ## There should only be one set oncall, but just in case it's cheap to loop through
-            current_desktop_oncalls = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)
-            for c in current_desktop_oncalls:
-                c.get_profile().current_desktop_oncall = 0
-                c.get_profile().save()
-                c.save()
-            User.objects.update()"""
-
             current_desktop_oncall = form.cleaned_data['desktop_support']
             current_sysadmin_oncall = form.cleaned_data['sysadmin_support']
-            if current_desktop_oncall != current_sysadmin_oncall:
+            current_services_oncall = form.cleaned_data['services_support']
+            if clear_oncall_orm():
                 set_oncall('desktop', current_desktop_oncall)
                 set_oncall('sysadmin', current_sysadmin_oncall)
-            elif current_desktop_oncall == current_sysadmin_oncall:
-                set_oncall('both', current_sysadmin_oncall)
+                set_oncall('services', current_services_oncall)
     else:
         form = OncallForm(initial = initial)
-    return render(request, 'systems/generic_form.html', {'current_desktop_oncall':current_desktop_oncall,'current_sysadmin_oncall':current_sysadmin_oncall, 'form':form})
+    return render(request, 'systems/generic_form.html', {'current_services_oncall':current_services_oncall, 'current_desktop_oncall':current_desktop_oncall,'current_sysadmin_oncall':current_sysadmin_oncall, 'form':form})
+
+def clear_oncall():
+    from django.db import connection, transaction
+    cursor = connection.cursor()
+    cursor.execute("UPDATE `user_profiles` set `current_desktop_oncall` = 0, `current_sysadmin_oncall` = 0, `current_services_oncall` = 0")
+    transaction.commit_unless_managed()
+
+def clear_oncall_orm():
+    from django.contrib.auth.models import User
+    users = User.objects.all()
+    for user in users:
+        try:
+            profile = user.get_profile()
+            profile.current_sysadmin_oncall = 0
+            profile.current_desktop_oncall = 0
+            profile.current_services_oncall = 0
+            profile.save()
+            user.save()
+        except Exception, e:
+            continue
+
+    return True
 def set_oncall(type, username):
     from django.contrib.auth.models import User
     try:
@@ -732,9 +792,12 @@ def set_oncall(type, username):
             new_oncall.get_profile().current_desktop_oncall = 1
         elif type=='sysadmin':
             new_oncall.get_profile().current_sysadmin_oncall = 1
-        elif type=='both':
+        elif type=='services':
+            new_oncall.get_profile().current_services_oncall = 1
+        elif type=='all':
             new_oncall.get_profile().current_sysadmin_oncall = 1
             new_oncall.get_profile().current_desktop_oncall = 1
+            new_oncall.get_profile().current_services_oncall = 1
         new_oncall.get_profile().save()
         new_oncall.save()
     except Exception, e:

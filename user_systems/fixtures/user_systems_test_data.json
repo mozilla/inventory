@@ -15,10 +15,12 @@
       "user": 1,
       "irc_nick": "user1",
       "is_desktop_oncall": "1",
+      "is_services_oncall": "0",
       "pager_type": "sms",
       "pager_number": "1231231234",
       "epager_address": "user1@domain.com",
       "current_desktop_oncall": "1",
+      "current_services_oncall": "0",
       "is_sysadmin_oncall": "1"
     }
   },
@@ -38,10 +40,12 @@
       "user": 2,
       "irc_nick": "user2",
       "is_desktop_oncall": "1",
+      "is_services_oncall": "0",
       "pager_type": "sms",
       "pager_number": "1231231234",
       "epager_address": "user2@domain.com",
       "current_sysadmin_oncall": "1",
+      "current_services_oncall": "0",
       "is_sysadmin_oncall": "1"
     }
   },
@@ -61,10 +65,12 @@
       "user": 3,
       "irc_nick": "user3",
       "is_desktop_oncall": "0",
+      "is_services_oncall": "0",
       "pager_type": "sms",
       "pager_number": "1231231234",
       "epager_address": "user3@domain.com",
       "current_sysadmin_oncall": "0",
+      "current_services_oncall": "0",
       "is_sysadmin_oncall": "1"
     }
   },
@@ -84,11 +90,40 @@
       "user": 4,
       "irc_nick": "user4",
       "is_desktop_oncall": "1",
+      "is_services_oncall": "1",
       "pager_type": "epager",
       "pager_number": "user4@domain.com",
-      "epager_address": "user4@domain.com",
+      "epager_address": "user3@domain.com",
       "current_sysadmin_oncall": "0",
+      "current_services_oncall": "0",
       "is_sysadmin_oncall": "0"
     }
+  },
+  {
+    "pk": 5, 
+    "model": "auth.user", 
+    "fields": {
+      "username": "user5@domain.com",
+      "first_name": "Services",
+      "last_name": "TestOncall",
+      "email": "user5@domain.com"
+    }
+  },{
+    "pk": 5, 
+    "model": "systems.userprofile", 
+    "fields": {
+      "user": 5,
+      "irc_nick": "user5",
+      "is_desktop_oncall": "0",
+      "is_sysadmin_oncall": "0",
+      "is_services_oncall": "1",
+      "pager_type": "epager",
+      "pager_number": "user5@domain.com",
+      "epager_address": "user5@domain.com",
+      "current_sysadmin_oncall": "0",
+      "current_desktop_oncall": "0",
+      "current_services_oncall": "1"
+    }
   }
+
 ]

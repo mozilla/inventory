@@ -2,6 +2,9 @@ import os
 import site
 
 os.environ['CELERY_LOADER'] = 'django'
+import os
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "inventory.settings"
 
 # Add the app dir to the python path so we can import manage.
 wsgidir = os.path.dirname(__file__)

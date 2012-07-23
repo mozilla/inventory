@@ -7,6 +7,10 @@
 <dd>{{ system.hostname }}</dd>
 <div style="clear:both;"></div>
 
+<dt>Created On:</dt>
+<dd>{{ system.created_on }}</dd>
+<div style="clear:both;"></div>
+
 <dt>Serial:</dt>
 <dd>{{ system.serial }}</dd>
 <div style="clear:both;"></div>
@@ -129,7 +133,7 @@
 
 <dl class="show">
 <dt>Notes: </dt>
-<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.notes }}</pre></dd>
+<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre style='width: 700px; white-space: normal;'>{{ system.notes }}</pre></dd>
 <div style="clear:both;"></div>
 </dl>
 
@@ -137,6 +141,7 @@
 <dl class="show">
 <dt>Interfaces (for DNS): </dt>
     <table>
+<<<<<<< HEAD
     <tr><th>Int</th><th>MAC</th><th>FQDN</th><th>IP Address</th><th>DHCP</th><th>DNS</th><th>Action</th></tr>
     {% for intr in interfaces %}
         <tr>
@@ -160,6 +165,21 @@
 <a href="/core/interface/{{system.pk}}/quick_create/">Quick Add Interface</a>
 </dl>
 
+</div>
+<dl class="show">
+<dt>Key/Value Store (without network adapters): </dt>
+<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;">
+<pre>
+    <table>
+    <tr><th>Key</th><th>Value</th></tr>
+    {% for key in key_values %}
+        <tr><td>{{key.key}}</td><td>{{ key.value }}</td></tr>
+    {% endfor %}
+    </table>
+
+</pre></dd>
+<div style="clear:both;"></div>
+</dl>
 </div>
 {% if not read_only %}
 <div>

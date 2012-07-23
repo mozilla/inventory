@@ -20,3 +20,8 @@ src/
 build/
 */*.*_auto__.*
 migrations/*
+private.json
+truth.json
+private_tests.py
+tastytools/*.pyc
+*.pyc

@@ -1,0 +1,25 @@
+TODO
+====
+
+Short Term
+----------
+
+Ignacio:
+- RTD documentation
+- Resolve the infinite test data in the database
+
+Junique:
+- Define setup_test_(get|post) to allow intervension on application specific cases
+  for different cases
+
+Seba:
+- example_class will no longer be required on the class Meta
+- 
+
+
+Long Term
+---------
+- client for the api in the documentation
+- allow test exclussions
+- remove unicity tests by automagically resolving circular references
+- Automatically and nicely Handle post request missing fields

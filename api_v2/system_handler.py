@@ -153,49 +153,73 @@ class SystemHandler(BaseHandler):
                 except:
                     pass
                 if 'allocation' in request.POST:
-                    try:
-                        sa = Allocation.objects.get(id=request.POST['allocation'])
-                        s.allocation = sa
-                    except Exception, e:
-                        pass
-                        resp = rc.NOT_FOUND
-                        resp.write("Server Not Found %s" % e) 
-                if 'server_model' in request.POST:
-                    try:
-                        sm = ServerModel.objects.get(id=request.POST['server_model'])
-                        s.server_model = sm
-                    except:
-                        pass
-                        #resp = rc.NOT_FOUND
-                        #resp.write("Server Not Found") 
-                if 'operating_system' in request.POST:
-                    try:
-                        sos = OperatingSystem.objects.get(id=request.POST['operating_system'])
-                        s.operating_system = sos
-                    except Exception, e:
-                        resp = rc.NOT_FOUND
-                        resp.write(e)
-                        return resp
-                        #pass
-                if 'system_status' in request.POST:
-                    ss = None
-                    try:
-                        ss = SystemStatus.objects.get(status=request.POST['system_status'])
-                        s.system_status = ss
-                    except:
-                        pass
-                    if ss is None:
+                    if request.POST['allocation'] == '':
+                        s.allocation = None
+                    else:
                         try:
-                            ss = SystemStatus.objects.get(id=request.POST['system_status'])
+                            sa = Allocation.objects.get(id=request.POST['allocation'])
+                            s.allocation = sa
+                        except Exception, e:
+                            pass
+                            resp = rc.NOT_FOUND
+                            resp.write("Server Not Found %s" % e) 
+                if 'server_model' in request.POST:
+                    if request.POST['server_model'] == '':
+                        s.server_model = None
+                    else:
+                        try:
+                            sm = ServerModel.objects.get(id=request.POST['server_model'])
+                            s.server_model = sm
+                        except:
+                            pass
+                            #resp = rc.NOT_FOUND
+                            #resp.write("Server Not Found") 
+                if 'operating_system' in request.POST:
+                    if request.POST['operating_system'] == '':
+                        s.operating_system = None
+                    else:
+                        try:
+                            sos = OperatingSystem.objects.get(id=request.POST['operating_system'])
+                            s.operating_system = sos
+                        except Exception, e:
+                            resp = rc.NOT_FOUND
+                            resp.write(e)
+                            return resp
+                            #pass
+                if 'system_status' in request.POST:
+                    if request.POST['system_status'] == '':
+                        s.system_status = None
+                    else:
+                        ss = None
+                        try:
+                            ss = SystemStatus.objects.get(status=request.POST['system_status'])
                             s.system_status = ss
                         except:
                             pass
+                        if ss is None:
+                            try:
+                                ss = SystemStatus.objects.get(id=request.POST['system_status'])
+                                s.system_status = ss
+                            except:
+                                pass
                 if 'system_rack' in request.POST:
-                    try:
-                        sr = SystemRack.objects.get(id=request.POST['system_rack'])
-                        s.system_rack = sr
-                    except:
-                        pass
+                    sr = None
+                    if request.POST['system_rack'] == '':
+                        s.system_rack = None
+                    else:
+                        try:
+                            sr = SystemRack.objects.get(id=request.POST['system_rack'])
+                            s.system_rack = sr
+                        except:
+                            sr = None
+                        try:
+                            sr_post = request.POST.get('system_rack').replace(" ","")
+                            sr_location = sr_post.split("-")[0]
+                            sr_rack = "%s-%s" % (sr_post.split("-")[1], sr_post.split("-")[2])
+                            sr = SystemRack.objects.get(name=sr_rack, location__name=sr_location)
+                            s.system_rack = sr
+                        except:
+                            sr = None
                         #resp = rc.NOT_FOUND
                         #resp.write("System Rack Not Found") 
                 if 'location' in request.POST:
@@ -231,7 +255,7 @@ class SystemHandler(BaseHandler):
                 s.save()
                 resp = rc.ALL_OK
                 resp.write('json = {"id":%i, "hostname":"%s"}' % (s.id, s.hostname))
-            except:
+            except Exception, e:
                 resp = rc.NOT_FOUND
                 resp.write("System Updated")
             return resp
