@@ -28,7 +28,6 @@ from Rack import Rack
 from core.interface.static_intr.models import StaticInterface
 
 from MozInvAuthorization.KeyValueACL import KeyValueACL 
->>>>>>> master
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
 def tryint(s):
