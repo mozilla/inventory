@@ -165,17 +165,18 @@ class DomainCreateView(DomainView, CreateView):
         domain_form = DomainForm(request.POST)
         # Try to create the domain. Catch all exceptions.
         try:
-            domain = domain_form.save(commit=False)
+            domain = domain_form.save()
         except ValueError, e:
             return render(request, "mozdns/mozdns_form.html", {
                 'form': domain_form,
                 'form_title': 'Create Domain'
         })
+        pdb.set_trace()
 
-        if domain_form.cleaned_data['inherit_soa'] and domain.master_domain:
-            domain.soa = domain.master_domain.soa
         try:
-            domain.save()
+            if domain.master_domain and domain.master_domain.soa:
+                domain.soa = domain.master_domain.soa
+                domain.save()
         except ValidationError, e:
             return render(request, "mozdns/mozdns_form.html", {'form':
                 domain_form, 'form_title': 'Create Domain'})

@@ -65,10 +65,7 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
 
     def save(self, *args, **kwargs):
         # Only CNAME uses this kwarg.
-        if 'no_build' in kwargs:
-            no_build = kwargs.pop('no_build')  # Removes key.
-        else:
-            no_build = False  # We are rebuilding
+        no_build = kwargs.pop('no_build', False)
         super(MozdnsRecord, self).save(*args, **kwargs)
         if no_build:
             pass

@@ -2,8 +2,13 @@
 
 {% block dns_content %}
     <div class='dns-title'>The {{ object.name }} Domain</div>
+    {% if object.master_domain %}
+    Goto <a class="btn" href="{{ object.master_domain.get_absolute_url() }}">{{ object.master_domain.name }}</a>
+    <br>
+    {% endif %}
     {% if object.soa %}
-    <p><a class="btn" href="{{ object.soa.get_absolute_url() }}">View SOA</a></p>
+    <a class="btn" href="{{ object.soa.get_absolute_url() }}">View SOA</a>
+    <br>
     {% endif %}
     <a class="btn" href="{{ object.get_edit_url() }}">Edit</a>
     <a class="btn" href="{{ object.get_delete_url() }}">Delete</a>

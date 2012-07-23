@@ -13,6 +13,7 @@ class Interface(object):
     hostname = None
     system = None
     nic_ = None
+    keys = set()
 
     def __init__(self, system, sub_nic):
         self.system = system
@@ -50,12 +51,17 @@ class Interface(object):
         setattr(self, key, value)
         return
 
+    def delete(self):
+        for nic in self._nic:
+            nic.delete()
+
     def pprint(self):
         pp.pformat(vars(self))
 
     def __str__(self):
         return "nic.{0}.{1} IP: {2} Hostname: {3}".format(self.primary,
                 self.alias, self.ips, self.hostname)
+
     def __repr__(self):
         return "<Interface: {0}>".format(self)
 
@@ -78,6 +84,7 @@ def build_nic(sub_nic):
                         .format(intr.system, intr.system.pk), WARNING)
                 log(pp.pformat(sub_nic), WARNING)
             intr.mac = nic_data.value
+            intr.keys.append('mac')
             continue
         if is_hostname_key.match(nic_data.key):
             if intr.hostname is not None:
@@ -87,6 +94,7 @@ def build_nic(sub_nic):
                         .format(intr.system, intr.system.pk), WARNING)
                 log(pp.pformat(sub_nic), WARNING)
             intr.hostname = nic_data.value
+            intr.keys.append('hostname')
             continue
         if is_ip_key.match(nic_data.key):
             intr.ips.append(nic_data.value)
@@ -110,6 +118,7 @@ def build_nic(sub_nic):
             if hasattr(intr, tmp.group(1)):
                 setattr(intr, tmp.group(1), [nic_data.value,
                     getattr(intr, tmp.group(1))])
+                intr.keys.append(tmp.group(s))
 
             else:
                 setattr(intr, tmp.group(1), nic_data.value)
@@ -145,6 +154,39 @@ def get_nic_objs():
                 interfaces.append(interface)
     return interfaces
 
+def build_nics_from_system(system):
+    """
+    Pass a :class:`System` instance to this function and it will return a list
+    of :class:`Interface` objects. Use the interface objects as a proxy for the
+    KV store. I.E:
+
+        >>> system = <System: try-mac-slave07>
+        >>> nics = build_nics(
+        >>> nics
+        [<Interface: nic.0.0 IP: [u'10.2.90.239'] Hostname: try-mac-slave07>]
+        >>> nics[0].alias
+        u'0'
+        >>> nics[0].primary
+        u'0'
+        >>> nics[0].mac
+        u'00:16:cb:a7:36:4a'
+        >>> nics[0].ips
+        [u'10.2.90.239']
+        >>> nics[0].name
+        u'nic0'
+        >>> nics[0].hostname
+        u'try-mac-slave07'
+    """
+    raw_nics = system.keyvalue_set.all()
+    formated_nics = transform_nics(raw_nics)
+    interfaces = []
+    for primary_nic_number, primary_nic in formated_nics.items():
+        for sub_nic_number, sub_nic in primary_nic['sub_nics'].items():
+            interface = build_nic(sub_nic)
+            if not interface:
+                continue
+            interfaces.append(interface)
+    return interfaces
 
 def get_dns_data():
     dns_data, nic_objs = _get_dns_data()
