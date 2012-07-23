@@ -360,60 +360,60 @@ settings = {
 "bDestroy": true,
 "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
 /* Append the grade to the default row class name */
-if ( aData[0] > '' )
-{
-var arr = aData[0].split(/,/)
-$('td:eq(0)', nRow).html('<a href="/systems/show/' + arr[0] + '/">' + arr[1] + '</a>');
-}
-if ( aData[4] > '' )
-{
-var arr = aData[4].split(/,/)
-$('td:eq(4)', nRow).html('<a href="/systems/racks/?rack=' + arr[0] + '">' + arr[1] + '</a>');
-}
-if ( aData[6] == "production" )
-{
-$('td', nRow).addClass( 'production' );
-}
-if ( aData[5] > '' && aData[5].length > 1){
-$('td:eq(5)', nRow).html('<a target="_blank" href="https://' + aData[5] + '/">' + aData[5] + '</a>');
-} else {
-$('td:eq(5)', nRow).html('');
-}
+    if ( aData[0] > '' )
+    {
+        var arr = aData[0].split(/,/)
+            $('td:eq(0)', nRow).html('<a href="/systems/show/' + arr[0] + '/">' + arr[1] + '</a>');
+    }
+    if ( aData[4] > '' )
+    {
+        var arr = aData[4].split(/,/)
+            $('td:eq(4)', nRow).html('<a href="/systems/racks/?rack=' + arr[0] + '">' + arr[1] + '</a>');
+    }
+    if ( aData[6] == "production" )
+    {
+        $('td', nRow).addClass( 'production' );
+    }
+    if ( aData[5] > '' && aData[5].length > 1){
+        $('td:eq(5)', nRow).html('<a target="_blank" href="https://' + aData[5] + '/">' + aData[5] + '</a>');
+    } else {
+        $('td:eq(5)', nRow).html('');
+    }
 
-if ( aData[7] > 0){
-    var add_string = '<a href="/systems/show/' + aData[7] + '">Show</a>&nbsp;&nbsp;<a href="/systems/edit/' + aData[7] + '">Edit</a>&nbsp;<a href="/systems/delete/' + aData[7]+ '/" onclick="return confirm(\'Are you sure?\');">Delete</a>';
-    // At some point we're going to want to remove the delete option. Uncomment the following when that time comes
-    //var add_string = '<a href="/systems/show/' + aData[7] + '">Show</a>&nbsp;&nbsp;<a href="/systems/edit/' + aData[7] + '">Edit</a>';
-$('td:eq(7)', nRow).html(add_string);
-} else {
-$('td:eq(7)', nRow).html('');
-}
-return nRow;
+    if ( aData[7] > 0){
+        var add_string = '<a href="/systems/show/' + aData[7] + '">Show</a>&nbsp;&nbsp;<a href="/systems/edit/' + aData[7] + '">Edit</a>&nbsp;<a href="/systems/delete/' + aData[7]+ '/" onclick="return confirm(\'Are you sure?\');">Delete</a>';
+        // At some point we're going to want to remove the delete option. Uncomment the following when that time comes
+        //var add_string = '<a href="/systems/show/' + aData[7] + '">Show</a>&nbsp;&nbsp;<a href="/systems/edit/' + aData[7] + '">Edit</a>';
+        $('td:eq(7)', nRow).html(add_string);
+    } else {
+        $('td:eq(7)', nRow).html('');
+    }
+    return nRow;
 },
-"bJQueryUI": true,
-"bProcessing": true,
-"bServerSide": true,
-"sAjaxSource": "/en-US/systems/list_all_systems_ajax/"
-}
-		otable = $('#datagrid').dataTable( settings ).fnSetFilteringDelay(500);
-//console.log(otable.dataTableSettings[0]._iDisplayStart);
-$("#datagrid_filter > input").focus();
-window.onpopstate = function(event) {  
-    if(event.state){
-        settings = eval(event.state);
-        //console.log(settings);
-        oSettings = otable.fnSettings();
-        //oSettings = settings;
-        //To fix this, just remove up to the conditional and then uncomment. Also fix the next button callback
-        //oSettings.oPreviousSearch.sSearch = 'seamicro';
-        //oSettings.sSearch = 'seamicro';
-        if (settings.iDisplayLength){
-            oSettings._iDisplayLength = settings.iDisplayLength;
+    "bJQueryUI": true,
+    "bProcessing": true,
+    "bServerSide": true,
+    "sAjaxSource": "/en-US/systems/list_all_systems_ajax/"
+    }
+    otable = $('#datagrid').dataTable( settings ).fnSetFilteringDelay(500);
+    //console.log(otable.dataTableSettings[0]._iDisplayStart);
+    $("#datagrid_filter > input").focus();
+    window.onpopstate = function(event) {  
+        if(event.state){
+            settings = eval(event.state);
+            //console.log(settings);
+            oSettings = otable.fnSettings();
+            //oSettings = settings;
+            //To fix this, just remove up to the conditional and then uncomment. Also fix the next button callback
+            //oSettings.oPreviousSearch.sSearch = 'seamicro';
+            //oSettings.sSearch = 'seamicro';
+            if (settings.iDisplayLength){
+                oSettings._iDisplayLength = settings.iDisplayLength;
+            } 
+            oSettings.iInitDisplayStart = settings.iDisplayStart;
+            otable.fnDraw();
         } 
-        oSettings.iInitDisplayStart = settings.iDisplayStart;
-        otable.fnDraw();
-    } 
-}; 
-	});
+    }; 
+});
 </script>
 {% endblock %}

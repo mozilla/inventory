@@ -1,267 +1,167 @@
-import re
-import pdb
-
-"""
-<stmt>  -> <term> <stmt>
-<term>  -> <un> <word>
-        -> <un> <op>:<list>
-<list>  -> <word>, <list>
-        -> <word>
-<un>    -> ''|'-'
-<word>  -> letters and stuff
-"""
-
-def parse_statement(ll, args):
-    term = parse_term(ll)
-    if term:
-        args.append(term)
-        parse_statement(ll, args)
-
-def parse(ss):
-    l = Lexer(ss)
-    args = []
-    parse_statement(l, args)
-    return args
+from django.db.models import Q
+from core.network.utils import calc_parent
 
 
-def parse_term(ll):
-    word = ll.lex()
-    if not word:
+def sif(site):
+    if not site:
+        return [], None
+    misc = set()
+    networks = site.network_set.all()
+    if not networks:
         return None
-    word = word.strip(' ')
-    if word.startswith('-'):
-        un = 'exc'
-        word = word[1:]
-    else:
-        un = 'inc'
+    parent_net = calc_parent(networks[0])
+    if not parent_net:
+        parent_net = networks[0]
+    misc.add(site)
+    misc.add(parent_net)
+    # Return list to make consistent with vif
+    parent_net.update_network()
+    return [ipf(int(parent_net.network.network),
+        int(parent_net.network.broadcast), root=False)], misc
 
-    op = ""
-    has_list = False
-    for c in word:
-        op += c
-        if c == ':':
-            has_list = True
-            break
 
-    if has_list:
-        # Go back until the ':'
-        while True:
-            c = ll.peek()
-            if c == ":":
-                ll.pop()
-                break
-            else:
-                ll.unpop()
-        args = parse_list(ll)
-    else:
-        args = [op]
-        op = "text:"
+def vif(vlan, root=True):
+    if not vlan:
+        return [], None
+    misc = set()
+    if root:
+        misc.add(vlan)
+    range_queries = []
+    for network in v.net_set.all():
+        range_queries += nif(network, root=False)
+    return range_queries, misc
 
-    pdb.set_trace()
-    ex_args = expand_args(args)
-    return (un, op, ex_args)
 
-def expand_args(args):
+def nif(network, root=True):
+    if not network:
+        return [], None
+    misc = set()
+    misc = set()
+    if root:
+        misc.add(network)
+        if network.vlan:
+            misc.add(network.vlan)
+    if network.site:
+        misc.add(network.site)
+    # Return list to make consistent with vif
+    networ.update_network()
+    return [ipf(int(network.network.network), int(network.network.broadcast),
+        root=False)], misc
+
+
+def ipf(start, end, root=True):
     """
-    Apply any macro expansion on args.
-    Supported expansions (In order of application):
-
-        1) x1..3 == x1 x2 x3
+    Get all objects within start and end. Start and end *could* be numbers
+    larger than 64 bits.
     """
-    args = expand_range(args)
-    return args
+    start_upper = start >> 64
+    start_lower = start & (1 << 64) - 1
+    end_upper = start >> 64
+    end_lower = start & (1 << 64) - 1
 
-def expand_range(args):
-    regex = re.compile("((\d+)\.\.(\d+))")
-    new_args = []
+    query = Q(ip_upper__gte=start_upper, ip_upper__lte=end_upper)
+    query = query | Q(ip_upper=start_upper, ip_lower__gte=start_lower,
+            ip_lower__lte=end_lower)
+    return query
+
+def compile_search(args):
+    """
+    This function needs to look at all the args and aggrigate the results.
+    If There is an IP search it will do an IP Filter (ipf) and pass the
+    resulting Q set's to the Name Filter (nf). If there is not ipf then all
+    objects are subjected to a nf.
+    """
+    text_fs = []
+    n_text_fs = []
+
+    site_fs = []
+    n_site_fs = []
+
+    network_fs = []
+    n_network_fs = []
+
+    vlan_fs = []
+    n_vlan_fs = []
+
+    range_fs = []
+    n_range_fs = []
+
     for arg in args:
-        r = regex.search(arg)
-        if r:
-            rs = r.groups()[0]
-        else:
-            new_args.append(arg)
-            continue
-        new_arg = arg.replace(rs, "{0}")
-        start = int(r.groups()[1])
-        stop = int(r.groups()[2])
-        if start > stop:
-            return args
-        for i in range(start, stop+1):
-            new_args.append(new_arg.format(i))
+        if arg[1] == "text:":
+            if arg[0] == "inc":
+                text_fs += arg[2]
+            if arg[0] == "exc":
+                n_text_fs += arg[2]
+        elif arg[1] == "site:":
+            if arg[0] == "inc":
+                site_fs += arg[2]
+            if arg[0] == "exc":
+                n_site_fs += arg[2]
+        elif arg[1] == "vlan:":
+            if arg[0] == "inc":
+                vlan_fs += arg[2]
+            if arg[0] == "exc":
+                n_vlan_fs += arg[2]
+        elif arg[1] == "network:":
+            if arg[0] == "inc":
+                network_fs += arg[2]
+            if arg[0] == "exc":
+                n_network_fs += arg[2]
+        elif arg[1] == "range:":
+            if arg[0] == "inc":
+                range_fs += arg[2]
+            if arg[0] == "exc":
+                n_range_fs += arg[2]
 
-    return new_args
+    text_fs = list(set(text_fs))
+    n_text_fs = list(set(n_text_fs))
 
-def parse_list(ll, extra=None):
-    args = []
-    has_more = True
+    site_fs = list(set(site_fs))
+    n_site_fs = list(set(n_site_fs))
 
-    arg = ""
-    list_str = ""
+    network_fs = list(set(network_fs))
+    n_network_fs = list(set(n_network_fs))
 
-    seen_comma = False
-    seen_term = False
-    while True:
-        c = ll.pop()
-        if c is None:
-            break
-        if not seen_term:
-            if c == " ":
-                continue
-            if c == ",":
-                continue
-            seen_term = True
-            list_str += c
-            continue
-        if not seen_comma:
-            if c == " ":
-                # Make sure we are not at the end of the list.
-                if _is_list_end:
-                    break
-        if c == ',':
-            seen_comma = False
-            seen_term = False
-        list_str += c
-    return list_str.split(',')
+    vlan_fs = list(set(vlan_fs))
+    n_vlan_fs = list(set(n_vlan_fs))
 
-def _is_list_end(ll):
-    i = 0
-    while True:
-        c = ll.peekn(i)
-        i += 1
-        if c == ' ':
-            continue
-        elif c == ',':
-            return False
-        else:
-            return True
+    range_fs = list(set(range_fs))
+    n_range_fs = list(set(n_range_fs))
 
+    misc = set()
+    range_queries = []
+    for site in site_fs:
+        queries, misc = sif(site)
+        range_queries += queries
+        misc.union(misc)
 
-def _lex_word(ll):
-    word = ''
-    while True:
-        # Read in name
-        c = ll.pop()
-        if c is None:
-            if word:
-                return word
-            else:
-                return None
-        if re.match('\s', c):
-            ll.unpop()
-            break
-        else:
-            word = word + c
-    return word
+    for network in network_fs:
+        queries, misc = nif(network)
+        range_queries += queries
+        misc.union(misc)
 
+    for vlan in vlan_fs:
+        queries, misc = sif(vlan)
+        range_queries += queries
+        misc.union(misc)
 
-def _lex_ws(ll):
-    while True:
-        # Read in name
-        c = ll.pop()
-        if c is None:
-            return
-        if re.match('\s', c):
-            continue
-        else:
-            ll.unpop()
-            break
-    return
+    if range_queries:
+        mega_filter = Q()
+        # We need to AND all of these Q set's together.
+        mega_filter = tuple(range_queries)
+        addrs = AddressRecord.objects.filter(*mega_filter)
+        cnames = None
+        domains = None
+        intrs = StaticInterface.objects.filter(*mega_filter)
+        mxs = None
+        nss = None
+        ptrs = PTR.objects.filter(*mega_filter)
+        srvs = None
+        txts = None
 
-class Lexer(object):
-    def __init__(self, line):
-        self.line = line
-        self.length = len(line)
-        self.pos = 0
+    # NAME FILTER
+    # TODO
 
-    def pop(self):
-        if self.pos == self.length:
-            return None
-        else:
-            c = self.line[self.pos]
-            self.pos += 1
-            return c
-
-    def unpop(self):
-        if self.pos > 0:
-            self.pos -= 1
-
-    def peek(self):
-        if self.pos >= self.length:
-            return None
-        return self.line[self.pos]
-
-    def peekn(self, n):
-        if self.pos + n > self.length - 1:
-            return None
-        return self.line[self.pos+n]
-
-    def lex(self):
-        _lex_ws(self)
-        return _lex_word(self)
+    return addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc
 
 
-"""
-Some example searches:
-
-foo vlan:22
-webnode vlan:db site:scl4
-webnode3..55
-vlan:33 site:phx1.corp
-vlan:33 site:corp.phx1
-vld.dmz.mozilla.com
-vld.dmz.mozilla.com type:CNAME,A, PTR
-vld.dmz.mozilla.com type:CNAME/A/PTR
-
-Operators:
-
-vlan: <vlan_number>|<vlan_name> [, <vlan_number>|<vlan_name> ... ]
-site: <site_name> [, <site_name> ... ]
-type: <DNS Record Type>|Interface|Intr|System [, <DNS Record Type>|Interface|Intr|System .. ]
-
-The '-' Not Operator (Excludes)
-
-The '..' operator. Expands '1..4' to 4 different searches.
-sys.exit()
-print '---'
-ss = "webnode vlan:db,dmz site:scl4"
-print ss
-print parse(ss)
-
-print '---'
-ss = "webnode -vlan:db,dmz -site:scl4"
-print ss
-print parse(ss)
-
-print
-print '---'
-ss = "webnode vlan: site:scl4"
-print ss
-print parse(ss)
-
-print
-print '---'
-ss = "-webnode vlan: site:scl4"
-print ss
-print parse(ss)
-
-print
-print '---'
-ss = "webnode vlan:site:scl4"
-print ss
-print parse(ss)
-
-print
-print '---'
-ss = "webnode vlan:site:scl4"
-print ss
-print parse(ss)
-
-print
-print '---'
-ss = "v:s,y z:a, er asdf -dfddf"
-print ss
-print parse(ss)
-"""
-ss = "vlan:x1..100d"
-print ss
-print parse(ss)

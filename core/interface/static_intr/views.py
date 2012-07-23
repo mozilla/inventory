@@ -65,7 +65,7 @@ def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
             system = System.objects.get(hostname=system_hostname)
         except:
             try:
-                system_hostname = re.sub('mozilla\.[com|net|org]','', 
+                system_hostname = re.sub('mozilla\.[com|net|org]','',
                         system_hostname)
                 system = System.objects.get(hostname=system_hostname)
             except:
@@ -76,21 +76,24 @@ def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
                 intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(
                         addr, ptr, system, '00:00:00:00:00:00')
             except ValidationError, e:
-                return HttpResponse(json.dumps({'success': False, 'error': e.messages[0]}))
+                return HttpResponse(json.dumps({'success': False, 'error':
+                    e.messages[0]}))
             ret_dict = {}
             ret_dict['success'] = True
             ret_dict['hostname'] = system.hostname
             ret_dict['id'] = system.id
             return HttpResponse(json.dumps(ret_dict))
         else:
-            return HttpResponse(json.dumps({'success': False, 'error': 'Unable to find system'}))
+            return HttpResponse(json.dumps({'success': False, 'error':
+                'Unable to find system'}))
 
     if request.method == "POST":
         form = CombineForm(request.POST)
         if form.is_valid():
             system = form.cleaned_data['system']
             try:
-                intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(addr, ptr, system)
+                intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(
+                        addr, ptr, system)
                 return redirect(intr)
             except ValidationError, e:
                 form.errors['__all__'] = ErrorList(e.messages)
@@ -335,8 +338,8 @@ def quick_create(request, system_pk):
                 ip = find_available_ip_from_ipv4_range(mrange)
                 if ip == None:
                     raise ValidationError("No appropriate IP found "
-                        "in {0} Vlan {1} Range {2} - {3}. Consider adding this interface "
-                        "manually.".format(site.name, vlan.name,
+                        "in {0} Vlan {1} Range {2} - {3}. Consider adding "
+                        "this interface manually.".format(site.name, vlan.name,
                             mrange.start_str, mrange.end_str))
 
                 expected_name = "{0}.{1}.mozilla.com".format(vlan.name,

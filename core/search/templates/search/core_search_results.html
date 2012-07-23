@@ -1,0 +1,179 @@
+{% if misc %}
+    <table>
+        <tr>
+            <th>Results</th>
+            <th></th>
+        </tr>
+        {% for object in misc %}
+            <tr>
+                {{ object }}
+            </tr>
+            <tr>
+                <a href="{{ object.get_absolute_url() }}">{{ object }}</a>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+{% if domains %}
+    <h3>Domains</h3>
+    <table>
+        <tr>
+            <th>Domain</th>
+            <th>SOA</th>
+        </tr>
+        {% for domain in domains %}
+        <tr>
+            <a href="{{ domain.get_absolute_url() }}">{{ domain.name }}</a>
+        </tr>
+        <tr>
+            {% if domain.soa %}
+                {{ domain.soa }}
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% if nss %}
+    <h3>Nameserver</h3>
+    <table>
+        <tr>
+            <th>Domain</th>
+            <th>Server</th>
+        </tr>
+        {% for ns in nss %}
+        <tr>
+            <a href="{{ ns.name.get_absolute_url() }}">{{ ns.domain.name }}</a>
+        </tr>
+        <tr>
+            {{ ns.server }}
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% if mxs %}
+    <h3>MX Record</h3>
+    <table>
+        <tr>
+            <th>FQDN</th>
+            <th>Server</th>
+        </tr>
+        {% for mx in mxs %}
+        <tr>
+            <a href="{{ mx.get_absolute_url() }}">{{ mx.fqdn }}</a>
+        </tr>
+        <tr>
+            {{ mx.server }}
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% if srvs %}
+    <h3>SRV Record</h3>
+    <table>
+        <tr>
+            <th>FQDN</th>
+            <th>Target</th>
+        </tr>
+        {% for srv in srvs %}
+        <tr>
+            <a href="{{ srv.get_absolute_url() }}">{{ srv.fqdn }}</a>
+        </tr>
+        <tr>
+            {{ srv.target }}
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% if txts %}
+    <h3>TXT Record</h3>
+    <table>
+        <tr>
+            <th>FQDN</th>
+            <th>Data</th>
+        </tr>
+        {% for txt in txts %}
+        <tr>
+            <a href="{{ txt.get_absolute_url() }}">{{ txt.fqdn }}</a>
+        </tr>
+        <tr>
+            {{ txt.data_data }}
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% if cnames %}
+    <h3>CNAME Record</h3>
+    <table>
+        <tr>
+            <th>FQDN</th>
+            <th>Data</th>
+        </tr>
+        {% for cname in cnames %}
+        <tr>
+            <a href="{{ cname.get_absolute_url() }}">{{ cname.fqdn }}</a>
+        </tr>
+        <tr>
+            {{ cname.data }}
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% if intrs %}
+    <h3>Interface Record</h3>
+    <table>
+        <tr>
+            <th>FQDN</th>
+            <th>IP</th>
+        </tr>
+        {% for intr in intrs %}
+        <tr>
+            <a href="{{ intr.get_absolute_url() }}">{{ intr.fqdn }}</a>
+        </tr>
+        <tr>
+            {{ intr.ip_str }}
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% if addrs %}
+    <h3>Address Record</h3>
+    <table>
+        <tr>
+            <th>FQDN</th>
+            <th>IP</th>
+        </tr>
+        {% for addr in addrs %}
+        <tr>
+            <a href="{{ addr.get_absolute_url() }}">{{ addr.fqdn }}</a>
+        </tr>
+        <tr>
+            {{ addr.ip_str }}
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% if ptrs %}
+    <h3>PTR Record</h3>
+    <table>
+        <tr>
+            <th>IP</th>
+            <th>FQDN</th>
+        </tr>
+        {% for ptr in ptrs %}
+        <tr>
+            <a href="{{ ptr.get_absolute_url() }}">{{ ptr.fqdn }}</a>
+        </tr>
+        <tr>
+            {{ ptr.ip_str }}
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}

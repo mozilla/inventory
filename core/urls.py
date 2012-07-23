@@ -16,4 +16,5 @@ urlpatterns = patterns('',
     url(r'^site/', include('core.site.urls')),
     url(r'^range/', include('core.range.urls')),
     url(r'^build/', include('core.build.urls')),
+    url(r'^search/', include('core.search.urls')),
 )

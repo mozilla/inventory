@@ -24,6 +24,9 @@ from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
 
+from core.search.parser import parse
+from core.search.search import compile_search
+
 import pdb
 import re
 import ipaddr
@@ -32,16 +35,30 @@ import simplejson as json
 
 
 def search_ajax(request):
-    return HttpResponse(data)
+    pdb.set_trace()
+    search = request.GET.get("search", None)
+    if not search:
+        return HttpResponse("What do you want?!?")
+    return HttpResponse("Works")
+    query = parse(search)
+    x = compile_search(query)
+    addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc = x
+    return render_to_response("search/core_search_results.html", {
+        "misc": misc,
+        "search": search,
+        "addrs": addrs,
+        "cnames": cnames,
+        "domains": domains,
+        "intrs": intrs,
+        "mxs": mxs,
+        "nss": nss,
+        "ptr": ptrs,
+        "srvs": srvs,
+        "txts": txts
+    })
 
 def search(request):
     """Search page"""
-    if request.method == "GET":
-        return render(request, 'search/core_search.html', {})
-    else:
-        search = request.POST.get('search', None)
-        while True:
-            l
-        if not search:
-            return render(request, 'search/core_search.html', {})
-
+    return render(request, "search/core_search.html", {
+        "search": search
+    })

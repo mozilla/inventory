@@ -6,10 +6,20 @@
     text-align: center;
 }
 </style>
+<script type="text/javascript">
+    function get_and_diplay_search(search){
+        $.get('/core/search/search_ajax?search='+search,
+        function update_results(e){
+        alert('data');
+        });
+    }
+</script>
 <div class="center">
 <h1>Inventory</h1>
     <form method="post">
-    <input id="id_search" type="text" maxlength="50" name="search">
+        <input id="id_search" type="text" size="50" name="search">
+    <br>
+    <br>
     <br>
     <input value="Search" title="Search" type="submit" id="btn_s">
     <input value="I'm Feeling Lucky" title="I'm Feeling Lucky" name="lucky" type="submit" id="btn_i">

@@ -55,6 +55,7 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     dns_enabled = models.BooleanField(default=True)
 
     attrs = None
+    search_fields = ['mac', 'ip_str', 'fqdn']
 
     def update_attrs(self):
         self.attrs = AuxAttr(StaticIntrKeyValue, self, 'intr')

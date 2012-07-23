@@ -3,6 +3,7 @@ from core.interface.static_intr.models import StaticInterface
 
 import pdb
 
+# This doesn't work for IPv6
 
 def build_subnet(network):
     network_options = network.networkkeyvalue_set.filter(is_option=True)

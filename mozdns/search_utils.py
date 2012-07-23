@@ -33,35 +33,38 @@ def fqdn_exists(fqdn, **kwargs):
 
 
 def _build_queries(fqdn, dn=True, mx=True, sr=True, tx=True,
-                    cn=True, ar=True, pt=True, ip=False, intr=True):
+                    cn=True, ar=True, pt=True, ip=False, intr=True,
+                    search_operator=''):
     # We import this way to make it easier to import this file without
     # getting cyclic imports.
     qsets = []
     if dn:
         qsets.append(('Domain', mozdns.domain.models.Domain.objects.
-                        filter(name=fqdn)))
+            filter(**{'name{0}'.format(search_operator): fqdn})))
     if mx:
         qsets.append(('MX', mozdns.mx.models.MX.objects.
-                        filter(fqdn=fqdn)))
+            filter(**{'fqdn{0}'.format(search_operator): fqdn})))
     if sr:
         qsets.append(('SRV', mozdns.srv.models.SRV.objects.
-                        filter(fqdn=fqdn)))
+            filter(**{'fqdn{0}'.format(search_operator): fqdn})))
     if tx:
         qsets.append(('TXT', mozdns.txt.models.TXT.objects.
-                        filter(fqdn=fqdn)))
+            filter(**{'fqdn{0}'.format(search_operator): fqdn})))
     if cn:
         qsets.append(('CNAME', mozdns.cname.models.CNAME.objects.
-                        filter(fqdn=fqdn)))
+            filter(**{'fqdn{0}'.format(search_operator): fqdn})))
     if ar:
         AddressRecord = mozdns.address_record.models.AddressRecord
         ars = AddressRecord.objects.filter(Q(fqdn=fqdn) | Q(ip_str=ip))
         qsets.append(('AddressRecord', ars))
     if pt:
         qsets.append(('PTR', mozdns.ptr.models.PTR.objects.
-                            filter(Q(name=fqdn) | Q(ip_str=ip))))
+            Q(**{'name{0}'.format(search_operator): fqdn}) |
+            Q(**{'ip_str{0}'.format(search_operator): ip})))
     if intr:
         StaticInterface = core.interface.static_intr.models.StaticInterface
         qsets.append(('StaticInterface', StaticInterface.objects.filter(
-            Q(fqdn=fqdn) | Q(ip_str=ip))))
+            Q(**{'fqdn{0}'.format(search_operator): fqdn}) |
+            Q(**{'ip_str{0}'.format(search_operator): ip}))))
 
     return qsets
