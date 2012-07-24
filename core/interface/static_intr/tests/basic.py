@@ -112,6 +112,19 @@ class StaticInterTests(TestCase):
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
         self.do_add(**kwargs)
 
+    def test5_create_basic(self):
+        mac = "00:00:00:00:00:00"
+        label = "foo1"
+        domain = self.f_c
+        ip_str = "10.0.0.2"
+        kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
+        r = self.do_add(**kwargs)
+
+        # Change the mac by one.
+        mac = "00:00:00:00:00:01"
+        kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
+        r = self.do_add(**kwargs)
+
     def test1_delete(self):
         mac = "12:22:33:44:55:66"
         label = "foo1"
@@ -120,6 +133,7 @@ class StaticInterTests(TestCase):
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
         r = self.do_add(**kwargs)
         self.do_delete(r)
+
 
 
     def test1_dup_create_basic(self):
