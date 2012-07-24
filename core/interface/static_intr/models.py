@@ -105,7 +105,7 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
 
     class Meta:
         db_table = 'static_interface'
-        unique_together = ('ip_upper', 'ip_lower', 'label', 'domain')
+        unique_together = ('ip_upper', 'ip_lower', 'label', 'domain', 'mac')
 
     def get_edit_url(self):
         return "/core/interface/{0}/update/".format(self.pk)
