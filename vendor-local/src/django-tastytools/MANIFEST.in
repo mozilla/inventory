@@ -1,0 +1,3 @@
+include AUTHORS README.rst
+recursive-include tastytools *.py *.html *.js *.css
+recursive-include docs *

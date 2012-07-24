@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block subtitle %}: Create DHCP Scope{% endblock %}
 {% block content %}
 <h2>Create DHCP Scope</h2>
@@ -11,7 +11,7 @@
     {% if error_message %}
     <tr><th><font color='red'>{{error_message}}</font></th></tr>
     {% endif %}
-    {{ form.as_table }}
+    {{ form.as_table() }}
     <tr><td><input type="submit" value="Save" id="submit"></td></tr>
 </table>
 </form>

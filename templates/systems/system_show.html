@@ -7,6 +7,10 @@
 <dd>{{ system.hostname }}</dd>
 <div style="clear:both;"></div>
 
+<dt>Created On:</dt>
+<dd>{{ system.created_on }}</dd>
+<div style="clear:both;"></div>
+
 <dt>Serial:</dt>
 <dd>{{ system.serial }}</dd>
 <div style="clear:both;"></div>
@@ -129,27 +133,70 @@
 
 <dl class="show">
 <dt>Notes: </dt>
-<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.notes }}</pre></dd>
+<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre style='width: 700px; white-space: normal;'>{{ system.notes }}</pre></dd>
 <div style="clear:both;"></div>
 </dl>
 
+<div style="clear:both;"></div>
 <dl class="show">
-<dt>Network Adapters: </dt>
+<dt>Interfaces (for DNS): </dt>
+    <table>
+<<<<<<< HEAD
+    <tr><th>Int</th><th>MAC</th><th>FQDN</th><th>IP Address</th><th>DHCP</th><th>DNS</th><th>Action</th></tr>
+    {% for intr in interfaces %}
+        <tr>
+        <td>{{ intr.interface_name() }}</td>
+        <td>{{ intr.mac }}</td>
+        {% if intr.label == "" %}
+        <td><a href='{{ intr.domain.get_absolute_url() }}'>{{intr.fqdn}}</a></td>
+        {% else %}
+        <td>{{ intr.label }}.<a href='{{ intr.domain.get_absolute_url() }}'>{{ intr.domain }}</a></td>
+        {% endif %}
+        <td>{{ intr.ip_str }} <a href='{{ intr.reverse_domain.get_absolute_url() }}'>View Domain</a> <a target="_blank" style='cursor:pointer;' rel='{{intr.ip_str}}|{{intr.ip_type}}' class="goto_range">View Range</a></td>
+        <td>{{ intr.dhcp_enabled }}</td>
+        <td>{{ intr.dns_enabled }}</td>
+        <td><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a></td>
+        </tr>
+    {% endfor %}
+    </table>
+</pre></dd>
+<div style="clear:both;"></div>
+<a href="/core/interface/{{system.pk}}/create/">Add Interface</a>
+<a href="/core/interface/{{system.pk}}/quick_create/">Quick Add Interface</a>
+</dl>
+
+</div>
+<dl class="show">
+<dt>Key/Value Store (without network adapters): </dt>
 <dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;">
 <pre>
-    {{ adapter }} 
     <table>
-    <tr><th>Adapter Name</th><th>IP Address</th><th>Mac Address</th></tr>
-    {% for adapter in adapters %}
-        <tr><td>{{adapter.adapter_name}}</td><td>{{ adapter.ipv4_address }}</td><td>{{ adapter.mac_address }}</td></tr>
-
+    <tr><th>Key</th><th>Value</th></tr>
+    {% for key in key_values %}
+        <tr><td>{{key.key}}</td><td>{{ key.value }}</td></tr>
     {% endfor %}
     </table>
 
 </pre></dd>
 <div style="clear:both;"></div>
 </dl>
+</div>
+{% if not read_only %}
+<div>
 
+    <dl class="show">
+        <dt>Licenses: </dt>
+        <dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.licenses }}</pre></dd>
+        <div style="clear:both;"></div>
+    </dl>
+</div>
+{% endif %}
+
+<div style="clear:both;"></div>
+{% if not read_only %}
+<a href="{{ "systems.views.system_edit"|url(system.id) }}">Edit</a>
+{% endif %}
+<a href="{{ "systems.views.home"|url() }}">Back</a>
 <script type='text/javascript'>
     function goto_range(ip_str, ip_type){
         $.get('/core/range/find_range/?ip_str='+ip_str+'&ip_type=' + ip_type, do_redirect);
@@ -173,49 +220,4 @@
         });
     });
 </script>
-<dl class="show">
-<dt>Interfaces (for DNS): </dt>
-<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.notes }}</pre></dd>
-<pre>
-    <table>
-    <tr><th>Interface</th><th>MAC</th><th>FQDN</th><th>IP Address</th><th>DHCP Enabled</th><th>DNS Enabled</th><th>Action</th></tr>
-    {% for intr in interfaces %}
-        <tr>
-        <td>{{ intr.interface_name() }}</td>
-        <td>{{ intr.mac }}</td>
-        {% if intr.label == "" %}
-        <td><a href='{{ intr.domain.get_absolute_url() }}'>{{intr.fqdn}}</a></td>
-        {% else %}
-        <td>{{ intr.label }}.<a href='{{ intr.domain.get_absolute_url() }}'>{{ intr.domain }}</a></td>
-        {% endif %}
-        <td>{{ intr.ip_str }} <a href='{{ intr.reverse_domain.get_absolute_url() }}'>View Domain</a> <a target="_blank" style='cursor:pointer;' rel='{{intr.ip_str}}|{{intr.ip_type}}' class="goto_range">View Range</a></td>
-        <td>{{ intr.dhcp_enabled }}</td>
-        <td>{{ intr.dns_enabled }}</td>
-        <td></pre><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a><pre></td>
-        <tr>
-    {% endfor %}
-    </table>
-</pre></dd>
-<div style="clear:both;"></div>
-<a href="/core/interface/{{system.pk}}/create/">Add Interface</a>
-<a href="/core/interface/{{system.pk}}/quick_create/">Quick Add Interface</a>
-</dl>
-
-</div>
-{% if not read_only %}
-<div>
-
-    <dl class="show">
-        <dt>Licenses: </dt>
-        <dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.licenses }}</pre></dd>
-        <div style="clear:both;"></div>
-    </dl>
-</div>
-{% endif %}
-
-<div style="clear:both;"></div>
-{% if not read_only %}
-<a href="{{ "systems.views.system_edit"|url(system.id) }}">Edit</a>
-{% endif %}
-<a href="{{ "systems.views.home"|url() }}">Back</a>
 {% endblock %}

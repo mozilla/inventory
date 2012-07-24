@@ -63,6 +63,19 @@ class TestOnCall(TestCase):
         obj = json.loads(resp.content)
         self.assertEqual(obj['user'], 'user2@domain.com')
 
+    def test_get_current_services_oncall_email(self):
+        resp = self.client.get('/api/v2/oncall/services/email/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['user'], 'user5@domain.com')
+
+    def test_get_all_services_oncall(self):
+        resp = self.client.get('/api/v2/oncall/services/all/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual(len(obj), 2)
+        self.assertEqual('user5', obj[1]['user'])
+
     def test_get_all_sysadmin_oncall(self):
         resp = self.client.get('/api/v2/oncall/sysadmin/all/', follow=True)
         self.assertEqual(200, resp.status_code)
@@ -76,6 +89,20 @@ class TestOnCall(TestCase):
         obj = json.loads(resp.content)
         self.assertEqual(len(obj), 3)
         self.assertEqual('user4', obj[2]['user'])
+
+    def test_set_services_oncall(self):
+        resp = self.client.get('/api/v2/oncall/services/email/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual('user5@domain.com', obj['user'])
+
+        resp = self.client.put('/en-US/api/v2/oncall/setservices/user4@domain.com/', follow=True)
+        self.assertEqual(200, resp.status_code)
+
+        resp = self.client.get('/api/v2/oncall/services/email/', follow=True)
+        self.assertEqual(200, resp.status_code)
+        obj = json.loads(resp.content)
+        self.assertEqual('user4@domain.com', obj['user'])
 
     def test_set_desktop_oncall(self):
         resp = self.client.get('/api/v2/oncall/desktop/email/', follow=True)
@@ -167,7 +194,6 @@ class SystemApi(TestCase):
         self.assertEqual(json.loads(resp.content)['hostname'], self.new_hostname)
 
     def test_update_system(self):
-        self.client.delete('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
         resp = self.client.post('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
         obj = json.loads(resp.content.split(" = ")[1])
         self.assertEqual(201, resp.status_code)
@@ -257,6 +283,19 @@ class SystemApi(TestCase):
         resp = self.client.get('/api/v2/system/3/', {'search':True, 'system_rack_id':'1', 'serial':'39993asdf'}, follow=True)
         self.assertEqual(resp.status_code, 404)
 
+    def test_delete_key_by_system(self):
+        system = System.objects.get(hostname='fake-hostname2')
+        k = KeyValue(system=system, key='testing', value='blahblah')
+        k.save()
+        resp = self.client.delete('/en-US/api/v2/keyvalue/?key_type=delete_key_by_system&system=fake-hostname2&key=testing', follow=True)
+        try:
+            count = KeyValue.objects.get(system=system, key='testing').count()
+        except KeyValue.DoesNotExist:
+            count = 0
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(int(json.loads(resp.content.split(" = ")[1])['id']), 14)
+        self.assertEqual(count, 0)
+
 class DHCPApi(TestCase):
     fixtures = ['testdata.json']
 
@@ -308,6 +347,7 @@ class DHCPApi(TestCase):
         resp = self.client.delete('/api/v2/keyvalue/1/', {'system_hostname':'fake-hostname2', 'adapter_number':'0', 'key_type':'delete_network_adapter'}, follow=True)
         #print "The content is %s" % resp.content
 
+
     def test_add_dhcp_scope_via_api(self):
         ScheduledTask.objects.all().delete()
         self.assertEqual(len(ScheduledTask.objects.all()), 0)
@@ -315,6 +355,25 @@ class DHCPApi(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(ScheduledTask.objects.all()), 1)
         self.assertEqual(ScheduledTask.objects.all()[0].type, 'dhcp')
+
+    def test_get_adapters_by_system_and_scope(self):
+        """
+            Get a list of all the adapters in this dhcp scope by system.
+            Should not include systems without a nic.X.ipv4_address.9 value
+        """
+        resp = self.client.get(reverse('api_v2_keyvalue_get'), {'key_type': 'adapters_by_system_and_scope', 'dhcp_scope': 'phx-vlan73', 'system':'fake-hostname2'}, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        system_list = json.loads(resp.content)
+        self.assertEqual(len(system_list), 2)
+        """
+            Delete a nic.0.ipv4_address.0 key/value pair
+            There should now only be one adapter available
+        """
+        KeyValue.objects.get(id=8).delete()
+        resp = self.client.get(reverse('api_v2_keyvalue_get'), {'key_type': 'adapters_by_system_and_scope', 'dhcp_scope': 'phx-vlan73', 'system':'fake-hostname2'}, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        system_list = json.loads(resp.content)
+        self.assertEqual(len(system_list), 1)
 
 
     def test_delete_dhcp_scope_via_api(self):
@@ -366,8 +425,18 @@ class KeyValueApi(TestCase):
         self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_valid_ip(self):
-        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'nic.0.ipv4_address.0'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.44','key':'nic.0.ipv4_address.0'}, follow=True)
         self.assertEqual(resp.status_code, 200)
+
+    def test_keyvalue_duplicate_update_ip(self):
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'nic.0.ipv4_address.0'}, follow=True)
+        resp = self.client.put('/en-US/api/v2/keyvalue/2/', {'system_id':'2', 'value':'10.99.32.1','key':'nic.0.ipv4_address.0'}, follow=True)
+        self.assertEqual(resp.status_code, 401)
+
+    def test_keyvalue_duplicate_create_ip(self):
+        resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'10.99.32.1','key':'nic.0.ipv4_address.0'}, follow=True)
+        resp = self.client.post('/en-US/api/v2/keyvalue/4/', {'system_id':'2', 'value':'10.99.32.1','key':'nic.0.ipv4_address.0'}, follow=True)
+        self.assertEqual(resp.status_code, 401)
 
     def test_keyvalue_set_invalid_mac_address(self):
         resp = self.client.put('/en-US/api/v2/keyvalue/3/', {'system_id':'2', 'value':'asdfsadfsadf','key':'nic.0.mac_address.0'}, follow=True)

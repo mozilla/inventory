@@ -72,7 +72,8 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'mozdns.view',
     'mozdns.mozbind',
     'debug_toolbar',
-
+    'tastypie',
+    'tastytools',
 ]
 
 
@@ -83,6 +84,7 @@ JINGO_EXCLUDE_APPS = [
     'admin',
     'user_systems',
     'debug_toolbar',
+    'tastytools',
 ]
 
 DJANGO_TEMPLATE_APPS = [
@@ -161,3 +163,4 @@ DEBUG_TOOLBAR_CONFIG = {
 #############################################################
 MOZDNS_BASE_URL = "/mozdns"
 CORE_BASE_URL = "/core"
+ROOT_URLCONF = 'inventory.urls'

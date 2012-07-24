@@ -254,7 +254,7 @@ ul.css-tabs a.current {
                                     checkForDupeNicName: true
                                 },
                                 quick_add_dhcp_scope: {
-                                    required : true
+                                    required : false
                                 },
                                 quick_add_mac_address: {
                                     required : true,
@@ -285,12 +285,14 @@ ul.css-tabs a.current {
                                         value: $('#quick_add_mac_address').val() 
                                         }
                                     );
-                                    $.post("/en-US/systems/create_key_value/" + system_id + '/',
-                                        { 
-                                        key: 'nic.' + $('#quick_add_adapter_number').val() + '.dhcp_scope.0', 
-                                        value: $('#quick_add_dhcp_scope').val() 
-                                        }
-                                    );
+                                    if($("#quick_add_dhcp_scope").val()){
+                                        $.post("/en-US/systems/create_key_value/" + system_id + '/',
+                                            { 
+                                            key: 'nic.' + $('#quick_add_adapter_number').val() + '.dhcp_scope.0', 
+                                            value: $('#quick_add_dhcp_scope').val() 
+                                            }
+                                        );
+                                    }
                                     $.post("/en-US/systems/create_key_value/" + system_id + '/',
                                         { 
                                         key: 'nic.' + $('#quick_add_adapter_number').val() + '.name.0', 
@@ -416,7 +418,7 @@ ul.css-tabs a.current {
         <p>
             <label for='dhcp_scope'>DHCP Scope</label>
             <select id='quick_add_dhcp_scope' name='quick_add_dhcp_scope'>
-                <option value=''>...Select Scope...</option>
+                <option value=''>...No Scope...</option>
                 {% for scope in dhcp_scopes %}
                 <option value='{{ scope.name }}'>{{ scope.name }} ({{ scope.description }})</option>
                 {% endfor %}

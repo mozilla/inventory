@@ -40,6 +40,21 @@ class OncallHandler(BaseHandler):
                 list = User.objects.select_related().filter(userprofile__is_sysadmin_oncall=1)
                 for u in list:
                     oncall.append({'user':u.get_profile().irc_nick, 'pager_type': u.get_profile().pager_type, 'pager_number': u.get_profile().pager_number})
+        elif oncall_type == 'services':
+            if display_type == 'email':
+                result = User.objects.select_related().filter(userprofile__current_services_oncall=1)[0]
+                oncall = {'user':result.username, 'pager_type': result.get_profile().pager_type, 'epager_address': result.get_profile().epager_address, 'pager_number': result.get_profile().pager_number}
+            elif display_type == 'irc_nick':
+                result = User.objects.select_related().filter(userprofile__current_services_oncall=1)[0]
+                oncall = {'user':result.get_profile().irc_nick, 'pager_type': result.get_profile().pager_type, 'epager_address': result.get_profile().epager_address, 'pager_number': result.get_profile().pager_number}
+            elif display_type == 'all':
+                oncall = []
+                list = User.objects.select_related().filter(userprofile__is_services_oncall=1)
+                for u in list:
+                    oncall.append({'user':u.get_profile().irc_nick, 'pager_type': u.get_profile().pager_type, 'pager_number': u.get_profile().pager_number})
+        else:
+            resp = rc.NOT_FOUND
+            return resp
         return oncall
     def update(self, request, oncall_type = None, display_type=None):
         user = display_type
@@ -73,6 +88,19 @@ class OncallHandler(BaseHandler):
                 resp = rc.ALL_OK
                 return resp
 
+            elif oncall_type == 'setservices':
+                cursor = connection.cursor()
+                cursor.execute("UPDATE `user_profiles` set `current_services_oncall` = 0")
+                transaction.commit_unless_managed()
+                if re.match("^[a-zA-Z0-9._%-]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$", user):
+                    new_oncall = User.objects.get(username=user)
+                else:
+                    new_oncall = User.objects.get(userprofile__irc_nick=user)
+                new_oncall.get_profile().current_services_oncall = 1
+                new_oncall.get_profile().save()
+                new_oncall.save()
+                resp = rc.ALL_OK
+                return resp
             else:
                 resp = rc.NOT_FOUND
                 return resp
