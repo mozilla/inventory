@@ -1,5 +1,6 @@
 from tastypie import fields
 from tastypie.authorization import DjangoAuthorization
+from django.core.exceptions import ValidationError
 from tastypie.authentication import Authentication
 #from tastytools.resources import ModelResource
 from tastypie.resources import ModelResource
@@ -10,6 +11,9 @@ from tastypie.serializers import Serializer
 from django.core.serializers import json as djson
 from tastytools.test.resources import ResourceTestData
 from tastypie.authorization import Authorization
+from core.interface.static_intr.models import StaticInterface
+from core.interface.static_intr.models import StaticIntrKeyValue
+from mozdns.domain.models import Domain
 import json
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
@@ -43,7 +47,40 @@ class SystemResource(CustomAPIResource):
     server_model = fields.ForeignKey('api_v3.system_api.ServerModelResource', 'server_model', null=True, full=True)
     operating_system = fields.ForeignKey('api_v3.system_api.OperatingSystemResource', 'operating_system', null=True, full=True)
     system_rack = fields.ForeignKey('api_v3.system_api.SystemRackResource', 'system_rack', null=True, full=True)
-    
+
+    #def build_bundle(self, obj=None, data=None, request=None):
+    #    pass
+    #    import pdb; pdb.set_trace()
+
+    def obj_update(self, bundle, request, **kwargs):
+        if request.PATCH:
+            patch_dict = json.loads(request.PATCH.items()[0][0])
+
+            ## Entry point for adding a new adapter by mac address via the rest API
+            if patch_dict.has_key('mac_address') and patch_dict.has_key('auto_create_interface') and patch_dict['auto_create_interface'].upper() == 'TRUE':
+                mac_addr = patch_dict['mac_address']
+                sys = system_model.System.objects.get(id=bundle.data['id'])
+                label = sys.hostname.split('.')[0]
+                domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.mozilla.com'
+                domain = Domain.objects.filter(name=domain_parsed)[0]
+                # ip_str will get auto generated
+
+                ip_str = '10.99.99.98'
+                try:
+                    s = StaticInterface(label=label, mac=mac_addr, domain=domain, ip_str=ip_str, ip_type='4', system=sys)
+                    s.clean()
+                    s.save()
+                    s.update_attrs()
+                    s.attrs.primary = '3'
+                    s.attrs.interface_type = 'eth'
+                    s.attrs.alias = '0'
+                except ValidationError, e:
+                    bundle.errors['error_message'] = " ".join(e.messages)
+                except Exception, e:
+                    print e
+        super(SystemResource, self).obj_update(bundle, request, **kwargs)
+
+
     def prepend_urls(self):
             return [
                 url(r"^(?P<resource_name>%s)/(?P<id>[\d]+)/$" % self._meta.resource_name, self.wrap_view('dispatch_detail'), name="api_system_dispatch_by_id_detail"),
@@ -59,7 +96,7 @@ class SystemResource(CustomAPIResource):
                 'key_value__key': ALL_WITH_RELATIONS,
                 }
         fields = [
-
+                    
                 ]
         exclude = [
                 'key_value__system',
