@@ -7,24 +7,30 @@
 }
 </style>
 <script type="text/javascript">
-    function get_and_diplay_search(search){
-        $.get('/core/search/search_ajax?search='+search,
-        function update_results(e){
-        alert('data');
+    function get_and_display_search(){
+        search = document.getElementById('id_search').value;
+        $.get('/core/search/search_ajax?search='+escape(search),
+        function update_results(data){
+            results = document.getElementById('results');
+            results.innerHTML = data;
         });
     }
+    /*
+    $(document).ready(function () {
+        setInterval(get_and_display_search,1000);
+        return;
+    });
+    */
 </script>
 <div class="center">
 <h1>Inventory</h1>
-    <form method="post">
-        <input id="id_search" type="text" size="50" name="search">
+    <input id="id_search" type="text" size="50" name="search" onChange='get_and_display_search()'>
     <br>
     <br>
     <br>
-    <input value="Search" title="Search" type="submit" id="btn_s">
-    <input value="I'm Feeling Lucky" title="I'm Feeling Lucky" name="lucky" type="submit" id="btn_i">
-    </form>
+    <input value="Search" title="Search" type="button" id="btn_s" onclick="get_and_display_search()">
+    <input value="I'm Feeling Lucky" title="I'm Feeling Lucky" name="lucky" type="submit" id="btn_i" onclick='get_and_display_search()'>
 </div>
-<div class="results">
+<div id="results">
 </div>
 {% endblock %}

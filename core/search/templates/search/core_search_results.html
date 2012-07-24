@@ -1,35 +1,42 @@
+<div id="ajax_results">
 {% if misc %}
     <table>
+        <thead>
         <tr>
             <th>Results</th>
             <th></th>
         </tr>
+        </thead>
+        <tbody>
         {% for object in misc %}
             <tr>
-                {{ object }}
-            </tr>
-            <tr>
-                <a href="{{ object.get_absolute_url() }}">{{ object }}</a>
+                <td>{{ object }}</td>
+                <td><a href="{{ object.get_absolute_url() }}">{{ object }}</a></td>
             </tr>
         {% endfor %}
+        </tbody>
     </table>
 {% endif %}
 {% if domains %}
     <h3>Domains</h3>
     <table>
+        <thead>
         <tr>
             <th>Domain</th>
             <th>SOA</th>
         </tr>
+        </thead>
+        <tbody>
         {% for domain in domains %}
         <tr>
-            <a href="{{ domain.get_absolute_url() }}">{{ domain.name }}</a>
+            <td><a href="{{ domain.get_absolute_url() }}">{{ domain.name }}</a></td>
+            <td>
+                {% if domain.soa %}
+                    {{ domain.soa }}
+                {% endif %}
+            </td>
         </tr>
-        <tr>
-            {% if domain.soa %}
-                {{ domain.soa }}
-            {% endif %}
-        </tr>
+        </tbody>
         {% endfor %}
     </table>
 {% endif %}
@@ -37,143 +44,160 @@
 {% if nss %}
     <h3>Nameserver</h3>
     <table>
+        <thead>
         <tr>
             <th>Domain</th>
             <th>Server</th>
         </tr>
+        </thead>
+        <tbody>
         {% for ns in nss %}
         <tr>
-            <a href="{{ ns.name.get_absolute_url() }}">{{ ns.domain.name }}</a>
-        </tr>
-        <tr>
-            {{ ns.server }}
+            <td><a href="{{ ns.name.get_absolute_url() }}">{{ ns.domain.name }}</a></td>
+            <td>{{ ns.server }}</td>
         </tr>
         {% endfor %}
+        </tbody>
     </table>
 {% endif %}
 
 {% if mxs %}
     <h3>MX Record</h3>
     <table>
+        <thead>
         <tr>
             <th>FQDN</th>
             <th>Server</th>
         </tr>
+        </thead>
+        <tbody>
         {% for mx in mxs %}
         <tr>
-            <a href="{{ mx.get_absolute_url() }}">{{ mx.fqdn }}</a>
-        </tr>
-        <tr>
-            {{ mx.server }}
+            <td><a href="{{ mx.get_absolute_url() }}">{{ mx.fqdn }}</a></td>
+            <td>{{ mx.server }}</td>
         </tr>
         {% endfor %}
+        </tbody>
     </table>
 {% endif %}
 
 {% if srvs %}
     <h3>SRV Record</h3>
     <table>
+        <thead>
         <tr>
             <th>FQDN</th>
             <th>Target</th>
         </tr>
+        </thead>
+        <tbody>
         {% for srv in srvs %}
         <tr>
-            <a href="{{ srv.get_absolute_url() }}">{{ srv.fqdn }}</a>
-        </tr>
-        <tr>
-            {{ srv.target }}
+            <td><a href="{{ srv.get_absolute_url() }}">{{ srv.fqdn }}</a></td>
+            <td>{{ srv.target }}</td>
         </tr>
         {% endfor %}
+        </tbody>
     </table>
 {% endif %}
 
 {% if txts %}
     <h3>TXT Record</h3>
     <table>
+        <thead>
         <tr>
             <th>FQDN</th>
             <th>Data</th>
         </tr>
+        </thead>
+        <tbody>
         {% for txt in txts %}
         <tr>
-            <a href="{{ txt.get_absolute_url() }}">{{ txt.fqdn }}</a>
-        </tr>
-        <tr>
-            {{ txt.data_data }}
+            <td><a href="{{ txt.get_absolute_url() }}">{{ txt.fqdn }}</a></td>
+            <td>{{ txt.data_data }}</td>
         </tr>
         {% endfor %}
+        </tbody>
     </table>
 {% endif %}
 
 {% if cnames %}
     <h3>CNAME Record</h3>
     <table>
+        <thead>
         <tr>
             <th>FQDN</th>
             <th>Data</th>
         </tr>
+        </thead>
+        <tbody>
         {% for cname in cnames %}
         <tr>
-            <a href="{{ cname.get_absolute_url() }}">{{ cname.fqdn }}</a>
-        </tr>
-        <tr>
-            {{ cname.data }}
+            <td><a href="{{ cname.get_absolute_url() }}">{{ cname.fqdn }}</a></td>
+            <td>{{ cname.data }}</td>
         </tr>
         {% endfor %}
+        </tbody>
     </table>
 {% endif %}
 
 {% if intrs %}
     <h3>Interface Record</h3>
     <table>
+        <thead>
         <tr>
             <th>FQDN</th>
             <th>IP</th>
         </tr>
+        </thead>
+        <tbody>
         {% for intr in intrs %}
         <tr>
-            <a href="{{ intr.get_absolute_url() }}">{{ intr.fqdn }}</a>
-        </tr>
-        <tr>
-            {{ intr.ip_str }}
+            <td><a href="{{ intr.get_absolute_url() }}">{{ intr.fqdn }}</a></td>
+            <td>{{ intr.ip_str }}</td>
         </tr>
         {% endfor %}
+        </tbody>
     </table>
 {% endif %}
 
 {% if addrs %}
     <h3>Address Record</h3>
     <table>
+        <thead>
         <tr>
             <th>FQDN</th>
             <th>IP</th>
         </tr>
+        </thead>
+        <tbody>
         {% for addr in addrs %}
         <tr>
-            <a href="{{ addr.get_absolute_url() }}">{{ addr.fqdn }}</a>
-        </tr>
-        <tr>
-            {{ addr.ip_str }}
+            <td><a href="{{ addr.get_absolute_url() }}">{{ addr.fqdn }}</a></td>
+            <td>{{ addr.ip_str }}</td>
         </tr>
         {% endfor %}
+        </tbody>
     </table>
 {% endif %}
 
 {% if ptrs %}
     <h3>PTR Record</h3>
     <table>
+        <thead>
         <tr>
             <th>IP</th>
             <th>FQDN</th>
         </tr>
+        <thead>
+        <tbody>
         {% for ptr in ptrs %}
         <tr>
             <a href="{{ ptr.get_absolute_url() }}">{{ ptr.fqdn }}</a>
-        </tr>
-        <tr>
-            {{ ptr.ip_str }}
+            <td>{{ ptr.ip_str }}</td>
         </tr>
         {% endfor %}
+        <tbody>
     </table>
 {% endif %}
+</div>

@@ -230,7 +230,6 @@ class Lexer(object):
         _lex_ws(self)
         return _lex_word(self)
 
-
 """
 Some example searches:
 
@@ -253,7 +252,6 @@ The '-' Not Operator (Excludes)
 
 The '..' operator. Expands '1..4' to 4 different searches.
 sys.exit()
-"""
 print '---'
 ss = "webnode vlan:db,dmz site:scl4"
 print ss
@@ -301,3 +299,4 @@ print parse(ss)
 ss = "foo: bar: baz"
 print ss
 print parse(ss)
+"""

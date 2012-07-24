@@ -34,29 +34,36 @@ import operator
 import simplejson as json
 
 
+from jinja2 import Environment, PackageLoader
+env = Environment(loader=PackageLoader('core.search', 'templates'))
+
 def search_ajax(request):
-    pdb.set_trace()
     search = request.GET.get("search", None)
     if not search:
         return HttpResponse("What do you want?!?")
-    return HttpResponse("Works")
     query = parse(search)
+    print "----------------------"
+    print query
+    print "----------------------"
+
     x = compile_search(query)
     addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc = x
-    return render_to_response("search/core_search_results.html", {
-        "misc": misc,
-        "search": search,
-        "addrs": addrs,
-        "cnames": cnames,
-        "domains": domains,
-        "intrs": intrs,
-        "mxs": mxs,
-        "nss": nss,
-        "ptr": ptrs,
-        "srvs": srvs,
-        "txts": txts
-    })
-
+    template = env.get_template('search/core_search_results.html')
+    return HttpResponse(template.render(
+                                    **{
+                                        "misc": misc,
+                                        "search": search,
+                                        "addrs": addrs,
+                                        "cnames": cnames,
+                                        "domains": domains,
+                                        "intrs": intrs,
+                                        "mxs": mxs,
+                                        "nss": nss,
+                                        "ptr": ptrs,
+                                        "srvs": srvs,
+                                        "txts": txts
+                                    }
+                        ))
 def search(request):
     """Search page"""
     return render(request, "search/core_search.html", {

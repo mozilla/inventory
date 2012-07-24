@@ -1,5 +1,15 @@
 from django.db.models import Q
 from core.network.utils import calc_parent
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+
+import mozdns
+import core
+import operator
+from core.network.models import Network
+from core.site.models import Site
+from core.vlan.models import Vlan
+
+import pdb
 
 
 def sif(site):
@@ -27,9 +37,13 @@ def vif(vlan, root=True):
     if root:
         misc.add(vlan)
     range_queries = []
-    for network in v.net_set.all():
-        range_queries += nif(network, root=False)
-    return range_queries, misc
+    for network in vlan.network_set.all():
+        queries, n_misc = nif(network, root=False)
+        range_queries += queries
+        misc.update(n_misc)
+        if root:
+            misc.add(network)
+    return [reduce(operator.or_, range_queries)], misc
 
 
 def nif(network, root=True):
@@ -44,7 +58,7 @@ def nif(network, root=True):
     if network.site:
         misc.add(network.site)
     # Return list to make consistent with vif
-    networ.update_network()
+    network.update_network()
     return [ipf(int(network.network.network), int(network.network.broadcast),
         root=False)], misc
 
@@ -56,13 +70,21 @@ def ipf(start, end, root=True):
     """
     start_upper = start >> 64
     start_lower = start & (1 << 64) - 1
-    end_upper = start >> 64
-    end_lower = start & (1 << 64) - 1
+    end_upper = end >> 64
+    end_lower = end & (1 << 64) - 1
 
-    query = Q(ip_upper__gte=start_upper, ip_upper__lte=end_upper)
-    query = query | Q(ip_upper=start_upper, ip_lower__gte=start_lower,
+    #query = Q(ip_upper__lte=start_upper, ip_upper__gte=end_upper)
+    query = Q(ip_upper=start_upper, ip_lower__gte=start_lower,
             ip_lower__lte=end_lower)
     return query
+
+def build_filter(f, fields, filter_type = "icontains"):
+    filter_ = {}
+    # rtucker++
+    filters =[Q(**{"{0}__{1}".format(t, filter_type): f}) for t in fields]
+    # Breaks in python 3. Oh well
+    return reduce(operator.or_, filters)
+
 
 def compile_search(args):
     """
@@ -128,38 +150,122 @@ def compile_search(args):
     range_fs = list(set(range_fs))
     n_range_fs = list(set(n_range_fs))
 
+    # IP Filters
     misc = set()
     range_queries = []
-    for site in site_fs:
-        queries, misc = sif(site)
+    for site_str in site_fs:
+        try:
+            site = Site.objects.get(name=site_str)
+        except ObjectDoesNotExist, e:
+            continue
+        queries, s_misc = sif(site)
         range_queries += queries
-        misc.union(misc)
+        misc = misc.union(s_misc)
 
-    for network in network_fs:
-        queries, misc = nif(network)
+    for network_str in network_fs:
+        try:
+            # Guess which network type they are searching by looking for ':'
+            if network_str.find(':') > -1:
+                network = ipaddr.IPv6Address(network_str=network_str, ip_type='6')
+                network.update_network()
+            else:
+                network = Network(network_str=network_str, ip_type='4')
+                network.update_network()
+        except ValidationError, e:
+            continue
+        except ipaddr.AddressValueError, e:
+            continue
+        queries, n_misc = nif(network)
         range_queries += queries
-        misc.union(misc)
+        misc = misc.union(n_misc)
 
-    for vlan in vlan_fs:
-        queries, misc = sif(vlan)
+    for vlan_str in vlan_fs:
+        try:
+            vlan = Vlan.objects.get(name=vlan_str)
+        except ObjectDoesNotExist, e:
+            try:
+                vlan = Vlan.objects.get(number=vlan_str)
+            except ObjectDoesNotExist, e:
+                continue
+        queries, v_misc = vif(vlan)
         range_queries += queries
-        misc.union(misc)
+        misc = misc.union(v_misc)
 
     if range_queries:
-        mega_filter = Q()
         # We need to AND all of these Q set's together.
         mega_filter = tuple(range_queries)
-        addrs = AddressRecord.objects.filter(*mega_filter)
+        AddressRecord = mozdns.address_record.models.AddressRecord
+        addrs = AddressRecord.objects.filter(*mega_filter).order_by('ip_upper').order_by('ip_lower')
         cnames = None
         domains = None
+        StaticInterface = core.interface.static_intr.models.StaticInterface
         intrs = StaticInterface.objects.filter(*mega_filter)
         mxs = None
         nss = None
+        PTR = mozdns.ptr.models.PTR
         ptrs = PTR.objects.filter(*mega_filter)
         srvs = None
         txts = None
+    else:
+        AddressRecord = mozdns.address_record.models.AddressRecord
+        addrs = AddressRecord.objects.all()
+
+        CNAME = mozdns.cname.models.CNAME
+        cnames = CNAME.objects.all()
+
+        Domain = mozdns.domain.models.Domain
+        domains = Domain.objects.all()
+
+        StaticInterface = core.interface.static_intr.models.StaticInterface
+        intrs = StaticInterface.objects.all()
+
+        MX = mozdns.mx.models.MX
+        mxs = MX.objects.all()
+
+        Nameserver = mozdns.nameserver.models.Nameserver
+        nss = Nameserver.objects.all()
+
+        PTR = mozdns.ptr.models.PTR
+        ptrs = PTR.objects.all()
+
+        SRV = mozdns.srv.models.SRV
+        srvs = SRV.objects.all()
+
+        TXT = mozdns.txt.models.TXT
+        txts = TXT.objects.all()
 
     # NAME FILTER
+    for f in text_fs:
+        if addrs:
+            addr_filter = build_filter(f, AddressRecord.search_fields)
+            addrs = addrs.filter(addr_filter)
+    """
+        if cnames:
+            cnames = cnames.filter(f)
+        if domains:
+            domains = domains.filter(f)
+        if intrs:
+            intrs = intrs.filter(f)
+        if mxs:
+            mxs = mxs.filter(f)
+        if nss:
+            nss = nss.filter(f)
+        if ptrs:
+            ptrs = ptrs.filter(f)
+        if srvs:
+            srvs = srvs.filter(f)
+        if txts:
+            txts = txts.filter(f)
+    """
+    cnames = None
+    domains = None
+    intrs = None
+    mxs = None
+    nss = None
+    ptrs = None
+    srvs = None
+    txts = None
+
     # TODO
 
     return addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc

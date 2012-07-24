@@ -33,6 +33,8 @@ class BaseAddressRecord(Ip):
                             validators=[validate_name])
     views = models.ManyToManyField(View)
 
+    search_fields = ('fqdn', 'ip_str')
+
     class Meta:
         abstract = True
 
