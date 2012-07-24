@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 from mozdns.domain.models import Domain
 from core.network.models import Network
 from core.range.models import Range
+from core.interface.static_intr.models import StaticInterface
+from systems.models import System
 
 import pdb
 
@@ -11,6 +13,10 @@ class V4RangeTests(TestCase):
 
     def setUp(self):
         self.d = Domain(name="com")
+        self.d.save()
+        Domain(name="arpa").save()
+        Domain(name="in-addr.arpa").save()
+        Domain(name="10.in-addr.arpa").save()
         self.s = Network(network_str="10.0.0.0/16", ip_type='4')
         self.s.update_network()
         self.s.save()
@@ -345,3 +351,36 @@ class V4RangeTests(TestCase):
                 'network':network, 'rtype':rtype, 'ip_type':ip_type}
         self.do_add(**kwargs)
         self.assertRaises(ValidationError, self.do_add, **kwargs)
+
+    def test1_freeip(self):
+        start_str = "10.0.33.1"
+        end_str = "10.0.33.3"
+        default_domain = self.d
+        network = self.s
+        rtype = 's'
+        ip_type = '4'
+        system = System()
+
+        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
+                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        r = self.do_add(**kwargs)
+        self.assertEqual(str(r.get_next_ip()), "10.0.33.1")
+        self.assertEqual(str(r.get_next_ip()), "10.0.33.1")
+        s = StaticInterface(label="foo", domain=self.d, ip_type='4',
+                ip_str=str(r.get_next_ip()), system=system,
+                mac="00:00:00:00:00:00")
+        s.clean()
+        s.save()
+        self.assertEqual(str(r.get_next_ip()), "10.0.33.2")
+        s = StaticInterface(label="foo", domain=self.d, ip_type='4',
+                ip_str=str(r.get_next_ip()), system=system,
+                mac="00:00:00:00:00:00")
+        s.clean()
+        s.save()
+        self.assertEqual(str(r.get_next_ip()), "10.0.33.3")
+        s = StaticInterface(label="foo", domain=self.d, ip_type='4',
+                ip_str=str(r.get_next_ip()), system=system,
+                mac="00:00:00:00:00:00")
+        s.clean()
+        s.save()
+        self.assertEqual(r.get_next_ip(), None)

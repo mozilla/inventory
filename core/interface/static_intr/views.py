@@ -274,36 +274,6 @@ def create_static_interface(request, system_pk):
         })
 
 
-def find_available_ip_from_ipv4_range(mrange):
-    start = mrange.start
-    end = mrange.end
-    if start >= end - 1:
-        return HttpResponse("Too small of network.")
-
-    records = AddressRecord.objects.filter(ip_upper=0, ip_lower__gte=start,
-            ip_lower__lte=end)
-    intrs = StaticInterface.objects.filter(ip_upper=0, ip_lower__gte=start,
-            ip_lower__lte=end)
-    if not records and not intrs:
-        ip = ipaddr.IPv4Address(start + 10)
-        return ip
-    for i in range(start + 10, end - 1):
-        taken = False
-        for record in records:
-            if record.ip_lower == i:
-                taken = True
-                break
-        if taken == False:
-            for intr in intrs:
-                if intr.ip_lower == i:
-                    taken = True
-                    break
-        if taken == False:
-            ip = ipaddr.IPv4Address(i)
-            return ip
-    return None
-
-
 def quick_create(request, system_pk):
     # TODO, make sure the user has access to this system
     system = get_object_or_404(System, pk=system_pk)
@@ -335,15 +305,15 @@ def quick_create(request, system_pk):
                     raise ValidationError("No appropriate networks found. "
                         "Consider adding this interface manually.")
 
-                ip = find_available_ip_from_ipv4_range(mrange)
+                ip = mrange.get_next_ip()
                 if ip == None:
                     raise ValidationError("No appropriate IP found "
                         "in {0} Vlan {1} Range {2} - {3}. Consider adding "
                         "this interface manually.".format(site.name, vlan.name,
-                            mrange.start_str, mrange.end_str))
+                        mrange.start_str, mrange.end_str))
 
                 expected_name = "{0}.{1}.mozilla.com".format(vlan.name,
-                    site.get_site_path())
+                                    site.get_site_path())
                 print "Expected name {0}".format(expected_name)
                 try:
                     domain = Domain.objects.get(name=expected_name)

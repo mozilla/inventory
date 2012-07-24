@@ -4,7 +4,9 @@ from django.core.exceptions import ValidationError
 from core.network.models import Network
 from core.mixins import ObjectUrlMixin
 from core.keyvalue.base_option import CommonOption
+from core.interface.static_intr.models import StaticInterface
 from mozdns.ip.models import ipv6_to_longs
+from mozdns.address_record.models import AddressRecord
 
 import ipaddr
 
@@ -166,6 +168,42 @@ class Range(models.Model, ObjectUrlMixin):
 
     def __repr__(self):
         return "<Range: {0}>".format(str(self))
+
+    def get_next_ip(self):
+        """Find's the most appropriate ip address within a range. If it can't
+        find an IP it returns None. If it finds an IP it returns an IPv4Address
+        object.
+            :returns: ipaddr.IPv4Address
+        """
+        if self.network.ip_type != '4':
+            return None
+        start = self.start_lower
+        end = self.end_lower
+        if start >= end - 1:
+            return HttpResponse("Too small of a range.")
+
+        records = AddressRecord.objects.filter(ip_upper=0, ip_lower__gte=start,
+                ip_lower__lte=end)
+        intrs = StaticInterface.objects.filter(ip_upper=0, ip_lower__gte=start,
+                ip_lower__lte=end)
+        if not records and not intrs:
+            ip = ipaddr.IPv4Address(start)
+            return ip
+        for i in range(start, end + 1):
+            taken = False
+            for record in records:
+                if record.ip_lower == i:
+                    taken = True
+                    break
+            if taken == False:
+                for intr in intrs:
+                    if intr.ip_lower == i:
+                        taken = True
+                        break
+            if taken == False:
+                ip = ipaddr.IPv4Address(i)
+                return ip
+        return None
 
 
 class RangeKeyValue(CommonOption):
