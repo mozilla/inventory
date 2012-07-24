@@ -18,12 +18,14 @@ class CNAME(MozdnsRecord):
     >>> CNAME(label = label, domain = domain, data = data)
 
     """
-    # TODO cite an RFC
+    # TODO cite an RFC for that ^ (it's around somewhere)
     id = models.AutoField(primary_key=True)
     data = models.CharField(max_length=100, validators=[validate_name])
     data_domain = models.ForeignKey(Domain, null=True,
                                     related_name='data_domains', blank=True,
                                     on_delete=models.DO_NOTHING)
+
+    search_fields = ('fqdn', 'data')
 
     def details(self):
         return  (

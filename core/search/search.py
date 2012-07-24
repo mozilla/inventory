@@ -96,6 +96,9 @@ def compile_search(args):
     text_fs = []
     n_text_fs = []
 
+    type_fs = []
+    n_type_fs = []
+
     site_fs = []
     n_site_fs = []
 
@@ -114,6 +117,11 @@ def compile_search(args):
                 text_fs += arg[2]
             if arg[0] == "exc":
                 n_text_fs += arg[2]
+        if arg[1] == "type:":
+            if arg[0] == "inc":
+                type_fs += arg[2]
+            if arg[0] == "exc":
+                n_type_fs += arg[2]
         elif arg[1] == "site:":
             if arg[0] == "inc":
                 site_fs += arg[2]
@@ -191,82 +199,224 @@ def compile_search(args):
         range_queries += queries
         misc = misc.union(v_misc)
 
-    if range_queries:
-        # We need to AND all of these Q set's together.
-        mega_filter = tuple(range_queries)
-        AddressRecord = mozdns.address_record.models.AddressRecord
-        addrs = AddressRecord.objects.filter(*mega_filter).order_by('ip_upper').order_by('ip_lower')
-        cnames = None
-        domains = None
-        StaticInterface = core.interface.static_intr.models.StaticInterface
-        intrs = StaticInterface.objects.filter(*mega_filter)
-        mxs = None
-        nss = None
-        PTR = mozdns.ptr.models.PTR
-        ptrs = PTR.objects.filter(*mega_filter)
-        srvs = None
-        txts = None
+    def str_upper(str_):  # LOL php
+        return str_.upper()
+    if type_fs:
+        type_fs = map(str_upper, type_fs)
+        # If we have a type filter, only make query set's it it's type is in
+        # the filter.
+        if range_queries:
+            # We need to AND all of these Q set's together.
+            mega_filter = tuple(range_queries)
+            if 'A' in type_fs:
+                AddressRecord = mozdns.address_record.models.AddressRecord
+                addrs = AddressRecord.objects.filter(*mega_filter).order_by('ip_upper').order_by('ip_lower')
+            else:
+                addrs = None
+            cnames = None
+            domains = None
+            if "INTR" in type_fs:
+                StaticInterface = core.interface.static_intr.models.StaticInterface
+                intrs = StaticInterface.objects.filter(*mega_filter)
+            else:
+                intrs = None
+            mxs = None
+            nss = None
+            if "PTR" in type_fs:
+                PTR = mozdns.ptr.models.PTR
+                ptrs = PTR.objects.filter(*mega_filter)
+            else:
+                ptrs = None
+            srvs = None
+            txts = None
+        else:
+            if "A" in type_fs:
+                AddressRecord = mozdns.address_record.models.AddressRecord
+                addrs = AddressRecord.objects.all()
+            else:
+                addrs = None
+
+            if "CNAME" in type_fs:
+                CNAME = mozdns.cname.models.CNAME
+                cnames = CNAME.objects.all()
+            else:
+                cnames = None
+
+            if "DOMAIN" in type_fs:
+                Domain = mozdns.domain.models.Domain
+                domains = Domain.objects.all()
+            else:
+                domains = None
+
+            if "INTR" in type_fs:
+                StaticInterface = core.interface.static_intr.models.StaticInterface
+                intrs = StaticInterface.objects.all()
+            else:
+                intrs = None
+
+            if "MX" in type_fs:
+                MX = mozdns.mx.models.MX
+                mxs = MX.objects.all()
+            else:
+                mxs = None
+
+            if "NS" in type_fs:
+                Nameserver = mozdns.nameserver.models.Nameserver
+                nss = Nameserver.objects.all()
+            else:
+                nss = None
+
+            if "PTR" in type_fs:
+                PTR = mozdns.ptr.models.PTR
+                ptrs = PTR.objects.all()
+            else:
+                ptrs = None
+
+            if "SRV" in type_fs:
+                SRV = mozdns.srv.models.SRV
+                srvs = SRV.objects.all()
+            else:
+                srvs = None
+
+            if "TXT" in type_fs:
+                TXT = mozdns.txt.models.TXT
+                txts = TXT.objects.all()
+            else:
+                txts = None
     else:
-        AddressRecord = mozdns.address_record.models.AddressRecord
-        addrs = AddressRecord.objects.all()
+        if range_queries:
+            # We need to AND all of these Q set's together.
+            mega_filter = tuple(range_queries)
+            AddressRecord = mozdns.address_record.models.AddressRecord
+            addrs = AddressRecord.objects.filter(*mega_filter).order_by('ip_upper').order_by('ip_lower')
+            cnames = None
+            domains = None
+            StaticInterface = core.interface.static_intr.models.StaticInterface
+            intrs = StaticInterface.objects.filter(*mega_filter)
+            mxs = None
+            nss = None
+            PTR = mozdns.ptr.models.PTR
+            ptrs = PTR.objects.filter(*mega_filter)
+            srvs = None
+            txts = None
+        else:
+            AddressRecord = mozdns.address_record.models.AddressRecord
+            addrs = AddressRecord.objects.all()
 
-        CNAME = mozdns.cname.models.CNAME
-        cnames = CNAME.objects.all()
+            CNAME = mozdns.cname.models.CNAME
+            cnames = CNAME.objects.all()
 
-        Domain = mozdns.domain.models.Domain
-        domains = Domain.objects.all()
+            Domain = mozdns.domain.models.Domain
+            domains = Domain.objects.all()
 
-        StaticInterface = core.interface.static_intr.models.StaticInterface
-        intrs = StaticInterface.objects.all()
+            StaticInterface = core.interface.static_intr.models.StaticInterface
+            intrs = StaticInterface.objects.all()
 
-        MX = mozdns.mx.models.MX
-        mxs = MX.objects.all()
+            MX = mozdns.mx.models.MX
+            mxs = MX.objects.all()
 
-        Nameserver = mozdns.nameserver.models.Nameserver
-        nss = Nameserver.objects.all()
+            Nameserver = mozdns.nameserver.models.Nameserver
+            nss = Nameserver.objects.all()
 
-        PTR = mozdns.ptr.models.PTR
-        ptrs = PTR.objects.all()
+            PTR = mozdns.ptr.models.PTR
+            ptrs = PTR.objects.all()
 
-        SRV = mozdns.srv.models.SRV
-        srvs = SRV.objects.all()
+            SRV = mozdns.srv.models.SRV
+            srvs = SRV.objects.all()
 
-        TXT = mozdns.txt.models.TXT
-        txts = TXT.objects.all()
+            TXT = mozdns.txt.models.TXT
+            txts = TXT.objects.all()
 
+    # Exclude types
+
+    if n_type_fs:
+        if "A" in n_type_fs:
+            addrs = None
+
+        if "CNAME" in n_type_fs:
+            cnames = None
+
+        if "DOMAIN" in n_type_fs:
+            domains = None
+
+        if "INTR" in n_type_fs:
+            intrs = None
+
+        if "MX" in n_type_fs:
+            mxs = None
+
+        if "NS" in n_type_fs:
+            nss = None
+
+        if "PTR" in type_fs:
+            ptrs = None
+
+        if "SRV" in type_fs:
+            srvs = None
+
+        if "TXT" in type_fs:
+            txts = None
     # NAME FILTER
+
     for f in text_fs:
         if addrs:
             addr_filter = build_filter(f, AddressRecord.search_fields)
             addrs = addrs.filter(addr_filter)
-    """
         if cnames:
-            cnames = cnames.filter(f)
+            cname_filter = build_filter(f, CNAME.search_fields)
+            cnames = cnames.filter(cname_filter)
         if domains:
-            domains = domains.filter(f)
+            domain_filter = build_filter(f, Domain.search_fields)
+            domains = domains.filter(domain_filter)
         if intrs:
-            intrs = intrs.filter(f)
+            intr_filter = build_filter(f, StaticInterface.search_fields)
+            intrs = intrs.filter(intr_filter)
         if mxs:
-            mxs = mxs.filter(f)
+            mx_filter = build_filter(f, MX.search_fields)
+            mxs = mxs.filter(mx_filter)
         if nss:
-            nss = nss.filter(f)
+            ns_filter = build_filter(f, Nameserver.search_fields)
+            nss = nss.filter(ns_filter)
         if ptrs:
-            ptrs = ptrs.filter(f)
+            ptr_filter = build_filter(f, PTR.search_fields)
+            ptrs = ptrs.filter(ptr_filter)
         if srvs:
-            srvs = srvs.filter(f)
+            srv_filter = build_filter(f, SRV.search_fields)
+            srvs = srvs.filter(srv_filter)
         if txts:
-            txts = txts.filter(f)
-    """
-    cnames = None
-    domains = None
-    intrs = None
-    mxs = None
-    nss = None
-    ptrs = None
-    srvs = None
-    txts = None
+            txt_filter = build_filter(f, TXT.search_fields)
+            txts = txts.filter(txt_filter)
 
-    # TODO
+    # Exclude NAME FILTER
+    for ef in n_text_fs:
+        if addrs:
+            addr_filter = build_filter(ef, AddressRecord.search_fields)
+            addrs = addrs.exclude(addr_filter)
+        if cnames:
+            cname_filter = build_filter(ef, CNAME.search_fields)
+            cnames = cnames.exclude(cname_filter)
+        if domains:
+            domain_filter = build_filter(ef, Domain.search_fields)
+            domains = domains.exclude(domain_filter)
+        if intrs:
+            intr_filter = build_filter(ef, StaticInterface.search_fields)
+            intrs = intrs.exclude(intr_filter)
+        if mxs:
+            mx_filter = build_filter(ef, MX.search_fields)
+            mxs = mxs.exclude(mx_filter)
+        if nss:
+            ns_filter = build_filter(ef, Nameserver.search_fields)
+            nss = nss.exclude(ns_filter)
+        if ptrs:
+            ptr_filter = build_filter(ef, PTR.search_fields)
+            ptrs = ptrs.exclude(ptr_filter)
+        if srvs:
+            srv_filter = build_filter(ef, SRV.search_fields)
+            srvs = srvs.exclude(srv_filter)
+        if txts:
+            txt_filter = build_filter(ef, TXT.search_fields)
+            txts = txts.exclude(txt_filter)
+
 
     return addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc
 

@@ -44,6 +44,8 @@ class SRV(models.Model, ObjectUrlMixin):
     weight = models.PositiveIntegerField(null=False,
                                          validators=[validate_srv_weight])
 
+    search_fields = ('fqdn', 'target')
+
     def details(self):
         return  (
                     ('FQDN', self.fqdn),

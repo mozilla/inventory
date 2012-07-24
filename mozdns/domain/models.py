@@ -86,6 +86,8 @@ class Domain(models.Model, ObjectUrlMixin):
     dirty = models.BooleanField(default=False)
     delegated = models.BooleanField(default=False, null=False, blank=True)
 
+    search_fields = ('name',)
+
     class Meta:
         db_table = 'domain'
 

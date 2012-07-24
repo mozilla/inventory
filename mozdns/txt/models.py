@@ -11,6 +11,8 @@ class TXT(MozdnsRecord):
     id = models.AutoField(primary_key=True)
     txt_data = models.TextField()
 
+    search_feilds = ('fqdn', 'txt_data')
+
     def details(self):
         return (
                 ('FQDN', self.fqdn),

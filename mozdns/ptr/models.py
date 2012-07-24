@@ -24,6 +24,8 @@ class PTR(Ip, ObjectUrlMixin):
             related_name='ptrs')
     views = models.ManyToManyField(View)
 
+    search_fields = ('ip_str', 'name')
+
     def details(self):
         return (
                     ('Ip', str(self.ip_str)),

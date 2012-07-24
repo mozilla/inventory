@@ -21,6 +21,8 @@ class MX(MozdnsRecord):
                                            validators=[validate_mx_priority])
     ttl = models.PositiveIntegerField(null=False, validators=[validate_ttl])
 
+    search_fields = ('fqdn', 'server')
+
     def details(self):
         return  (
                     ('FQDN', self.fqdn),

@@ -39,6 +39,8 @@ class Nameserver(models.Model, ObjectUrlMixin):
             related_name='intrnameserver_set')
     views = models.ManyToManyField(View, blank=True)
 
+    search_fields = ('server',)
+
     class Meta:
         db_table = 'nameserver'
         unique_together = ('domain', 'server')
