@@ -111,11 +111,11 @@ def get_docstrings(obj):
 class AuxAttr(object):
     """
     This class is a quick hack and is quite magical. This class abstracts the
-    retreval and creating of Key Value pairs. Example usage:
+    retreval and creation of Key Value pairs. Example usage:
 
         >>> aa = AuxAttr(StaticIntrKeyValue, intr, 'intr')
 
-    This line initializes an :class:`AuxAttr` instance with StaticIntrKeyValue,
+    This initializes an :class:`AuxAttr` instance with StaticIntrKeyValue,
     (a class that inheirits from :class:`KeyValue`), an object that has
     a KeyValue store (in this case the 'intr' object of type
     :class:`StaticInterface`), and the :class:`str` 'intr' (the name of the

@@ -44,6 +44,41 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     set to True. This will ensure that it's A record is valid *and* that it's
     PTR record is valid.
 
+
+    Using the 'attrs' attribute.
+
+    To interface with the Key Value store of an interface use the 'attrs'
+    attribute. This attribute is a direct proxy to the Keys and Values in the
+    Key Value store. When you assign an attribute of the 'attrs' attribute a
+    value, a key is create/updated. For example:
+
+    >>> intr = <Assume this is an existing StaticInterface instance>
+    >>> intr.update_attrs()  # This updates the object with keys/values already
+    >>> # in the KeyValue store.
+    >>> intr.attrs.primary
+    '0'
+
+    In the previous line, there was a key called 'primary' and it's value
+    would be returned when you accessed the attribute 'primary'.
+
+    >>> intr.attrs.alias
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+    AttributeError: 'attrs' object has no attribute 'alias'
+
+    Here 'attrs' didn't have an attribute 'alias' which means that there was no
+    KeyValue with key 'alias'. If we wanted to create that key and give it a
+    value of '0' we would do:
+
+    >>> intr.attrs.alias = '0'
+
+    This *immediately* creates a KeyValue pair with key='alias' and value='0'.
+
+    >>> intr.attrs.alias = '1'
+
+    This *immediately* updates the KeyValue object with a value of '1'. It is
+    not like the Django ORM where you must call the :function:`save()` method for any
+    changes to propagate to the database.
     """
     id = models.AutoField(primary_key=True)
     mac = models.CharField(max_length=17, validators=[validate_mac])
