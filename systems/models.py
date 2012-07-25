@@ -148,6 +148,8 @@ class KeyValue(models.Model):
     def __repr__(self):
         return self.key if self.key else ''
     def save(self, *args, **kwargs):
+        dirty = False
+        schedule_dns = False
         from mdns.build_nics import build_nic
         from mdns.dns_build import ip_to_site
 
