@@ -9,14 +9,19 @@ from core.interface.static_intr.models import StaticInterface
 
 from mozdns.domain.models import Domain
 import pdb
+import re
+
+is_mozilla_tld = re.compile(".*mozilla\.(org|net|ru|co|it|me|de|hu|pt|"
+        "at|uk|rs|la|tv)$")
 
 def create_ipv4_intr_from_domain(label, domain_name, system, mac):
     """A wrapper for :function:`create_ipv4_interface`."""
-    if domain_name.endswith("mozilla.com"):
+    if is_mozilla_tld.match(domain_name):
+       d = domain_name.split('.')
+    else:
+        # It's probably a mozilla.com TLD
        d_str = domain_name.replace("mozilla.com","")
        d = d_str.split('.')
-    else:
-       d = domain_name.split('.')
 
     vlan_str = d[0]
     datacenter = ".".join(d[1:])
