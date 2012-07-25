@@ -17,17 +17,19 @@ is_mozilla_tld = re.compile(".*mozilla\.(org|net|ru|co|it|me|de|hu|pt|"
 def create_ipv4_intr_from_domain(label, domain_name, system, mac):
     """A wrapper for :function:`create_ipv4_interface`."""
     if is_mozilla_tld.match(domain_name):
-       d = domain_name.split('.')
+        d = domain_name.split('.')[:-2]
+        domain_suffix = '.'.join(d[-2:])
     else:
         # It's probably a mozilla.com TLD
        d_str = domain_name.replace("mozilla.com","")
        d = d_str.split('.')
+       domain_suffix = "mozilla.com"
 
     vlan_str = d[0]
     datacenter = ".".join(d[1:])
 
     return create_ipv4_interface(label, vlan_str, datacenter, system, mac,
-                                "mozilla.com")
+                                domain_suffix)
 
 
 def create_ipv4_interface(label, vlan_str, site_str, system,
@@ -45,7 +47,7 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
     :param mac: The mac address of the new interface.
     :type mac: str
     :param domain_suffix: The suffix of the domain. This is usually
-        'mozilla.com'
+        'mozilla.com'.
     :type domain_suffix: str
 
     This function returns two values. The first value is the
