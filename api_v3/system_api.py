@@ -55,13 +55,14 @@ class SystemResource(CustomAPIResource):
         if patch_dict.has_key('mac_address') and patch_dict.has_key('auto_create_interface') and patch_dict['auto_create_interface'].upper() == 'TRUE':
             mac_addr = patch_dict.pop('mac_address')
             patch_dict.pop('auto_create_interface')
+            ip_str = patch_dict.pop('ip_address', None)
             sys = bundle.obj
             label = sys.hostname.split('.')[0]
             domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.mozilla.com'
             domain = Domain.objects.filter(name=domain_parsed)[0]
             # ip_str will get auto generated eventually
-
-            ip_str = '10.99.99.97'
+            if not ip_str:
+                ip_str = '10.99.99.97'
             try:
                 s = StaticInterface(label=label, mac=mac_addr, domain=domain, ip_str=ip_str, ip_type='4', system=sys)
                 s.clean()

@@ -9,7 +9,7 @@ from core.views import search_ip
 
 
 urlpatterns = patterns('',
-    url(r'^$', csrf_exempt(search_ip)),
+    url(r'^$', csrf_exempt(search_ip), name='core-index'),
     url(r'^interface/', include('core.interface.urls')),
     url(r'^vlan/', include('core.vlan.urls')),
     url(r'^network/', include('core.network.urls')),

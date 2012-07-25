@@ -22,6 +22,25 @@ from django.shortcuts import render_to_response, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from MozInvAuthorization.UnmanagedSystemACL import UnmanagedSystemACL
+
+def license_version_search(request):
+    query = request.GET.get('query')
+    tmp = [str(m['version']) for m in models.UserLicense.objects.filter(version__icontains=query).values('version').distinct()]
+    versions = list(set(tmp))
+    ret_dict = {}
+    ret_dict['query'] = query
+    ret_dict['suggestions'] = versions
+    ret_dict['data'] = versions
+    return HttpResponse(json.dumps(ret_dict))
+
+def license_type_search(request):
+    query = request.GET.get('query')
+    types = [m['license_type'] for m in models.UserLicense.objects.filter(license_type__icontains=query).values('license_type').distinct()]
+    ret_dict = {}
+    ret_dict['query'] = query
+    ret_dict['suggestions'] = types
+    ret_dict['data'] = types
+    return HttpResponse(json.dumps(ret_dict))
 @csrf_exempt
 def owners_quicksearch_ajax(request):
     """Returns systems sort table"""

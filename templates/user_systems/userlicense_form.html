@@ -1,8 +1,36 @@
 {% extends "base.html" %}
 {% block head %}
-    <script src="{{ MEDIA_URL }}javascripts/jquery.autocomplete.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui-1.8.11.custom.min.js"></script>
+    <script type="text/javascript" src="{{ MEDIA_URL }}js/jquery.autocomplete-min.js"></script>
 
     <link href="{{ MEDIA_URL }}stylesheets/jquery.autocomplete.css" media="screen" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $("#id_license_type").autocomplete({
+            serviceUrl:'/en-US/user_systems/licenses/type_search/',
+            minChars:1,
+            deferRequestBy: 500,
+            maxHeight:400
+        });
+
+        $("#id_version").autocomplete({
+            serviceUrl:'/en-US/user_systems/licenses/version_search/',
+            minChars:1,
+            deferRequestBy: 500,
+            maxHeight:400
+        });
+
+
+    });
+    </script>
+<style type='text/css'>
+    .autocomplete-w1 { border-right: 1 px solid #F0F0F0; /*border-top: 1px solid #F0F0F0;*/ position:absolute; top:5px; width: 150px; left:0px; margin:6px 0 0 6px; /* IE6 fix: */ _background:none; _margin:1px 0 0 0; }
+    .autocomplete { background:#FFF; cursor:default; text-align:left; max-height:350px; background-color: #FEFEFE; width: 150px; margin:-6px 6px 6px -6px;}
+    .autocomplete .selected { background:#F0F0F0; }
+    .autocomplete div { border-bottom: 1px solid #999; border-left: 1px solid #999; border-right: 1px solid #999; padding:2px 5px; white-space:nowrap; width: 149px; overflow:visible; background-color: #FEFEFE;}
+    .autocomplete strong { font-weight:normal; color:#3399FF; }
+</style>
 {% endblock %}
 {% block content %}
     <h2> New User License </h2>
