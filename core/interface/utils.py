@@ -24,6 +24,3 @@ def get_available_ip_by_domain(domain):
         if possible:
             site = possible[0]
         site_name = label
-
-def domain_to_site(domain):
-    pass

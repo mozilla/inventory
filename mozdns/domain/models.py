@@ -220,32 +220,6 @@ class Domain(models.Model, ObjectUrlMixin):
             ptr.reverse_domain = self.master_domain
             ptr.save()
 
-    def get_site(self):
-        """
-        This function tries to find an appropriate site for a domain. As of now
-        it only works for domains that end in 'mozilla.com'. If a domain's name
-        *doesn't* end with 'mozilla.com' get_site returns None.
-        """
-        if not self.name.endswith(".mozilla.com"):
-            return None
-        name = self.name.replace(".mozilla.com",'')
-        return _get_site(list(reversed(name.split('.'))), None)
-
-
-def _get_site(lst, psite):
-    """Recursion is fun.
-    """
-    if not lst:
-        return psite
-    sites = Site.objects.filter(name=lst[0])
-    for site in sites:
-        if site.parent != psite:
-            continue
-        maybe_the_site = _get_site(lst[1:], site)
-        if maybe_the_site:
-            return maybe_the_site
-    return psite
-            
 
 def boot_strap_ipv6_reverse_domain(ip, soa=None):
     """
