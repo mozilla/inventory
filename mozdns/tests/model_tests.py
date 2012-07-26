@@ -13,5 +13,6 @@ from mozdns.srv.tests import *
 from mozdns.cname.tests import *
 from mozdns.ip.tests import *
 from mozdns.txt.tests import *
+from mozdns.sshfp.tests import *
 from core.interface.static_intr.tests.all import *
 from mozdns.mozbind.tests import *

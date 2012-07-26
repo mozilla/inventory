@@ -14,6 +14,7 @@ from mozdns.ptr.models import PTR
 from mozdns.soa.models import SOA
 from mozdns.srv.models import SRV
 from mozdns.txt.models import TXT
+from mozdns.sshfp.models import SSHFP
 from mozdns.view.models import View
 from core.interface.static_intr.models import StaticInterface
 
@@ -117,6 +118,9 @@ def gen_moz_forward_zone(soa, NOWRITE=False):
                     'label'),
 
                 txt_set=view.txt_set.filter(mega_filter).order_by(
+                    'label'),
+
+                sshfp_set=view.sshfp_set.filter(mega_filter).order_by(
                     'label'),
             )
         if not NOWRITE:

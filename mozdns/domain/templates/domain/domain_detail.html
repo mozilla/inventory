@@ -37,6 +37,11 @@
         {{ render_table(txt_headers, txt_matrix, txt_urls) }}
     {% endif %}
 
+    {% if sshfp_matrix %}
+        <h3> SSHFP Records </h3>
+        {{ render_table(sshfp_headers, sshfp_matrix, sshfp_urls) }}
+    {% endif %}
+
     {% if cname_matrix %}
         <h3> CNAME Records </h3>
         {{ render_table(cname_headers, cname_matrix, cname_urls,

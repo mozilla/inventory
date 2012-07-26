@@ -23,7 +23,7 @@ class CNAME(MozdnsRecord):
     data = models.CharField(max_length=100, validators=[validate_name])
     data_domain = models.ForeignKey(Domain, null=True,
                                     related_name='data_domains', blank=True,
-                                    on_delete=models.DO_NOTHING)
+                                    on_delete=models.SET_NULL)
 
     search_fields = ('fqdn', 'data')
 

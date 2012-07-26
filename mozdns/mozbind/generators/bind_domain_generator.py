@@ -81,6 +81,22 @@ def render_txt(txt_set):
         BUILD_STR += template.format(name=name, rclass='IN', rtype='TXT', data=txt.txt_data)
     return BUILD_STR
 
+def render_sshfp(sshfp_set):
+    BUILD_STR = ''
+
+    template = Template("{name:$name_just} {rclass:$class_just} "
+            "{rtype:$type_just} {algorithm_number} {fingerprint_type} {key:$data_just}\n")
+    template = template.substitute(name_just=name_just, class_just=class_just,
+                        type_just=type_just, data_just=data_just)
+    for sshfp in sshfp_set:
+        #name = txt.fqdn + '.' if txt.label != '' else '@'
+        name = sshfp.fqdn + '.'
+        BUILD_STR += template.format(name=name, rclass='IN', rtype='TXT',
+                algorithm_number=sshfp.algorithm_number,
+                fingerprint_type=sshfp.fingerprint_type,
+                key=sshfp.key)
+    return BUILD_STR
+
 def render_zone( default_ttl, nameserver_set, mx_set, addressrecord_set,
         interface_set, cname_set, srv_set, txt_set):
     BUILD_STR = ''

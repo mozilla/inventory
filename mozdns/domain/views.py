@@ -89,6 +89,9 @@ class DomainDetailView(DomainView, DetailView):
         txt_objects = domain.txt_set.all().order_by('label')
         txt_headers, txt_matrix, txt_urls = tablefy(txt_objects)
 
+        sshfp_objects = domain.sshfp_set.all().order_by('label')
+        sshfp_headers, sshfp_matrix, sshfp_urls = tablefy(sshfp_objects)
+
         cname_objects = domain.cname_set.order_by('label')
         if cname_objects.count() > 50:
             cname_views = False
@@ -140,6 +143,10 @@ class DomainDetailView(DomainView, DetailView):
             "txt_headers": txt_headers,
             "txt_matrix": txt_matrix,
             "txt_urls": txt_urls,
+
+            "sshfp_headers": sshfp_headers,
+            "sshfp_matrix": sshfp_matrix,
+            "sshfp_urls": sshfp_urls,
 
             "cname_headers": cname_headers,
             "cname_matrix": cname_matrix,

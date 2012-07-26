@@ -8,6 +8,7 @@ from mozdns.soa.models import SOA
 from mozdns.srv.models import SRV
 from mozdns.tests.view_tests import GenericViewTests, random_label
 from mozdns.txt.models import TXT
+from mozdns.sshfp.models import SSHFP
 
 
 """Hack hack hack, hack it up!"""
@@ -134,3 +135,26 @@ class TXTViewTests(MozdnsViewTests, TestCase):
 builder = GenericViewTests()
 for test in builder.build_all_tests():
     setattr(TXTViewTests,test.__name__+"_txt", test)
+
+class SSHFPViewTests(MozdnsViewTests, TestCase):
+    def setUp(self):
+        test_data = {
+            'label':random_label(),
+            'algorithm_number': 1,
+            'fingerprint_type': 1,
+            'key':random_label()
+        }
+        do_setUp(self, "sshfp", SSHFP, test_data)
+
+    def post_data(self):
+        return {
+            'label':random_label(),
+            'domain': self.domain.pk,
+            'algorithm_number': 1,
+            'fingerprint_type': 1,
+            'key':random_label()
+        }
+
+builder = GenericViewTests()
+for test in builder.build_all_tests():
+    setattr(SSHFPViewTests,test.__name__+"_sshfp", test)
