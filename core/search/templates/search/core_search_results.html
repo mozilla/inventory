@@ -206,7 +206,7 @@
         <tbody>
         {% for ptr in ptrs %}
         <tr>
-            <a href="{{ ptr.get_absolute_url() }}">{{ ptr.fqdn }}</a>
+            <td><a href="{{ ptr.get_absolute_url() }}">{{ ptr.name }}</a></td>
             <td><b>PTR</b></td>
             <td>{{ ptr.ip_str }}</td>
         </tr>

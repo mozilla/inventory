@@ -59,13 +59,14 @@ def search_ajax(request):
                                         "intrs": intrs,
                                         "mxs": mxs,
                                         "nss": nss,
-                                        "ptr": ptrs,
+                                        "ptrs": ptrs,
                                         "srvs": srvs,
                                         "txts": txts
                                     }
                         ))
 def search(request):
     """Search page"""
+    search = request.GET.get('search','')
     return render(request, "search/core_search.html", {
         "search": search
     })
