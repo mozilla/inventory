@@ -191,3 +191,23 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(primary, '1')
         self.assertEqual(alias, '0')
 
+    def test8_test_system_model_delete_by_adapter(self):
+        self.create_domains()
+        data = {
+                'hostname': self.test_hostname,
+                'auto_create_interface': 'True',
+                'mac_address': '00:00:00:00:00:00',
+                'ip_address': '10.99.99.99',
+               }
+        resp = self.api_client.post('/en-US/tasty/v3/system/', format='json', data=data)
+        resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
+        system_tmp = self.deserialize(resp)
+        system = System.objects.get(id = system_tmp['id'])
+        adapters = system.staticinterface_set.all()
+        #adapters[0].attrs.update_attrs()
+        #self.assertEqual(len(adapters.attrs), 1)
+        #system.delete_adapter('eth0.0')
+        #adapters = system.staticinterface_set.all()
+        #adapters.update_attrs()
+        #self.assertEqual(len(adapters.attrs), 0)
+

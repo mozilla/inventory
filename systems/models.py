@@ -350,6 +350,25 @@ class System(DirtyFieldsMixin, models.Model):
     #network_adapter = models.ForeignKey('NetworkAdapter', blank=True, null=True)
 
 
+    def delete_adapter(self, adapter_name):
+        from api_v3.system_api import SystemResource
+        """
+            method to get the next adapter
+            we'll want to always return an adapter with a 0 alias
+            take the highest primary if exists, increment by 1 and return
+
+            :param adapter_name: The name of the adapter to delete
+            :type adapter_name: str
+            :return: True on deletion, exception raid if not exists
+        """
+        adapter_type, primary, alias = SystemResource.extract_nic_attrs(adapter_name)
+        #self.staticinterface_set.get(type = adapter_type, primary = primary, alias = alias).delete()
+        for i in self.staticinterface_set.all():
+            i.update_attrs()
+            if i.attrs.interface_type == adapter_type and i.attrs.primary == primary and i.attrs.alias == alias:
+                i.delete()
+        return True
+
     def get_next_adapter(self, type='eth'):
         """
             method to get the next adapter
