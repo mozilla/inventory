@@ -29,13 +29,14 @@ class Range(models.Model, ObjectUrlMixin):
     not enforce this.
 
     Chaning a Range
-    ---------------
+
     Things that happen when a static range is changed:
-        * The new `start` and `end` values are checked against the range's
-         network to ensure that the range still exists within the network.
-        * The new `start` and `end` values are checked against all other
-         existing range's `start` and `end` values to make sure that the new
-         range does not overlap.
+
+        *   The new `start` and `end` values are checked against the range's
+            network to ensure that the range still exists within the network.
+        *   The new `start` and `end` values are checked against all other
+            existing range's `start` and `end` values to make sure that the
+            new range does not overlap.
     """
     id = models.AutoField(primary_key=True)
 
@@ -173,6 +174,7 @@ class Range(models.Model, ObjectUrlMixin):
         """Find's the most appropriate ip address within a range. If it can't
         find an IP it returns None. If it finds an IP it returns an IPv4Address
         object.
+
             :returns: ipaddr.IPv4Address
         """
         if self.network.ip_type != '4':
