@@ -15,7 +15,7 @@ is_mozilla_tld = re.compile(".*mozilla\.(org|net|ru|co|it|me|de|hu|pt|"
         "at|uk|rs|la|tv)$")
 
 def create_ipv4_intr_from_domain(label, domain_name, system, mac):
-    """A wrapper for :function:`create_ipv4_interface`."""
+    """A wrapper for `create_ipv4_interface`."""
     if is_mozilla_tld.match(domain_name):
         d = domain_name.split('.')[:-2]
         domain_suffix = '.'.join(d[-2:])
@@ -59,74 +59,68 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
 
     Using this function requires that certain objects exist in the database.
     *Understanding these objects before using this function is a good thing*.
-
-
-        Figure 1.
+        ::
 
                     <label> (.<BU>) .<DC> . <domain_suffix>
 
-    Step 1)
-    This function starts by looking for a site in the site table that has a
-    site path (i.e. <BU>.<DC> like 'relenge.scl3' or just 'scl3') equal to the
-    'site_str' paramter.
+    1. This function starts by looking for a site in the site table that has a
+        site path (i.e. `<BU>.<DC>` like 'relenge.scl3' or just 'scl3') equal to the
+        'site_str' paramter.
 
-    If you get errors from this step (i.e. There is a 'site' key in the
-    errors dictionary), create the site you are trying to use in the Web UI.
-
-
-    Step 2)
-    The function then looks in the site found in Step 1 for a :class:`Vlan`
-    instance with a name equal to the 'vlan_str' parameter.
-
-    If you get errors from this step (i.e. There is a 'vlan' key in the errors
-    dictionary), create the vlan you are trying to use in the Web UI.
+        If you get errors from this step (i.e. There is a 'site' key in the
+        errors dictionary), create the site you are trying to use in the Web UI.
 
 
-    Step 3)
-    Using the :class:`Site` and :class:`Vlan` instance found in Step 1 & 2 and
-    the `domain_suffix` paramter, the function constructs the following string.
+    2.  The function then looks in the site found in Step 1 for a :class:`Vlan`
+        instance with a name equal to the 'vlan_str' parameter.
 
-        <vlan>.<site>.<domain_suffix>
-
-    As an example, imaging we were using:
-
-        site = relenge.scl3
-        vlan = db
-        domain_suffix = mozilla.com
-
-    The constructed string would be:
-
-        db.relenge.scl3.mozilla.com
-
-    The function will now use this constructed string as the domain name for
-    creating the interface's A/PTR records. For this reason *a domain with the
-    constructed name _must_ be in the database*.
-
-    If you get errors from this step (i.e. There is a 'domain' key in the errors
-    dictionary), create the domain you are trying to use in the Web UI.
+        If you get errors from this step (i.e. There is a 'vlan' key in the
+        errors dictionary), create the vlan you are trying to use in the Web
+        UI.
 
 
-    Step 4)
-    The function then looks at the networks associated with that vlan found in
-    Step 2 and chooses the networks that are associated to the site found in
-    Step 1.
+    3.  Using the :class:`Site` and :class:`Vlan` instance found in Step 1 & 2 and
+        the `domain_suffix` paramter, the function constructs the following
+        string.::
 
-    If you get errors from this step (i.e. There is a 'network' key in the errors
-    dictionary), create the network you are trying to use in the Web UI and
-    associate it with the vlan *and* site you are trying to use.
+            <vlan>.<site>.<domain_suffix>
+
+        As an example, imaging we were using::
+
+            site = relenge.scl3
+            vlan = db
+            domain_suffix = mozilla.com
+
+        The constructed string would be::
+
+            db.relenge.scl3.mozilla.com
+
+        The function will now use this constructed string as the domain name for
+        creating the interface's A/PTR records. For this reason *a domain with the
+        constructed name _must_ be in the database*.
+
+        If you get errors from this step (i.e. There is a 'domain' key in the errors
+        dictionary), create the domain you are trying to use in the Web UI.
 
 
-    Step 5)
-    The function then looks for ranges within the networks found in Step 4. If
-    the function finds more than one range it does not make a choice for you
-    and returns an error. If the function finds only one range it looks for a
-    free IP in that range while returning an error if no free IP is found.
+    4.  The function then looks at the networks associated with that vlan found in
+        Step 2 and chooses the networks that are associated to the site found in
+        Step 1.
 
-    Step 6)
-    Using the 'label', 'system', 'mac', and IP address found in Step 4, a new
-    StaticInterface is created. If there are errors while creating the
-    Interface those errors are returned. If there are no errors while creating
-    the Interface the Interface is returned.
+        If you get errors from this step (i.e. There is a 'network' key in the errors
+        dictionary), create the network you are trying to use in the Web UI and
+        associate it with the vlan *and* site you are trying to use.
+
+
+    5.  The function then looks for ranges within the networks found in Step 4. If
+        the function finds more than one range it does not make a choice for you
+        and returns an error. If the function finds only one range it looks for a
+        free IP in that range while returning an error if no free IP is found.
+
+    6.  Using the 'label', 'system', 'mac', and IP address found in Step 4, a new
+        StaticInterface is created. If there are errors while creating the
+        Interface those errors are returned. If there are no errors while creating
+        the Interface the Interface is returned.
     """
     errors = ErrorDict()
     if not label:

@@ -45,31 +45,31 @@ class Domain(models.Model, ObjectUrlMixin):
 
     Constraints on both 'forward' and 'reverse' Domains:
 
-        * A ``ValidationError`` is raised when you try to delete a
-        domain that has child domains. A domain should only be deleted when it
-        has no child domains.
+        *   A ``ValidationError`` is raised when you try to delete a
+            domain that has child domains. A domain should only be deleted when
+            it has no child domains.
 
-        * All domains should have a master (or parent) domain.  A
-        ``ValidationError`` will be raised if you try to create an orphan
-        domain that should have a master domain.
+        *   All domains should have a master (or parent) domain.  A
+            ``ValidationError`` will be raised if you try to create an orphan
+            domain that should have a master domain.
 
-        * If you are not authoritative for a reverse domain, set the ``soa``
-        field to ``None``.
+        *   If you are not authoritative for a reverse domain, set the ``soa``
+            field to ``None``.
 
-        * The ``name`` field must be unique. Failing to make it unique will
-        raise a ``ValidationError``.
+        *   The ``name`` field must be unique. Failing to make it unique will
+            raise a ``ValidationError``.
 
     Constraints on 'reverse' Domains:
 
-        * A 'reverse' domain should have ``is_reverse`` set to True.
+        *   A 'reverse' domain should have ``is_reverse`` set to True.
 
-        * A 'reverse' domain's name should end in either 'in-addr.arpa' or
-        'ipv6.arpa'
+        *   A 'reverse' domain's name should end in either 'in-addr.arpa' or
+            'ipv6.arpa'
 
-        * When a PTR is added it is pointed back to a 'reverse' domain. This is
-        done by converting the IP address to the connonical DNS form and then
-        doing a longest prefix match against all domains that have is_reverse
-        set to True.
+        *   When a PTR is added it is pointed back to a 'reverse' domain. This
+            is done by converting the IP address to the connonical DNS form and
+            then doing a longest prefix match against all domains that have
+            is_reverse set to True.
 
     This last point is worth looking at furthur. When adding a new reverse
     domain, all records in the PTR table should be checked for a more
@@ -180,9 +180,10 @@ class Domain(models.Model, ObjectUrlMixin):
             cname.save()
 
     def reassign_data_domains(self):
-        """:class:`PTR`s and :class:`CNAME`s keep track of which domain
+        """The :class:`PTR` s and :class:`CNAME` s keep track of which domain
         their data is pointing to. This function reassign's those data
-        domains to the data_domain's master domain."""
+        domains to the data_domain's master domain.
+        """
 
         for ptr in self.ptrs.all():
             if ptr.data_domain.master_domain:
@@ -201,13 +202,12 @@ class Domain(models.Model, ObjectUrlMixin):
     ### Reverse Domain Functions
 
     def reassign_ptr_delete(self):
-        """
-        This function serves as a pretty subtle workaround.
+        """This function serves as a pretty subtle workaround.
 
-            * An Ip is not allowed to have a reverse_domain of None.
+            *   An Ip is not allowed to have a reverse_domain of None.
 
-            * When you save an Ip it is automatically assigned the most
-              appropriate reverse_domain
+            *   When you save an Ip it is automatically assigned the most
+                appropriate reverse_domain
 
         Passing the update_reverse_domain as False will by pass the Ip's
         class attempt to find an appropriate reverse_domain. This way
@@ -254,12 +254,12 @@ def reassign_reverse_ptrs(reverse_domain_1, reverse_domain_2, ip_type):
     reverse domain.
 
     :param reverse_domain_1: The domain which could possible have
-    addresses added to it.
+        addresses added to it.
 
     :type reverse_domain_1: str
 
     :param reverse_domain_2: The domain that has ip's which might not
-    belong to it anymore.
+        belong to it anymore.
 
     :type reverse_domain_2: str
     """
@@ -290,7 +290,7 @@ def name_to_master_domain(name):
     master domain.
 
     :param name: The domain for which we are using to search for a
-    master domain.
+        master domain.
     :type name: str
     :returns: domain -- Domain object
     :raises: ValidationError
