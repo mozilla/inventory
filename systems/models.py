@@ -353,6 +353,9 @@ class System(DirtyFieldsMixin, models.Model):
     def get_next_adapter(self, type='eth'):
         """
             method to get the next adapter
+            we'll want to always return an adapter with a 0 alias
+            take the highest primary if exists, increment by 1 and return
+
             :param type: The type of network adapter
             :type type: str
             :return: 3 strings 'adapter_name', 'primary_number', 'alias_number'
@@ -364,6 +367,10 @@ class System(DirtyFieldsMixin, models.Model):
             for i in self.staticinterface_set.all():
                 i.update_attrs()
                 primary_list.append(int(i.attrs.primary))
+
+            ## sort and reverse the list to get the highest
+            ## perhaps someday come up with the lowest available
+            ## this should work for now
             primary_list.sort()
             primary_list.reverse()
             return type, str(primary_list[0] + 1), '0'
