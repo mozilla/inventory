@@ -15,6 +15,7 @@ from core.interface.static_intr.models import StaticInterface
 from core.interface.static_intr.models import StaticIntrKeyValue
 from mozdns.domain.models import Domain
 import json
+import re
 class PrettyJSONSerializer(Serializer):
     json_indent = 2
 
@@ -43,10 +44,59 @@ class CustomAPIResource(ModelResource):
 
 class SystemResource(CustomAPIResource):
 
+
     key_value = fields.ToManyField('api_v3.system_api.KeyValueResource', 'keyvalue_set', full=True, null=True)
     server_model = fields.ForeignKey('api_v3.system_api.ServerModelResource', 'server_model', null=True, full=True)
     operating_system = fields.ForeignKey('api_v3.system_api.OperatingSystemResource', 'operating_system', null=True, full=True)
     system_rack = fields.ForeignKey('api_v3.system_api.SystemRackResource', 'system_rack', null=True, full=True)
+
+
+    def __init__(self, *args, **kwargs):
+        super(SystemResource, self).__init__(*args, **kwargs)
+
+
+    def get_schema(self, request, **kwargs):
+        ret = super(SystemResource, self).get_schema(request, **kwargs)
+        retjson = json.loads(ret.content)
+        retjson['fields']['auto_create_interface'] = {
+                'nullable': True,
+                'default': False,
+                'type': 'boolean',
+                'unique': False,
+                'help_text': 'auto_create_interface="True"',
+                'example': 'auto_create_interface="True"',
+                }
+        retjson['fields']['ip_address'] = {
+                'nullable': True,
+                'default': False,
+                'type': 'string',
+                'unique': False,
+                'help_text': 'ip_address="10.0.0.1"',
+                'example': 'ip_address="10.0.0.1"',
+                }
+        retjson['fields']['mac_address'] = {
+                'nullable': True,
+                'default': False,
+                'type': 'string',
+                'unique': False,
+                'help_text': 'mac_address="00:00:00:00:00:00"',
+                'example': 'mac_address="00:00:00:00:00:00"',
+                }
+        ret.content = json.dumps(retjson)
+        return ret
+
+
+    @staticmethod
+    def extract_nic_attrs(nic_name):
+        nic_type, primary, alias = "eth", 0, 0
+        m = re.search("(eth|mgmt)(\d+)\.(\d+)", nic_name)
+        if m:
+            nic_type = m.group(1) if m.group(1) else "eth"
+            primary = m.group(2) if m.group(2) else "0"
+            alias = m.group(3) if m.group(3) else "0"
+            return nic_type, primary, alias
+        else:
+            raise ValidationError("Invalid format for adapter name. ex: eth0.0")
 
     def process_extra(self, bundle, request, **kwargs):
         patch_dict = json.loads(request.POST.items()[0][0])
@@ -56,11 +106,18 @@ class SystemResource(CustomAPIResource):
             mac_addr = patch_dict.pop('mac_address')
             patch_dict.pop('auto_create_interface')
             ip_str = patch_dict.pop('ip_address', None)
+            interface = patch_dict.pop('interface', None)
             sys = bundle.obj
             label = sys.hostname.split('.')[0]
             domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.mozilla.com'
             domain = Domain.objects.filter(name=domain_parsed)[0]
             # ip_str will get auto generated eventually
+            if interface:
+                interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+            else:
+                interface_type = 'eth'
+                primary = '4'
+                alias = '0'
             if not ip_str:
                 ip_str = '10.99.99.97'
             try:
@@ -68,9 +125,9 @@ class SystemResource(CustomAPIResource):
                 s.clean()
                 s.save()
                 s.update_attrs()
-                s.attrs.primary = '4'
-                s.attrs.interface_type = 'eth'
-                s.attrs.alias = '0'
+                s.attrs.primary = primary
+                s.attrs.interface_type = interface_type
+                s.attrs.alias = alias
             except ValidationError, e:
                 bundle.errors['error_message'] = " ".join(e.messages)
             except Exception, e:
