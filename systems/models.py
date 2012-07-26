@@ -369,6 +369,20 @@ class System(DirtyFieldsMixin, models.Model):
                 i.delete()
         return True
 
+
+    def get_adapters(self):
+        """
+            method to get all adapters
+            :return: list of objects and attributes if exist, None if empty
+        """
+        adapters = None
+        if self.staticinterface_set.count() > 0:
+            adapters = []
+            for i in self.staticinterface_set.all():
+                i.update_attrs()
+                adapters.append(i)
+        return adapters
+
     def get_next_adapter(self, type='eth'):
         """
             method to get the next adapter
