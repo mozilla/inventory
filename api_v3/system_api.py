@@ -123,9 +123,7 @@ class SystemResource(CustomAPIResource):
             if interface:
                 interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
             else:
-                interface_type = 'eth'
-                primary = '4'
-                alias = '0'
+                interface_type, primary, alias = sys.get_next_adapter()
             if not ip_str:
                 ip_str = '10.99.99.97'
             try:

@@ -87,7 +87,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(eth0.ip_str, '10.99.99.97')
         self.assertEqual(eth0.mac, '00:00:00:00:00:00')
         self.assertEqual(eth0.ip_type, '4')
-        self.assertEqual(eth0.attrs.primary, '4')
+        self.assertEqual(eth0.attrs.primary, '0')
         self.assertEqual(eth0.attrs.interface_type, 'eth')
         self.assertEqual(eth0.attrs.alias, '0')
 
@@ -156,3 +156,38 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(eth0.attrs.primary, '2')
         self.assertEqual(eth0.attrs.interface_type, 'mgmt')
         self.assertEqual(eth0.attrs.alias, '5')
+
+
+    def test6_test_system_model_next_available_network_adapter_no_adapters(self):
+        self.create_domains()
+        data = {
+                'hostname': self.test_hostname,
+               }
+        self.api_client.post('/en-US/tasty/v3/system/', format='json', data=data)
+        resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
+        system_tmp = self.deserialize(resp)
+        system = System.objects.get(id = system_tmp['id'])
+        name, primary, alias = system.get_next_adapter()
+        self.assertEqual(name, 'eth')
+        self.assertEqual(primary, '0')
+        self.assertEqual(alias, '0')
+        
+
+
+    def test7_test_system_model_next_available_network_adapter(self):
+        self.create_domains()
+        data = {
+                'hostname': self.test_hostname,
+                'auto_create_interface': 'True',
+                'mac_address': '00:00:00:00:00:00',
+                'ip_address': '10.99.99.99',
+               }
+        resp = self.api_client.post('/en-US/tasty/v3/system/', format='json', data=data)
+        resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
+        system_tmp = self.deserialize(resp)
+        system = System.objects.get(id = system_tmp['id'])
+        name, primary, alias = system.get_next_adapter()
+        self.assertEqual(name, 'eth')
+        self.assertEqual(primary, '1')
+        self.assertEqual(alias, '0')
+

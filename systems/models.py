@@ -350,6 +350,26 @@ class System(DirtyFieldsMixin, models.Model):
     #network_adapter = models.ForeignKey('NetworkAdapter', blank=True, null=True)
 
 
+    def get_next_adapter(self, type='eth'):
+        """
+            method to get the next adapter
+            :param type: The type of network adapter
+            :type type: str
+            :return: 3 strings 'adapter_name', 'primary_number', 'alias_number'
+        """
+        if self.staticinterface_set.count() == 0:
+            return type, '0', '0'
+        else:
+            primary_list = []
+            for i in self.staticinterface_set.all():
+                i.update_attrs()
+                primary_list.append(int(i.attrs.primary))
+            primary_list.sort()
+            primary_list.reverse()
+            return type, str(primary_list[0] + 1), '0'
+
+
+
 
 
     objects = models.Manager()
