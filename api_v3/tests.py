@@ -1,11 +1,12 @@
 from system_api import SystemResource
 from systems.models import System
 from tastypie.test import ResourceTestCase
-class TastySystemTest(ResourceTestCase):
+from django.core.exceptions import ValidationError
+class Tasty1SystemTest(ResourceTestCase):
 
     test_hostname = 'foobar.vlan.dc'
     def setUp(self):
-        super(TastySystemTest, self).setUp()
+        super(Tasty1SystemTest, self).setUp()
 
     def create_system(self, host_dict):
         System(**host_dict).save()
@@ -48,11 +49,11 @@ class TastySystemTest(ResourceTestCase):
         self.assertEqual(resp.status_code, 204)
         self.assertEqual(len(System.objects.all()), 0)
 
-class TastySystemNetworkAdapterTest(ResourceTestCase):
+class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
 
     test_hostname = 'foobar.vlan.dc'
     def setUp(self):
-        super(TastySystemNetworkAdapterTest, self).setUp()
+        super(Tasty2SystemNetworkAdapterTest, self).setUp()
 
 
     def create_system(self, host_dict):
@@ -68,6 +69,7 @@ class TastySystemNetworkAdapterTest(ResourceTestCase):
         Domain(name='in-addr.arpa').save()
         Domain(name='10.in-addr.arpa').save()
 
+
     def test1_create_system_with_auto_assigned_magic(self):
         self.create_domains()
         data = {
@@ -81,9 +83,13 @@ class TastySystemNetworkAdapterTest(ResourceTestCase):
         system_tmp = self.deserialize(resp)
         system = System.objects.get(id = system_tmp['id'])
         eth0 = system.staticinterface_set.all()[0]
+        eth0.update_attrs()
         self.assertEqual(eth0.ip_str, '10.99.99.97')
         self.assertEqual(eth0.mac, '00:00:00:00:00:00')
         self.assertEqual(eth0.ip_type, '4')
+        self.assertEqual(eth0.attrs.primary, '0')
+        self.assertEqual(eth0.attrs.interface_type, 'eth')
+        self.assertEqual(eth0.attrs.alias, '0')
 
 
     def test2_create_system_with_static_ip(self):
@@ -103,4 +109,106 @@ class TastySystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(eth0.ip_str, '10.99.99.99')
         self.assertEqual(eth0.mac, '00:00:00:00:00:00')
         self.assertEqual(eth0.ip_type, '4')
+
+    def test3_extract_nic_attrs(self):
+        nic_name = "eth0.0"
+        name, primary, alias = SystemResource.extract_nic_attrs(nic_name)
+        self.assertEqual(name, "eth")
+        self.assertEqual(primary, "0")
+        self.assertEqual(alias, "0")
+
+        nic_name = "eth1.0"
+        name, primary, alias = SystemResource.extract_nic_attrs(nic_name)
+        self.assertEqual(name, "eth")
+        self.assertEqual(primary, "1")
+        self.assertEqual(alias, "0")
+
+        nic_name = "eth42.19"
+        name, primary, alias = SystemResource.extract_nic_attrs(nic_name)
+        self.assertEqual(name, "eth")
+        self.assertEqual(primary, "42")
+        self.assertEqual(alias, "19")
+
+    def test4_extract_nic_attrs_bad_interface(self):
+        nic_name = "eth17"
+        self.assertRaises(ValidationError, SystemResource.extract_nic_attrs, nic_name)
+   
+
+    def test5_create_system_with_assigned_interface_and_ip(self):
+        self.create_domains()
+        data = {
+                'hostname': self.test_hostname,
+                'auto_create_interface': 'True',
+                'mac_address': '00:00:00:00:00:00',
+                'interface': 'mgmt2.5',
+                'ip_address': '10.99.99.99',
+               }
+        resp = self.api_client.post('/en-US/tasty/v3/system/', format='json', data=data)
+        self.assertEqual(resp.status_code, 201)
+        resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
+        system_tmp = self.deserialize(resp)
+        system = System.objects.get(id = system_tmp['id'])
+        eth0 = system.staticinterface_set.all()[0]
+        eth0.update_attrs()
+        self.assertEqual(eth0.ip_str, '10.99.99.99')
+        self.assertEqual(eth0.mac, '00:00:00:00:00:00')
+        self.assertEqual(eth0.ip_type, '4')
+        self.assertEqual(eth0.attrs.primary, '2')
+        self.assertEqual(eth0.attrs.interface_type, 'mgmt')
+        self.assertEqual(eth0.attrs.alias, '5')
+
+
+    def test6_test_system_model_next_available_network_adapter_no_adapters(self):
+        self.create_domains()
+        data = {
+                'hostname': self.test_hostname,
+               }
+        self.api_client.post('/en-US/tasty/v3/system/', format='json', data=data)
+        resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
+        system_tmp = self.deserialize(resp)
+        system = System.objects.get(id = system_tmp['id'])
+        name, primary, alias = system.get_next_adapter()
+        self.assertEqual(name, 'eth')
+        self.assertEqual(primary, '0')
+        self.assertEqual(alias, '0')
+        
+
+
+    def test7_test_system_model_next_available_network_adapter(self):
+        self.create_domains()
+        data = {
+                'hostname': self.test_hostname,
+                'auto_create_interface': 'True',
+                'mac_address': '00:00:00:00:00:00',
+                'ip_address': '10.99.99.99',
+               }
+        resp = self.api_client.post('/en-US/tasty/v3/system/', format='json', data=data)
+        resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
+        system_tmp = self.deserialize(resp)
+        system = System.objects.get(id = system_tmp['id'])
+        name, primary, alias = system.get_next_adapter()
+        self.assertEqual(name, 'eth')
+        self.assertEqual(primary, '1')
+        self.assertEqual(alias, '0')
+
+    def test8_test_system_model_delete_by_adapter(self):
+        self.create_domains()
+        data = {
+                'hostname': self.test_hostname,
+                'auto_create_interface': 'True',
+                'mac_address': '00:00:00:00:00:00',
+                'ip_address': '10.99.99.99',
+               }
+        resp = self.api_client.post('/en-US/tasty/v3/system/', format='json', data=data)
+        resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
+        system_tmp = self.deserialize(resp)
+        system = System.objects.get(id = system_tmp['id'])
+        adapters = system.get_adapters()
+        self.assertEqual(len(adapters), 1)
+        self.assertEqual(adapters[0].attrs.interface_type, 'eth')
+        self.assertEqual(adapters[0].attrs.primary, '0')
+        self.assertEqual(adapters[0].attrs.alias, '0')
+        system.delete_adapter('eth0.0')
+        adapters = system.get_adapters()
+        self.assertEqual(adapters, None)
 

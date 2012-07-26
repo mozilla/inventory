@@ -350,6 +350,66 @@ class System(DirtyFieldsMixin, models.Model):
     #network_adapter = models.ForeignKey('NetworkAdapter', blank=True, null=True)
 
 
+    def delete_adapter(self, adapter_name):
+        from api_v3.system_api import SystemResource
+        """
+            method to get the next adapter
+            we'll want to always return an adapter with a 0 alias
+            take the highest primary if exists, increment by 1 and return
+
+            :param adapter_name: The name of the adapter to delete
+            :type adapter_name: str
+            :return: True on deletion, exception raid if not exists
+        """
+        adapter_type, primary, alias = SystemResource.extract_nic_attrs(adapter_name)
+        #self.staticinterface_set.get(type = adapter_type, primary = primary, alias = alias).delete()
+        for i in self.staticinterface_set.all():
+            i.update_attrs()
+            if i.attrs.interface_type == adapter_type and i.attrs.primary == primary and i.attrs.alias == alias:
+                i.delete()
+        return True
+
+
+    def get_adapters(self):
+        """
+            method to get all adapters
+            :return: list of objects and attributes if exist, None if empty
+        """
+        adapters = None
+        if self.staticinterface_set.count() > 0:
+            adapters = []
+            for i in self.staticinterface_set.all():
+                i.update_attrs()
+                adapters.append(i)
+        return adapters
+
+    def get_next_adapter(self, type='eth'):
+        """
+            method to get the next adapter
+            we'll want to always return an adapter with a 0 alias
+            take the highest primary if exists, increment by 1 and return
+
+            :param type: The type of network adapter
+            :type type: str
+            :return: 3 strings 'adapter_name', 'primary_number', 'alias_number'
+        """
+        if self.staticinterface_set.count() == 0:
+            return type, '0', '0'
+        else:
+            primary_list = []
+            for i in self.staticinterface_set.all():
+                i.update_attrs()
+                primary_list.append(int(i.attrs.primary))
+
+            ## sort and reverse the list to get the highest
+            ## perhaps someday come up with the lowest available
+            ## this should work for now
+            primary_list.sort()
+            primary_list.reverse()
+            return type, str(primary_list[0] + 1), '0'
+
+
+
 
 
     objects = models.Manager()
