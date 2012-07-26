@@ -79,11 +79,15 @@ def ipf(start, end, root=True):
     return query
 
 def build_filter(f, fields, filter_type = "icontains"):
-    filter_ = {}
     # rtucker++
-    filters =[Q(**{"{0}__{1}".format(t, filter_type): f}) for t in fields]
-    # Breaks in python 3. Oh well
-    return reduce(operator.or_, filters)
+    final_filter = Q()
+    filters = []
+    for filter_ in f:
+        for t in fields:
+            final_filter = final_filter | Q(**{"{0}__{1}".format(t,
+                filter_type): filter_})
+
+    return final_filter
 
 
 def compile_search(args):
@@ -114,37 +118,39 @@ def compile_search(args):
     for arg in args:
         if arg[1] == "text:":
             if arg[0] == "inc":
-                text_fs += arg[2]
+                text_fs.append(arg[2])
             if arg[0] == "exc":
-                n_text_fs += arg[2]
+                n_text_fs.append(arg[2])
+            continue
         if arg[1] == "type:":
             if arg[0] == "inc":
                 type_fs += arg[2]
             if arg[0] == "exc":
                 n_type_fs += arg[2]
+            continue
         elif arg[1] == "site:":
             if arg[0] == "inc":
                 site_fs += arg[2]
             if arg[0] == "exc":
                 n_site_fs += arg[2]
+            continue
         elif arg[1] == "vlan:":
             if arg[0] == "inc":
                 vlan_fs += arg[2]
             if arg[0] == "exc":
                 n_vlan_fs += arg[2]
+            continue
         elif arg[1] == "network:":
             if arg[0] == "inc":
                 network_fs += arg[2]
             if arg[0] == "exc":
                 n_network_fs += arg[2]
+            continue
         elif arg[1] == "range:":
             if arg[0] == "inc":
                 range_fs += arg[2]
             if arg[0] == "exc":
                 n_range_fs += arg[2]
-
-    text_fs = list(set(text_fs))
-    n_text_fs = list(set(n_text_fs))
 
     site_fs = list(set(site_fs))
     n_site_fs = list(set(n_site_fs))

@@ -184,6 +184,24 @@ def _lex_word(ll):
             word = word + c
     return word
 
+def _peek_word(ll):
+    word = ''
+    i = 0
+    while True:
+        # Read in name
+        c = ll.peekn(i)
+        i += 1
+        if c is None:
+            if word:
+                return word
+            else:
+                return None
+        if re.match('\s', c):
+            break
+        else:
+            word = word + c
+    return word
+
 
 def _lex_ws(ll):
     while True:
@@ -296,7 +314,7 @@ ss = '"fooo"'
 print ss
 print parse(ss)
 
+"""
 ss = "foo: bar: baz"
 print ss
 print parse(ss)
-"""

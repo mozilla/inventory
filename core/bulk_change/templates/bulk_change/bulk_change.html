@@ -1,0 +1,81 @@
+{% extends "core/core_base.html" %}
+{% block core_content %}
+
+<style type="text/css">
+.center{
+    text-align: center;
+}
+</style>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js"></script>
+
+<script type="text/javascript" >
+    // Take from here. http://stackoverflow.com/questions/659508/how-can-i-shift-select-multiple-checkboxes-like-gmail
+    var lastChecked = null;
+    function get_and_display_search(){
+        search = document.getElementById('id_select').value;
+        $.get('/core/bulk_change/bulk_change_ajax?search='+escape(search),
+        function update_results(data){
+            results = document.getElementById('results');
+            results.innerHTML = data;
+            var $chkboxes = $('.chkbox');
+            $chkboxes.click(function(event) {
+                if(!lastChecked) {
+                    lastChecked = this;
+                    return;
+                }
+
+                if(event.shiftKey) {
+                    var start = $chkboxes.index(this);
+                    var end = $chkboxes.index(lastChecked);
+
+                    $chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).attr('checked', lastChecked.checked);
+
+                }
+
+                lastChecked = this;
+            });
+        });
+    }
+
+    $(document).ready(function() {
+        var $chkboxes = $('.chkbox');
+        $chkboxes.click(function(event) {
+            if(!lastChecked) {
+                lastChecked = this;
+                return;
+            }
+
+            if(event.shiftKey) {
+                var start = $chkboxes.index(this);
+                var end = $chkboxes.index(lastChecked);
+
+                $chkboxes.slice(Math.min(start,end), Math.max(start,end)+ 1).attr('checked', lastChecked.checked);
+
+            }
+
+            lastChecked = this;
+        });
+    });
+
+    /*
+    $(document).ready(function () {
+        setInterval(get_and_display_search,1000);
+        return;
+    });
+    */
+</script>
+<div class="center">
+<h2>Bulk Change</h2>
+    <input id="id_select" type="text" size="50" name="select" onChange='get_and_display_search()' value={{ search }}>
+    <input value="Search" title="Search" type="button" id="btn_s" onclick='get_and_display_search()'>
+    <br>
+    <br>
+    <br>
+</div>
+<form method="post">
+    <div id="results">
+    </div>
+    <input value="Search" title="Search" type="button" id="btn_s" onclick='get_and_display_search()'>
+
+</form>
+{% endblock %}
