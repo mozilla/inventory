@@ -82,6 +82,14 @@ class SystemResource(CustomAPIResource):
                 'help_text': 'mac_address="00:00:00:00:00:00"',
                 'example': 'mac_address="00:00:00:00:00:00"',
                 }
+        retjson['fields']['interface'] = {
+                'nullable': True,
+                'default': False,
+                'type': 'string',
+                'unique': False,
+                'help_text': 'interface="eth0.0"',
+                'example': 'interface="eth0.0"',
+                }
         ret.content = json.dumps(retjson)
         return ret
 
