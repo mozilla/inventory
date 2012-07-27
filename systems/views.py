@@ -944,7 +944,6 @@ def server_model_show(request, object_id):
            RequestContext(request))
 def server_model_list(request):
     object_list = models.ServerModel.objects.all()
-    print object_list
     return render_to_response('systems/servermodel_list.html', {
             'object_list': object_list,
            },
