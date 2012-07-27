@@ -109,6 +109,13 @@ class SystemResource(CustomAPIResource):
     def process_extra(self, bundle, request, **kwargs):
         patch_dict = json.loads(request.POST.items()[0][0])
 
+        if patch_dict.has_key('delete_interface') and patch_dict.has_key('interface'):
+            patch_dict.pop('delete_interface')
+            sys = bundle.obj
+            interface = patch_dict.pop('interface', None)
+            if sys and interface:
+                sys.delete_adapter(interface)
+
         ## Entry point for adding a new adapter by mac address via the rest API
         if patch_dict.has_key('mac_address') and patch_dict.has_key('auto_create_interface') and patch_dict['auto_create_interface'].upper() == 'TRUE':
             mac_addr = patch_dict.pop('mac_address')
@@ -215,7 +222,6 @@ class OperatingSystemResource(CustomAPIResource):
         
     class Meta(CustomAPIResource.Meta):
         def __init__(self, *args, **kwargs):
-            import pdb; pdb.set_trace()
             super(Meta, self).__init(*args, **kwargs)
         resource_name = 'operating_system'
         queryset = system_model.OperatingSystem.objects.all()

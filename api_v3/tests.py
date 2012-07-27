@@ -191,7 +191,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(primary, '1')
         self.assertEqual(alias, '0')
 
-    def test8_test_system_model_delete_by_adapter(self):
+    def test8_test_system_model_delete_by_adapter_via_orm(self):
         self.create_domains()
         data = {
                 'hostname': self.test_hostname,
@@ -209,6 +209,34 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(adapters[0].attrs.primary, '0')
         self.assertEqual(adapters[0].attrs.alias, '0')
         system.delete_adapter('eth0.0')
+        adapters = system.get_adapters()
+        self.assertEqual(adapters, None)
+
+    def test9_test_system_model_delete_by_adapter_via_api(self):
+        self.create_domains()
+        data = {
+                'hostname': self.test_hostname,
+                'auto_create_interface': 'True',
+                'mac_address': '00:00:00:00:00:00',
+                'ip_address': '10.99.99.99',
+               }
+        delete_data = {
+                'delete_interface': 'True',
+                'interface': 'eth0.0',
+               }
+        resp = self.api_client.post('/en-US/tasty/v3/system/', format='json', data=data)
+        resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
+        system_tmp = self.deserialize(resp)
+        system = System.objects.get(id = system_tmp['id'])
+        adapters = system.get_adapters()
+        self.assertEqual(len(adapters), 1)
+        self.assertEqual(adapters[0].attrs.interface_type, 'eth')
+        self.assertEqual(adapters[0].attrs.primary, '0')
+        self.assertEqual(adapters[0].attrs.alias, '0')
+        resp = self.api_client.put('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json', data=delete_data)
+        resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
+        system_tmp = self.deserialize(resp)
+        system = System.objects.get(id = system_tmp['id'])
         adapters = system.get_adapters()
         self.assertEqual(adapters, None)
 
