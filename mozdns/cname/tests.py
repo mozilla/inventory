@@ -102,6 +102,27 @@ class CNAMETests(TestCase):
         data = "foo.com"
         self.do_add(label, domain, data)
 
+    def test_add_glob(self):
+        label = "*foo"
+        domain = self.g
+        data = "foo.com"
+        x = self.do_add(label, domain, data)
+
+        label = "*"
+        domain = self.c_g
+        data = "foo.foo.com"
+        self.do_add(label, domain, data)
+
+        label = "*.fo1"
+        domain = self.g
+        data = "foo.com"
+        self.assertRaises(ValidationError, self.do_add, *(label, domain, data))
+
+        label = "*sadfasfd-asdf"
+        domain = self.g
+        data = "foo.com"
+        self.do_add(label, domain, data)
+
     def test_soa_condition(self):
         label = ""
         domain = self.c_g

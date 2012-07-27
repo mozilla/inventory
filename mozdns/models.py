@@ -5,7 +5,7 @@ import mozdns
 from mozdns.domain.models import Domain, _check_TLD_condition
 from mozdns.view.models import View
 from mozdns.mixins import ObjectUrlMixin
-from mozdns.validation import validate_label, validate_name
+from mozdns.validation import validate_first_label, validate_name
 from settings import MOZDNS_BASE_URL
 
 import pdb
@@ -50,7 +50,7 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
 
     domain = models.ForeignKey(Domain, null=False)
     label = models.CharField(max_length=100, blank=True, null=True,
-                             validators=[validate_label])
+                             validators=[validate_first_label])
     fqdn = models.CharField(max_length=255, blank=True, null=True,
                             validators=[validate_name])
     views = models.ManyToManyField(View)
