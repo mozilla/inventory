@@ -236,7 +236,7 @@ def boot_strap_ipv6_reverse_domain(ip, soa=None):
     """
     validate_reverse_name(ip, '6')
 
-    for i in range(1, len(ip) + 1, 2):
+    for i in xrange(1, len(ip) + 1, 2):
         cur_reverse_domain = ip[:i]
         reverse_domain = Domain(name=ip2dns_form(cur_reverse_domain,
             ip_type='6'))
@@ -297,7 +297,7 @@ def name_to_master_domain(name):
     """
     tokens = name.split('.')
     master_domain = None
-    for i in reversed(range(len(tokens) - 1)):
+    for i in reversed(xrange(len(tokens) - 1)):
         parent_name = '.'.join(tokens[i + 1:])
         possible_master_domain = Domain.objects.filter(name=parent_name)
         if not possible_master_domain:

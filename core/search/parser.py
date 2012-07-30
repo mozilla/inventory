@@ -117,7 +117,7 @@ def expand_range(args):
         stop = int(r.groups()[2])
         if start > stop:
             return args
-        for i in range(start, stop+1):
+        for i in xrange(start, stop+1):
             new_args.append(new_arg.format(i))
 
     return new_args

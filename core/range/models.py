@@ -191,7 +191,7 @@ class Range(models.Model, ObjectUrlMixin):
         if not records and not intrs:
             ip = ipaddr.IPv4Address(start)
             return ip
-        for i in range(start, end + 1):
+        for i in xrange(start, end + 1):
             taken = False
             for record in records:
                 if record.ip_lower == i:

@@ -9,7 +9,7 @@ def name_to_domain(fqdn):
     from mozdns.domain.models import Domain
     _name_type_check(fqdn)
     labels = fqdn.split('.')
-    for i in range(len(labels)):
+    for i in xrange(len(labels)):
         name = '.'.join(labels[i:])
         longest_match = Domain.objects.filter(name=name)
         if longest_match:
