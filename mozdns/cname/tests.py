@@ -102,7 +102,7 @@ class CNAMETests(TestCase):
         data = "foo.com"
         self.do_add(label, domain, data)
 
-    def test_add_glob(self):
+    def test1_add_glob(self):
         label = "*foo"
         domain = self.g
         data = "foo.com"
@@ -122,6 +122,19 @@ class CNAMETests(TestCase):
         domain = self.g
         data = "foo.com"
         self.do_add(label, domain, data)
+
+    def test2_add_glob(self):
+        label = "*coo"
+        domain = self.g
+        data = "foo.com"
+        x = self.do_add(label, domain, data)
+        print x.fqdn
+
+        label = "*"
+        domain = self.c_g
+        data = "foo.com"
+        x = self.do_add(label, domain, data)
+        print x.fqdn
 
     def test_soa_condition(self):
         label = ""

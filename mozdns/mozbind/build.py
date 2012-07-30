@@ -78,12 +78,13 @@ def gen_moz_forward_zone(soa, NOWRITE=False):
     if root_domain.is_reverse:  # Skip reverse domains
         return ""
     if not root_domain.name.endswith('mozilla.com'):
-        raise NotImplemented("These build scripts were written to handle "
-            "mozilla.com domains only.")
-    # Find the name which to create a directory under.
-    # I.E. phx1.mozilla.com -> phx1/
-    tmp_path = root_domain.name.replace('mozilla.com', '').replace('.', '/')
-    tmp_path.strip('/')
+        tmp_path = root_domain.name.replace('.', '/')
+        tmp_path.strip('/')
+    else:
+        # Find the name which to create a directory under.
+        # I.E. phx1.mozilla.com -> phx1/
+        tmp_path = root_domain.name.replace('mozilla.com', '').replace('.', '/')
+        tmp_path.strip('/')
     zone_path = BUILD_PATH + '/' + tmp_path
     DEBUG_STRING = ""
     # Bulid the mega filter!

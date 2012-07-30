@@ -97,14 +97,15 @@ def render_sshfp(sshfp_set):
                 key=sshfp.key)
     return BUILD_STR
 
-def render_zone( default_ttl, nameserver_set, mx_set, addressrecord_set,
-        interface_set, cname_set, srv_set, txt_set):
+def render_zone(default_ttl, nameserver_set, mx_set, addressrecord_set,
+                interface_set, cname_set, srv_set, txt_set, sshfp_set):
     BUILD_STR = ''
     BUILD_STR += render_ns(nameserver_set)
     BUILD_STR += render_mx(mx_set)
+    BUILD_STR += render_txt(txt_set)
+    BUILD_STR += render_sshfp(sshfp_set)
+    BUILD_STR += render_srv(srv_set)
+    BUILD_STR += render_cname(cname_set)
     BUILD_STR += render_address_record(interface_set)
     BUILD_STR += render_address_record(addressrecord_set)
-    BUILD_STR += render_cname(cname_set)
-    BUILD_STR += render_srv(srv_set)
-    BUILD_STR += render_txt(txt_set)
     return BUILD_STR
