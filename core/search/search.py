@@ -52,7 +52,13 @@ def nif(network, root=True):
     misc = set()
     misc = set()
     if root:
-        misc.add(network)
+        try:
+            n = Network.objects.get(ip_upper=network.ip_upper,
+                    ip_lower=network.ip_lower, ip_type=network.ip_type,
+                    prefixlen=network.prefixlen)
+            misc.add(n)
+        except ObjectDoesNotExist, e:
+            pass
         if network.vlan:
             misc.add(network.vlan)
     if network.site:
@@ -198,7 +204,7 @@ def compile_search(args):
             vlan = Vlan.objects.get(name=vlan_str)
         except ObjectDoesNotExist, e:
             try:
-                vlan = Vlan.objects.get(number=vlan_str)
+                vlan = Vlan.objects.get(name=vlan_str)
             except ObjectDoesNotExist, e:
                 continue
         queries, v_misc = vif(vlan)
