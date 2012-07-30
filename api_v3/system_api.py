@@ -66,6 +66,22 @@ class SystemResource(CustomAPIResource):
                 'help_text': 'auto_create_interface="True"',
                 'example': 'auto_create_interface="True"',
                 }
+        retjson['fields']['delete_interface'] = {
+                'nullable': True,
+                'default': False,
+                'type': 'boolean',
+                'unique': False,
+                'help_text': 'Set this to delete an interfacedelete_interface="True"',
+                'example': 'delete_interface="True"',
+                }
+        retjson['fields']['update_interface'] = {
+                'nullable': True,
+                'default': False,
+                'type': 'boolean',
+                'unique': False,
+                'help_text': 'Set this to update an interface update_interface="True"',
+                'example': 'update_interface="True"',
+                }
         retjson['fields']['ip_address'] = {
                 'nullable': True,
                 'default': False,
@@ -108,6 +124,19 @@ class SystemResource(CustomAPIResource):
 
     def process_extra(self, bundle, request, **kwargs):
         patch_dict = json.loads(request.POST.items()[0][0])
+
+        if patch_dict.has_key('delete_interface') and patch_dict.has_key('interface'):
+            patch_dict.pop('delete_interface')
+            sys = bundle.obj
+            interface = patch_dict.pop('interface', None)
+            if sys and interface:
+                sys.delete_adapter(interface)
+
+        if patch_dict.has_key('update_interface') and patch_dict.has_key('interface'):
+            patch_dict.pop('update_interface')
+            sys = bundle.obj
+            if 'interface' in patch_dict:
+                sys.update_adapter(**patch_dict)
 
         ## Entry point for adding a new adapter by mac address via the rest API
         if patch_dict.has_key('mac_address') and patch_dict.has_key('auto_create_interface') and patch_dict['auto_create_interface'].upper() == 'TRUE':
@@ -215,7 +244,6 @@ class OperatingSystemResource(CustomAPIResource):
         
     class Meta(CustomAPIResource.Meta):
         def __init__(self, *args, **kwargs):
-            import pdb; pdb.set_trace()
             super(Meta, self).__init(*args, **kwargs)
         resource_name = 'operating_system'
         queryset = system_model.OperatingSystem.objects.all()

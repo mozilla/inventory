@@ -350,6 +350,32 @@ class System(DirtyFieldsMixin, models.Model):
     #network_adapter = models.ForeignKey('NetworkAdapter', blank=True, null=True)
 
 
+    def update_adapter(self, **kwargs):
+        from api_v3.system_api import SystemResource
+        interface = kwargs.pop('interface', None)
+        ip_address = kwargs.pop('ip_address', None)
+        mac_address = kwargs.pop('mac_address', None)
+
+        if not interface:
+            raise ValidationError("Interface required to update")
+
+        for intr in self.staticinterface_set.all():
+            if intr.interface_name() == interface:
+                if ip_address:
+                    intr.ip_str = ip_address
+                if mac_address:
+                    intr.mac = mac_address
+                intr.save()
+        return True
+                
+
+        """
+            method to update a netwrok adapter
+
+            :param **kwargs: keyword arguments of what to update
+            :type **kwargs: dict
+            :return: True on deletion, exception on failure
+        """
     def delete_adapter(self, adapter_name):
         from api_v3.system_api import SystemResource
         """

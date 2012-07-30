@@ -10,6 +10,7 @@ import sys
 import os
 _base = os.path.dirname(__file__)
 site_root = os.path.realpath(os.path.join(_base, '../'))
+from django.core.urlresolvers import reverse
 sys.path.append(site_root)
 import manage
 from django.test import TestCase
@@ -163,3 +164,52 @@ class ServerModelTest(TestCase):
         self.assertEqual(models.ServerModel.objects.all()[0].vendor, 'HP')
         self.assertEqual(models.ServerModel.objects.all()[1].model, 'test')
         self.assertEqual(models.ServerModel.objects.all()[1].vendor, 'vendor')
+
+
+class SystemAdapterTest(TestCase):
+    
+
+    fixtures = ['testdata.json']
+    def setUp(self):
+        self.create_domains()
+        self.client = Client()
+
+
+    def test1_system_adapter_ajax_get(self):
+        resp = self.client.get(reverse("system-network-adapter-create", kwargs = {'system_id': '1'}), follow=True)
+        self.assertEqual(resp.status_code, 200)
+        
+
+    def test2_system_adapters_empty(self):
+        system = System.objects.get(id = 1)
+        eth0 = system.staticinterface_set.all()
+        self.assertEqual(len(eth0), 0)
+
+
+    def test3_system_adapter_ajax_post(self):
+        post_dict = {
+                    'interface': 'eth0.0',
+                    'mac_address': '00:00:00:00:00:00',
+                    'ip_address': '10.99.99.99',
+                }
+        resp = self.client.post(reverse("system-network-adapter-create", kwargs = {'system_id': '1'}), data = post_dict, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        system = System.objects.get(id = 1)
+        eth0 = system.staticinterface_set.all()[0]
+        eth0.update_attrs()
+        self.assertEqual(eth0.ip_str, '10.99.99.99')
+        self.assertEqual(eth0.mac, '00:00:00:00:00:00')
+        self.assertEqual(eth0.ip_type, '4')
+        self.assertEqual(eth0.attrs.primary, '0')
+        self.assertEqual(eth0.attrs.interface_type, 'eth')
+        self.assertEqual(eth0.attrs.alias, '0')
+
+    def create_domains(self):
+        from mozdns.domain.models import Domain
+        Domain( name = 'com').save()
+        Domain( name = 'mozilla.com' ).save()
+        Domain(name='dc.mozilla.com').save()
+        Domain(name='vlan.dc.mozilla.com').save()
+        Domain(name='arpa').save()
+        Domain(name='in-addr.arpa').save()
+        Domain(name='10.in-addr.arpa').save()
