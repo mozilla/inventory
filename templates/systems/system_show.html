@@ -259,47 +259,53 @@
                         contentType: "application/json; charset=utf-8", 
                         dataType: "json", 
                         beforeSend: function(){ 
-                            $("#add_adapter_range").get(0).options[0] = new Option("Loading...", "");    
+                                $("#add_adapter_range").get(0).options[0] = new Option("Loading...", "");    
                         },
                         success: function(msg) { 
-                            $("#add_adapter_range").get(0).options.length = 0; 
-                            $("#add_adapter_range").get(0).options[0] = new Option("All", "");    
-                            $.each(msg, function(index, item) { 
-                                $("#add_adapter_range").get(0).options[$("#add_adapter_range").get(0).options.length] = new Option(item.display, item.id);
-                            }); 
+                                $("#add_adapter_range").get(0).options.length = 0; 
+                                $("#add_adapter_range").get(0).options[0] = new Option("Select Range", "");    
+                                $.each(msg, function(index, item) { 
+                                    $("#add_adapter_range").get(0).options[$("#add_adapter_range").get(0).options.length] = new Option(item.display, item.id);
+                                }); 
                         }, 
                         error: function() { 
                             alert("Failed to load racks"); 
                         } 
                     }); 
-                var d = $( "#add-dialog" ).dialog({
-                        title: 'Add Adapter to System',
-                        autoShow: false,
-                        width: 700,
-                        buttons: {
-                            "Save": function() {
-                            $.post('/core/interface/combine_a_ptr_to_interface/' + addr_pk + '/' + ptr_pk + '/',
-                                { 'is_ajax': '1', 'system_hostname': $("#system_search").val() },
-                                function(data){
-                                    var obj = jQuery.parseJSON(data);
-                                    if(obj.success == true){
-                                        update_link($("a[rel=" + the_rel + "]"), obj.id, obj.hostname);
-                                    } else {
+                                var d = $( "#add-dialog" ).dialog({
+                                        title: 'Add Adapter to System',
+                                        autoShow: true,
+                                        width: 700,
+                                        buttons: {
+                                            "Save": function() {
+                                            $.post('/core/interface/combine_a_ptr_to_interface/' + addr_pk + '/' + ptr_pk + '/',
+                                                { 'is_ajax': '1', 'system_hostname': $("#system_search").val() },
+                                                function(data){
+                                                    var obj = jQuery.parseJSON(data);
+                                                    if(obj.success == true){
+                                                        update_link($("a[rel=" + the_rel + "]"), obj.id, obj.hostname);
+                                                    } else {
 
-                                        alert(obj.error);
+                                                        alert(obj.error);
 
-                                    }
-                                });
-                                
-                                $( this ).dialog( "close" );
-                            },
-                            Cancel: function() {
-                                $( this ).dialog( "close" );
-                            }
-                        }
-                        
-                        });
-                d.show();
+                                                    }
+                                                });
+                                                
+                                                $("#add_adapter_range").get(0).options.length = 0; 
+                                                $( this ).dialog( "close" );
+                                            },
+                                            Cancel: function() {
+                                                $("#add_adapter_range").get(0).options.length = 0; 
+                                                $( this ).dialog( "close" );
+                                            }
+                                        },
+                                        close: function(event, ui){
+                                            $("#add_adapter_range").get(0).options.length = 0; 
+
+                                        }
+                                        
+                            });
+                            d.show();
                 return false;
             // end of .system_quick_add_interface.click()
             });
