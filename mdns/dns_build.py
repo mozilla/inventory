@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from truth.models import Truth
 
 from mdns.inventory_build import inventory_build_sites
@@ -226,6 +227,67 @@ def do_zone_build(ztype, view, root_domain, zone_path):
     else:
         print "Slob"
 
+def zone_build_from_config():
+    from mdns.migrate.zone_configs.external import *
+    import dns
+    for config in external:
+        zone_path = config['path']
+        root_domain = config['zone_name']
+        name_reversed = config['name_reversed']
+        ztype = config['direction']
+        view = config['view']
+        relative_path = config['relative_path']
+        view_obj, _ = View.objects.get_or_create(name=view)
+        try:
+            if ztype == 'f':
+                print view
+                svn_zones = {root_domain :((collect_svn_zone(root_domain, zone_path,
+                    ZONE_PATH)), '')}
+                populate_forward_dns(svn_zones, view=view_obj)
+            if ztype == 'r':
+                rev_svn_zones = {root_domain:('', ((collect_rev_svn_zone(root_domain, zone_path,
+                    ZONE_PATH)), ''))}
+                populate_reverse_dns(rev_svn_zones, view=view_obj)
+        except dns.zone.NoSOA, e:
+            print "----------------------"
+            print "ERROR: NoSOA()"
+            print zone_path
+            print "----------------------"
+        except Exception, e:
+            pdb.set_trace()
+            pass
+    return
+
+    from mdns.migrate.zone_configs.mozilla_com_dc_zone_config import *
+    for config in mozilla_com_dcs:
+        zone_path = config['path']
+        root_domain = config['zone_name']
+        name_reversed = config['name_reversed']
+        ztype = config['direction']
+        view = config['view']
+        relative_path = config['relative_path']
+        view_obj, _ = View.objects.get_or_create(name=view)
+        if ztype == 'f':
+            print view
+            svn_zones = {root_domain :((collect_svn_zone(root_domain, zone_path,
+                ZONE_PATH)), '')}
+            populate_forward_dns(svn_zones, view=view_obj)
+
+    from mdns.migrate.zone_configs.private_reverse import *
+    for config in private_reverse:
+        zone_path = config['path']
+        root_domain = config['zone_name']
+        name_reversed = config['name_reversed']
+        ztype = config['direction']
+        view = config['view']
+        relative_path = config['relative_path']
+        view_obj, _ = View.objects.get_or_create(name=view)
+        if ztype == 'r':
+            rev_svn_zones = {root_domain:('', ((collect_rev_svn_zone(root_domain, zone_path,
+                ZONE_PATH)), ''))}
+            populate_reverse_dns(rev_svn_zones, view=view_obj)
+
+
 
 
 def populate_reverse_dns(rev_svn_zones, view=None):
@@ -290,12 +352,16 @@ def populate_reverse_dns(rev_svn_zones, view=None):
             if ptr:
                 continue
             else:
-                ptr = PTR(name = fqdn, ip_str = ip_str, ip_type='4')
-                ptr.full_clean()
-                ptr.save()
-                if view:
-                    ptr.views.add(view)
+                try:
+                    ptr = PTR(name = fqdn, ip_str = ip_str, ip_type='4')
+                    ptr.full_clean()
                     ptr.save()
+                    if view:
+                        ptr.views.add(view)
+                        ptr.save()
+                except Exception, e:
+                    pdb.set_trace()
+                    pass
 
         """
         for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
@@ -381,6 +447,7 @@ def populate_forward_dns(svn_zones, view=None):
                     else:
                         domain = create(domain_name)
         """
+        # TODO, records not done yet. TXT, SSHFP, AAAA
         # Create list
         names = []
         for (name, ttl, rdata) in zone.iterate_rdatas('A'):
@@ -403,8 +470,24 @@ def populate_forward_dns(svn_zones, view=None):
                 for i in range(len(parts)):
                     domain_name = parts[i] + '.' + domain_name
                     domain_name = domain_name.strip('.')
-                    domain, created = Domain.objects.get_or_create(name=
-                            domain_name)
+                    # We need to check for A records who have a name with this
+                    # domain.
+                    try:
+                        exists_a = AddressRecord.objects.get(fqdn=domain_name)
+                        # It got here. It exists
+                        need_to_recreate_a = True
+                        ip_str = exists_a.ip_str
+                        exists_a.delete(check_cname=False)
+                        domain, created = Domain.objects.get_or_create(name=
+                                domain_name)
+                        a = AddressRecord(label='', domain=domain,
+                                ip_str=ip_str, ip_type='4')
+                        a.clean()
+                        a.save()
+                    except ObjectDoesNotExist, e:
+                        domain, created = Domain.objects.get_or_create(name=
+                                domain_name)
+
                     if domain.master_domain and domain.master_domain.soa:
                         domain.soa = domain.master_domain.soa
                         domain.save()
@@ -418,6 +501,7 @@ def populate_forward_dns(svn_zones, view=None):
         for (name, ttl, rdata) in zone.iterate_rdatas('NS'):
             name = name.to_text().strip('.')
             print str(name) + " NS " + str(rdata)
+            domain_name = '.'.join(name.split('.')[1:])
             domain = ensure_domain(name)
             ns, _ = Nameserver.objects.get_or_create(domain=domain,
                     server=rdata.target.to_text().strip('.'))
@@ -433,7 +517,7 @@ def populate_forward_dns(svn_zones, view=None):
                 domain = exists_domain[0]
             else:
                 label = name.split('.')[0]
-                domain_name = name.split('.')[1:]
+                domain_name = '.'.join(name.split('.')[1:])
                 domain = ensure_domain(domain_name)
             priority = rdata.preference
             server = rdata.exchange.to_text().strip('.')
@@ -498,8 +582,56 @@ def ensure_domain(name):
     for i in range(len(parts)):
         domain_name = parts[i] + '.' + domain_name
         domain_name = domain_name.strip('.')
+        clobber_objects = []  # Objects that have the same name as a domain
+        # need to be deleted and then recreated
+        try:
+            mxs = MX.objects.filter(fqdn=domain_name)
+            # It got here. It exists
+            for mx in mxs:
+                label = mx.label
+                mxdomain = mx.domain
+                server = mx.server
+                prio = mx.priority
+                ttl = mx.ttl
+                mx.delete()
+                mx = MX(label='', domain=mxdomain, server=server, priority=prio,
+                        ttl=ttl)
+                clobber_objects.append(mx)
+        except ObjectDoesNotExist, e:
+            pass
+        try:
+            exists_a = AddressRecord.objects.get(fqdn=domain_name)
+            # It got here. It exists
+            need_to_recreate_a = True
+            ip_str = exists_a.ip_str
+            exists_a.delete(check_cname=False)
+            a = AddressRecord(label='', domain=domain,
+                    ip_str=ip_str, ip_type='4')
+            clobber_objects.append(a)
+        except ObjectDoesNotExist, e:
+            pass
+        try:
+            cname = CNAME.objects.get(fqdn=domain_name)
+            # It got here. It exists
+            data = cname.data
+            cname.delete()
+            cname = CNAME(label='', domain=domain,
+                    data=data)
+            clobber_objects.append(cname)
+        except ObjectDoesNotExist, e:
+            pass
         domain, created = Domain.objects.get_or_create(name=
                 domain_name)
+        for object_ in clobber_objects:
+            try:
+                object_.domain = domain
+                object_.clean()
+                object_.save()
+            except ValidationError, e:
+                # this is bad
+                pdb.set_trace()
+                pass
+
         if domain.master_domain and domain.master_domain.soa:
             domain.soa = domain.master_domain.soa
 

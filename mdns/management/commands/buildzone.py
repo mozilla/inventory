@@ -12,3 +12,4 @@ class Command(BaseCommand):
             print self.help
             return
         do_zone_build(args[0], args[1], args[2], args[3])
+        zone_build_from_config()
