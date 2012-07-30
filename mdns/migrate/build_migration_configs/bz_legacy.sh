@@ -1,6 +1,5 @@
 #!/bin/bash
-
-MC=/home/juber/inventory/mdns/migrate/make_config.py
+MC=$REL_PATH/inventory/mdns/migrate/make_config.py
 
 echo "SYSADMIN_REPO = ''"
 echo "$1 = ["
@@ -140,13 +139,13 @@ do
     if [[ $file == db.* ]]
     then
         zone_name=$(echo "$file" | sed -s 's/db.//')
-        python $MC $zone_name /home/juber/sysadmins/dnsconfig/external/$file r public False
+        python $MC $zone_name $REL_PATH/sysadmins/dnsconfig/external/$file r public False
     elif [[ $file == *.in-addr.arpa ]]
     then
         zone_name=$(echo "$file" | sed -s 's/.in-addr.arpa//')
-        python $MC $zone_name /home/juber/sysadmins/dnsconfig/external/$file r public True
+        python $MC $zone_name $REL_PATH/sysadmins/dnsconfig/external/$file r public True
     else
-        python $MC $file /home/juber/sysadmins/dnsconfig/external/$file f public False
+        python $MC $file $REL_PATH/sysadmins/dnsconfig/external/$file f public False
     fi
 done
 echo "]"

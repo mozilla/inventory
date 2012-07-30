@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MC=/home/juber/inventory/mdns/migrate/make_config.py
+MC=$REL_PATH/inventory/mdns/migrate/make_config.py
 
 echo "SYSADMIN_REPO = ''"
 echo "$1 = ["
@@ -18,10 +18,10 @@ do
         continue
     fi
 
-    python $MC $file.mozilla.com /home/juber/sysadmins/dnsconfig/zones/mozilla.com/$file/public f public False
-    python $MC $file.mozilla.com /home/juber/sysadmins/dnsconfig/zones/mozilla.com/$file/private f private False
+    python $MC $file.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/$file/public f public False
+    python $MC $file.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/$file/private f private False
 
 done
-    python $MC corp.phx1.mozilla.com /home/juber/sysadmins/dnsconfig/zones/mozilla.com/phx1/corp/public f public False
-    python $MC corp.phx1.mozilla.com /home/juber/sysadmins/dnsconfig/zones/mozilla.com/phx1/corp/private f private False
+    python $MC corp.phx1.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/phx1/corp/public f public False
+    python $MC corp.phx1.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/phx1/corp/private f private False
 echo "]"

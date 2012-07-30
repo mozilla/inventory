@@ -1,11 +1,11 @@
 #!/bin/bash
 
-MC=/home/juber/inventory/mdns/migrate/make_config.py
+MC=$REL_PATH/inventory/mdns/migrate/make_config.py
 
 echo "SYSADMIN_REPO = ''"
 echo "$1 = ["
 
-SYSADMINS=/home/juber/sysadmins
+SYSADMINS=$REL_PATH/sysadmins
 
 for file in $(ls $SYSADMINS/dnsconfig/zones/in-addr/)
 do
