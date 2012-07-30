@@ -160,8 +160,8 @@
     </table>
 </pre></dd>
 <div style="clear:both;"></div>
-<a href="/core/interface/{{system.pk}}/create/">Add Interface</a>
-<a href="/core/interface/{{system.pk}}/quick_create/">Quick Add Interface</a>
+<a class="system_add_interface" href="/core/interface/{{system.pk}}/create/">Add Interface</a>
+<a class="system_quick_add_interface" href="/core/interface/{{system.pk}}/quick_create/">Quick Add Interface</a>
 </dl>
 
 </div>
@@ -217,6 +217,73 @@
             var ip_type = args[1];
             $.get('/core/range/find_range/?ip_str='+ip_str+'&ip_type=' + ip_type, do_redirect);
         });
+
+        $(".system_add_interface").click(function(){
+                var d = $( "#add-dialog" ).dialog({
+                        title: 'Associate to System',
+                        autoShow: false,
+                        buttons: {
+                            "Save": function() {
+                            $.post('/core/interface/combine_a_ptr_to_interface/' + addr_pk + '/' + ptr_pk + '/',
+                                { 'is_ajax': '1', 'system_hostname': $("#system_search").val() },
+                                function(data){
+                                    var obj = jQuery.parseJSON(data);
+                                    if(obj.success == true){
+                                        update_link($("a[rel=" + the_rel + "]"), obj.id, obj.hostname);
+                                    } else {
+
+                                        alert(obj.error);
+
+                                    }
+                                });
+                                
+                                $( this ).dialog( "close" );
+                            },
+                            Cancel: function() {
+                                $( this ).dialog( "close" );
+                            }
+                        }
+                        
+                        });
+                d.show();
+                return false;
+            // end of .system_quick_add_interface.click()
+        });
+        $(".system_quick_add_interface").click(function(){
+                var d = $( "#add-dialog" ).dialog({
+                        title: 'Associate to System',
+                        autoShow: false,
+                        buttons: {
+                            "Save": function() {
+                            $.post('/core/interface/combine_a_ptr_to_interface/' + addr_pk + '/' + ptr_pk + '/',
+                                { 'is_ajax': '1', 'system_hostname': $("#system_search").val() },
+                                function(data){
+                                    var obj = jQuery.parseJSON(data);
+                                    if(obj.success == true){
+                                        update_link($("a[rel=" + the_rel + "]"), obj.id, obj.hostname);
+                                    } else {
+
+                                        alert(obj.error);
+
+                                    }
+                                });
+                                
+                                $( this ).dialog( "close" );
+                            },
+                            Cancel: function() {
+                                $( this ).dialog( "close" );
+                            }
+                        }
+                        
+                        });
+                d.show();
+                return false;
+            // end of .system_quick_add_interface.click()
+            });
+        });
     });
 </script>
+<div id="add-dialog" title="Add System to Rack" style='display: none;'>
+    <div>Search: <input type='text' name='system_search' id='system_search' style='width: 159px;' value=''></div>
+</div>
 {% endblock %}
