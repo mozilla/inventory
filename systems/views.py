@@ -26,6 +26,7 @@ from jingo import render
 from django.views.decorators.csrf import csrf_exempt
 from Rack import Rack
 from core.interface.static_intr.models import StaticInterface
+from core.range.models import Range
 
 from MozInvAuthorization.KeyValueACL import KeyValueACL 
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
@@ -83,6 +84,11 @@ def system_rack_elevation(request, rack_id):
         },
         RequestContext(request))
 
+def get_all_ranges_ajax(request):
+    ret_list = []
+    for r in Range.objects.all():
+        ret_list.append({'id': r.id, 'display': r.display()})
+    return HttpResponse(json.dumps(ret_list))
 
 @csrf_exempt
 def create_adapter(request, system_id):
