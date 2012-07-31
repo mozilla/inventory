@@ -300,7 +300,6 @@
                                             }
                                         },
                                         open: function(event, ui){
-                                                  alert("opened");
                                             $("#add_adapter_ip_address").val('');
                                             $("#add_adapter_mac_address").val('');
                                             $("#add_adapter_ip_address").attr("disabled", "");
@@ -322,6 +321,13 @@
                 return false;
             // end of .system_quick_add_interface.click()
             });
+            $("#add_adapter_range").change(function(){
+                if($("#auto_assign_ip").attr("checked")){
+                        $("#add_adapter_ip_address").attr("disabled", "disabled");
+                        $("#add_adapter_ip_address").val('');
+                        auto_assign_ip($(this).val());
+                }
+            });
             $("#add_adapter_dns").click(function(){
                 if($(this).attr("checked")){
                     $("#add_adapter_private").attr("disabled", "");
@@ -334,28 +340,33 @@
                 }
 
             });
+            function auto_assign_ip(the_range){
+                if (the_range){
+                    $.get('/en-US/systems/get_next_available_ip_by_range/' + the_range + '/',
+                        function(data){
+                            var obj = jQuery.parseJSON(data);
+                            if(obj.success == true){
+                                $("#add_adapter_ip_address").attr("disabled", "disabled");
+                                $("#add_adapter_ip_address").val(obj.ip_address);
+                            } else {
+
+                                alert(obj.error);
+
+                            }
+                    });
+                } else {
+                    $(this).attr("checked", "");
+                    $("#add_adapter_ip_address").val('');
+                    alert("Must select a range");
+
+                }
+
+
+            }
             $("#auto_assign_ip").click(function(){
                     var the_range = $("#add_adapter_range").val();
                     if($(this).attr("checked")){
-                        if (the_range){
-                            $.get('/en-US/systems/get_next_available_ip_by_range/' + the_range + '/',
-                                function(data){
-                                    var obj = jQuery.parseJSON(data);
-                                    if(obj.success == true){
-                                        $("#add_adapter_ip_address").attr("disabled", "disabled");
-                                        $("#add_adapter_ip_address").val(obj.ip_address);
-                                    } else {
-
-                                        alert(obj.error);
-
-                                    }
-                            });
-                        } else {
-                            $(this).attr("checked", "");
-                            $("#add_adapter_ip_address").val('');
-                            alert("Must select a range");
-
-                        }
+                        auto_assign_ip(the_range);
                     } else {
                         $("#add_adapter_ip_address").attr("disabled", "");
                         $("#add_adapter_ip_address").val('');
