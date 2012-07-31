@@ -1,7 +1,7 @@
 SYSADMIN_REPO = ''
 mozilla_com_dcs = [
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/ad/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/ad/public',
 		'zone_name': 'ad.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -9,7 +9,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/ad/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/ad/private',
 		'zone_name': 'ad.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -17,7 +17,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/akl1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/akl1/public',
 		'zone_name': 'akl1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -25,7 +25,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/akl1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/akl1/private',
 		'zone_name': 'akl1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -33,7 +33,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/ams1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/ams1/public',
 		'zone_name': 'ams1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -41,7 +41,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/ams1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/ams1/private',
 		'zone_name': 'ams1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -49,7 +49,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/any1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/any1/public',
 		'zone_name': 'any1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -57,7 +57,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/any1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/any1/private',
 		'zone_name': 'any1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -65,7 +65,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/lon1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/lon1/public',
 		'zone_name': 'lon1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -73,7 +73,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/lon1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/lon1/private',
 		'zone_name': 'lon1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -81,7 +81,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/mtv1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/mtv1/public',
 		'zone_name': 'mtv1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -89,7 +89,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/mtv1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/mtv1/private',
 		'zone_name': 'mtv1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -97,7 +97,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/pao1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/pao1/public',
 		'zone_name': 'pao1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -105,7 +105,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/pao1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/pao1/private',
 		'zone_name': 'pao1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -113,7 +113,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/par1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/par1/public',
 		'zone_name': 'par1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -121,7 +121,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/par1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/par1/private',
 		'zone_name': 'par1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -129,7 +129,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/par2/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/par2/public',
 		'zone_name': 'par2.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -137,7 +137,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/par2/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/par2/private',
 		'zone_name': 'par2.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -145,7 +145,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/pek1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/pek1/public',
 		'zone_name': 'pek1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -153,7 +153,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/pek1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/pek1/private',
 		'zone_name': 'pek1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -161,7 +161,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/pek2/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/pek2/public',
 		'zone_name': 'pek2.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -169,7 +169,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/pek2/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/pek2/private',
 		'zone_name': 'pek2.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -177,7 +177,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/phx1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/phx1/public',
 		'zone_name': 'phx1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -185,7 +185,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/phx1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/phx1/private',
 		'zone_name': 'phx1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -193,7 +193,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/scl1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/scl1/public',
 		'zone_name': 'scl1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -201,7 +201,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/scl1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/scl1/private',
 		'zone_name': 'scl1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -209,7 +209,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/scl2/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/scl2/public',
 		'zone_name': 'scl2.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -217,7 +217,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/scl2/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/scl2/private',
 		'zone_name': 'scl2.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -225,7 +225,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/scl3/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/scl3/public',
 		'zone_name': 'scl3.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -233,7 +233,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/scl3/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/scl3/private',
 		'zone_name': 'scl3.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -241,7 +241,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/services/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/services/public',
 		'zone_name': 'services.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -249,7 +249,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/services/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/services/private',
 		'zone_name': 'services.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -257,7 +257,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/sfo1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/sfo1/public',
 		'zone_name': 'sfo1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -265,7 +265,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/sfo1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/sfo1/private',
 		'zone_name': 'sfo1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -273,7 +273,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/sjc1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/sjc1/public',
 		'zone_name': 'sjc1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -281,7 +281,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/sjc1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/sjc1/private',
 		'zone_name': 'sjc1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -289,7 +289,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/sjc2/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/sjc2/public',
 		'zone_name': 'sjc2.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -297,7 +297,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/sjc2/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/sjc2/private',
 		'zone_name': 'sjc2.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -305,7 +305,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/tor1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/tor1/public',
 		'zone_name': 'tor1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -313,7 +313,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/tor1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/tor1/private',
 		'zone_name': 'tor1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -321,7 +321,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/tpe1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/tpe1/public',
 		'zone_name': 'tpe1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -329,7 +329,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/tpe1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/tpe1/private',
 		'zone_name': 'tpe1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -337,7 +337,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/weave/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/weave/public',
 		'zone_name': 'weave.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -345,7 +345,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/weave/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/weave/private',
 		'zone_name': 'weave.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -353,7 +353,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/yvr1/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/yvr1/public',
 		'zone_name': 'yvr1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -361,7 +361,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/yvr1/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/yvr1/private',
 		'zone_name': 'yvr1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -369,7 +369,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/phx1/corp/public',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/phx1/corp/public',
 		'zone_name': 'corp.phx1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',
@@ -377,7 +377,7 @@ mozilla_com_dcs = [
 		'relative_path': SYSADMIN_REPO + '/dnsconfig/',
 	},
 	{
-		'path':'/home/juber/sysadmins/dnsconfig/zones/mozilla.com/phx1/corp/private',
+		'path':'/var/www/playdoh-env/sysadmins/dnsconfig/zones/mozilla.com/phx1/corp/private',
 		'zone_name': 'corp.phx1.mozilla.com',
 		'name_reversed': bool('False'),
 		'direction': 'f',

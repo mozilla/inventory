@@ -16,6 +16,7 @@ import manage
 from django.test import TestCase
 from django.test.client import Client
 from models import KeyValue, System
+from core.range.models import Range
 try:
     import json
 except:
@@ -204,8 +205,26 @@ class SystemAdapterTest(TestCase):
         self.assertEqual(eth0.attrs.interface_type, 'eth')
         self.assertEqual(eth0.attrs.alias, '0')
 
+
+    def test4_system_adapter_ajax_post(self):
+        resp = self.client.get(reverse("get-all-ranges-ajax"), follow=True)
+        self.assertEqual(resp.status_code, 200)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj[0]['display'], 'Range: 10.99.99.1 to 10.99.99.254  None -- 10.0.0.0/8 -- None  ')
+        self.assertEqual(obj[0]['id'], 4)
+
+
+    def test5_system_adapter_next_available_ip(self):
+        resp = self.client.get(reverse("system-adapter-next-ip", kwargs={'range_id': '5'}), follow=True)
+        self.assertEqual(resp.status_code, 200)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['ip_address'], '10.99.99.1')
+        self.assertEqual(obj['success'], True)
+
+
     def create_domains(self):
         from mozdns.domain.models import Domain
+        from core.network.models import Network
         Domain( name = 'com').save()
         Domain( name = 'mozilla.com' ).save()
         Domain(name='dc.mozilla.com').save()
@@ -213,3 +232,9 @@ class SystemAdapterTest(TestCase):
         Domain(name='arpa').save()
         Domain(name='in-addr.arpa').save()
         Domain(name='10.in-addr.arpa').save()
+        network = Network(network_str="10.0.0.0/8", ip_type='4')
+        network.update_network()
+        network.save()
+        r = Range(start_str='10.99.99.1', end_str='10.99.99.254', network=network)
+        r.clean()
+        r.save()

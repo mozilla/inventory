@@ -61,6 +61,8 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
 
     def create_domains(self):
         from mozdns.domain.models import Domain
+        from core.network.models import Network
+        from core.range.models import Range
         Domain( name = 'com').save()
         Domain( name = 'mozilla.com' ).save()
         Domain(name='dc.mozilla.com').save()
@@ -68,6 +70,12 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         Domain(name='arpa').save()
         Domain(name='in-addr.arpa').save()
         Domain(name='10.in-addr.arpa').save()
+        network = Network(network_str="10.0.0.0/8", ip_type='4')
+        network.update_network()
+        network.save()
+        r = Range(start_str='10.99.99.0', end_str='10.99.99.254', network=network)
+        r.clean()
+        r.save()
 
 
     def test1_create_system_with_auto_assigned_magic(self):
