@@ -1,9 +1,12 @@
 import time
+from django.core.exceptions import ValidationError
 
 from django.db import models
 
 from mozdns.validation import validate_name
 from mozdns.mixins import ObjectUrlMixin
+
+from core.keyvalue.models import KeyValue
 
 
 #TODO, put these defaults in a config file.
@@ -89,3 +92,28 @@ class SOA(models.Model, ObjectUrlMixin):
 
     def __repr__(self):
         return "<'{0}'>".format(str(self))
+
+class SOAKeyValue(KeyValue):
+    soa = models.ForeignKey(SOA, null=False)
+
+    def _aa_filepath(self):
+        """Filepath - Where should the build scripts put the zone file for this
+        zone?"""
+        pass
+
+    def _aa_disabled(self):
+        """Disabled - The Value of this Key determines whether or not an SOA will
+        be asked to build a zone file. Values that represent true are 'True,
+        TRUE, true, 1' and 'yes'. Values that represent false are 'False,
+        FALSE, false, 0' and 'no'.
+        """
+        true_values = ["true", "1", "yes"]
+        false_values = ["false", "0", "no"]
+        if self.value.lower() in true_values:
+            self.value = "True"
+        elif self.value.lower() in false_values:
+            self.value = "False"
+        else:
+            raise ValidationError("Disabled should be set to either {0} OR "
+                        "{1}".format(", ".join(true_values),
+                        ", ".join(false_values)))
