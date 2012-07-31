@@ -1,0 +1,45 @@
+{% extends "mozdns/mozdns_base.html" %}
+
+{% block title %}
+    {{ form_title }}
+{% endblock %}
+
+{% block dns_content %}
+
+    <script language="Javascript" type="text/javascript" src="/static/javascripts/attribute_adder.js">
+    </script>
+    <span class="dns-title">Edit {{ soa }}</span>
+    <span>Back to <a href="{{ soa.get_absolute_url() }}">{{ soa }}</a></span>
+    <br>
+    <form class="well form-horizontal" method="post" action="">
+        {{ form.as_p() }}
+        </br>
+        </br>
+        {% from "core/core_macros.html" import draw_attrs %}
+        {{ draw_attrs(attrs, aa, "/mozdns/soa/attr") }}
+        <br/>
+        <br/>
+        <input type="submit" value="Submit" />
+        <br/>
+        <br/>
+        <h3>SOA Attributes</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Attribute</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for attr, doc in docs %}
+            <tr>
+                <td valign="top"><b>{{ attr }}</b></td>
+                <td><span width="200px"><pre>{{ doc }}</pre></span></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </br>
+    </form>
+{% endblock %}
