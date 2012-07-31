@@ -143,7 +143,7 @@ def ipv6_to_longs(addr):
     try:
         ip = ipaddr.IPv6Address(addr)
     except ipaddr.AddressValueError, e:
-        raise ValidationError("AddressValueError: Invalid Ip address {0}".
+        raise ValidationError("AddressValueError: Invalid IPv6 address {0}".
                               format(addr))
     # TODO, use int() instead of _int. Make sure tests pass
     ip_upper = ip._ip >> 64  # Put the last 64 bits in the first 64
