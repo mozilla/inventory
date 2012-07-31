@@ -230,6 +230,7 @@ def do_zone_build(ztype, view, root_domain, zone_path):
 def zone_build_from_config():
     from mdns.migrate.zone_configs.external import *
     import dns
+    """
     for config in external:
         zone_path = config['path']
         root_domain = config['zone_name']
@@ -256,7 +257,7 @@ def zone_build_from_config():
         except Exception, e:
             pdb.set_trace()
             pass
-    return
+    """
 
     from mdns.migrate.zone_configs.mozilla_com_dc_zone_config import *
     for config in mozilla_com_dcs:
@@ -472,21 +473,26 @@ def populate_forward_dns(svn_zones, view=None):
                     domain_name = domain_name.strip('.')
                     # We need to check for A records who have a name with this
                     # domain.
-                    try:
-                        exists_a = AddressRecord.objects.get(fqdn=domain_name)
-                        # It got here. It exists
-                        need_to_recreate_a = True
-                        ip_str = exists_a.ip_str
-                        exists_a.delete(check_cname=False)
-                        domain, created = Domain.objects.get_or_create(name=
-                                domain_name)
-                        a = AddressRecord(label='', domain=domain,
-                                ip_str=ip_str, ip_type='4')
+                    addrs = AddressRecord.objects.filter(fqdn=domain_name)
+                    clober_objects = []
+                    if addrs:
+                        for exists_a in addrs:
+                            # It got here. It exists
+                            need_to_recreate_a = True
+                            ip_str = exists_a.ip_str
+                            exists_a.delete(check_cname=False)
+                            a = AddressRecord(label='', ip_str=ip_str, ip_type='4')
+                            clober_objects.append(a)
+                    domain, created = Domain.objects.get_or_create(name=
+                            domain_name)
+                    for a in clober_objects:
+                        a.domain = domain
                         a.clean()
-                        a.save()
-                    except ObjectDoesNotExist, e:
-                        domain, created = Domain.objects.get_or_create(name=
-                                domain_name)
+                        try:
+                            a.save()
+                        except Exception, e:
+                            pdb.set_trace()
+                            pass
 
                     if domain.master_domain and domain.master_domain.soa:
                         domain.soa = domain.master_domain.soa
@@ -495,7 +501,12 @@ def populate_forward_dns(svn_zones, view=None):
                 domain=domain, ip_str=rdata.to_text(), ip_type='4')
             if view:
                 a.views.add(view)
-                a.save()
+                try:
+                    a.save()
+                except Exception, e:
+                    pdb.set_trace()
+                    a.save()
+                    pass
 
 
         for (name, ttl, rdata) in zone.iterate_rdatas('NS'):
@@ -594,20 +605,19 @@ def ensure_domain(name):
                 prio = mx.priority
                 ttl = mx.ttl
                 mx.delete()
-                mx = MX(label='', domain=mxdomain, server=server, priority=prio,
-                        ttl=ttl)
+                mx = MX(label='', server=server, priority=prio, ttl=ttl)
                 clobber_objects.append(mx)
         except ObjectDoesNotExist, e:
             pass
         try:
-            exists_a = AddressRecord.objects.get(fqdn=domain_name)
-            # It got here. It exists
-            need_to_recreate_a = True
-            ip_str = exists_a.ip_str
-            exists_a.delete(check_cname=False)
-            a = AddressRecord(label='', domain=domain,
-                    ip_str=ip_str, ip_type='4')
-            clobber_objects.append(a)
+            addrs = AddressRecord.objects.filter(fqdn=domain_name)
+            for exists_a in addrs:
+                # It got here. It exists
+                need_to_recreate_a = True
+                ip_str = exists_a.ip_str
+                exists_a.delete(check_cname=False)
+                a = AddressRecord(label='', ip_str=ip_str, ip_type='4')
+                clobber_objects.append(a)
         except ObjectDoesNotExist, e:
             pass
         try:
@@ -615,8 +625,7 @@ def ensure_domain(name):
             # It got here. It exists
             data = cname.data
             cname.delete()
-            cname = CNAME(label='', domain=domain,
-                    data=data)
+            cname = CNAME(label='', data=data)
             clobber_objects.append(cname)
         except ObjectDoesNotExist, e:
             pass
