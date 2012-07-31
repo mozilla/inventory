@@ -90,6 +90,16 @@ def get_all_ranges_ajax(request):
         ret_list.append({'id': r.id, 'display': r.display()})
     return HttpResponse(json.dumps(ret_list))
 
+
+def get_next_available_ip_by_range(request, range_id):
+    range = get_object_or_404(Range, id=range_id)
+    ret = {}
+    ret_ip = range.get_next_ip()
+    display_ip = ret_ip.exploded
+    ret['success'] = True
+    ret['ip_address'] = display_ip
+    return HttpResponse(json.dumps(ret))
+
 @csrf_exempt
 def create_adapter(request, system_id):
     from api_v3.system_api import SystemResource
