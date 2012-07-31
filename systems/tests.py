@@ -215,7 +215,8 @@ class SystemAdapterTest(TestCase):
 
 
     def test5_system_adapter_next_available_ip(self):
-        resp = self.client.get(reverse("system-adapter-next-ip", kwargs={'range_id': '5'}), follow=True)
+        range_id = Range.objects.get(start_str='10.99.99.1').id
+        resp = self.client.get(reverse("system-adapter-next-ip", kwargs={'range_id': range_id}), follow=True)
         self.assertEqual(resp.status_code, 200)
         obj = json.loads(resp.content)
         self.assertEqual(obj['ip_address'], '10.99.99.1')
