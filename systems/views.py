@@ -87,7 +87,7 @@ def system_rack_elevation(request, rack_id):
 def get_all_ranges_ajax(request):
     ret_list = []
     for r in Range.objects.all():
-        ret_list.append({'id': r.id, 'display': r.display()})
+        ret_list.append({'id': r.id, 'display': r.choice_display()})
     return HttpResponse(json.dumps(ret_list))
 
 
