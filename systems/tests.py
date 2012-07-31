@@ -210,7 +210,7 @@ class SystemAdapterTest(TestCase):
         resp = self.client.get(reverse("get-all-ranges-ajax"), follow=True)
         self.assertEqual(resp.status_code, 200)
         obj = json.loads(resp.content)
-        self.assertEqual(obj[0]['display'], 'Range: 10.99.99.1 to 10.99.99.254  None -- 10.0.0.0/8 -- None  ')
+        self.assertEqual(obj[0]['display'], 'NONE - None - 10.0.0.0/8')
         self.assertEqual(obj[0]['id'], 4)
 
 

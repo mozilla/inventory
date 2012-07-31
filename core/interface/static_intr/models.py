@@ -40,7 +40,7 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
 
     In terms of DNS, a static interface represents a PTR and A record and must
     adhear to the requirements of those classes. The interface inherits from
-    BaseAddressRecord and will call it's clean method with 'update_reverse_domain'
+    AddressRecord and will call it's clean method with 'update_reverse_domain'
     set to True. This will ensure that it's A record is valid *and* that it's
     PTR record is valid.
 
@@ -77,7 +77,7 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     >>> intr.attrs.alias = '1'
 
     This *immediately* updates the KeyValue object with a value of '1'. It is
-    not like the Django ORM where you must call the `save()` function for any
+    not like the Django ORM where you must call the :function:`save()` method for any
     changes to propagate to the database.
     """
     id = models.AutoField(primary_key=True)
