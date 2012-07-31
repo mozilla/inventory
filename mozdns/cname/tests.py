@@ -128,13 +128,11 @@ class CNAMETests(TestCase):
         domain = self.g
         data = "foo.com"
         x = self.do_add(label, domain, data)
-        print x.fqdn
 
         label = "*"
         domain = self.c_g
         data = "foo.com"
         x = self.do_add(label, domain, data)
-        print x.fqdn
 
     def test_soa_condition(self):
         label = ""

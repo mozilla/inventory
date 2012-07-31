@@ -260,7 +260,7 @@ def validate_label(label, valid_chars=None):
         # ASCII letters, digits, and the `-' character." "[T]he
         # following characters are recommended for use in a host name:
         # "A-Z", "a-z", "0-9", dash and underscore"
-        valid_chars = string.ascii_letters + "0123456789" + "-"
+        valid_chars = string.ascii_letters + "0123456789" + "-" + "_"
 
     # Labels may not be all numbers, but may have a leading digit TODO
     # Labels must end and begin only with a letter or digit TODO

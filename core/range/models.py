@@ -163,13 +163,11 @@ class Range(models.Model, ObjectUrlMixin):
 
     def display(self):
         return "Range: {3} to {4}  {0} -- {2} -- {1}  ".format(
-                #'self.network.site', 'self.network.vlan', self.network,
                 self.network.site, self.network.vlan, self.network,
                 self.start_str, self.end_str)
 
     def choice_display(self):
         return "{0} - {1} - {2}".format(
-                #'self.network.site', 'self.network.vlan', self.network,
                 str(self.network.site).upper(), self.network.vlan, self.network,
                 self.start_str)
 
