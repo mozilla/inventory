@@ -109,6 +109,7 @@ def create_adapter(request, system_id):
     mac_address = request.POST.get('mac_address')
     interface = request.POST.get('interface')
     label = system.hostname.split('.')[0]
+
     try:
         domain_parsed = ".".join(system.hostname.split('.')[1:]) + '.mozilla.com'
         domain = Domain.objects.filter(name=domain_parsed)[0]
@@ -1009,19 +1010,29 @@ def server_model_show(request, object_id):
             'object': object,
            },
            RequestContext(request))
+
+
 def server_model_list(request):
     object_list = models.ServerModel.objects.all()
-    return render_to_response('systems/servermodel_list.html', {
+    return render_to_response(
+        'systems/servermodel_list.html',
+        {
             'object_list': object_list,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_show(request, object_id):
     object = get_object_or_404(models.Allocation, pk=object_id)
 
-    return render_to_response('systems/allocation_detail.html', {
+    return render_to_response(
+        'systems/allocation_detail.html',
+        {
             'object': object,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_edit(request, object_id):
     allocation = get_object_or_404(models.Allocation, pk=object_id)
     from forms import AllocationForm
@@ -1034,16 +1045,24 @@ def allocation_edit(request, object_id):
     else:
         form = AllocationForm(instance=allocation)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_list(request):
     object_list = models.Allocation.objects.all()
-    return render_to_response('systems/allocation_list.html', {
+    return render_to_response(
+        'systems/allocation_list.html',
+        {
             'object_list': object_list,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_new(request):
     from forms import AllocationForm
     initial = {}
@@ -1055,18 +1074,27 @@ def allocation_new(request):
     else:
         form = AllocationForm(initial=initial)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_list(request):
     object_list = models.Location.objects.all()
-    return render_to_response('systems/location_list.html', {
+    return render_to_response(
+        'systems/location_list.html',
+        {
             'object_list': object_list,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def csv_import(request):
     from forms import CSVImportForm
+
     def generic_getter(field):
         return field
 
@@ -1120,8 +1148,9 @@ def csv_import(request):
             for line in csv_reader:
                 cur_data = dict(zip(headers, line))
 
-                system_data = dict((a, getter(cur_data.get(a, None)))
-                                        for a, getter in ALLOWED_COLUMNS.iteritems())
+                system_data = dict(
+                    (a, getter(cur_data.get(a, None)))
+                    for a, getter in ALLOWED_COLUMNS.iteritems())
 
                 s = models.System(**system_data)
                 try:
@@ -1135,9 +1164,11 @@ def csv_import(request):
     else:
         form = CSVImportForm()
 
-    return render_to_response('systems/csv_import.html', {
-        'form': form,
-        'allowed_columns': ALLOWED_COLUMNS,
-        'new_systems': new_systems,
+    return render_to_response(
+        'systems/csv_import.html',
+        {
+            'form': form,
+            'allowed_columns': ALLOWED_COLUMNS,
+            'new_systems': new_systems,
         },
         RequestContext(request))
