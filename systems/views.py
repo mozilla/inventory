@@ -110,13 +110,22 @@ def create_adapter(request, system_id):
     mac_address = request.POST.get('mac_address')
     interface = request.POST.get('interface')
     enable_dhcp = True
+    enable_dns = True
+    enable_public = True
+    enable_private = True
 
     if request.POST.get('is_ajax'):
         label = request.POST.get('hostname')
         the_range = Range.objects.get(id=request.POST.get('range'))
         domain_parsed = "%s.%s.mozilla.com" % (the_range.network.vlan.name, the_range.network.site.name)
-        if not request.POST.get('enable_dhcp'):
+        if request.POST.get('enable_dhcp') == 'false':
             enable_dhcp = False
+        if request.POST.get('enable_dns') == 'false':
+            enable_dns = False
+        else:
+            enable_public = request.POST.get('enable_public')
+            enable_private = request.POST.get('enable_private')
+            #Do something here
     else:
         label = system.hostname.split('.')[0]
         domain_parsed = ".".join(system.hostname.split('.')[1:]) + '.mozilla.com'
@@ -132,8 +141,8 @@ def create_adapter(request, system_id):
     else:
         interface_type, primary, alias = system.get_next_adapter()
     s = StaticInterface(label=label, mac=mac_address, domain=domain, ip_str=ip_address, ip_type='4', system=system)
-    import pdb; pdb.set_trace()
-    s.enable_dhcp = enable_dhcp
+    s.dhcp_enabled = enable_dhcp
+    s.dns_enabled = enable_dns
     try:
         s.clean()
         s.save()
