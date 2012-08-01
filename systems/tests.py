@@ -236,9 +236,41 @@ class SystemAdapterTest(TestCase):
         self.assertEqual(obj['error_message'], "Domain Not Found")
 
 
+    def test7_system_adapter_add_adapter_test_ajax(self):
+        post_dict = {
+                    'system_id': '1',
+                    'is_ajax': '1',
+                    'ip_address': '10.99.99.10',
+                    'mac_address': '00:00:00:00:00:00',
+                    'enable_dhcp': 'true',
+                    'enable_dns': 'true',
+                    'enable_public': 'true',
+                    'enable_private': 'true',
+                    }
+        sys = System.objects.get(id=1)
+        sys.hostname = sys.hostname + '.vlan.dc'
+        sys.save()
+        resp = self.client.post(reverse("system-network-adapter-create", kwargs = {'system_id': '1'}), data=post_dict, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['success'], True)
+        self.assertEqual(obj['error_message'], "Domain Not Found")
+
+
     def create_domains(self):
         from mozdns.domain.models import Domain
         from core.network.models import Network
+        from mozdns.view.models import View
+        private = View(name="private")
+        try:
+            private.save()
+        except:
+            pass
+        public = View(name="public")
+        try:
+            public.save()
+        except:
+            pass
         Domain( name = 'com').save()
         Domain( name = 'mozilla.com' ).save()
         Domain(name='dc.mozilla.com').save()

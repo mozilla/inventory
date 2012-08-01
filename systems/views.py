@@ -106,6 +106,7 @@ def create_adapter(request, system_id):
     from api_v3.system_api import SystemResource
     from mozdns.domain.models import Domain
     from mozdns.view.models import View
+    import pdb; pdb.set_trace()
     system = get_object_or_404(models.System, id=system_id)
     ip_address = request.POST.get('ip_address')
     mac_address = request.POST.get('mac_address')
