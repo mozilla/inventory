@@ -177,6 +177,9 @@ class SystemAdapterTest(TestCase):
 
 
     def test1_system_adapter_ajax_get(self):
+        sys_tmp = System.objects.get(id=1)
+        sys_tmp.hostname = sys_tmp.hostname + '.vlan.dc'
+        sys_tmp.save()
         resp = self.client.get(reverse("system-network-adapter-create", kwargs = {'system_id': '1'}), follow=True)
         self.assertEqual(resp.status_code, 200)
         
@@ -193,6 +196,9 @@ class SystemAdapterTest(TestCase):
                     'mac_address': '00:00:00:00:00:00',
                     'ip_address': '10.99.99.99',
                 }
+        sys_tmp = System.objects.get(id=1)
+        sys_tmp.hostname = sys_tmp.hostname + '.vlan.dc'
+        sys_tmp.save()
         resp = self.client.post(reverse("system-network-adapter-create", kwargs = {'system_id': '1'}), data = post_dict, follow=True)
         self.assertEqual(resp.status_code, 200)
         system = System.objects.get(id = 1)
@@ -221,6 +227,13 @@ class SystemAdapterTest(TestCase):
         obj = json.loads(resp.content)
         self.assertEqual(obj['ip_address'], '10.99.99.1')
         self.assertEqual(obj['success'], True)
+
+    def test6_system_adapter_ajax_get_invalid_domain(self):
+        resp = self.client.get(reverse("system-network-adapter-create", kwargs = {'system_id': '1'}), follow=True)
+        self.assertEqual(resp.status_code, 200)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['success'], False)
+        self.assertEqual(obj['error_message'], "Domain Not Found")
 
 
     def create_domains(self):

@@ -290,7 +290,7 @@
                                                     alert("Mac Address Required");
                                                     return;
                                                 }
-                                            /*$.post('/core/interface/combine_a_ptr_to_interface/' + addr_pk + '/' + ptr_pk + '/',
+                                            *$.post('/en-US/systems/create_adapter/' + system_id,
                                                 { 'is_ajax': '1', 'system_hostname': $("#system_search").val() },
                                                 function(data){
                                                     var obj = jQuery.parseJSON(data);
@@ -302,9 +302,6 @@
 
                                                     }
                                                 });
-                                                
-                                                $("#add_adapter_range").get(0).options.length = 0; 
-                                                $( this ).dialog( "close" );*/
                                             },
                                             Cancel: function() {
                                                 $("#add_adapter_range").get(0).options.length = 0; 

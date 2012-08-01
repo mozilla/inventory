@@ -105,20 +105,36 @@ def create_adapter(request, system_id):
     from api_v3.system_api import SystemResource
     from mozdns.domain.models import Domain
     system = get_object_or_404(models.System, id=system_id)
-    system.hostname = "%s.vlan.dc" % (system.hostname)
     ip_address = request.POST.get('ip_address')
     mac_address = request.POST.get('mac_address')
     interface = request.POST.get('interface')
     label = system.hostname.split('.')[0]
-    domain_parsed = ".".join(system.hostname.split('.')[1:]) + '.mozilla.com'
-    domain = Domain.objects.filter(name=domain_parsed)[0]
+    try:
+        domain_parsed = ".".join(system.hostname.split('.')[1:]) + '.mozilla.com'
+        domain = Domain.objects.filter(name=domain_parsed)[0]
+    except IndexError, e:
+        return HttpResponse(json.dumps({'success': False, 'error_message': "Domain Not Found"}))
+        
 
     if interface:
         interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
     else:
         interface_type, primary, alias = system.get_next_adapter()
-
+    s = StaticInterface(label=label, mac=mac_address, domain=domain, ip_str=ip_address, ip_type='4', system=system)
     try:
+        s.clean()
+        s.save()
+    except ValidationError, e:
+        return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))
+ 
+    s.update_attrs()
+    try:
+        s.attrs.primary = primary
+        s.attrs.interface_type = interface_type
+        s.attrs.alias = alias
+    except AttributeError, e:
+        return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))
+    """try:
         s = StaticInterface(label=label, mac=mac_address, domain=domain, ip_str=ip_address, ip_type='4', system=system)
         s.clean()
         s.save()
@@ -129,7 +145,7 @@ def create_adapter(request, system_id):
     except ValidationError, e:
         return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))
     except Exception, e:
-        return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))
+        return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))"""
 
     return HttpResponse(json.dumps({'success': True}))
 
