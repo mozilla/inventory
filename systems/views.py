@@ -1003,13 +1003,16 @@ def server_model_list_ajax(request):
 
     return HttpResponse(json.dumps(ret))
 
+
 def server_model_show(request, object_id):
     object = get_object_or_404(models.ServerModel, pk=object_id)
 
-    return render_to_response('systems/servermodel_detail.html', {
+    return render_to_response(
+        'systems/servermodel_detail.html',
+        {
             'object': object,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
 
 
 def server_model_list(request):
