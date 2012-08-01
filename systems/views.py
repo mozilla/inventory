@@ -106,7 +106,6 @@ def create_adapter(request, system_id):
     from api_v3.system_api import SystemResource
     from mozdns.domain.models import Domain
     from mozdns.view.models import View
-    import pdb; pdb.set_trace()
     system = get_object_or_404(models.System, id=system_id)
     ip_address = request.POST.get('ip_address')
     mac_address = request.POST.get('mac_address')
@@ -146,19 +145,22 @@ def create_adapter(request, system_id):
     s.dhcp_enabled = enable_dhcp
     s.dns_enabled = enable_dns
 
-    if enable_dns and enable_public:
-        public = View.objects.get(name='public')
-        private = View.objects.get(name='private')
-        s.views.add(public)
-        s.views.add(private)
-
-    if enable_dns and enable_private and not enable_public:
-        private = View.objects.get(name='private')
-        s.views.add(private)
 
     try:
         s.clean()
         s.save()
+        if enable_dns and enable_public:
+            public = View.objects.get(name='public')
+            private = View.objects.get(name='private')
+            s.views.add(public)
+            s.views.add(private)
+            s.save()
+
+        elif enable_dns and enable_private and not enable_public:
+            private = View.objects.get(name='private')
+            s.views.add(private)
+            s.save()
+
     except ValidationError, e:
         return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))
  
