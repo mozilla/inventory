@@ -105,6 +105,7 @@ def get_next_available_ip_by_range(request, range_id):
 def create_adapter(request, system_id):
     from api_v3.system_api import SystemResource
     from mozdns.domain.models import Domain
+    from mozdns.view.models import View
     system = get_object_or_404(models.System, id=system_id)
     ip_address = request.POST.get('ip_address')
     mac_address = request.POST.get('mac_address')
@@ -123,8 +124,8 @@ def create_adapter(request, system_id):
         if request.POST.get('enable_dns') == 'false':
             enable_dns = False
         else:
-            enable_public = request.POST.get('enable_public')
-            enable_private = request.POST.get('enable_private')
+            enable_public = False if request.POST.get('enable_public') == 'false' else True
+            enable_private = False if request.POST.get('enable_private') == 'false' else True
             #Do something here
     else:
         label = system.hostname.split('.')[0]
@@ -143,6 +144,17 @@ def create_adapter(request, system_id):
     s = StaticInterface(label=label, mac=mac_address, domain=domain, ip_str=ip_address, ip_type='4', system=system)
     s.dhcp_enabled = enable_dhcp
     s.dns_enabled = enable_dns
+
+    if enable_dns and enable_public:
+        public = View.objects.get(name='public')
+        private = View.objects.get(name='private')
+        s.views.add(public)
+        s.views.add(private)
+
+    if enable_dns and enable_private and not enable_public:
+        private = View.objects.get(name='private')
+        s.views.add(private)
+
     try:
         s.clean()
         s.save()
