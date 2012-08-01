@@ -160,9 +160,7 @@
     </table>
 </pre></dd>
 <div style="clear:both;"></div>
-<a class="system_add_interface" href="/core/interface/{{system.pk}}/create/">Add Interface</a>
-<a class="system_quick_add_interface" href="/core/interface/{{system.pk}}/quick_create/">Quick Add Interface</a>
-<a class="system_add_interface_combined" href="">Combined Jquery Add</a>
+<a class="system_add_interface_combined" href="">Add Interface</a>
 </dl>
 
 </div>
@@ -198,6 +196,7 @@
 {% endif %}
 <a href="{{ "systems.views.home"|url() }}">Back</a>
 <script type='text/javascript'>
+    var system_id = {{ system.pk }};
     function goto_range(ip_str, ip_type){
         $.get('/core/range/find_range/?ip_str='+ip_str+'&ip_type=' + ip_type, do_redirect);
     }
@@ -211,7 +210,6 @@
     }
 
     $(document).ready(function() {
-
         $("a.goto_range").click(function (){
             var args = $(this).attr("rel").split('|');
             var ip_str = args[0];
@@ -290,15 +288,26 @@
                                                     alert("Mac Address Required");
                                                     return;
                                                 }
-                                            *$.post('/en-US/systems/create_adapter/' + system_id,
-                                                { 'is_ajax': '1', 'system_hostname': $("#system_search").val() },
+                                            $.post('/en-US/systems/create_adapter/' + system_id + '/',
+                                                { 
+                                                    'is_ajax': '1',
+                                                    'ip_address': $("#add_adapter_ip_address").val(),
+                                                    'mac_address': $("#add_adapter_mac_address").val(),
+                                                    'enable_dhcp': $("#add_adapter_dhcp").val(),
+                                                    'enable_dns': $("#add_adapter_dns").val(),
+                                                    'dns_public': $("#add_adapter_public").val(),
+                                                    'dns_private': $("#add_adapter_private").val(),
+                                                    'hostname': $("#add_adapter_hostname").val(),
+                                                    'range': $("#add_adapter_range").val(),
+                                                    'system_hostname': $("#system_search").val()
+                                                },
                                                 function(data){
                                                     var obj = jQuery.parseJSON(data);
                                                     if(obj.success == true){
-                                                        update_link($("a[rel=" + the_rel + "]"), obj.id, obj.hostname);
+                                                        self.location.reload();
                                                     } else {
 
-                                                        alert(obj.error);
+                                                        alert(obj.error_message);
 
                                                     }
                                                 });

@@ -55,7 +55,7 @@ def parse_title_num(title):
       pass
    return val
 
-def check_dupe_nic(request,system_id,adapter_number):
+def check_dupe_nic(request,system_id, adapter_number):
     try:
         system = models.System.objects.get(id=system_id)
         found = system.check_for_adapter(adapter_number)
@@ -100,6 +100,7 @@ def get_next_available_ip_by_range(request, range_id):
     ret['ip_address'] = display_ip
     return HttpResponse(json.dumps(ret))
 
+
 @csrf_exempt
 def create_adapter(request, system_id):
     from api_v3.system_api import SystemResource
@@ -108,10 +109,16 @@ def create_adapter(request, system_id):
     ip_address = request.POST.get('ip_address')
     mac_address = request.POST.get('mac_address')
     interface = request.POST.get('interface')
-    label = system.hostname.split('.')[0]
+
+    if request.POST.get('is_ajax'):
+        label = request.POST.get('hostname')
+        the_range = Range.objects.get(id=request.POST.get('range'))
+        domain_parsed = "%s.%s.mozilla.com" % (the_range.network.vlan.name, the_range.network.site.name)
+    else:
+        label = system.hostname.split('.')[0]
+        domain_parsed = ".".join(system.hostname.split('.')[1:]) + '.mozilla.com'
 
     try:
-        domain_parsed = ".".join(system.hostname.split('.')[1:]) + '.mozilla.com'
         domain = Domain.objects.filter(name=domain_parsed)[0]
     except IndexError, e:
         return HttpResponse(json.dumps({'success': False, 'error_message': "Domain Not Found"}))
@@ -881,6 +888,7 @@ def rack_delete(request, object_id):
             },
             RequestContext(request))
 
+
 def rack_edit(request, object_id):
     rack = get_object_or_404(models.SystemRack, pk=object_id)
     from forms import SystemRackForm
@@ -893,10 +901,14 @@ def rack_edit(request, object_id):
     else:
         form = SystemRackForm(instance=rack)
 
-    return render_to_response('systems/generic_form.html', {
+    return render_to_response(
+        'systems/generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def rack_new(request):
     from forms import SystemRackForm
     initial = {}
@@ -908,17 +920,25 @@ def rack_new(request):
     else:
         form = SystemRackForm(initial=initial)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_show(request, object_id):
     object = get_object_or_404(models.Location, pk=object_id)
 
-    return render_to_response('systems/location_detail.html', {
+    return render_to_response(
+        'systems/location_detail.html',
+        {
             'object': object,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_edit(request, object_id):
     location = get_object_or_404(models.Location, pk=object_id)
     from forms import LocationForm
@@ -931,10 +951,14 @@ def location_edit(request, object_id):
     else:
         form = LocationForm(instance=location)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_new(request):
     from forms import LocationForm
     initial = {}
@@ -946,10 +970,14 @@ def location_new(request):
     else:
         form = LocationForm(initial=initial)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def server_model_edit(request, object_id):
     server_model = get_object_or_404(models.ServerModel, pk=object_id)
     from forms import ServerModelForm
@@ -962,10 +990,13 @@ def server_model_edit(request, object_id):
     else:
         form = ServerModelForm(instance=server_model)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
 
 @csrf_exempt
 def operating_system_create_ajax(request):
@@ -973,10 +1004,11 @@ def operating_system_create_ajax(request):
         if 'name' in request.POST and 'version' in request.POST:
             name = request.POST['name']
             version = request.POST['version']
-        models.OperatingSystem(name=name,version=version).save()
+        models.OperatingSystem(name=name, version=version).save()
         return operating_system_list_ajax(request)
     else:
         return HttpResponse("OK")
+
 
 @csrf_exempt
 def server_model_create_ajax(request):
@@ -984,22 +1016,24 @@ def server_model_create_ajax(request):
         if 'model' in request.POST and 'vendor' in request.POST:
             model = request.POST['model']
             vendor = request.POST['vendor']
-        models.ServerModel(vendor=vendor,model=model).save()
+        models.ServerModel(vendor=vendor, model=model).save()
         return server_model_list_ajax(request)
     else:
         return HttpResponse("OK")
 
+
 def operating_system_list_ajax(request):
     ret = []
     for m in models.OperatingSystem.objects.all():
-        ret.append({'id':m.id, 'name': "%s - %s" % (m.name, m.version)})
+        ret.append({'id': m.id, 'name': "%s - %s" % (m.name, m.version)})
 
     return HttpResponse(json.dumps(ret))
+
 
 def server_model_list_ajax(request):
     ret = []
     for m in models.ServerModel.objects.all():
-        ret.append({'id':m.id, 'name': "%s - %s" % (m.vendor, m.model)})
+        ret.append({'id': m.id, 'name': "%s - %s" % (m.vendor, m.model)})
 
     return HttpResponse(json.dumps(ret))
 
