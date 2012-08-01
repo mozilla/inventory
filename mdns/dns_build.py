@@ -1,4 +1,4 @@
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from truth.models import Truth
 
 from mdns.inventory_build import inventory_build_sites
@@ -228,9 +228,8 @@ def do_zone_build(ztype, view, root_domain, zone_path):
         print "Slob"
 
 def zone_build_from_config():
-    from mdns.migrate.zone_configs.external import *
     import dns
-    """
+    from mdns.migrate.zone_configs.external import *
     for config in external:
         zone_path = config['path']
         root_domain = config['zone_name']
@@ -254,10 +253,6 @@ def zone_build_from_config():
             print "ERROR: NoSOA()"
             print zone_path
             print "----------------------"
-        except Exception, e:
-            pdb.set_trace()
-            pass
-    """
 
     from mdns.migrate.zone_configs.mozilla_com_dc_zone_config import *
     for config in mozilla_com_dcs:
@@ -402,6 +397,18 @@ def ensure_rev_domain(name):
 
     return domain
 
+def set_all_soas(domain, soa):
+    for child_domain in domain.domain_set.all():
+        child_domain.soa = soa
+        child_domain.save()
+        set_all_soas(child_domain, soa)
+
+def null_all_soas(domain):
+    for child_domain in domain.domain_set.all():
+        null_all_soas(child_domain)
+        child_domain.soa = None
+        child_domain.save()
+
 def populate_forward_dns(svn_zones, view=None):
     print svn_zones
     for site, data in svn_zones.iteritems():
@@ -413,14 +420,14 @@ def populate_forward_dns(svn_zones, view=None):
             exists = SOA.objects.filter(minimum=rdata.minimum,
                     contact=rdata.rname.to_text().strip('.'),
                     primary=rdata.mname.to_text().strip('.'), comment="SOA for"
-                    " {0}mozilla.com".format(site))
+                    " {0}".format(site))
             if exists:
                 soa = exists[0]
             else:
                 soa = SOA(serial=rdata.serial, minimum=rdata.minimum,
                         contact=rdata.rname.to_text().strip('.'),
                         primary=rdata.mname.to_text().strip('.'), comment="SOA for"
-                        " {0}mozilla.com".format(site))
+                        " {0}".format(site))
                 soa.clean()
                 soa.save()
             domain_split = list(reversed(name.to_text().strip('.').split('.')))
@@ -428,9 +435,11 @@ def populate_forward_dns(svn_zones, view=None):
                 domain_name = domain_split[:i+1]
                 base_domain, created = Domain.objects.get_or_create(name=
                         '.'.join(list(reversed(domain_name))))
+
+            null_all_soas(base_domain)
             base_domain.soa = soa
             base_domain.save()
-
+            set_all_soas(base_domain, soa)
 
         """
             Algo for creating names and domains.
@@ -494,9 +503,11 @@ def populate_forward_dns(svn_zones, view=None):
                             pdb.set_trace()
                             pass
 
-                    if domain.master_domain and domain.master_domain.soa:
-                        domain.soa = domain.master_domain.soa
-                        domain.save()
+                    if created and domain.master_domain and domain.master_domain.soa:
+                        #domain.soa = domain.master_domain.soa
+                        #domain.save()
+                        null_all_soas(domain)
+                        set_all_soas(domain, domain.master_domain.soa)
             a, _ = AddressRecord.objects.get_or_create( label = label,
                 domain=domain, ip_str=rdata.to_text(), ip_type='4')
             if view:
@@ -505,7 +516,6 @@ def populate_forward_dns(svn_zones, view=None):
                     a.save()
                 except Exception, e:
                     pdb.set_trace()
-                    a.save()
                     pass
 
 
@@ -519,6 +529,7 @@ def populate_forward_dns(svn_zones, view=None):
             if view:
                 ns.views.add(view)
                 ns.save()
+
         for (name, ttl, rdata) in zone.iterate_rdatas('MX'):
             name = name.to_text().strip('.')
             print str(name) + " MX " + str(rdata)
@@ -559,6 +570,7 @@ def populate_forward_dns(svn_zones, view=None):
                 if cn:
                     cn.views.add(view)
                     cn.save()
+        set_all_soas(base_domain, base_domain.soa)
 
 is_generate1 = re.compile("^.*(\d+){(\+|-)(\d+),(\d+),(.)}.*$")
 is_generate2 = re.compile("^.*(\d+){(\+|-?)(\d+)}.*$")
@@ -641,8 +653,16 @@ def ensure_domain(name):
                 pdb.set_trace()
                 pass
 
-        if domain.master_domain and domain.master_domain.soa:
+        if created and domain.master_domain and domain.master_domain.soa:
+            #try:
+            #    domain.save()
+            #except ValidationError, e:
+            #    pdb.set_trace()
+            #    pass
+            null_all_soas(domain)
             domain.soa = domain.master_domain.soa
+            domain.save()
+            set_all_soas(domain, domain.master_domain.soa)
 
     return domain
 
