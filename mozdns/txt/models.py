@@ -36,3 +36,9 @@ class TXT(MozdnsRecord):
         # _mysql_exceptions.OperationalError: (1170, "BLOB/TEXT column
         # 'txt_data' used in key specification without a key length")
         # Fix that ^
+
+    def __str__(self):
+        return "{0} TXT {1}".format(self.fqdn, self.txt_data)
+
+    def __repr__(self):
+        return "<TXT {0}>".format(self)

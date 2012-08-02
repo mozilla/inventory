@@ -6,6 +6,7 @@ from mozdns.address_record.models import AddressRecord
 from mozdns.validation import validate_label, validate_name
 from mozdns.mixins import ObjectUrlMixin
 from mozdns.view.models import View
+from mozdns.validation import validate_ttl
 
 from core.interface.static_intr.models import StaticInterface
 
@@ -30,6 +31,8 @@ class Nameserver(models.Model, ObjectUrlMixin):
     """
     id = models.AutoField(primary_key=True)
     server = models.CharField(max_length=255, validators=[validate_name])
+    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
+            validators=[validate_ttl])
     domain = models.ForeignKey(Domain, null=False)
     # "If the name server does lie within the domain it should have a
     # corresponding A record."
@@ -38,6 +41,7 @@ class Nameserver(models.Model, ObjectUrlMixin):
     intr_glue = models.ForeignKey(StaticInterface, null=True, blank=True,
             related_name='intrnameserver_set')
     views = models.ManyToManyField(View, blank=True)
+    comment = models.CharField(max_length=1000, null=True, blank=True)
 
     search_fields = ('server',)
 

@@ -8,14 +8,14 @@ Replace this with more appropriate tests for your application.
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 
-from mozdns.ip.utils import ip2dns_form
+from mozdns.ip.utils import ip_to_domain_name
 
 from mozdns.domain.models import Domain, boot_strap_ipv6_reverse_domain
 
 from mozdns.ptr.models import PTR
 from mozdns.address_record.models import AddressRecord
 from mozdns.ip.models import ipv6_to_longs, Ip
-from mozdns.ip.utils import ip2dns_form
+from mozdns.ip.utils import ip_to_domain_name
 
 import ipaddr
 import pdb
@@ -45,7 +45,7 @@ class PTRTests(TestCase):
         if name in ('arpa', 'in-addr.arpa', 'ipv6.arpa'):
             pass
         else:
-            name = ip2dns_form(name, ip_type=ip_type)
+            name = ip_to_domain_name(name, ip_type=ip_type)
         d = Domain(name = name, delegated=delegated)
         d.clean()
         self.assertTrue(d.is_reverse)
@@ -79,6 +79,15 @@ class PTRTests(TestCase):
             self.assertEqual( fqdn,ptr[0].name )
         return ret
 
+    def test_dns_form_ipv4(self):
+        ret = self.do_generic_add("128.193.1.230", "foo.bar.oregonstate.edu", '4')
+        self.assertEqual("230.1.193.128.in-addr.arpa.", ret.dns_name())
+
+    def test_dns_form_ipv6(self):
+        ret = self.do_generic_add("8620:105:F000::1",
+                "foo.bar.oregonstate.edu", '6')
+        self.assertEqual("1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.f.5.0.1.0.0.2.6.8.ipv6.arpa.",
+                ret.dns_name())
 
     def test_add_ipv4_ptr(self):
         ret = self.do_generic_add("128.193.1.1", "foo.bar.oregonstate.edu", '4')

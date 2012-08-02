@@ -9,7 +9,7 @@ from mozdns.domain.models import Domain
 from mozdns.ip.models import ipv6_to_longs
 from mozdns.nameserver.models import Nameserver
 from mozdns.domain.models import boot_strap_ipv6_reverse_domain
-from mozdns.ip.utils import ip2dns_form
+from mozdns.ip.utils import ip_to_domain_name
 from mozdns.cname.models import CNAME
 
 import pdb
@@ -21,7 +21,7 @@ class AddressRecordTests(TestCase):
         if name in ('arpa', 'in-addr.arpa', 'ipv6.arpa'):
             pass
         else:
-            name = ip2dns_form(name, ip_type=ip_type)
+            name = ip_to_domain_name(name, ip_type=ip_type)
         d = Domain(name = name, delegated=delegated)
         d.clean()
         self.assertTrue(d.is_reverse)

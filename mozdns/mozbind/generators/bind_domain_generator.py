@@ -9,89 +9,133 @@ data_just = 7
 extra_just = 3
 
 def render_mx(mx_set):
+    """
+    name           ttl  class   rr  pref name
+    """
     BUILD_STR = ''
-    template = Template("{name:$name_just} {rclass:$class_just} {rtype:$type_just} {prio:$prio_just} {server:$data_just}.\n")
+    template = Template("{name:$name_just} {ttl} {rclass:$class_just} {rtype:$type_just} {prio:$prio_just} {server:$data_just}.\n")
     template = template.substitute(name_just=name_just, class_just=class_just,
-                        type_just=type_just, prio_just=prio_just, data_just=data_just)
+                type_just=type_just, prio_just=prio_just, data_just=data_just)
     for mx in mx_set:
-        BUILD_STR += "$TTL %s\n" % (mx.ttl)
+        if mx.ttl == 3600:
+            ttl = ''
+        else:
+            ttl = str(mx.ttl)
         #name = mx.fqdn + '.' if mx.label != '' else '@'
         name = mx.fqdn + '.'
-        BUILD_STR += template.format(name=name, rclass='IN', rtype='MX', prio=str(mx.priority),
-                                    server=mx.server)
+        BUILD_STR += template.format(name=name, ttl=ttl, rclass='IN',
+                rtype='MX', prio=str(mx.priority), server=mx.server)
     return BUILD_STR
 
 def render_ns(nameserver_set):
+    """
+    name           ttl  class   rr     name
+    """
     BUILD_STR = ''
-    template = Template("{name:$name_just} {rclass:$class_just} {rtype:$type_just} {server:$data_just}.\n")
+    template = Template("{name:$name_just} {ttl} {rclass:$class_just} {rtype:$type_just} {server:$data_just}.\n")
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
     for ns in nameserver_set:
-        BUILD_STR += template.format(name='@', rclass='IN', rtype='NS', server=ns.server)
+        if ns.ttl == 3600:
+            ttl = ''
+        else:
+            ttl = str(ns.ttl)
+        BUILD_STR += template.format(name='@', ttl=ttl, rclass='IN', rtype='NS', server=ns.server)
     return BUILD_STR
 
 def render_address_record(addressrecord_set):
+    """
+    name  ttl  class   rr     ip
+    """
     BUILD_STR = ''
-    template = Template("{name:$name_just} {rclass:$class_just} {rtype:$type_just} {address:$data_just}\n")
+    template = Template("{name:$name_just} {ttl} {rclass:$class_just} {rtype:$type_just} {address:$data_just}\n")
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
-    BUILD_STR += "$TTL %s\n" % (3600)
     for rec in addressrecord_set:
         if rec.ip_type == '4':
             rec_type = 'A'
         else:
             rec_type = 'AAAA'
-        #name = rec.fqdn + '.' if rec.label != '' else '@'
+        if rec.ttl == 3600:
+            ttl = ''
+        else:
+            ttl = str(rec.ttl)
         name = rec.fqdn + '.'
-        BUILD_STR += template.format(name=name, rclass='IN', rtype=rec_type, address=rec.ip_str)
+        BUILD_STR += template.format(name=name, ttl=ttl, rclass='IN',
+                rtype=rec_type, address=rec.ip_str)
     return BUILD_STR
 
 def render_cname(cname_set):
+    """
+    name  ttl  class   rr     canonical name
+    """
     BUILD_STR = ''
 
-    template = Template("{name:$name_just} {rclass:$class_just} {rtype:$type_just} {data:$data_just}.\n")
+    template = Template("{name:$name_just} {ttl} {rclass:$class_just} {rtype:$type_just} {data:$data_just}.\n")
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
     for cname in cname_set:
-        #name = cname.fqdn+'.' if cname.label != '' else '@'
+        if cname.ttl == 3600:
+            ttl = ''
+        else:
+            ttl = str(cname.ttl)
+
         name = cname.fqdn + '.'
-        BUILD_STR += template.format(name=name, rclass='IN', rtype='CNAME', data=cname.data)
+        BUILD_STR += template.format(name=name, ttl=ttl, rclass='IN',
+                rtype='CNAME', data=cname.data)
     return BUILD_STR
 
 def render_srv(srv_set):
+    """
+    srvce.prot.name  ttl  class   rr  pri  weight port target
+    """
     BUILD_STR = ''
-    template = Template("{name:$name_just} {rclass:$class_just} {rtype:$type_just} {prio:$prio_just} {weight:$extra_just} {port:$extra_just} {target:$extra_just}.\n")
+    template = Template("{name:$name_just} {ttl} {rclass:$class_just} {rtype:$type_just} {prio:$prio_just} {weight:$extra_just} {port:$extra_just} {target:$extra_just}.\n")
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, prio_just=prio_just, extra_just=extra_just)
     for srv in srv_set:
-        #name = srv.fqdn + '.' if srv.label != '' else '@'
+        if srv.ttl == 3600:
+            ttl = ''
+        else:
+            ttl = str(srv.ttl)
         name = srv.fqdn + '.'
-        BUILD_STR += template.format(name=name, rclass='IN', rtype='SRV', prio=str(srv.priority), weight=str(srv.weight), port=str(srv.port), target=str(srv.target))
+        BUILD_STR += template.format(name=name, ttl=ttl, rclass='IN', rtype='SRV',
+                prio=str(srv.priority), weight=str(srv.weight),
+                port=str(srv.port), target=str(srv.target))
     return BUILD_STR
 
 def render_txt(txt_set):
+    """
+    name  ttl  class   rr     text
+    """
     BUILD_STR = ''
 
-    template = Template("{name:$name_just} {rclass:$class_just} {rtype:$type_just} \"{data:$data_just}\"\n")
+    template = Template("{name:$name_just} {ttl} {rclass:$class_just} {rtype:$type_just} \"{data:$data_just}\"\n")
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
     for txt in txt_set:
-        #name = txt.fqdn + '.' if txt.label != '' else '@'
+        if txt.ttl == 3600:
+            ttl = ''
+        else:
+            ttl = str(txt.ttl)
         name = txt.fqdn + '.'
-        BUILD_STR += template.format(name=name, rclass='IN', rtype='TXT', data=txt.txt_data)
+        BUILD_STR += template.format(name=name, ttl=ttl, rclass='IN', rtype='TXT', data=txt.txt_data)
     return BUILD_STR
 
 def render_sshfp(sshfp_set):
     BUILD_STR = ''
 
-    template = Template("{name:$name_just} {rclass:$class_just} "
+    template = Template("{name:$name_just} {ttl} {rclass:$class_just} "
             "{rtype:$type_just} {algorithm_number} {fingerprint_type} {key:$data_just}\n")
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
     for sshfp in sshfp_set:
-        #name = txt.fqdn + '.' if txt.label != '' else '@'
+        if sshfp.ttl == 3600:
+            ttl = ''
+        else:
+            ttl = str(sshfp.ttl)
         name = sshfp.fqdn + '.'
-        BUILD_STR += template.format(name=name, rclass='IN', rtype='TXT',
+        BUILD_STR += template.format(name=name, ttl=ttl, rclass='IN', rtype='TXT',
                 algorithm_number=sshfp.algorithm_number,
                 fingerprint_type=sshfp.fingerprint_type,
                 key=sshfp.key)

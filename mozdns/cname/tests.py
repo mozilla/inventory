@@ -17,7 +17,7 @@ from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
 
 from core.interface.static_intr.models import StaticInterface
-from mozdns.ip.utils import ip2dns_form
+from mozdns.ip.utils import ip_to_domain_name
 
 from systems.models import System
 
@@ -32,7 +32,7 @@ class CNAMETests(TestCase):
         if name in ('arpa', 'in-addr.arpa', 'ipv6.arpa'):
             pass
         else:
-            name = ip2dns_form(name, ip_type=ip_type)
+            name = ip_to_domain_name(name, ip_type=ip_type)
         d = Domain(name = name, delegated=delegated)
         d.clean()
         self.assertTrue(d.is_reverse)

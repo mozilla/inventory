@@ -24,7 +24,7 @@ class SSHFP(MozdnsRecord):
     fingerprint_type = models.PositiveIntegerField(null=False, blank=False,
             validators=[validate_fingerprint])
 
-    search_feilds = ('fqdn', 'txt_data')
+    search_feilds = ('fqdn', 'key')
 
     def details(self):
         return (

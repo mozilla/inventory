@@ -9,6 +9,7 @@ from mozdns.ip.models import Ip
 from mozdns.models import set_fqdn, check_for_cname, check_for_delegation
 from mozdns.models import check_TLD_condition
 from mozdns.validation import validate_first_label, validate_name
+from mozdns.validation import validate_ttl
 from mozdns.domain.models import Domain
 from mozdns.mixins import ObjectUrlMixin
 
@@ -32,6 +33,9 @@ class BaseAddressRecord(Ip):
     fqdn = models.CharField(max_length=255, blank=True, null=True,
                             validators=[validate_name])
     views = models.ManyToManyField(View)
+    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
+            validators=[validate_ttl])
+    comment = models.CharField(max_length=1000, blank=True, null=True)
 
     search_fields = ('fqdn', 'ip_str')
 

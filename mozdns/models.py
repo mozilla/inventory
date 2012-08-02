@@ -6,6 +6,7 @@ from mozdns.domain.models import Domain, _check_TLD_condition
 from mozdns.view.models import View
 from mozdns.mixins import ObjectUrlMixin
 from mozdns.validation import validate_first_label, validate_name
+from mozdns.validation import validate_ttl
 from settings import MOZDNS_BASE_URL
 
 import pdb
@@ -41,9 +42,6 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
     looking at ``obj.label`` together with ``obj.domain.name``, you can
     just search the ``obj.fqdn`` field.
 
-    As of commit 7b2fd19f, the build scripts do not care about ``fqdn``.
-    This could change.
-
     "the total number of octets that represent a name (i.e., the sum of
     all label octets and label lengths) is limited to 255" - RFC 4471
     """
@@ -53,7 +51,10 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
                              validators=[validate_first_label])
     fqdn = models.CharField(max_length=255, blank=True, null=True,
                             validators=[validate_name])
+    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
+            validators=[validate_ttl])
     views = models.ManyToManyField(View)
+    comment = models.CharField(max_length=1000, blank=True, null=True)
     # fqdn = label + domain.name <--- see set_fqdn
 
     class Meta:

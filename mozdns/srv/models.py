@@ -9,7 +9,7 @@ from mozdns.view.models import View
 
 from mozdns.validation import validate_srv_label, validate_srv_port
 from mozdns.validation import validate_srv_priority, validate_srv_weight
-from mozdns.validation import validate_srv_name
+from mozdns.validation import validate_srv_name, validate_ttl
 
 
 # Rhetorical Question: Why is SRV not a common record?  SRV records have
@@ -24,7 +24,8 @@ class SRV(models.Model, ObjectUrlMixin):
     id = models.AutoField(primary_key=True)
     label = models.CharField(max_length=100, blank=True, null=True,
                              validators=[validate_srv_label])
-
+    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
+            validators=[validate_ttl])
     domain = models.ForeignKey(Domain, null=False)
     fqdn = models.CharField(max_length=255, blank=True, null=True,
                             validators=[validate_srv_name])
@@ -43,6 +44,7 @@ class SRV(models.Model, ObjectUrlMixin):
 
     weight = models.PositiveIntegerField(null=False,
                                          validators=[validate_srv_weight])
+    comment = models.CharField(max_length=1000, blank=True, null=True)
 
     search_fields = ('fqdn', 'target')
 

@@ -12,21 +12,33 @@ data_just = 7
 extra_just = 3
 
 def render_ptr(ptr_set):
+    """
+    name ttl  class   rr     name
+    """
     BUILD_STR = ''
-    template = Template("{ip:$ip_just} {rclass:$class_just} {rtype:$type_just} {name:$name_just}.\n")
-    template = template.substitute(ip_just=ip_just, class_just=class_just,\
+    template = Template("{ip:$ip_just} {ttl} {rclass:$class_just} {rtype:$type_just} {name:$name_just}.\n")
+    template = template.substitute(ip_just=ip_just, class_just=class_just,
                         type_just=type_just, name_just=name_just)
     for ptr in ptr_set:
-        BUILD_STR += template.format(ip=ptr.ip_str, rclass='IN', rtype='PTR', name=ptr.name)
+        if ptr.ttl == 3600:
+            ttl = ''
+        else:
+            ttl = str(ptr.ttl)
+        BUILD_STR += template.format(ip=ptr.dns_name(), ttl=ttl, rclass='IN',
+                rtype='PTR', name=ptr.name)
     return BUILD_STR
 
 def render_intr(interface_set):
     BUILD_STR = ''
-    template = Template("{ip:$ip_just} {rclass:$class_just} {rtype:$type_just} {name:$name_just}.\n")
-    template = template.substitute(ip_just=ip_just, class_just=class_just,\
+    template = Template("{ip:$ip_just} {ttl} {rclass:$class_just} {rtype:$type_just} {name:$name_just}.\n")
+    template = template.substitute(ip_just=ip_just, class_just=class_just,
                         type_just=type_just, name_just=name_just)
     for intr in interface_set:
-        BUILD_STR += template.format(ip=intr.ip_str, rclass='IN',
+        if ptr.ttl == 3600:
+            ttl = ''
+        else:
+            ttl = str(ptr.ttl)
+        BUILD_STR += template.format(ip=intr.ip_str, ttl=ttl, rclass='IN',
                 rtype='PTR', name=intr.fqdn)
     return BUILD_STR
 

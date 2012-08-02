@@ -7,7 +7,7 @@ from mozdns.mixins import ObjectUrlMixin
 from mozdns.validation import validate_domain_name, _name_type_check
 from mozdns.validation import do_zone_validation
 from mozdns.search_utils import fqdn_exists
-from mozdns.ip.utils import ip2dns_form, nibbilize
+from mozdns.ip.utils import ip_to_domain_name, nibbilize
 from mozdns.validation import validate_reverse_name
 from mozdns.domain.utils import name_to_domain
 
@@ -238,8 +238,8 @@ def boot_strap_ipv6_reverse_domain(ip, soa=None):
 
     for i in xrange(1, len(ip) + 1, 2):
         cur_reverse_domain = ip[:i]
-        reverse_domain = Domain(name=ip2dns_form(cur_reverse_domain,
-            ip_type='6'))
+        domain_name = ip_to_domain_name(cur_reverse_domain, ip_type='6')
+        reverse_domain = Domain(name=domain_name)
         reverse_domain.soa = soa
         reverse_domain.save()
     return reverse_domain
@@ -272,9 +272,9 @@ def reassign_reverse_ptrs(reverse_domain_1, reverse_domain_2, ip_type):
     for ptr in ptrs:
         if ip_type == '6':
             nibz = nibbilize(ptr.ip_str)
-            revname = ip2dns_form(nibz, ip_type='6')
+            revname = ip_to_domain_name(nibz, ip_type='6')
         else:
-            revname = ip2dns_form(ptr.ip_str, ip_type='4')
+            revname = ip_to_domain_name(ptr.ip_str, ip_type='4')
         correct_reverse_domain = name_to_domain(revname)
         if correct_reverse_domain != ptr.reverse_domain:
             # TODO, is this needed? The save() function (actually the

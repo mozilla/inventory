@@ -12,15 +12,13 @@ from mozdns.validation import validate_name
 class MX(MozdnsRecord):
     """
     >>> MX(label=label, domain=domain, server=server, priority=prio,
-    ... ttl=tll)
+    ...     ttl=tll)
     """
     id = models.AutoField(primary_key=True)
     # The mail server this record should point to.
     server = models.CharField(max_length=100, validators=[validate_name])
     priority = models.PositiveIntegerField(null=False,
                                            validators=[validate_mx_priority])
-    ttl = models.PositiveIntegerField(null=False, validators=[validate_ttl])
-
     search_fields = ('fqdn', 'server')
 
     def details(self):
