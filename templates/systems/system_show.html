@@ -154,7 +154,7 @@
         <td>{{ intr.ip_str }} <a href='{{ intr.reverse_domain.get_absolute_url() }}'>View Domain</a> <a target="_blank" style='cursor:pointer;' rel='{{intr.ip_str}}|{{intr.ip_type}}' class="goto_range">View Range</a></td>
         <td>{{ intr.dhcp_enabled }}</td>
         <td>{{ intr.dns_enabled }}</td>
-        <td><a href='{{ intr.get_edit_url() }}'>Edit</a> <a href='{{ intr.get_delete_url() }}'>Delete</a></td>
+        <td><a href='{{ intr.get_edit_url() }}'>Edit</a> <a onclick='return confirm("Delete this Adapter?");' href='{{ intr.get_delete_url() }}'>Delete</a></td>
         </tr>
     {% endfor %}
     </table>
