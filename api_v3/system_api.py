@@ -243,8 +243,6 @@ class SystemStatusResource(CustomAPIResource):
 class OperatingSystemResource(CustomAPIResource):
         
     class Meta(CustomAPIResource.Meta):
-        def __init__(self, *args, **kwargs):
-            super(Meta, self).__init(*args, **kwargs)
         resource_name = 'operating_system'
         queryset = system_model.OperatingSystem.objects.all()
 

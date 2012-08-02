@@ -218,7 +218,16 @@ def edit_static_interface(request, intr_pk):
                     'domain': intr.domain
                 })
         else:
-            raise ValidationError(interface_form.errors)
+            return render(request, 'static_intr/static_intr_edit.html', {
+                'form': interface_form,
+                'intr': intr,
+                'attrs': attrs,
+                'aa': json.dumps(aa),
+                'docs': docs,
+                'form_title': 'Edit Interface for System {0}'.format(
+                    system),
+                'domain': intr.domain
+            })
 
         messages.success(request, "Success! Interface Updated.")
         return redirect(intr.get_edit_url())
