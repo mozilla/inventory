@@ -513,6 +513,72 @@ class SystemAdapterTest(TestCase):
         self.assertEqual(len(public.staticinterface_set.all()), 0)
         self.assertEqual(len(private.staticinterface_set.all()), 0)
 
+    def test12_test_proper_interface(self):
+        post_dict = {
+            'system_id': '1',
+            'range': Range.objects.all()[0].id,
+            'hostname': 'fake-hostname',
+            'is_ajax': '1',
+            'ip_address': '10.99.99.10',
+            'mac_address': '00:00:00:00:00:00',
+            'interface': 'eth4.1',
+            'enable_dhcp': 'True',
+            'enable_dns': 'false',
+            'enable_public': 'false',
+            'enable_private': 'false'}
+        sys = System.objects.get(id=1)
+        sys.hostname = sys.hostname + '.vlan.dc'
+        sys.save()
+        resp = self.client.post(
+            reverse(
+                "system-network-adapter-create",
+                kwargs={'system_id': '1'},),
+            data=post_dict,
+            follow=True)
+        self.assertEqual(resp.status_code, 200)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['success'], True)
+        sys = System.objects.get(id=1)
+        eth0 = sys.staticinterface_set.all()[0]
+        eth0.update_attrs()
+        self.assertEqual(eth0.attrs.primary, u'4')
+        self.assertEqual(eth0.attrs.alias, u'1')
+        resp = self.client.post(
+            reverse(
+                "system-network-adapter-create",
+                kwargs={'system_id': '1'},),
+            data=post_dict,
+            follow=True)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['success'], False)
+        self.assertEqual(len(sys.staticinterface_set.all()), 1)
+
+    def test13_bad_interface_name(self):
+        post_dict = {
+            'system_id': '1',
+            'interface': 'asdfasfdasfdasdfasdf',
+            'range': Range.objects.all()[0].id,
+            'hostname': 'fake-hostname',
+            'is_ajax': '1',
+            'ip_address': '10.99.99.10',
+            'mac_address': '00:00:00:00:00:00',
+            'enable_dhcp': 'True',
+            'enable_dns': 'false',
+            'enable_public': 'false',
+            'enable_private': 'false'}
+        sys = System.objects.get(id=1)
+        sys.hostname = sys.hostname + '.vlan.dc'
+        sys.save()
+        resp = self.client.post(
+            reverse(
+                "system-network-adapter-create",
+                kwargs={'system_id': '1'},),
+            data=post_dict,
+            follow=True)
+        self.assertEqual(resp.status_code, 200)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['success'], False)
+
     def create_domains(self):
         private = View(name="private")
         private.save()
