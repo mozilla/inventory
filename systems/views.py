@@ -138,9 +138,13 @@ def create_adapter(request, system_id):
         
 
     if interface:
-        interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+        try:
+            interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+        except ValidationError, e:
+            return HttpResponse(json.dumps({'success': False, 'error_message': " ".join(e.messages)}))
     else:
         interface_type, primary, alias = system.get_next_adapter()
+    print interface
     s = StaticInterface(label=label, mac=mac_address, domain=domain, ip_str=ip_address, ip_type='4', system=system)
     s.dhcp_enabled = enable_dhcp
     s.dns_enabled = enable_dns
@@ -162,7 +166,7 @@ def create_adapter(request, system_id):
             s.save()
 
     except ValidationError, e:
-        return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))
+        return HttpResponse(json.dumps({'success': False, 'error_message': " ".join(e.messages)}))
  
     s.update_attrs()
     try:

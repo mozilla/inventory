@@ -381,9 +381,9 @@ settings = {
     }
 
     if ( aData[7] > 0){
-        var add_string = '<a href="/systems/show/' + aData[7] + '">Show</a>&nbsp;&nbsp;<a href="/systems/edit/' + aData[7] + '">Edit</a>&nbsp;<a href="/systems/delete/' + aData[7]+ '/" onclick="return confirm(\'Are you sure?\');">Delete</a>';
+        var add_string = '<a href="/systems/show/' + aData[7] + '/">Show</a>&nbsp;&nbsp;<a href="/systems/edit/' + aData[7] + '/">Edit</a>&nbsp;<a href="/systems/delete/' + aData[7]+ '/" onclick="return confirm(\'Are you sure?\');">Delete</a>';
         // At some point we're going to want to remove the delete option. Uncomment the following when that time comes
-        //var add_string = '<a href="/systems/show/' + aData[7] + '">Show</a>&nbsp;&nbsp;<a href="/systems/edit/' + aData[7] + '">Edit</a>';
+        //var add_string = '<a href="/systems/show/' + aData[7] + '/">Show</a>&nbsp;&nbsp;<a href="/systems/edit/' + aData[7] + '">Edit</a>';
         $('td:eq(7)', nRow).html(add_string);
     } else {
         $('td:eq(7)', nRow).html('');

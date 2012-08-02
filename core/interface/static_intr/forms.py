@@ -34,6 +34,7 @@ class CombineForm(forms.Form):
 class StaticInterfaceForm(forms.ModelForm):
     views = forms.ModelMultipleChoiceField(queryset=View.objects.all(),
             widget=forms.widgets.CheckboxSelectMultiple, required=False)
+    label = forms.CharField(max_length=128, required=True)
 
     class Meta:
         model = StaticInterface

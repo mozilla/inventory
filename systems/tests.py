@@ -56,14 +56,15 @@ class SystemDatagridTest(TestCase):
         self.assertEqual(obj[0][0], '2,fake-hostname1')
 
     def test_blanket_search(self):
-        resp = self.client.get("/en-US/systems/list_all_systems_ajax/ \
-                ?_=1326311056872&sEcho=1&iColumns=3&sColumns= \
-                &iDisplayStart=0&iDisplayLength=10 &sSearch=fake-hostname \
-                &bRegex=false&sSearch_0=&bRegex_0=false&bSearchable_0=true \
-                &sSearch_1=&bRegex_1=false&bSearchable_1=true \
-                &sSearch_2=&bRegex_2=false&bSearchable_2=true&iSortingCols=1 \
-                &iSortCol_0=0&sSortDir_0=asc&bSortable_0=true \
-                &bSortable_1=true&bSortable_2=false", follow=True)
+        search_url = "/en-US/systems/list_all_systems_ajax/\
+?_=1326311056872&sEcho=1&iColumns=3&sColumns=\
+&iDisplayStart=0&iDisplayLength=10 &sSearch=fake-hostname\
+&bRegex=false&sSearch_0=&bRegex_0=false&bSearchable_0=true\
+&sSearch_1=&bRegex_1=false&bSearchable_1=true\
+&sSearch_2=&bRegex_2=false&bSearchable_2=true&iSortingCols=1\
+&iSortCol_0=0&sSortDir_0=asc&bSortable_0=true\
+&bSortable_1=true&bSortable_2=false"
+        resp = self.client.get(search_url, follow=True)
         self.assertEqual(resp.status_code, 200)
         obj = json.loads(resp.content)
         obj = obj['aaData']
@@ -71,24 +72,25 @@ class SystemDatagridTest(TestCase):
         self.assertEqual(obj[0][0], '2,fake-hostname1')
 
     def test_specific_search(self):
-        resp = self.client.get("/en-US/systems/list_all_systems_ajax/ \
-            ?_=1326317772224&sEcho=4&iColumns=8&sColumns= \
-            &iDisplayStart=0&iDisplayLength=10&mDataProp_0=0 \
-            &mDataProp_1=1&mDataProp_2=2&mDataProp_3=3&mDataProp_4=4 \
-            &mDataProp_5=5&mDataProp_6=6&mDataProp_7=7 \
-            &sSearch=fake-hostname2&bRegex=false&sSearch_0= \
-            &bRegex_0=false&bSearchable_0=true&sSearch_1= \
-            &bRegex_1=false&bSearchable_1=true&sSearch_2=&bRegex_2=false \
-            &bSearchable_2=true&sSearch_3=&bRegex_3=false \
-            &bSearchable_3=true&sSearch_4=&bRegex_4=false \
-            &bSearchable_4=true&sSearch_5=&bRegex_5=false \
-            &bSearchable_5=true&sSearch_6=&bRegex_6=false \
-            &bSearchable_6=true&sSearch_7=&bRegex_7=false \
-            &bSearchable_7=true&iSortingCols=1&iSortCol_0=0 \
-            &sSortDir_0=asc&bSortable_0=true&bSortable_1=true \
-            &bSortable_2=true&bSortable_3=true&bSortable_4=true \
-            &bSortable_5=true&bSortable_6=true&bSortable_7=false", follow=True)
+        search_url = "/en-US/systems/list_all_systems_ajax/\
+?_=1326317772224&sEcho=4&iColumns=8&sColumns=\
+&iDisplayStart=0&iDisplayLength=10&mDataProp_0=0\
+&mDataProp_1=1&mDataProp_2=2&mDataProp_3=3&mDataProp_4=4\
+&mDataProp_5=5&mDataProp_6=6&mDataProp_7=7\
+&sSearch=fake-hostname2&bRegex=false&sSearch_0=\
+&bRegex_0=false&bSearchable_0=true&sSearch_1=\
+&bRegex_1=false&bSearchable_1=true&sSearch_2=&bRegex_2=false\
+&bSearchable_2=true&sSearch_3=&bRegex_3=false\
+&bSearchable_3=true&sSearch_4=&bRegex_4=false\
+&bSearchable_4=true&sSearch_5=&bRegex_5=false\
+&bSearchable_5=true&sSearch_6=&bRegex_6=false\
+&bSearchable_6=true&sSearch_7=&bRegex_7=false\
+&bSearchable_7=true&iSortingCols=1&iSortCol_0=0\
+&sSortDir_0=asc&bSortable_0=true&bSortable_1=true\
+&bSortable_2=true&bSortable_3=true&bSortable_4=true\
+&bSortable_5=true&bSortable_6=true&bSortable_7=false"
 
+        resp = self.client.get(search_url, follow=True)
         self.assertEqual(resp.status_code, 200)
         obj = json.loads(resp.content)
         obj = obj['aaData']
@@ -510,6 +512,72 @@ class SystemAdapterTest(TestCase):
         public = View.objects.get(name='public')
         self.assertEqual(len(public.staticinterface_set.all()), 0)
         self.assertEqual(len(private.staticinterface_set.all()), 0)
+
+    def test12_test_proper_interface(self):
+        post_dict = {
+            'system_id': '1',
+            'range': Range.objects.all()[0].id,
+            'hostname': 'fake-hostname',
+            'is_ajax': '1',
+            'ip_address': '10.99.99.10',
+            'mac_address': '00:00:00:00:00:00',
+            'interface': 'eth4.1',
+            'enable_dhcp': 'True',
+            'enable_dns': 'false',
+            'enable_public': 'false',
+            'enable_private': 'false'}
+        sys = System.objects.get(id=1)
+        sys.hostname = sys.hostname + '.vlan.dc'
+        sys.save()
+        resp = self.client.post(
+            reverse(
+                "system-network-adapter-create",
+                kwargs={'system_id': '1'},),
+            data=post_dict,
+            follow=True)
+        self.assertEqual(resp.status_code, 200)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['success'], True)
+        sys = System.objects.get(id=1)
+        eth0 = sys.staticinterface_set.all()[0]
+        eth0.update_attrs()
+        self.assertEqual(eth0.attrs.primary, u'4')
+        self.assertEqual(eth0.attrs.alias, u'1')
+        resp = self.client.post(
+            reverse(
+                "system-network-adapter-create",
+                kwargs={'system_id': '1'},),
+            data=post_dict,
+            follow=True)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['success'], False)
+        self.assertEqual(len(sys.staticinterface_set.all()), 1)
+
+    def test13_bad_interface_name(self):
+        post_dict = {
+            'system_id': '1',
+            'interface': 'asdfasfdasfdasdfasdf',
+            'range': Range.objects.all()[0].id,
+            'hostname': 'fake-hostname',
+            'is_ajax': '1',
+            'ip_address': '10.99.99.10',
+            'mac_address': '00:00:00:00:00:00',
+            'enable_dhcp': 'True',
+            'enable_dns': 'false',
+            'enable_public': 'false',
+            'enable_private': 'false'}
+        sys = System.objects.get(id=1)
+        sys.hostname = sys.hostname + '.vlan.dc'
+        sys.save()
+        resp = self.client.post(
+            reverse(
+                "system-network-adapter-create",
+                kwargs={'system_id': '1'},),
+            data=post_dict,
+            follow=True)
+        self.assertEqual(resp.status_code, 200)
+        obj = json.loads(resp.content)
+        self.assertEqual(obj['success'], False)
 
     def create_domains(self):
         private = View(name="private")
