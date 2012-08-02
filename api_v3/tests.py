@@ -74,7 +74,8 @@ class Tasty1SystemTest(ResourceTestCase):
         request.method = 'GET'
         cr = CustomAPIResource()
         the_ret = cr.get_schema(request)
-        self.assertEqual(the_ret._headers['content-type'][1],
+        self.assertEqual(
+            the_ret._headers['content-type'][1],
             'application/json; charset=utf-8')
 
     def test10_test_format(self):
@@ -83,7 +84,8 @@ class Tasty1SystemTest(ResourceTestCase):
         request.GET['format'] = 'json'
         cr = CustomAPIResource()
         the_ret = cr.get_schema(request)
-        self.assertEqual(the_ret._headers['content-type'][1],
+        self.assertEqual(
+            the_ret._headers['content-type'][1],
             'application/json; charset=utf-8')
 
 
