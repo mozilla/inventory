@@ -1,7 +1,9 @@
-from system_api import SystemResource
+from system_api import SystemResource, CustomAPIResource, OperatingSystemData
 from systems.models import System
 from tastypie.test import ResourceTestCase
 from django.core.exceptions import ValidationError
+import json
+from django.http import HttpRequest
 
 
 class Tasty1SystemTest(ResourceTestCase):
@@ -54,8 +56,35 @@ class Tasty1SystemTest(ResourceTestCase):
         self.assertEqual(resp.status_code, 204)
         self.assertEqual(len(System.objects.all()), 0)
 
-    def test6_delete_system_by_hostname(self):
-        pass
+    def test8_overridden_system_schema(self):
+        request = HttpRequest()
+        request.method = 'GET'
+        sr = SystemResource()
+        the_ret = sr.get_schema(request)
+        obj = json.loads(the_ret.content)
+        self.assertTrue('auto_create_interface' in obj['fields'])
+        self.assertTrue('delete_interface' in obj['fields'])
+        self.assertTrue('update_interface' in obj['fields'])
+        self.assertTrue('mac_address' in obj['fields'])
+        self.assertTrue('ip_address' in obj['fields'])
+        self.assertTrue('interface' in obj['fields'])
+
+    def test9_test_default_format(self):
+        request = HttpRequest()
+        request.method = 'GET'
+        cr = CustomAPIResource()
+        the_ret = cr.get_schema(request)
+        self.assertEqual(the_ret._headers['content-type'][1],
+            'application/json; charset=utf-8')
+
+    def test10_test_format(self):
+        request = HttpRequest()
+        request.method = 'GET'
+        request.GET['format'] = 'json'
+        cr = CustomAPIResource()
+        the_ret = cr.get_schema(request)
+        self.assertEqual(the_ret._headers['content-type'][1],
+            'application/json; charset=utf-8')
 
 
 class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
