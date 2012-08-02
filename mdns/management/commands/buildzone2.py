@@ -6,4 +6,8 @@ import pdb
 class Command(BaseCommand):
     args = ''
     def handle(self, *args, **options):
-        zone_build_from_config()
+        if len(args) != 1:
+            print "Jobs are: external, dc, private_reverse"
+            return
+        print args
+        zone_build_from_config(job=args[0])
