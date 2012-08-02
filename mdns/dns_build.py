@@ -329,6 +329,7 @@ def populate_reverse_dns(rev_svn_zones, view=None):
                 base_domain, created = Domain.objects.get_or_create(name=rev_name)
             base_domain.soa = soa
             base_domain.save()
+
         for (name, ttl, rdata) in zone.iterate_rdatas('NS'):
             name = name.to_text().strip('.')
             name = name.replace('.IN-ADDR.ARPA','')
@@ -446,8 +447,6 @@ def populate_forward_dns(zone, root_domain, view=None):
         base_domain.save()
         set_all_soas(base_domain, soa)
 
-    # TODO, records not done yet. TXT, SSHFP, AAAA
-    # Create list
     names = []
     for (name, ttl, rdata) in zone.iterate_rdatas('A'):
         names.append((name.to_text().strip('.'), rdata))
@@ -471,7 +470,8 @@ def populate_forward_dns(zone, root_domain, view=None):
                 domain_name = domain_name.strip('.')
                 # We need to check for A records who have a name with this
                 # domain.
-                addrs = AddressRecord.objects.filter(fqdn=domain_name)
+                addrs = AddressRecord.objects.filter(fqdn=domain_name,
+                            ip_type='4')
                 clober_objects = []
                 if addrs:
                     for exists_a in addrs:
@@ -499,6 +499,61 @@ def populate_forward_dns(zone, root_domain, view=None):
                     set_all_soas(domain, domain.master_domain.soa)
         a, _ = AddressRecord.objects.get_or_create( label = label,
             domain=domain, ip_str=rdata.to_text(), ip_type='4')
+        if view:
+            a.views.add(view)
+            try:
+                a.save()
+            except Exception, e:
+                pdb.set_trace()
+                pass
+
+    for (name, ttl, rdata) in zone.iterate_rdatas('AAAA'):
+        name = name.to_text().strip('.')
+        print str(name) + " AAAA " + str(rdata)
+        exists_domain =  Domain.objects.filter(name=name)
+        if exists_domain:
+            label = ''
+            domain = exists_domain[0]
+        else:
+            label = name.split('.')[0]
+            if label.find('unused') != -1:
+                continue
+            parts = list(reversed(name.split('.')[1:]))
+            domain_name = ''
+            for i in range(len(parts)):
+                domain_name = parts[i] + '.' + domain_name
+                domain_name = domain_name.strip('.')
+                # We need to check for A records who have a name with this
+                # domain.
+                addrs = AddressRecord.objects.filter(fqdn=domain_name,
+                        ip_type='6')
+                clober_objects = []
+                if addrs:
+                    for exists_a in addrs:
+                        # It got here. It exists
+                        need_to_recreate_a = True
+                        ip_str = exists_a.ip_str
+                        exists_a.delete(check_cname=False)
+                        a = AddressRecord(label='', ip_str=ip_str, ip_type='6')
+                        clober_objects.append(a)
+                domain, created = Domain.objects.get_or_create(name=
+                        domain_name)
+                for a in clober_objects:
+                    a.domain = domain
+                    a.clean()
+                    try:
+                        a.save()
+                    except Exception, e:
+                        pdb.set_trace()
+                        pass
+
+                if created and domain.master_domain and domain.master_domain.soa:
+                    #domain.soa = domain.master_domain.soa
+                    #domain.save()
+                    null_all_soas(domain)
+                    set_all_soas(domain, domain.master_domain.soa)
+        a, _ = AddressRecord.objects.get_or_create(label=label,
+            domain=domain, ip_str=rdata.to_text(), ip_type='6')
         if view:
             a.views.add(view)
             try:
@@ -559,6 +614,36 @@ def populate_forward_dns(zone, root_domain, view=None):
             if cn:
                 cn.views.add(view)
                 cn.save()
+    # TODO, records not done yet. TXT, SSHFP, AAAA
+    # Create list
+    for (name, ttl, rdata) in zone.iterate_rdatas('TXT'):
+        name = name.to_text().strip('.')
+        print str(name) + " TXT " + str(rdata)
+        exists_domain = Domain.objects.filter(name=name)
+        if exists_domain:
+            label = ''
+            domain = exists_domain[0]
+        else:
+            label = name.split('.')[0]
+            domain_name = name.split('.')[1:]
+            domain = ensure_domain('.'.join(domain_name))
+        data = rdata.to_text().strip('"')
+
+        if not TXT.objects.filter(label = label, domain = domain,
+                txt_data = data).exists():
+            txt = TXT(label = label, domain = domain,
+                    txt_data = data)
+            txt.full_clean()
+            txt.save()
+            if txt:
+                txt.views.add(view)
+                txt.save()
+
+    for (name, ttl, rdata) in zone.iterate_rdatas('SSHFP'):
+        name = name.to_text().strip('.')
+        print str(name) + " SSHFP " + str(rdata)
+
+
     set_all_soas(base_domain, base_domain.soa)
 
 
@@ -590,8 +675,9 @@ def ensure_domain(name):
                 # It got here. It exists
                 need_to_recreate_a = True
                 ip_str = exists_a.ip_str
+                ip_type = exists_a.ip_type
                 exists_a.delete(check_cname=False)
-                a = AddressRecord(label='', ip_str=ip_str, ip_type='4')
+                a = AddressRecord(label='', ip_str=ip_str, ip_type=ip_type)
                 clobber_objects.append(a)
         except ObjectDoesNotExist, e:
             pass
@@ -602,6 +688,15 @@ def ensure_domain(name):
             cname.delete()
             cname = CNAME(label='', data=data)
             clobber_objects.append(cname)
+        except ObjectDoesNotExist, e:
+            pass
+        try:
+            for txt in TXT.objects.filter(fqdn=domain_name):
+                # It got here. It exists
+                data = txt.txt_data
+                txt.delete()
+                txt = TXT(label='', txt_data=data)
+                clobber_objects.append(txt)
         except ObjectDoesNotExist, e:
             pass
         domain, created = Domain.objects.get_or_create(name=
