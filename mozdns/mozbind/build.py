@@ -24,7 +24,7 @@ import pdb
 import os
 import time
 
-BUILD_PATH = "/home/juber/dnsbuilds"
+from settings.local import BUILD_PATH
 DEFAULT_TTL = 999
 
 # DEBUG OPTIONS
@@ -193,5 +193,3 @@ def build_moz_zone(soa, domain_type, NOWRITE=True, request=None):
             'user': user
             }
     return stats
-                
-
