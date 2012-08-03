@@ -28,7 +28,7 @@ from mozdns.srv.models import SRV
 from mozdns.tests.view_tests import random_label
 from mozdns.txt.models import TXT
 from mozdns.domain.utils import *
-from mozdns.ip.utils import ip2dns_form
+from mozdns.ip.utils import ip_to_domain_name
 from mozdns.view.models import View
 
 import os.path
@@ -209,7 +209,7 @@ def create_domain(name, ip_type=None, delegated=False):
     if name in ('arpa', 'in-addr.arpa', 'ipv6.arpa'):
         pass
     else:
-        name = ip2dns_form(name, ip_type=ip_type)
+        name = ip_to_domain_name(name, ip_type=ip_type)
     d = Domain.objects.get_or_create(name = name, delegated=delegated)
     return d
 
@@ -325,7 +325,7 @@ def populate_reverse_dns(rev_svn_zones, view=None):
             domain_split = list(reversed(name.split('.')))
             for i in range(len(domain_split)):
                 domain_name = domain_split[:i+1]
-                rev_name = ip2dns_form('.'.join(domain_name), ip_type='4')
+                rev_name = ip_to_domain_name('.'.join(domain_name), ip_type='4')
                 base_domain, created = Domain.objects.get_or_create(name=rev_name)
             base_domain.soa = soa
             base_domain.save()
@@ -374,7 +374,7 @@ def populate_reverse_dns(rev_svn_zones, view=None):
         for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
             name = name.to_text().strip('.')
             print str(name) + " CNAME " + str(rdata)
-            rev_name = ip2dns_form(name, ip_type='4')
+            rev_name = ip_to_domain_name(name, ip_type='4')
             exists_domain = Domain.objects.filter(name=rev_name)
             if exists_domain:
                 label = ''
@@ -399,7 +399,7 @@ def ensure_rev_domain(name):
     for i in range(len(parts)):
         domain_name = domain_name + '.' + parts[i]
         domain_name = domain_name.strip('.')
-        rev_name = ip2dns_form(domain_name, ip_type='4')
+        rev_name = ip_to_domain_name(domain_name, ip_type='4')
         domain, created = Domain.objects.get_or_create(name=
                 rev_name)
         if domain.master_domain and domain.master_domain.soa:
@@ -589,7 +589,7 @@ def populate_forward_dns(zone, root_domain, view=None):
         server = rdata.exchange.to_text().strip('.')
         mx, _ = MX.objects.get_or_create(label=label, domain=domain,
                 server= server, priority=priority, ttl="3600")
-        if mx:
+        if view:
             mx.views.add(view)
             mx.save()
     for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
@@ -611,7 +611,7 @@ def populate_forward_dns(zone, root_domain, view=None):
                     data = data)
             cn.full_clean()
             cn.save()
-            if cn:
+            if view:
                 cn.views.add(view)
                 cn.save()
     # TODO, records not done yet. TXT, SSHFP, AAAA
@@ -635,7 +635,7 @@ def populate_forward_dns(zone, root_domain, view=None):
                     txt_data = data)
             txt.full_clean()
             txt.save()
-            if txt:
+            if view:
                 txt.views.add(view)
                 txt.save()
 
@@ -735,7 +735,7 @@ def build_reverse(sites_to_build, inv_reverse, rev_svn_zones):
         for intr in interfaces:
             name = intr.hostname + "."
             for ip in intr.ips:
-                dnsip = ip2dns_form(ip)
+                dnsip = ip_to_domain_name(ip)
                 if (dnsip, name) in svn_entries:
                     log("System {0} (interface: {1}, {2}) has "
                         "conflict".format(intr.system, dnsip, name), INFO)
@@ -904,7 +904,7 @@ def analyse_svn(forward, reverse):
             if name.find('sjc1') > -1:
                 # Don't care
                 continue
-            dnsip = ip2dns_form(ip)
+            dnsip = ip_to_domain_name(ip)
             forward_p.add((dnsip, name))
 
     # Make reverse_p

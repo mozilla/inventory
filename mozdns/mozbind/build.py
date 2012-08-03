@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.http import HttpResponse
 
 from mozdns.soa.models import SOA
 from mozdns.validation import find_root_domain
@@ -21,6 +22,7 @@ from core.interface.static_intr.models import StaticInterface
 
 import pdb
 import os
+import time
 
 BUILD_PATH = "/home/juber/dnsbuilds"
 DEFAULT_TTL = 999
@@ -44,6 +46,7 @@ def gen_moz_reverse_zone(soa, NOWRITE=False):
 
     zone_path = BUILD_PATH + '/in-addr/' + tmp_path1 + '/'
     file_path = zone_path + tmp_path2
+    print file_path
 
     for domain in domains:
         data = render_soa_only(
@@ -71,21 +74,37 @@ def gen_moz_reverse_zone(soa, NOWRITE=False):
                     "=" * 20, data)
     return DEBUG_STRING
 
+def choose_zone_path(soa, root_domain):
+    """This function decides where a zone's zone files go. If there is a key in
+    the zone's KeyValue store called 'zone_path', that path is used. The path
+    contained in 'zone_path' must exist on the file system.
+
+    If no zone_path key is found. The following path is used:
+
+        * Find the root domain of the zone (the one in the SOA record)
+        * Replace all '.' characters with '/' characters.
+
+    The build scripts will create this path on the filesystem if it does not
+    exist.
+
+    .. note::
+        In all cases the zone_path is prepended with the ``BUILD_PATH`` varable
+        found in ``settings/base.py``
+    """
+    soa.update_attrs()
+    zone_path = None
+    try:
+        zone_path = soa.attrs.dir_path
+    except AttributeError, e:
+        tmp_path = '/'.join(reversed(root_domain.name.split('.')))
+        zone_path = BUILD_PATH + '/' + tmp_path + '/'
+    return zone_path
 
 def gen_moz_forward_zone(soa, NOWRITE=False):
     domains = soa.domain_set.all().order_by('name')
     root_domain = find_root_domain(soa)
-    if root_domain.is_reverse:  # Skip reverse domains
-        return ""
-    if not root_domain.name.endswith('mozilla.com'):
-        tmp_path = root_domain.name.replace('.', '/')
-        tmp_path.strip('/')
-    else:
-        # Find the name which to create a directory under.
-        # I.E. phx1.mozilla.com -> phx1/
-        tmp_path = root_domain.name.replace('mozilla.com', '').replace('.', '/')
-        tmp_path.strip('/')
-    zone_path = BUILD_PATH + '/' + tmp_path
+    zone_path = choose_zone_path(soa, root_domain)
+
     DEBUG_STRING = ""
     # Bulid the mega filter!
     mega_filter = Q(domain=root_domain)
@@ -154,3 +173,25 @@ def build_dns(*args, **kwargs):
     DEBUG_STRING += build_reverse_zone_files()
 
     return DEBUG_STRING
+
+def build_moz_zone(soa, domain_type, NOWRITE=True, request=None):
+    user = request.META.get("USER", None)
+    time_start = time.time()
+    if domain_type == "forward":
+        gen_moz_forward_zone(soa, NOWRITE=NOWRITE)
+    elif domain_type == "reverse":
+        gen_moz_reverse_zone(soa, NOWRITE=NOWRITE)
+    else:
+        return None
+    time_end = time.time()
+    time_total = time_end - time_start
+    stats = {
+            'soa_id': soa.pk,
+            'time_start': time_start,
+            'time_end': time_end,
+            'time_total': time_total,
+            'user': user
+            }
+    return stats
+                
+

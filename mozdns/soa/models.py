@@ -7,6 +7,8 @@ from mozdns.validation import validate_name
 from mozdns.mixins import ObjectUrlMixin
 
 from core.keyvalue.models import KeyValue
+from core.keyvalue.utils import AuxAttr
+import os
 
 
 #TODO, put these defaults in a config file.
@@ -60,6 +62,11 @@ class SOA(models.Model, ObjectUrlMixin):
     # This indicates if this SOA needs to be rebuilt
     dirty = models.BooleanField(default=False)
 
+    attrs = None
+
+    def update_attrs(self):
+        self.attrs = AuxAttr(SOAKeyValue, self, 'soa')
+
     class Meta:
         db_table = 'soa'
         # We are using the comment field here to stop the same SOA from
@@ -96,10 +103,12 @@ class SOA(models.Model, ObjectUrlMixin):
 class SOAKeyValue(KeyValue):
     soa = models.ForeignKey(SOA, null=False)
 
-    def _aa_filepath(self):
+    def _aa_dir_path(self):
         """Filepath - Where should the build scripts put the zone file for this
         zone?"""
-        pass
+        if not os.access(self.value, os.R_OK):
+            raise ValidationError("Couldn't find {0} on the system running "
+                    "this code. Please create this path.".format(self.value))
 
     def _aa_disabled(self):
         """Disabled - The Value of this Key determines whether or not an SOA will
