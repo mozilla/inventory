@@ -73,6 +73,10 @@ def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
         if system:
             try:
                 ### Come up with way to get mac address
+                ### take the system, search for System.keyvalue_set.filter(name__startswith='nic', name__icontains='mac_address')
+                ## extract the X nic.X.mac_address.Y
+                ## take the value
+                ## System.keyvalue_set.filter(name__startswith='nic' % Xvalue).delete()
                 intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(
                         addr, ptr, system, '00:00:00:00:00:00')
             except ValidationError, e:
