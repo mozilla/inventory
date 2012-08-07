@@ -29,7 +29,9 @@ import ipaddr
 import simplejson as json
 
 
-def do_combine_a_ptr_to_interface(addr, ptr, system, mac_address):
+def do_combine_a_ptr_to_interface(addr, ptr, system, mac_address=None, interface=None, dhcp_hostname=None):
+    if mac_address == '00:00:00:00:00:00' or mac_address is None:
+        next_adapter = system.get_next_key_value_adapter()
     if (addr.ip_str != ptr.ip_str or addr.fqdn != ptr.name or
         addr.ip_type != ptr.ip_type):
         raise ValidationError("This A and PTR have different data.")
@@ -45,6 +47,16 @@ def do_combine_a_ptr_to_interface(addr, ptr, system, mac_address):
     ptr_deleted = True
     intr.full_clean()
     intr.save()
+    if interface:
+        from api_v3.system_api import SystemResource
+        intr.update_attrs()
+        adapter_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+        intr.attrs.primary = primary
+        intr.attrs.alias = alias
+        intr.attrs.interface_type = adapter_type
+        if dhcp_hostname:
+            intr.attrs.dhcp_hostname = dhcp_hostname
+
     return intr, addr_deleted, ptr_deleted
 
 
@@ -72,13 +84,8 @@ def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
                 system = None
         if system:
             try:
-                ### Come up with way to get mac address
-                ### take the system, search for System.keyvalue_set.filter(name__startswith='nic', name__icontains='mac_address')
-                ## extract the X nic.X.mac_address.Y
-                ## take the value
-                ## System.keyvalue_set.filter(name__startswith='nic' % Xvalue).delete()
                 intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(
-                        addr, ptr, system, '00:00:00:00:00:00')
+                        addr, ptr, system, mac_address="00:00:00:00:00:00")
             except ValidationError, e:
                 return HttpResponse(json.dumps({'success': False, 'error':
                     e.messages[0]}))

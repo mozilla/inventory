@@ -10,6 +10,7 @@ from core.interface.static_intr.models import StaticInterface
 from mozdns.address_record.models import AddressRecord
 from django.db.models import Q
 from core.range.forms import RangeForm
+from mozdns.view.models import View
 from core.range.models import Range, RangeKeyValue
 from core.interface.static_intr.models import StaticInterface
 from mozdns.address_record.models import AddressRecord
@@ -27,6 +28,8 @@ from systems.models import System
 #(addr, ptr, system, mac_address):
 def main():
     for mrange in Range.objects.all():
+        #if not str(mrange.network.site) == 'Phx1':
+        #    continue
         print "Now starting on Range %s" % mrange
         attrs = mrange.rangekeyvalue_set.all()
 
@@ -86,14 +89,70 @@ def main():
         for bl in range_data:
             system_hostname = ''
             try:
-                system = System.objects.get(hostname=bl[2].name.replace(".mozilla.com", ""))
-                print system.hostname
+                if bl[2].name:
+                    intr_hostname = bl[2].name.replace(".mozilla.com", "")
+                    system_hostname = intr_hostname
+                system = System.objects.get(hostname=intr_hostname)
                 addr = AddressRecord.objects.get(pk=bl[3].pk)
                 ptr = PTR.objects.get(pk=bl[2].pk)
-                do_combine_a_ptr_to_interface(addr, ptr, system, "00:00:00:00:00:00")
+                try:
+                    first = True
+                    while system.get_next_key_value_adapter():
+                        if system.hostname == 'addon-r3-snow-002.amotest.scl1':
+                            import pdb; pdb.set_trace()
+                        adapter = system.get_next_key_value_adapter()
+                        mac_address = adapter['mac_address']
+                        num = adapter['num']
+                        private = View.objects.get(name='private')
+                        if 'nic' in adapter['name'] or 'eth' in adapter['name']:
+                            interface = 'eth%s.0' % num
+                        elif 'mgmt' in adapter['name']:
+                            interface = 'mgmt%s.0' % num
+                        else:
+                            interface = 'eth%s.0' % num
+
+                        if 'dhcp_hostname' in adapter:
+                            dhcp_hostname = adapter['dhcp_hostname']
+                        else:
+                            dhcp_hostname = None
+
+                        if first:
+                            intr, addr_del, ptr_del = do_combine_a_ptr_to_interface(addr, ptr, system, mac_address, interface, dhcp_hostname=dhcp_hostname)
+                            intr.views.add(private)
+                            intr.save()
+                        else:
+                            from api_v3.system_api import SystemResource
+                            intr = StaticInterface(label=addr.label, mac=mac_address, domain=addr.domain,
+                                    ip_str=addr.ip_str, ip_type=addr.ip_type, system=system)
+                            intr.full_clean()
+                            intr.dns_enabled = False
+                            intr.save()
+                            intr.update_attrs()
+                            adapter_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+                            intr.attrs.primary = primary
+                            intr.attrs.alias = alias
+                            intr.attrs.interface_type = adapter_type
+
+                        system.delete_key_value_adapter_by_index(num)
+                        first = False
+                        print "SUCCESS ===== %s" % system.hostname
+                except IndexError:
+                    ### We can't get the next adapter
+                    pass
+                except Exception, e:
+                    print e
+                    print "FAIL ===== %s - Could not get mac_address for" % system.hostname
                 #client.post('/en-US/core/interface/combine_a_ptr_to_interface/%i/%i/' % (bl[3].pk, bl[2].pk), data={'is_ajax' : 1, 'system_hostname': bl[2].name.replace(".mozilla.com", "")})
+            except IndexError, e:
+                pass
+            except System.DoesNotExist, e:
+                print "FAIL ===== %s Host Not Found" % (system_hostname)
+            except AttributeError, e:
+                if str(e) == "'AddressRecord' object has no attribute 'name'":
+                    print "FAIL ===== %s" % e
             except Exception, e:
-                print e
+                import pdb; pdb.set_trace()
+                print "FAIL ===== %s - %s" % (system_hostname, e)
 if __name__ == '__main__':
     main()
 
