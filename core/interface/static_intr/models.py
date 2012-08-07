@@ -225,8 +225,31 @@ class StaticIntrKeyValue(KeyValue):
         if not self.value.isdigit():
             raise ValidationError("The alias number must be a number.")
 
+    def _aa_hostname(self):
+        """DHCP option hostname
+        """
+        if not self.value:
+            raise ValidationError("Hostname Required")
+
+    def _aa_domain_name_servers(self):
+        """DHCP option domain-name-servers
+        """
+        if not self.value:
+            raise ValidationError("Domain Name Servers Required")
+
+    def _aa_domain_name(self):
+        """DHCP option domain-name
+        """
+        if not self.value:
+            raise ValidationError("Domain Name Required")
+    def _aa_filename(self):
+        """DHCP option filename
+        """
+        if not self.value:
+            raise ValidationError("Filename Required")
+
     def _aa_interface_type(self):
-        """Either eth (ethernet) of mgmt (mgmt)."""
+        """Either eth (ethernet) or mgmt (mgmt)."""
         if not (is_eth.match(self.value) or is_mgmt.match(self.value)):
             raise ValidationError("Interface type must either be 'eth' "
                 "or 'mgmt'")

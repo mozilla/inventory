@@ -579,6 +579,22 @@ class SystemAdapterTest(TestCase):
         obj = json.loads(resp.content)
         self.assertEqual(obj['success'], False)
 
+    def test14_system_get_key_value_adapter(self):
+        system = System.objects.get(id=1)
+        na = system.get_next_key_value_adapter()
+        self.assertEqual(na['num'], 0)
+        self.assertEqual(na['mac_address'], '00:00:00:00:00:AA')
+        self.assertEqual(na['dhcp_scope'], 'phx-vlan73')
+        self.assertEqual(na['ipv4_address'], '10.99.32.1')
+
+    def test15_system_delete_key_value_adapter(self):
+        system = System.objects.get(id=1)
+        na = system.get_next_key_value_adapter()
+        self.assertEqual(na['num'], 0)
+        system.delete_key_value_adapter_by_index(0)
+        na = system.get_next_key_value_adapter()
+        self.assertEqual(na['num'], 1)
+
     def create_domains(self):
         private = View(name="private")
         private.save()
