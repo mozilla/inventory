@@ -98,8 +98,6 @@ def main():
                 try:
                     first = True
                     while system.get_next_key_value_adapter():
-                        if system.hostname == 'addon-r3-snow-002.amotest.scl1':
-                            import pdb; pdb.set_trace()
                         adapter = system.get_next_key_value_adapter()
                         mac_address = adapter['mac_address']
                         num = adapter['num']
@@ -116,8 +114,27 @@ def main():
                         else:
                             dhcp_hostname = None
 
+                        if 'dhcp_filename' in adapter:
+                            dhcp_filename = adapter['dhcp_filename']
+                        else:
+                            dhcp_filename = None
+
+                        if 'dhcp_domain_name_servers' in adapter:
+                            dhcp_domain_name_servers = adapter['dhcp_domain_name_servers']
+                        else:
+                            dhcp_domain_name_servers = None
+
+                        if 'dhcp_domain_name' in adapter:
+                            dhcp_domain_name = adapter['dhcp_domain_name']
+                        else:
+                            dhcp_domain_name = None
+
                         if first:
-                            intr, addr_del, ptr_del = do_combine_a_ptr_to_interface(addr, ptr, system, mac_address, interface, dhcp_hostname=dhcp_hostname)
+                            intr, addr_del, ptr_del = do_combine_a_ptr_to_interface(
+                                addr, ptr, system, mac_address,
+                                interface, dhcp_hostname=dhcp_hostname,
+                                dhcp_domain_name_servers=dhcp_domain_name_servers,
+                                dhcp_domain_name=dhcp_domain_name, dhcp_filename=dhcp_filename)
                             intr.views.add(private)
                             intr.save()
                         else:
@@ -149,9 +166,8 @@ def main():
                 print "FAIL ===== %s Host Not Found" % (system_hostname)
             except AttributeError, e:
                 if str(e) == "'AddressRecord' object has no attribute 'name'":
-                    print "FAIL ===== %s" % e
+                    print "FAIL ===== %s - %s - %s" % (addr.ip_str, system_hostname, e)
             except Exception, e:
-                import pdb; pdb.set_trace()
                 print "FAIL ===== %s - %s" % (system_hostname, e)
 if __name__ == '__main__':
     main()
