@@ -6,6 +6,7 @@ from mozdns.domain.models import Domain, _name_to_domain
 from mozdns.ip.models import Ip
 from mozdns.ip.utils import ip_to_dns_form
 from mozdns.validation import validate_name, validate_ttl
+from mozdns.validation import validate_views
 from mozdns.mixins import ObjectUrlMixin
 from core.interface.static_intr.models import StaticInterface
 
@@ -43,6 +44,7 @@ class PTR(Ip, ObjectUrlMixin):
 
     def save(self, *args, **kwargs):
         if self.pk:  # We need to exist in the db first.
+            validate_views(self.views, self.ip_str, self.ip_type)
             db_self = PTR.objects.get(pk=self.pk)
             if db_self.name == self.name and db_self.ip_str == self.ip_str:
                 # Nothing important changed. Don't rebuild the zone file.

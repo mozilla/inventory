@@ -9,7 +9,7 @@ from mozdns.ip.models import Ip
 from mozdns.models import set_fqdn, check_for_cname, check_for_delegation
 from mozdns.models import check_TLD_condition
 from mozdns.validation import validate_first_label, validate_name
-from mozdns.validation import validate_ttl
+from mozdns.validation import validate_ttl, validate_views
 from mozdns.domain.models import Domain
 from mozdns.mixins import ObjectUrlMixin
 
@@ -55,6 +55,8 @@ class BaseAddressRecord(Ip):
         check_TLD_condition(self)
         self.domain.dirty = True
         self.domain.save()
+        if self.pk:
+            validate_views(self.views, self.ip_str, self.ip_type)
         super(BaseAddressRecord, self).save(*args, **kwargs)
 
     def clean(self, *args, **kwargs):

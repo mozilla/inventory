@@ -62,6 +62,8 @@ class SOA(models.Model, ObjectUrlMixin):
     # This indicates if this SOA needs to be rebuilt
     dirty = models.BooleanField(default=False)
 
+    search_fields = ('primary', 'contact', 'comment')
+
     attrs = None
 
     def update_attrs(self):
