@@ -213,6 +213,7 @@ def compile_search(args):
 
     def str_upper(str_):  # LOL php
         return str_.upper()
+
     if type_fs:
         type_fs = map(str_upper, type_fs)
         # If we have a type filter, only make query set's it it's type is in
@@ -241,6 +242,7 @@ def compile_search(args):
                 ptrs = None
             srvs = None
             txts = None
+            sshfps = None
         else:
             if "A" in type_fs:
                 AddressRecord = mozdns.address_record.models.AddressRecord
@@ -298,9 +300,9 @@ def compile_search(args):
 
             if "SSHFP" in type_fs:
                 SSHFP = mozdns.sshfp.models.SSHFP
-                sshfp = SSHFP.objects.all()
+                sshfps = SSHFP.objects.all()
             else:
-                sshfp = None
+                sshfps = None
     else:
         if range_queries:
             # We need to AND all of these Q set's together.
@@ -411,7 +413,7 @@ def compile_search(args):
         if txts:
             txt_filter = build_filter(f, TXT.search_fields)
             txts = txts.filter(txt_filter)
-        if sshfp:
+        if sshfps:
             sshfp_filter = build_filter(f, SSHFP.search_fields)
             sshfps = sshfps.filter(sshfp_filter)
 
