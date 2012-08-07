@@ -29,6 +29,7 @@ from mozdns.tests.view_tests import random_label
 from mozdns.txt.models import TXT
 from mozdns.domain.utils import *
 from mozdns.ip.utils import ip_to_domain_name
+from mozdns.ip.models import ipv6_to_longs
 from mozdns.view.models import View
 
 import os.path
@@ -237,7 +238,7 @@ def zone_build_from_config(job=None):
         return
     import dns
     if job == "external":
-        from mdns.migrate.zone_configs.external import *
+        from mdns.migrate.zone_configs.external import external
         for config in external:
             zone_path = config['path']
             root_domain = config['zone_name']
@@ -263,9 +264,44 @@ def zone_build_from_config(job=None):
                 print "----------------------"
         return
 
-    if job == "dc":
+    if job == "zones":
+        from mdns.migrate.zone_configs.zones import zones
+        for config in zones:
+            zone_path = config['path']
+            root_domain = config['zone_name']
+            name_reversed = config['name_reversed']
+            ztype = config['direction']
+            view = config['view']
+            relative_path = config['relative_path']
+            view_obj, _ = View.objects.get_or_create(name=view)
+            if ztype == 'f':
+                svn_zone = collect_svn_zone(root_domain, zone_path, ZONE_PATH)
+                populate_forward_dns(svn_zone, root_domain, view=view_obj)
+                del svn_zone
+        return
 
-        from mdns.migrate.zone_configs.mozilla_com_dc_zone_config import *
+    try:
+        if job == "mozilla_org":
+            from mdns.migrate.zone_configs.mozilla_org import mozilla_org
+            for config in mozilla_org:
+                zone_path = config['path']
+                root_domain = config['zone_name']
+                name_reversed = config['name_reversed']
+                ztype = config['direction']
+                view = config['view']
+                relative_path = config['relative_path']
+                view_obj, _ = View.objects.get_or_create(name=view)
+                if ztype == 'f':
+                    svn_zone = collect_svn_zone(root_domain, zone_path, ZONE_PATH)
+                    populate_forward_dns(svn_zone, root_domain, view=view_obj)
+                    del svn_zone
+            return
+    except Exception, e:
+        pdb.set_trace()
+        pass
+
+    if job == "dc":
+        from mdns.migrate.zone_configs.mozilla_com_dc_zone_config import mozilla_com_dcs
         for config in mozilla_com_dcs:
             zone_path = config['path']
             root_domain = config['zone_name']
@@ -281,7 +317,7 @@ def zone_build_from_config(job=None):
         return
 
     if job == "private_reverse":
-        from mdns.migrate.zone_configs.private_reverse import *
+        from mdns.migrate.zone_configs.private_reverse import private_reverse
         for config in private_reverse:
             zone_path = config['path']
             root_domain = config['zone_name']
@@ -311,14 +347,16 @@ def populate_reverse_dns(rev_svn_zones, view=None):
             exists = SOA.objects.filter(minimum=rdata.minimum,
                     contact=rdata.rname.to_text().strip('.'),
                     primary=rdata.mname.to_text().strip('.'),
-                    comment="SOA for {0}.in-addr.arpa".format(site))
+                    comment="SOA for {0}.in-addr.arpa".format(
+                        '.'.join(reversed(site.split('.')))))
             if exists:
                 soa = exists[0]
             else:
                 soa = SOA(serial=rdata.serial, minimum=rdata.minimum,
                         contact=rdata.rname.to_text().strip('.'),
                         primary=rdata.mname.to_text().strip('.'),
-                        comment="SOA for {0}.in-addr.arpa".format(site))
+                        comment="SOA for {0}.in-addr.arpa".format(
+                            '.'.join(reversed(site.split('.')))))
                 soa.clean()
                 soa.save()
             name = name.to_text().replace('.IN-ADDR.ARPA.','')
@@ -327,8 +365,11 @@ def populate_reverse_dns(rev_svn_zones, view=None):
                 domain_name = domain_split[:i+1]
                 rev_name = ip_to_domain_name('.'.join(domain_name), ip_type='4')
                 base_domain, created = Domain.objects.get_or_create(name=rev_name)
+
+            #null_all_soas(base_domain)
             base_domain.soa = soa
             base_domain.save()
+            #set_all_soas(base_domain, soa)
 
         for (name, ttl, rdata) in zone.iterate_rdatas('NS'):
             name = name.to_text().strip('.')
@@ -392,6 +433,7 @@ def populate_reverse_dns(rev_svn_zones, view=None):
                 cn.full_clean()
                 cn.save()
         """
+        #set_all_soas(base_domain, base_domain.soa)
 
 def ensure_rev_domain(name):
     parts = name.split('.')
@@ -403,8 +445,9 @@ def ensure_rev_domain(name):
         domain, created = Domain.objects.get_or_create(name=
                 rev_name)
         if domain.master_domain and domain.master_domain.soa:
-            domain.soa = domain.master_domain.soa
-            domain.save()
+            pass
+            #domain.soa = domain.master_domain.soa
+            #domain.save()
 
     return domain
 
@@ -552,8 +595,16 @@ def populate_forward_dns(zone, root_domain, view=None):
                     #domain.save()
                     null_all_soas(domain)
                     set_all_soas(domain, domain.master_domain.soa)
-        a, _ = AddressRecord.objects.get_or_create(label=label,
-            domain=domain, ip_str=rdata.to_text(), ip_type='6')
+        ip_upper, ip_lower = ipv6_to_longs(rdata.to_text())
+        if AddressRecord.objects.filter(label=label,
+                domain=domain, ip_upper=ip_upper, ip_lower=ip_lower,
+                ip_type='6').exists():
+            a = AddressRecord.objects.get(label=label,
+                    domain=domain, ip_type='6', ip_upper=ip_upper,
+                    ip_lower=ip_lower)
+        else:
+            a, _ = AddressRecord.objects.get_or_create(label=label,
+                    domain=domain, ip_str=rdata.to_text(), ip_type='6')
         if view:
             a.views.add(view)
             try:
@@ -591,7 +642,12 @@ def populate_forward_dns(zone, root_domain, view=None):
                 server= server, priority=priority, ttl="3600")
         if view:
             mx.views.add(view)
-            mx.save()
+            try:
+                mx.save()
+                mx.views.all()
+            except Exception, e:
+                pdb.set_trace()
+
     for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
         name = name.to_text().strip('.')
         print str(name) + " CNAME " + str(rdata)
@@ -664,9 +720,10 @@ def ensure_domain(name):
                 server = mx.server
                 prio = mx.priority
                 ttl = mx.ttl
+                mxviews = [view.name for view in mx.views.all()]
                 mx.delete()
                 mx = MX(label='', server=server, priority=prio, ttl=ttl)
-                clobber_objects.append(mx)
+                clobber_objects.append((mx, mxviews))
         except ObjectDoesNotExist, e:
             pass
         try:
@@ -676,36 +733,43 @@ def ensure_domain(name):
                 need_to_recreate_a = True
                 ip_str = exists_a.ip_str
                 ip_type = exists_a.ip_type
+                aviews = [view.name for view in exists_a.views.all()]
                 exists_a.delete(check_cname=False)
                 a = AddressRecord(label='', ip_str=ip_str, ip_type=ip_type)
-                clobber_objects.append(a)
+                clobber_objects.append((a, aviews))
         except ObjectDoesNotExist, e:
             pass
         try:
             cname = CNAME.objects.get(fqdn=domain_name)
             # It got here. It exists
             data = cname.data
+            cnviews = [view.name for view in cname.views.all()]
             cname.delete()
             cname = CNAME(label='', data=data)
-            clobber_objects.append(cname)
+            clobber_objects.append((cname, cnviews))
         except ObjectDoesNotExist, e:
             pass
         try:
             for txt in TXT.objects.filter(fqdn=domain_name):
                 # It got here. It exists
                 data = txt.txt_data
+                txtviews = [view.name for view in txt.views.all()]
                 txt.delete()
                 txt = TXT(label='', txt_data=data)
-                clobber_objects.append(txt)
+                clobber_objects.append((txt, txtviews))
         except ObjectDoesNotExist, e:
             pass
         domain, created = Domain.objects.get_or_create(name=
                 domain_name)
-        for object_ in clobber_objects:
+        for object_, views in clobber_objects:
             try:
                 object_.domain = domain
                 object_.clean()
                 object_.save()
+                for view_name in views:
+                    view = View.objects.get(name=view_name)
+                    object_.views.add(view)
+                    object_.save()
             except ValidationError, e:
                 # this is bad
                 pdb.set_trace()

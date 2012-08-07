@@ -53,11 +53,11 @@ rm -rf $ZONE_CONFIGS
 mkdir $ZONE_CONFIGS
 touch $ZONE_CONFIGS/__init__.py
 
-#$BZ cn $REL_PATH/sysadmins/dnsconfig/cn > $ZONE_CONFIGS/cn_zone_config.py
-#python $ZONE_CONFIGS/cn_zone_config.py
+$BZ cn $REL_PATH/sysadmins/dnsconfig/cn > $ZONE_CONFIGS/cn_zone_config.py
+python $ZONE_CONFIGS/cn_zone_config.py
 
-#$BZ external $REL_PATH/sysadmins/dnsconfig/external > $ZONE_CONFIGS/external_zone_config.py
-#python $ZONE_CONFIGS/external_zone_config.py
+$BZ external $REL_PATH/sysadmins/dnsconfig/external > $ZONE_CONFIGS/external_zone_config.py
+python $ZONE_CONFIGS/external_zone_config.py
 
 $BZ phx $SYSADMINS/sysadmins/dnsconfig/phx > $ZONE_CONFIGS/phx_zone_config.py
 python $ZONE_CONFIGS/phx_zone_config.py
@@ -71,3 +71,8 @@ python $ZONE_CONFIGS/private_reverse.py
 ./build_migration_configs/bz_legacy.sh external $REL_PATH/sysadmins/dnsconfig/external > $ZONE_CONFIGS/external.py
 python $ZONE_CONFIGS/external.py
 
+./build_migration_configs/mozilla.org mozilla_org $REL_PATH/sysadmins/dnsconfig/zones/mozilla.org > $ZONE_CONFIGS/mozilla_org.py
+python $ZONE_CONFIGS/mozilla_org.py
+
+./build_migration_configs/zones.sh zones $REL_PATH/sysadmins/dnsconfig/zones/ > $ZONE_CONFIGS/zones.py
+python $ZONE_CONFIGS/zones.py
