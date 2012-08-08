@@ -27,25 +27,25 @@ def views_handler(sender, **kwargs):
 
     Fake models
     -----------
-    :: 
+    ::
         class Foo(models.Model):
             items = fields.ManyToMany(Item)
             ...
             ...
-         
+
         class Item(models.Model):
             name = fields.CharField()
             ...
-     
+
     Example:
     --------
     Let's assume I don't ever want to associate a Foo object with an item that has name == "Green"
-     
+
         >>> f = Foo()
         >>> item = Item("Green")
         >>> f.items.add(item)
-     
-    ^ I want an exception raised during "add(item)" 
+
+        ^ I want an exception raised during "add(item)"
 
     Why can't I do that sainly?!?!
 
@@ -60,7 +60,7 @@ def views_handler(sender, **kwargs):
     if kwargs['action'] != "post_add":
         return
     instance = kwargs.pop('instance', None)
-    if (not instance or not hasattr(instance, 'ip_str') or 
+    if (not instance or not hasattr(instance, 'ip_str') or
             not hasattr(instance, 'ip_type')):
         return
     model = kwargs.pop('model', None)
@@ -69,7 +69,7 @@ def views_handler(sender, **kwargs):
     if instance.views.filter(name="public").exists():
         if instance.ip_type == '4' and is_rfc1918(instance.ip_str):
             instance.views.remove(View.objects.get(name="public"))
-        elif instnace.ip_type == '6' and is_rfc4193(ip_str):
+        elif instance.ip_type == '6' and is_rfc4193(ip_str):
             instance.views.remove(View.objects.get(name="public"))
 
 class MozdnsRecord(models.Model, ObjectUrlMixin):
