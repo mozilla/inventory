@@ -168,7 +168,7 @@ def build_zone(ztype, soa, root_domain):
             2.private) public get's a statement in only private includes
     """
     domains = soa.domain_set.all().order_by('name')
-    zone_path = BUILD_PATH + choose_zone_path(soa, root_domain)
+    zone_path = choose_zone_path(soa, root_domain)
 
     DEBUG_STRING = ""
     # Bulid the mega filter!
@@ -203,11 +203,11 @@ def build_zone(ztype, soa, root_domain):
     except ObjectDoesNotExist, e:
         data = "; The views public and private do not exist"
 
-    if not os.access(zone_path, os.R_OK):
-        os.makedirs(zone_path)
-    open(private_file_path, "w+").write(soa_data + private_data
+    if not os.access(BUILD_PATH + zone_path, os.R_OK):
+        os.makedirs(BUILD_PATH + zone_path)
+    open(BUILD_PATH + private_file_path, "w+").write(soa_data + private_data
             + public_data)
-    open(public_file_path, "w+").write(soa_data + public_data)
+    open(BUILD_PATH + public_file_path, "w+").write(soa_data + public_data)
 
     master_public_zones = render_zone_stmt(root_domain.name, "master",
             CHROOT_ZONE_PATH + public_file_path)
