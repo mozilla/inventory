@@ -4,6 +4,12 @@ from tastypie.test import ResourceTestCase
 from django.core.exceptions import ValidationError
 import json
 from django.http import HttpRequest
+from mozdns.view.models import View
+from core.vlan.models import Vlan
+from core.site.models import Site
+from mozdns.domain.models import Domain
+from core.network.models import Network
+from core.range.models import Range
 
 
 class Tasty1SystemTest(ResourceTestCase):
@@ -100,9 +106,10 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         System(**host_dict).save()
 
     def create_domains(self):
-        from mozdns.domain.models import Domain
-        from core.network.models import Network
-        from core.range.models import Range
+        private = View(name="private")
+        private.save()
+        public = View(name="public")
+        public.save()
         Domain(name='com').save()
         Domain(name='mozilla.com').save()
         Domain(name='dc.mozilla.com').save()
@@ -110,11 +117,29 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         Domain(name='arpa').save()
         Domain(name='in-addr.arpa').save()
         Domain(name='10.in-addr.arpa').save()
+        Domain(name='66.in-addr.arpa').save()
+        vlan = Vlan(name='vlan', number=99)
+        vlan.save()
+        site = Site(name='dc')
+        site.save()
         network = Network(network_str="10.0.0.0/8", ip_type='4')
+        network2 = Network(network_str="66.66.66.0/24", ip_type='4')
+        network2.update_network()
+        network2.save()
+        network.vlan = vlan
+        network.site = site
         network.update_network()
         network.save()
         r = Range(
-            start_str='10.99.99.0', end_str='10.99.99.254', network=network)
+            start_str='10.99.99.1',
+            end_str='10.99.99.254',
+            network=network,)
+        r.clean()
+        r.save()
+        r = Range(
+            start_str='66.66.66.1',
+            end_str='66.66.66.254',
+            network=network2,)
         r.clean()
         r.save()
 
@@ -283,7 +308,8 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(adapters[0].attrs.interface_type, 'eth')
         self.assertEqual(adapters[0].attrs.primary, '0')
         self.assertEqual(adapters[0].attrs.alias, '0')
-        resp = self.api_client.put(
+        import pdb; pdb.set_trace()
+        resp = self.api_client.patch(
             '/en-US/tasty/v3/system/%s/' % self.test_hostname,
             format='json', data=delete_data)
         resp = self.api_client.get(
