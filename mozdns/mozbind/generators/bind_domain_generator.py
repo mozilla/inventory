@@ -40,7 +40,7 @@ def render_ns(nameserver_set):
             ttl = ''
         else:
             ttl = str(ns.ttl)
-        BUILD_STR += template.format(name='@', ttl=ttl, rclass='IN', rtype='NS', server=ns.server)
+        BUILD_STR += template.format(name=ns.domain.name + ".", ttl=ttl, rclass='IN', rtype='NS', server=ns.server)
     return BUILD_STR
 
 def render_address_record(addressrecord_set):
