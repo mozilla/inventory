@@ -80,7 +80,7 @@ class ViewTests(TestCase):
         a.save()
         # Object has to exist before views can be assigned.
         a.views.add(self.public)
-        self.assertRaises(ValidationError, a.save)
+        self.assertFalse(a.views.filter(name="public"))
 
         a = AddressRecord(label="asf1", domain=self.f_o, ip_str="172.30.0.1",
                 ip_type="4")
@@ -88,7 +88,7 @@ class ViewTests(TestCase):
         a.save()
         # Object has to exist before views can be assigned.
         a.views.add(self.public)
-        self.assertRaises(ValidationError, a.save)
+        self.assertFalse(a.views.filter(name="public"))
 
         a = AddressRecord(label="asf1", domain=self.f_o, ip_str="192.168.0.1",
                 ip_type="4")
@@ -96,7 +96,7 @@ class ViewTests(TestCase):
         a.save()
         # Object has to exist before views can be assigned.
         a.views.add(self.public)
-        self.assertRaises(ValidationError, a.save)
+        self.assertFalse(a.views.filter(name="public"))
 
     def test_private_view_case_2_ptr(self):
         ptr = PTR(name="asf", ip_str="10.0.0.2", ip_type="4")
@@ -104,21 +104,21 @@ class ViewTests(TestCase):
         ptr.save()
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
-        self.assertRaises(ValidationError, ptr.save)
+        self.assertFalse(ptr.views.filter(name="public"))
 
         ptr = PTR(name="asf", ip_str="172.16.0.1", ip_type="4")
         ptr.clean()
         ptr.save()
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
-        self.assertRaises(ValidationError, ptr.save)
+        self.assertFalse(ptr.views.filter(name="public"))
 
         ptr = PTR(name="asf", ip_str="192.168.2.3", ip_type="4")
         ptr.clean()
         ptr.save()
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
-        self.assertRaises(ValidationError, ptr.save)
+        self.assertFalse(ptr.views.filter(name="public"))
 
     def test_private_view_case_2_intr(self):
         intr = StaticInterface(label="asf", domain=self.f_o, ip_str="10.0.0.1",
@@ -127,7 +127,7 @@ class ViewTests(TestCase):
         intr.save()
         # Object has to exist before views can be assigned.
         intr.views.add(self.public)
-        self.assertRaises(ValidationError, intr.save)
+        self.assertFalse(intr.views.filter(name="public"))
 
         intr = StaticInterface(label="asf", domain=self.f_o, ip_str="172.31.255.254",
                 ip_type="4", mac="01:11:22:33:44:55", system=self.s)
@@ -135,7 +135,7 @@ class ViewTests(TestCase):
         intr.save()
         # Object has to exist before views can be assigned.
         intr.views.add(self.public)
-        self.assertRaises(ValidationError, intr.save)
+        self.assertFalse(intr.views.filter(name="public"))
 
         intr = StaticInterface(label="asf", domain=self.f_o,
                 ip_str="192.168.255.254",
@@ -144,7 +144,7 @@ class ViewTests(TestCase):
         intr.save()
         # Object has to exist before views can be assigned.
         intr.views.add(self.public)
-        self.assertRaises(ValidationError, intr.save)
+        self.assertFalse(intr.views.filter(name="public"))
 
 
     def test_private_view_case_3_addr(self):
@@ -156,7 +156,7 @@ class ViewTests(TestCase):
         a.save()
         # Object has to exist before views can be assigned.
         a.views.add(self.public)
-        self.assertRaises(ValidationError, a.save)
+        self.assertFalse(a.views.filter(name="public"))
 
         a = AddressRecord(label="asf3", domain=self.f_o, ip_str="172.30.0.1",
                 ip_type="4")
@@ -166,7 +166,7 @@ class ViewTests(TestCase):
         a.save()
         # Object has to exist before views can be assigned.
         a.views.add(self.public)
-        self.assertRaises(ValidationError, a.save)
+        self.assertFalse(a.views.filter(name="public"))
 
         a = AddressRecord(label="asf3", domain=self.f_o, ip_str="192.168.0.1",
                 ip_type="4")
@@ -176,7 +176,7 @@ class ViewTests(TestCase):
         a.save()
         # Object has to exist before views can be assigned.
         a.views.add(self.public)
-        self.assertRaises(ValidationError, a.save)
+        self.assertFalse(a.views.filter(name="public"))
 
     def test_private_view_case_3_ptr(self):
         ptr = PTR(name="asf3", ip_str="10.0.0.2", ip_type="4")
@@ -186,7 +186,7 @@ class ViewTests(TestCase):
         ptr.save()
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
-        self.assertRaises(ValidationError, ptr.save)
+        self.assertFalse(ptr.views.filter(name="public"))
 
         ptr = PTR(name="asf3", ip_str="172.16.0.1", ip_type="4")
         ptr.clean()
@@ -195,7 +195,7 @@ class ViewTests(TestCase):
         ptr.save()
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
-        self.assertRaises(ValidationError, ptr.save)
+        self.assertFalse(ptr.views.filter(name="public"))
 
         ptr = PTR(name="asf3", ip_str="192.168.2.3", ip_type="4")
         ptr.clean()
@@ -204,7 +204,7 @@ class ViewTests(TestCase):
         ptr.save()
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
-        self.assertRaises(ValidationError, ptr.save)
+        self.assertFalse(ptr.views.filter(name="public"))
 
     def test_private_view_case_3_intr(self):
         intr = StaticInterface(label="asf3", domain=self.f_o, ip_str="10.0.0.1",
@@ -215,7 +215,7 @@ class ViewTests(TestCase):
         intr.save()
         # Object has to exist before views can be assigned.
         intr.views.add(self.public)
-        self.assertRaises(ValidationError, intr.save)
+        self.assertFalse(intr.views.filter(name="public"))
 
         intr = StaticInterface(label="asf3", domain=self.f_o, ip_str="172.31.255.254",
                 ip_type="4", mac="01:11:22:33:44:55", system=self.s)
@@ -225,7 +225,7 @@ class ViewTests(TestCase):
         intr.save()
         # Object has to exist before views can be assigned.
         intr.views.add(self.public)
-        self.assertRaises(ValidationError, intr.save)
+        self.assertFalse(intr.views.filter(name="public"))
 
         intr = StaticInterface(label="asf3", domain=self.f_o,
                 ip_str="192.168.255.254",
@@ -236,4 +236,4 @@ class ViewTests(TestCase):
         intr.save()
         # Object has to exist before views can be assigned.
         intr.views.add(self.public)
-        self.assertRaises(ValidationError, intr.save)
+        self.assertFalse(intr.views.filter(name="public"))

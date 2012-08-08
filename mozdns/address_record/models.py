@@ -55,8 +55,6 @@ class BaseAddressRecord(Ip):
         check_TLD_condition(self)
         self.domain.dirty = True
         self.domain.save()
-        if self.pk:
-            validate_views(self.views, self.ip_str, self.ip_type)
         super(BaseAddressRecord, self).save(*args, **kwargs)
 
     def clean(self, *args, **kwargs):

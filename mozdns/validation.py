@@ -516,3 +516,16 @@ def validate_views(views, ip_str, ip_type):
             raise ValidationError("{0} is a private IP address. You"
                     "cannot put a record that contains private data into"
                     "a public view.")
+
+def validate_view(view, ip_str, ip_type):
+    """If view is the private view and ``ip_str`` is
+    in one of the RFC 1918 networks, raise a :class:`ValidationError`.
+    """
+    if ip_type == '4' and is_rfc1918(ip_str):
+        raise ValidationError("{0} is a private IP address. You"
+                "cannot put a record that contains private data into"
+                "a public view.")
+    if ip_type == '6' and is_rfc4193(ip_str):
+        raise ValidationError("{0} is a private IP address. You"
+                "cannot put a record that contains private data into"
+                "a public view.")

@@ -44,7 +44,7 @@ class PTR(Ip, ObjectUrlMixin):
 
     def save(self, *args, **kwargs):
         if self.pk:  # We need to exist in the db first.
-            validate_views(self.views, self.ip_str, self.ip_type)
+            #validate_views(self.views, self.ip_str, self.ip_type)
             db_self = PTR.objects.get(pk=self.pk)
             if db_self.name == self.name and db_self.ip_str == self.ip_str:
                 # Nothing important changed. Don't rebuild the zone file.
@@ -105,3 +105,5 @@ class PTR(Ip, ObjectUrlMixin):
         """Return the cononical name of this ptr that can be placed in a
         reverse zone file."""
         return ip_to_dns_form(self.ip_str, ip_type=self.ip_type)
+
+
