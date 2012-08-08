@@ -166,7 +166,11 @@ def main():
                 print "FAIL ===== %s Host Not Found" % (system_hostname)
             except AttributeError, e:
                 if str(e) == "'AddressRecord' object has no attribute 'name'":
-                    print "FAIL ===== %s - %s - %s" % (addr.ip_str, system_hostname, e)
+                    #import pdb; pdb.set_trace()
+                    try:
+                        print "FAIL ===== %s - %s - %s" % (addr.ip_str, system_hostname, e)
+                    except:
+                        print "FAIL =====  %s - %s" % (system_hostname, e)
             except Exception, e:
                 print "FAIL ===== %s - %s" % (system_hostname, e)
 if __name__ == '__main__':

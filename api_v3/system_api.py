@@ -49,6 +49,7 @@ class SystemResource(CustomAPIResource):
     server_model = fields.ForeignKey('api_v3.system_api.ServerModelResource', 'server_model', null=True, full=True)
     operating_system = fields.ForeignKey('api_v3.system_api.OperatingSystemResource', 'operating_system', null=True, full=True)
     system_rack = fields.ForeignKey('api_v3.system_api.SystemRackResource', 'system_rack', null=True, full=True)
+    interface = fields.ToManyField('api_v3.system_api.StaticInterfaceResource', 'staticinterface_set', null=True, full=True)
 
 
     def __init__(self, *args, **kwargs):
@@ -239,6 +240,22 @@ class SystemStatusResource(CustomAPIResource):
         queryset = system_model.SystemStatus.objects.all()
 
 
+class StaticInterfaceResource(CustomAPIResource):
+       
+    def full_dehydrate(self, bundle):
+        super(StaticInterfaceResource, self).full_dehydrate(bundle)
+        bundle.obj.update_attrs()
+        bundle.data['interface'] = "%s%s.%s" %\
+        (bundle.obj.attrs.interface_type,
+            bundle.obj.attrs.primary, bundle.obj.attrs.alias)
+        del bundle.data['ip_lower']
+        del bundle.data['ip_upper']
+        del bundle.data['resource_uri']
+        return bundle
+
+    class Meta(CustomAPIResource.Meta):
+        resource_name = 'interface'
+        queryset = StaticInterface.objects.select_related().all()
 
 class OperatingSystemResource(CustomAPIResource):
         
