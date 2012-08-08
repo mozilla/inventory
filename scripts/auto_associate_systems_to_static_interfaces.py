@@ -88,6 +88,8 @@ def main():
         client = Client()
         for bl in range_data:
             system_hostname = ''
+            if not len(bl) == 4:
+                continue
             try:
                 if bl[2].name:
                     intr_hostname = bl[2].name.replace(".mozilla.com", "")
@@ -166,6 +168,7 @@ def main():
                 print "FAIL ===== %s Host Not Found" % (system_hostname)
             except AttributeError, e:
                 if str(e) == "'AddressRecord' object has no attribute 'name'":
+                    import pdb; pdb.set_trace()
                     print "FAIL ===== %s - %s - %s" % (addr.ip_str, system_hostname, e)
             except Exception, e:
                 print "FAIL ===== %s - %s" % (system_hostname, e)

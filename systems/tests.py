@@ -268,8 +268,16 @@ class SystemAdapterTest(TestCase):
     def test3_system_adapter_ajax_post(self):
         post_dict = {
             'interface': 'eth0.0',
+            'system_id': '1',
+            'hostname': 'fake-hostname',
+            'is_ajax': '1',
+            'range': Range.objects.all()[0].id,
             'mac_address': '00:00:00:00:00:00',
-            'ip_address': '10.99.99.99', }
+            'ip_address': '10.99.99.99',
+            'enable_dhcp': 'true',
+            'enable_dns': 'true',
+            'enable_public': 'false',
+            'enable_private': 'true', }
         sys_tmp = System.objects.get(id=1)
         sys_tmp.hostname = sys_tmp.hostname + '.vlan.dc'
         sys_tmp.save()
@@ -293,7 +301,7 @@ class SystemAdapterTest(TestCase):
         resp = self.client.get(reverse("get-all-ranges-ajax"), follow=True)
         self.assertEqual(resp.status_code, 200)
         obj = json.loads(resp.content)
-        self.assertEqual(obj[0]['display'], 'DC - vlan 99 - 10.0.0.0/8')
+        self.assertEqual(obj[0]['display'], 'NONE - None - 66.66.66.0/24')
 
     def test5_system_adapter_next_available_ip(self):
         range_id = Range.objects.get(start_str='10.99.99.1').id
@@ -324,7 +332,7 @@ class SystemAdapterTest(TestCase):
             'hostname': 'fake-hostname',
             'is_ajax': '1',
             'range': Range.objects.all()[0].id,
-            'ip_address': '10.99.99.10',
+            'ip_address': '66.66.66.66',
             'mac_address': '00:00:00:00:00:00',
             'enable_dhcp': 'true',
             'enable_dns': 'true',
@@ -351,7 +359,7 @@ class SystemAdapterTest(TestCase):
         self.assertEqual(
             private.staticinterface_set.all()[0].mac, u'00:00:00:00:00:00')
         self.assertEqual(
-            private.staticinterface_set.all()[0].ip_str, u'10.99.99.10')
+            private.staticinterface_set.all()[0].ip_str, u'66.66.66.66')
         self.assertEqual(
             private.staticinterface_set.all()[0].dns_enabled, True)
         self.assertEqual(
@@ -363,7 +371,7 @@ class SystemAdapterTest(TestCase):
             'hostname': 'fake-hostname',
             'range': Range.objects.all()[0].id,
             'is_ajax': '1',
-            'ip_address': '10.99.99.10',
+            'ip_address': '66.66.66.66',
             'mac_address': '00:00:00:00:00:00',
             'enable_dhcp': 'false',
             'enable_dns': 'true',
@@ -392,7 +400,7 @@ class SystemAdapterTest(TestCase):
             u'00:00:00:00:00:00')
         self.assertEqual(
             private.staticinterface_set.all()[0].ip_str,
-            u'10.99.99.10')
+            u'66.66.66.66')
         self.assertEqual(
             private.staticinterface_set.all()[0].dns_enabled, True)
         self.assertEqual(
@@ -408,7 +416,7 @@ class SystemAdapterTest(TestCase):
             'range': Range.objects.all()[0].id,
             'hostname': 'fake-hostname',
             'is_ajax': '1',
-            'ip_address': '10.99.99.10',
+            'ip_address': '66.66.66.66',
             'mac_address': '00:00:00:00:00:00',
             'enable_dhcp': 'True',
             'enable_dns': 'true',
@@ -435,7 +443,7 @@ class SystemAdapterTest(TestCase):
         self.assertEqual(
             private.staticinterface_set.all()[0].mac, u'00:00:00:00:00:00')
         self.assertEqual(
-            private.staticinterface_set.all()[0].ip_str, u'10.99.99.10')
+            private.staticinterface_set.all()[0].ip_str, u'66.66.66.66')
         self.assertEqual(
             private.staticinterface_set.all()[0].dns_enabled, True)
         self.assertEqual(
@@ -607,11 +615,15 @@ class SystemAdapterTest(TestCase):
         Domain(name='arpa').save()
         Domain(name='in-addr.arpa').save()
         Domain(name='10.in-addr.arpa').save()
+        Domain(name='66.in-addr.arpa').save()
         vlan = Vlan(name='vlan', number=99)
         vlan.save()
         site = Site(name='dc')
         site.save()
         network = Network(network_str="10.0.0.0/8", ip_type='4')
+        network2 = Network(network_str="66.66.66.0/24", ip_type='4')
+        network2.update_network()
+        network2.save()
         network.vlan = vlan
         network.site = site
         network.update_network()
@@ -620,5 +632,11 @@ class SystemAdapterTest(TestCase):
             start_str='10.99.99.1',
             end_str='10.99.99.254',
             network=network,)
+        r.clean()
+        r.save()
+        r = Range(
+            start_str='66.66.66.1',
+            end_str='66.66.66.254',
+            network=network2,)
         r.clean()
         r.save()
