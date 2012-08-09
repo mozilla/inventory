@@ -10,7 +10,9 @@ from mozdns.view.models import View
 from mozdns.validation import validate_srv_label, validate_srv_port
 from mozdns.validation import validate_srv_priority, validate_srv_weight
 from mozdns.validation import validate_srv_name, validate_ttl
+from mozdns.validation import validate_srv_target
 
+import pdb
 
 # Rhetorical Question: Why is SRV not a common record?  SRV records have
 # a '_' in their label. Most domain names do not allow this.  Mozdns
@@ -34,13 +36,13 @@ class SRV(models.Model, ObjectUrlMixin):
     views = models.ManyToManyField(View)
 
     target = models.CharField(max_length=100,
-                              validators=[validate_name])
+                validators=[validate_srv_target])
 
     port = models.PositiveIntegerField(null=False,
-                                       validators=[validate_srv_port])
+            validators=[validate_srv_port])
 
     priority = models.PositiveIntegerField(null=False,
-                                           validators=[validate_srv_priority])
+                validators=[validate_srv_priority])
 
     weight = models.PositiveIntegerField(null=False,
                                          validators=[validate_srv_weight])
@@ -83,11 +85,14 @@ class SRV(models.Model, ObjectUrlMixin):
                                                     self.port, self.target)
 
     def __repr__(self):
-        return "<{0}>".format(str(self))
+        return "<SRV '{0}'>".format(str(self))
 
     def set_fqdn(self):
         try:
-            self.fqdn = "{0}.{1}".format(self.label, self.domain.name)
+            if self.label == "":
+                self.fqdn = self.domain.name
+            else:
+                self.fqdn = "{0}.{1}".format(self.label, self.domain.name)
         except ObjectDoesNotExist:
             return
 

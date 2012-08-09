@@ -9,45 +9,8 @@
 
     {{ super() }}
 
-    <style>
-        #buildbutton {
-            background-image: url('/static/images/orange_button_build.png');
-             moz-border-radius: 9px;
-            -webkit-border-radius: 9px;
-             border-radius: 9px;
-
-        }
-
-        #building {
-            background-image: url('/static/images/orange_button_done_build.png');
-             moz-border-radius: 9px;
-            -webkit-border-radius: 9px;
-             border-radius: 9px;
-        }
-
-    </style>
-    <script type="text/javascript">
-    function request_dns_build(soa_id){
-        document.getElementById("buildbutton").src='/static/images/orange_button_done_build.png';
-        $.get('/mozdns/bind/build/'+soa_id+'/', function(data){
-            document.getElementById("buildbutton").src='/static/images/green_complete_build.png';
-        });
-    }
-    </script>
-    <!-- some time later -->
-    <center>
-        <input id="buildbutton" type="image" src="/static/images/orange_button_build.png"
-        onclick='request_dns_build({{ soa.pk }})'>
-    </center>
-
     {% from "mozdns/tables.html" import render_table %}
-    {% if soa.domain_set.all().exists() %}
-        {% if soa.domain_set.all()[0].is_reverse %}
-            <p><a href='/mozdns/bind/reverse/{{ soa.pk }}/build_debug/'>See compiled BIND file for this Zone</a></p>
-        {% else %}
-            <p><a href='/mozdns/bind/forward/{{ soa.pk }}/build_debug/'>See compiled BIND file for this Zone</a></p>
-        {% endif %}
-    {% endif %}
+    <p><a href='/mozdns/bind/build_debug/{{ soa.pk }}/'>See compiled BIND file for this Zone</a></p>
 
     {% if dom_matrix %}
         <h3> Domains </h3>

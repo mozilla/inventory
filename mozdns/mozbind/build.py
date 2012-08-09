@@ -160,14 +160,7 @@ def build_moz_zone(soa, domain_type, NOWRITE=True, request=None):
 
 
 def build_zone(ztype, soa, root_domain):
-    """
-    Things every zone needs:
-        1) data file's
-            1.forward) Forward needs private and reverse
-            1.reverse) Reverse needs one in /in-addr/private or /in-addr/public
-        2) An zone entry in public and/or private named.conf include
-            2.public) public get's a statement in public and private includes
-            2.private) public get's a statement in only private includes
+    """This is where the magic happens.
     """
     domains = soa.domain_set.all().order_by('name')
     zone_path = choose_zone_path(soa, root_domain)
@@ -192,7 +185,7 @@ def build_zone(ztype, soa, root_domain):
                     reverse_mega_filter)
             public_file_path = zone_path + root_domain.name + ".public"
     except ObjectDoesNotExist, e:
-        data = "; The views public and private do not exist"
+        data = "; The views public and private do not exist\n"
     try:
         private = View.objects.get(name="private")
         if ztype == "forward":
@@ -203,12 +196,15 @@ def build_zone(ztype, soa, root_domain):
                     reverse_mega_filter)
             private_file_path = zone_path + root_domain.name + ".private"
     except ObjectDoesNotExist, e:
-        data = "; The views public and private do not exist"
+        data = "; The views public and private do not exist\n"
 
     if not os.access(BUILD_PATH + zone_path, os.R_OK):
         os.makedirs(BUILD_PATH + zone_path)
     if private_data:
         open(BUILD_PATH + private_file_path, "w+").write(soa_data + private_data)
+        DEBUG_STRING += ";{0} {1} View Data {0}\n".format("=" * 30, "Private")
+        DEBUG_STRING += soa_data
+        DEBUG_STRING += private_data
 
         master_private_zones = render_zone_stmt(root_domain.name, "master",
                 CHROOT_ZONE_PATH + private_file_path)
@@ -218,20 +214,26 @@ def build_zone(ztype, soa, root_domain):
     else:
         master_private_zones = ""
         slave_private_zones = ""
+        DEBUG_STRING += "; NO PRIVATE ZONE DATA\n"
 
     if public_data:
         open(BUILD_PATH + public_file_path, "w+").write(soa_data + public_data)
+        DEBUG_STRING += ";{0} {1} View Data {0}\n".format("=" * 30, "Public")
+        DEBUG_STRING += soa_data
+        DEBUG_STRING += public_data
 
         master_public_zones = render_zone_stmt(root_domain.name, "master",
                 CHROOT_ZONE_PATH + public_file_path)
-        slave_public_zones = render_zone_stmt(root_domain.name, "private",
+        slave_public_zones = render_zone_stmt(root_domain.name, "public",
                 CHROOT_ZONE_PATH + public_file_path)
     else:
         master_public_zones = ""
         slave_public_zones = ""
+        DEBUG_STRING += "; NO PUBLIC ZONE DATA\n"
 
     return ((master_public_zones, master_private_zones),
-            (master_private_zones, slave_private_zones))
+            (master_private_zones, slave_private_zones),
+            DEBUG_STRING)
 
 def build_dns():
     """
@@ -254,9 +256,9 @@ def build_dns():
         if not root_domain:
             pdb.set_trace()
         if root_domain.is_reverse:
-            masters, slaves =  build_zone("reverse", soa, root_domain)
+            masters, slaves, _ =  build_zone("reverse", soa, root_domain)
         else:
-            masters, slaves =  build_zone("forward", soa, root_domain)
+            masters, slaves, _ =  build_zone("forward", soa, root_domain)
         tmp_m_pub_zs, tmp_m_pri_zs = masters
         master_public_zones += tmp_m_pub_zs
         master_private_zones += tmp_m_pri_zs

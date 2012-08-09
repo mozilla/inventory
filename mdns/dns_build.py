@@ -280,6 +280,22 @@ def zone_build_from_config(job=None):
                 del svn_zone
         return
 
+    if job == "net":
+        from mdns.migrate.zone_configs.mozilla_net import mozilla_net
+        for config in mozilla_net:
+            zone_path = config['path']
+            root_domain = config['zone_name']
+            name_reversed = config['name_reversed']
+            ztype = config['direction']
+            view = config['view']
+            relative_path = config['relative_path']
+            view_obj, _ = View.objects.get_or_create(name=view)
+            if ztype == 'f':
+                svn_zone = collect_svn_zone(root_domain, zone_path, ZONE_PATH)
+                populate_forward_dns(svn_zone, root_domain, view=view_obj)
+                del svn_zone
+        return
+
     try:
         if job == "mozilla_org":
             from mdns.migrate.zone_configs.mozilla_org import mozilla_org
@@ -697,7 +713,38 @@ def populate_forward_dns(zone, root_domain, view=None):
 
     for (name, ttl, rdata) in zone.iterate_rdatas('SSHFP'):
         name = name.to_text().strip('.')
+        pdb.set_trace()
         print str(name) + " SSHFP " + str(rdata)
+
+    for (name, ttl, rdata) in zone.iterate_rdatas('SRV'):
+        target = rdata.target.to_text().strip('.')
+        if target == "":
+            target = "."
+        port = rdata.port
+        weight = rdata.weight
+        prio = rdata.priority
+        name = name.to_text().strip('.')
+        print str(name) + " SRV " + str(rdata)
+        exists_domain = Domain.objects.filter(name=name)
+        if exists_domain:
+            label = ''
+            domain = exists_domain[0]
+        else:
+            label = name.split('.')[0]
+            domain_name = name.split('.')[1:]
+            domain = ensure_domain('.'.join(domain_name))
+
+        if not SRV.objects.filter(label = label, domain = domain,
+                target=target, port=port, weight=weight,
+                priority=prio).exists():
+            srv = SRV(label = label, domain = domain,
+                target=target, port=port, weight=weight,
+                priority=prio)
+            srv.full_clean()
+            srv.save()
+            if view:
+                srv.views.add(view)
+                srv.save()
 
 
     set_all_soas(base_domain, base_domain.soa)

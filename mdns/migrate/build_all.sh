@@ -74,5 +74,8 @@ python $ZONE_CONFIGS/external.py
 ./build_migration_configs/mozilla.org mozilla_org $REL_PATH/sysadmins/dnsconfig/zones/mozilla.org > $ZONE_CONFIGS/mozilla_org.py
 python $ZONE_CONFIGS/mozilla_org.py
 
+./build_migration_configs/mozilla.net.sh mozilla_net $REL_PATH/sysadmins/dnsconfig/zones/mozilla.net > $ZONE_CONFIGS/mozilla_net.py
+python $ZONE_CONFIGS/mozilla_net.py
+
 ./build_migration_configs/zones.sh zones $REL_PATH/sysadmins/dnsconfig/zones/ > $ZONE_CONFIGS/zones.py
 python $ZONE_CONFIGS/zones.py

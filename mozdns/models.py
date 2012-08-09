@@ -69,7 +69,7 @@ def views_handler(sender, **kwargs):
     if instance.views.filter(name="public").exists():
         if instance.ip_type == '4' and is_rfc1918(instance.ip_str):
             instance.views.remove(View.objects.get(name="public"))
-        elif instance.ip_type == '6' and is_rfc4193(ip_str):
+        elif instance.ip_type == '6' and is_rfc4193(instance.ip_str):
             instance.views.remove(View.objects.get(name="public"))
 
 class MozdnsRecord(models.Model, ObjectUrlMixin):

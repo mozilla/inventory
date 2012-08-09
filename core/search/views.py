@@ -41,6 +41,11 @@ def search_ajax(request):
     search = request.GET.get("search", None)
     if not search:
         return HttpResponse("What do you want?!?")
+    dos_terms = ["10", "com", "mozilla.com", "mozilla",  "network:10/8",
+            "network:10.0.0.0/8"]
+    if search in dos_terms:
+        return HttpResponse("Denial of Service attack prevented. The search "
+                "term '{0}' is to general".format(search))
     query = parse(search)
     print "----------------------"
     print query

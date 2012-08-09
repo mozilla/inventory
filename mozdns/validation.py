@@ -426,6 +426,8 @@ def validate_srv_label(srv_label):
     """This function is the same as :func:`validate_label` expect
     :class:`SRV` records can have a ``_`` preceding its label.
     """
+    if srv_label == "":
+        return
     if srv_label and srv_label[0] != '_':
         raise ValidationError("Error: SRV label must start with '_'")
     validate_label(srv_label[1:])  # Get rid of '_'
@@ -441,6 +443,12 @@ def validate_srv_name(srv_name):
         raise ValidationError("Error: SRV label must not be None")
     mod_srv_name = srv_name[1:]  # Get rid of '_'
     validate_name(mod_srv_name)
+
+def validate_srv_target(srv_target):
+    if srv_target == ".":
+        return
+    else:
+        validate_name(srv_target)
 
 ###################################################################
 #               Functions that Validate MX fields                 #

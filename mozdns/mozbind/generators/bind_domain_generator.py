@@ -99,9 +99,13 @@ def render_srv(srv_set):
         else:
             ttl = str(srv.ttl)
         name = srv.fqdn + '.'
+        if srv.target == ".":
+            target = ""  # There is already a trailing '.' in the template
+        else:
+            target = srv.target
         BUILD_STR += template.format(name=name, ttl=ttl, rclass='IN', rtype='SRV',
                 prio=str(srv.priority), weight=str(srv.weight),
-                port=str(srv.port), target=str(srv.target))
+                port=str(srv.port), target=target)
     return BUILD_STR
 
 def render_txt(txt_set):
