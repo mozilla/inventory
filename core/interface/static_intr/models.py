@@ -242,6 +242,7 @@ class StaticIntrKeyValue(KeyValue):
         """
         if not self.value:
             raise ValidationError("Domain Name Required")
+
     def _aa_filename(self):
         """DHCP option filename
         """

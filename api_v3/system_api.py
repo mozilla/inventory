@@ -49,8 +49,11 @@ class SystemResource(CustomAPIResource):
     server_model = fields.ForeignKey('api_v3.system_api.ServerModelResource', 'server_model', null=True, full=True)
     operating_system = fields.ForeignKey('api_v3.system_api.OperatingSystemResource', 'operating_system', null=True, full=True)
     system_rack = fields.ForeignKey('api_v3.system_api.SystemRackResource', 'system_rack', null=True, full=True)
-    interface = fields.ToManyField('api_v3.system_api.StaticInterfaceResource', 'staticinterface_set', null=True, full=True)
-
+    """
+        Do not enable the following. It will fail due to the m2m validation routine written by uberj.
+        Instead I'm overriding full_dehydrate to get the attributes that we want
+        interface = fields.ToManyField('api_v3.system_api.StaticInterfaceResource', 'staticinterface_set', null=True, full=True)
+    """
 
     def __init__(self, *args, **kwargs):
         super(SystemResource, self).__init__(*args, **kwargs)
@@ -174,8 +177,32 @@ class SystemResource(CustomAPIResource):
         self.process_extra(ret_bundle, request, **kwargs)
 
     def obj_update(self, bundle, request, **kwargs):
+        for intr in bundle.obj.staticinterface_set.all():
+            intr.update_attrs()
         ret_bundle = super(SystemResource, self).obj_update(bundle, request, **kwargs)
         self.process_extra(ret_bundle, request, **kwargs)
+
+    def full_dehydrate(self, bundle):
+        """
+            Overrideing full dehydrate here. We want to display the iinterface
+            attributes, but fails due to m2m validation.
+        """
+        super(SystemResource, self).full_dehydrate(bundle)
+        for intr in bundle.obj.staticinterface_set.all():
+            intr.update_attrs()
+            bundle.data['interface:%s%s.%s:ip_address' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.ip_str
+            bundle.data['interface:%s%s.%s:fqdn' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.fqdn
+            bundle.data['interface:%s%s.%s:mac_address' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.mac
+            bundle.data['interface:%s%s.%s:dns_enabled' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.dns_enabled
+            bundle.data['interface:%s%s.%s:dhcp_enabled' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.dhcp_enabled
+            bundle.data['interface:%s%s.%s:label' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.label
+        #bundle.data['interface'] = "%s%s.%s" %\
+        #(bundle.obj.attrs.interface_type,
+        #    bundle.obj.attrs.primary, bundle.obj.attrs.alias)
+        #del bundle.data['ip_lower']
+        #del bundle.data['ip_upper']
+        #del bundle.data['resource_uri']
+        return bundle
 
 
     def prepend_urls(self):
@@ -242,6 +269,11 @@ class SystemStatusResource(CustomAPIResource):
 
 class StaticInterfaceResource(CustomAPIResource):
        
+    system = fields.ToOneField(SystemResource, 'system', full=True)
+    #system = fields.ForeignKey(SystemResource, 'system', full=True)
+    def __init__(self, *args, **kwargs):
+        super(StaticInterfaceResource, self).__init__(*args, **kwargs)
+
     def full_dehydrate(self, bundle):
         super(StaticInterfaceResource, self).full_dehydrate(bundle)
         bundle.obj.update_attrs()

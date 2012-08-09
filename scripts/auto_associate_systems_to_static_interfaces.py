@@ -22,6 +22,7 @@ from core.keyvalue.utils import get_attrs, update_attrs, get_aa, get_docstrings
 from core.keyvalue.utils import get_docstrings, dict_to_kv
 import ipaddr
 import simplejson as json
+from systems.models import System, KeyValue
 from core.interface.static_intr.views import do_combine_a_ptr_to_interface
 from django.test import Client
 from systems.models import System
@@ -90,9 +91,11 @@ def main():
             system_hostname = ''
             try:
                 if bl[2].name:
+                    #import pdb; pdb.set_trace()
                     intr_hostname = bl[2].name.replace(".mozilla.com", "")
                     system_hostname = intr_hostname
-                system = System.objects.get(hostname=intr_hostname)
+                #system = System.objects.get(hostname=intr_hostname)
+                system = KeyValue.objects.filter(key__icontains='ipv4_address', value=bl[1])[0].system
                 addr = AddressRecord.objects.get(pk=bl[3].pk)
                 ptr = PTR.objects.get(pk=bl[2].pk)
                 try:

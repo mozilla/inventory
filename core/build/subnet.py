@@ -51,9 +51,18 @@ def build_subnet(network, raw=False):
         build_str = ''
 
     for intr in intrs:
+        intr.update_attrs()
         build_str += "\thost {0} {{\n".format(intr.fqdn)
         build_str += "\t\thardware ethernet {0};\n".format(intr.mac)
         build_str += "\t\tfixed-address {0};\n".format(intr.ip_str)
+        if hasattr(intr.attrs, 'hostname'):
+            build_str += "\t\toption host-name \"{0}\";\n".format(intr.attrs.hostname)
+        if hasattr(intr.attrs, 'filename'):
+            build_str += "\t\tfilename {0};\n".format(intr.attrs.filename)
+        if hasattr(intr.attrs, 'domain_name'):
+            build_str += "\t\toption domain-name {0};\n".format(intr.attrs.domain_name)
+        if hasattr(intr.attrs, 'domain_name_servers'):
+            build_str += "\t\toption domain-name-servers {0};\n".format(intr.attrs.domain_name_servers)
         build_str += "\t}\n\n"
 
     build_str += "}"
