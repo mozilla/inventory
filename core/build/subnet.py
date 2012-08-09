@@ -5,7 +5,9 @@ import pdb
 
 # This doesn't work for IPv6
 
-def build_subnet(network):
+def build_subnet(network, raw=False):
+    # raw kwarg being set to true will only output the hosts, not the headers
+
     network_options = network.networkkeyvalue_set.filter(is_option=True)
     network_statements = network.networkkeyvalue_set.filter(is_statement=True)
     network_raw_include = network.dhcpd_raw_include
@@ -42,6 +44,11 @@ def build_subnet(network):
 
     for mrange in ranges:
         build_str += build_range(mrange)
+
+    if raw:
+        # reset the build_str to '' if set to raw
+        # raw should only output the hosts
+        build_str = ''
 
     for intr in intrs:
         build_str += "\thost {0} {{\n".format(intr.fqdn)
