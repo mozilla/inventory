@@ -15,6 +15,7 @@ from core.interface.static_intr.models import StaticInterface
 from core.interface.static_intr.models import StaticIntrKeyValue
 from core.range.models import Range
 from mozdns.domain.models import Domain
+from core.lib.utils import create_ipv4_intr_from_domain
 import json
 import re
 class PrettyJSONSerializer(Serializer):
@@ -152,32 +153,28 @@ class SystemResource(CustomAPIResource):
             sys = bundle.obj
             label = sys.hostname.split('.')[0]
             domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.mozilla.com'
+            domain_parsed = domain_parsed.lower()
             domain = Domain.objects.filter(name=domain_parsed)[0]
-
-            if interface:
-                interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
-            else:
-                interface_type, primary, alias = sys.get_next_adapter()
-            if not ip_str:
-                range = Range.objects.filter(
-                    network__site__name__icontains=domain_parsed.split(".")[1],
-                    network__vlan__name__icontains=domain_parsed.split(".")[0])[0]
-                ret_ip = range.get_next_ip()
-                ip_str = ret_ip.exploded
             try:
-                s = StaticInterface(
-                    label=label,
-                    mac=mac_addr,
-                    domain=domain,
-                    ip_str=ip_str,
-                    ip_type='4',
-                    system=sys)
-                s.clean()
-                s.save()
-                s.update_attrs()
-                s.attrs.primary = primary
-                s.attrs.interface_type = interface_type
-                s.attrs.alias = alias
+                s, errors = create_ipv4_intr_from_domain(
+                    label,
+                    domain_parsed,
+                    sys,
+                    mac_addr,
+                    specific_site=True)
+                if s:
+                    s.update_attrs()
+
+                    if interface:
+                        interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+                    else:
+                        interface_type, primary, alias = sys.get_next_adapter()
+
+                    s.attrs.primary = primary
+                    s.attrs.interface_type = interface_type
+                    s.attrs.alias = alias
+                else:
+                    print 'We failed'
             except ValidationError, e:
                 bundle.errors['error_message'] = " ".join(e.messages)
                 raise ValidationError(join(e.messages))

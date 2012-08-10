@@ -14,14 +14,16 @@ import re
 is_mozilla_tld = re.compile(".*mozilla\.(org|net|ru|co|it|me|de|hu|pt|"
         "at|uk|rs|la|tv)$")
 
-def create_ipv4_intr_from_domain(label, domain_name, system, mac):
+def create_ipv4_intr_from_domain(
+        label, domain_name, system, mac,
+        specific_site=False):
     """A wrapper for `create_ipv4_interface`."""
     if is_mozilla_tld.match(domain_name):
         d = domain_name.split('.')[:-2]
         domain_suffix = '.'.join(d[-2:])
     else:
         # It's probably a mozilla.com TLD
-       d_str = domain_name.replace("mozilla.com","")
+       d_str = domain_name.replace(".mozilla.com","")
        d = d_str.split('.')
        domain_suffix = "mozilla.com"
 
@@ -29,11 +31,11 @@ def create_ipv4_intr_from_domain(label, domain_name, system, mac):
     datacenter = ".".join(d[1:])
 
     return create_ipv4_interface(label, vlan_str, datacenter, system, mac,
-                                domain_suffix)
+                                domain_suffix, specific_site=specific_site)
 
 
 def create_ipv4_interface(label, vlan_str, site_str, system,
-                            mac, domain_suffix):
+                            mac, domain_suffix, specific_site=False):
     """This is an api for creating an interface.
 
     :param label: The label of the interface.
@@ -49,6 +51,8 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
     :param domain_suffix: The suffix of the domain. This is usually
         'mozilla.com'.
     :type domain_suffix: str
+    :param specific_site: Whether we want to compare for an exact site match
+    :type specific_site: boolean
 
     This function returns two values. The first value is the
     :class:`StaticInterface` instance. If the interface was succesfully created
@@ -159,7 +163,10 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
         return None, errors
 
     try:
-        network = vlan.network_set.get(site=site)
+        if specific_site:
+            network = vlan.network_set.get(site=site, name=str(site))
+        else:
+            network = vlan.network_set.get(site=site)
     except MultipleObjectsReturned, e:
         errors['network'] = ErrorList(["There were too many networks "
                 "associated with vlan {0} in {1}. Manually specify which "
