@@ -4,17 +4,20 @@ from django.forms.util import ErrorDict, ErrorList
 
 from core.site.models import Site
 from core.vlan.models import Vlan
+from core.network.models import Network
 from core.site.models import Site
 from core.interface.static_intr.models import StaticInterface
 
 from mozdns.domain.models import Domain
 import pdb
 import re
+import ipaddr
 
 is_mozilla_tld = re.compile(".*mozilla\.(org|net|ru|co|it|me|de|hu|pt|"
         "at|uk|rs|la|tv)$")
 
-def create_ipv4_intr_from_domain(label, domain_name, system, mac):
+def create_ipv4_intr_from_domain(label, domain_name, system, mac,
+        network_str=None):
     """A wrapper for :ref:`create_ipv4_interface`."""
     if is_mozilla_tld.match(domain_name):
         d = domain_name.split('.')[:-2]
@@ -29,11 +32,11 @@ def create_ipv4_intr_from_domain(label, domain_name, system, mac):
     datacenter = ".".join(d[1:])
 
     return create_ipv4_interface(label, vlan_str, datacenter, system, mac,
-                                domain_suffix)
+                                domain_suffix, network_str)
 
 
 def create_ipv4_interface(label, vlan_str, site_str, system,
-                            mac, domain_suffix):
+                            mac, domain_suffix, network_str=None):
     """This is an api for creating an interface.
 
     :param label: The label of the interface.
@@ -49,6 +52,11 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
     :param domain_suffix: The suffix of the domain. This is usually
         'mozilla.com'.
     :type domain_suffix: str
+    :param network_str: This is an optional paramter. If you get a
+        :class:`MultipleObjectsReturned` error when trying to find a network,
+        you can specify which network to use by passing the network's name
+        using this kwarg. E.g. ``network="10.22.9.0/24"``
+    :type network_str: str
 
     This function returns two values. The first value is the
     :class:`StaticInterface` instance. If the interface was succesfully created
@@ -158,16 +166,43 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
             "{0}".format(domain_name)])
         return None, errors
 
-    try:
-        network = vlan.network_set.get(site=site)
-    except MultipleObjectsReturned, e:
-        errors['network'] = ErrorList(["There were too many networks "
-                "associated with vlan {0} in {1}. Manually specify which "
-                "network to use.".format(vlan, site)])
-        return None, errors
-    except ObjectDoesNotExist, e:
-        errors['network'] = "No network for vlan {0} in {1}.".format(vlan, site)
-        return None, errors
+    if not network_str:
+        try:
+            network = vlan.network_set.get(site=site)
+        except MultipleObjectsReturned, e:
+            errors['network'] = ErrorList(["There were too many networks "
+                    "associated with vlan {0} in {1}. Manually specify which "
+                    "network to use.".format(vlan, site)])
+            return None, errors
+        except ObjectDoesNotExist, e:
+            errors['network'] = "No network for vlan {0} in {1}.".format(vlan, site)
+            return None, errors
+    else:
+        try:
+            # Guess which type of network it is.
+            try:
+                if network_str.find(':') > -1:
+                    ip_type = '6'
+                    tmp_network = ipaddr.IPv6Network(network_str)
+                    ip_upper, ip_lower = ipv6_to_longs(network_str)
+                else:
+                    ip_type = '4'
+                    tmp_network = ipaddr.IPv4Network(network_str)
+                    ip_upper, ip_lower = 0, int(tmp_network)
+            except ipaddr.AddressValueError, e:
+                errors['network'] = ErrorList(["The network {0} is not a "
+                    "valid IPv{1} network.".format(network_str, ip_type)])
+                return None, errors
+            # Now try to find a network that matches the query. Error out if we
+            # can't find one and recommend the user create it.
+            network = Network.objects.get(ip_type=ip_type, ip_upper=ip_upper,
+                    ip_lower=ip_lower, prefixlen=tmp_network.prefixlen)
+        except ObjectDoesNotExist, e:
+                errors['network'] = ErrorList(["The network {0} was not "
+                    "found. Consider creating it in the web UI.".format(
+                    network_str)])
+                return None, errors
+
 
     if not network.range_set.all().exists():
         errors['range'] = ErrorList(["No range for network {0} in vlan {1} in "
