@@ -58,6 +58,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'core.interface',
     'core.interface.static_intr',
     'core.search',
+    'core.lib',
     'mozdns',
     'mozdns.address_record',
     'mozdns.cname',

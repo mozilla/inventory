@@ -6,6 +6,12 @@ import pdb
 # This doesn't work for IPv6
 
 def build_subnet(network):
+    """The core function of building DHCP files.
+
+    :param network: The network that will be searched for
+        :ref:`StaticInterface` instances.
+    :type network: :class:`StaticInterface`
+    """
     network_options = network.networkkeyvalue_set.filter(is_option=True)
     network_statements = network.networkkeyvalue_set.filter(is_statement=True)
     network_raw_include = network.dhcpd_raw_include
@@ -41,7 +47,7 @@ def build_subnet(network):
     build_str += "\n"
 
     for mrange in ranges:
-        build_str += build_range(mrange)
+        build_str += build_pool(mrange)
 
     for intr in intrs:
         build_str += "\thost {0} {{\n".format(intr.fqdn)
@@ -53,7 +59,7 @@ def build_subnet(network):
     return build_str
 
 
-def build_range(mrange):
+def build_pool(mrange):
     mrange_options = mrange.rangekeyvalue_set.filter(is_option=True)
     mrange_statements = mrange.rangekeyvalue_set.filter(is_statement=True)
     mrange_raw_include = mrange.dhcpd_raw_include

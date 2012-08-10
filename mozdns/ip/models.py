@@ -11,42 +11,49 @@ import pdb
 
 
 class Ip(models.Model):
-    """An ``Ip`` instance represents either an IPv4 or IPv6 address.
+    """An :class:`Ip` instance represents either an IPv4 or IPv6 address.
 
-    ``Ip`` instances are used in ``AddressRecords`` (A and AAAA records)
-    and in ``PTR`` records.
+    :class:`Ip` instances are used in the :ref:`address_record` (A and AAAA
+    records), :ref:`ptr`, and the :ref:`staticinterface` classes.
 
-    ``Ip`` instances in a PTR record must be mapped back to a
-    ``Domain`` object. A ``ValidationError`` is raised if an
-    eligible ``Domain`` cannot be found when trying to create the
-    ``PTR``'s ``Ip``.
+    :class:`Ip` instances in a :ref:`ptr` record must be mapped back to a
+    Reverse :ref:`domain` object. A :class:`ValidationError` is raised if an
+    eligible Reverse :ref:`domain` cannot be found when trying to create the
+    :ref:`ptr`'s :class:`Ip`.
 
-    The reason why an IP must be mapped back to a ``Domain`` has
-    to do with how bind files are written. In a reverse zone file, ip
-    addresses are mapped from IP to DATA. For instance an PTR record
-    would look like this::
+    The reason why an IP must be mapped back to a Reverse :ref:`domain` has to
+    do with how bind files are generated. In a reverse zone file, ip addresses
+    are mapped from IP to DATA. For instance an :ref:`ptr` record would
+    look like this::
 
         IP                  DATA
         197.1.1.1   PTR     foo.bob.com
 
     If we were building the file ``197.in-addr.arpa``, all IP addresses
     in the ``197`` domain would need to be in this file. To reduce the
-    complexity of finding records for a reverse domain, an ``IP`` is
+    complexity of finding records for a reverse domain, an :class:`IP` is
     linked to it's appropriate reverse domain when it is created. It's
     mapping is updated when it's reverse domain is deleted or a more
-    appropritate reverse domain is added.  Keeping the ``Ip`` feild on
-    PTR  will help preformance when building reverse zone files.
+    appropritate reverse domain is added.  Keeping the :class:`Ip` feild on
+    :ref:`ptr` will help preformance when building reverse zone files.
 
-    The algorithm for determineing which reverse domain an ``Ip``
-    belongs to is done by applying a `longest prefix match` to all
-    reverse domains in the ``Domain`` table.
+    The algorithm for determineing which reverse domain an :class:`Ip`
+    belongs to is done by applying a 'longest prefix match' to all
+    reverse domains in the :ref:`domain` table.
 
-    ``AddressRecords`` need the validation that happens in this class
-    but do not need their ``Ip``'s to be tied back to a reverse domain.
+    :ref:`address_record` objects need the ip validation that happens in this class
+    but do not need their :class:`Ip`'s to be tied back to a reverse domain.
+
+    :ref:`staticinterface` objects need to have their ip tied back to reverse
+    domain because they represent a :ref:`PTR` record as well as an
+    :ref:`address_record`.
 
     .. note::
         Django's BigInteger wasn't "Big" enough, so there is code
         in `mozdns/ip/sql/ip.sql` that Alters the IP table.
+
+    .. note::
+        This class is abstract.
 
     """
     IP_TYPE_CHOICES = (('4', 'ipv4'), ('6', 'ipv6'))

@@ -59,7 +59,7 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
 
     Using this function requires that certain objects exist in the database.
     *Understanding these objects before using this function is a good thing*.
-        ::
+    ::
 
                     <label> (.<BU>) .<DC> . <domain_suffix>
 

@@ -22,13 +22,13 @@ class Domain(models.Model, ObjectUrlMixin):
     A domain's SOA should be shared by only domains within it's zone.
 
     If two domains are part of different zones, they (and their
-    subdomains) will need different SOA objects even if the data
-    contained in the SOA is exactly the same. Use the comment field to
-    distinguish between similar SOAs. Mozder enforces this condition and
-    will raise a ``ValidationError`` during ``clean_all`` if it is
-    violated.
+    subdomains) will need different SOA objects even if the data contained
+    in the SOA is exactly the same. Use the comment field to
+    distinguish between similar SOAs. This model enforces these
+    requirements and will raise a ``ValidationError`` during
+    :func:`clean` if it is violated.
 
-    For example: Say you are authoritative for the domains (and zones)
+    For example: Say we are authoritative for the domains (and zones)
     ``foo.com`` and ``baz.com``.  These zones should have different
     SOA's because they are part of two separate zones. If you had the
     subdomain ``baz.foo.com``, it could have the same SOA as the
@@ -37,7 +37,7 @@ class Domain(models.Model, ObjectUrlMixin):
     Both 'forward' domains under TLD's like 'com', 'edu', and 'org' and
     'reverse' domains under the TLD's 'in-addr.arpa' and 'ipv6.arpa' are stored
     in this table. At first glance it would seem like the two types of domains
-    have disjoint data set's; records that have a Foreign Key back to a
+    have disjoint data set's; record types that have a Foreign Key back to a
     'reverse' domain would never need to have a Foreign Key back to a 'forward'
     domain. This is not the case. The two main examples are NS and CNAME
     records. If there were two different domain tables, NS/CNAME records would
@@ -75,6 +75,12 @@ class Domain(models.Model, ObjectUrlMixin):
     domain, all records in the PTR table should be checked for a more
     appropriate domain. Also, when a domain is deleted, all PTR objects should
     be passed down to the parent domain.
+
+
+    .. warning::
+
+        Deleting a domain will delete all records associated to that domain.
+
     """
 
     id = models.AutoField(primary_key=True)
