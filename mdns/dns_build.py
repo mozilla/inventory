@@ -427,6 +427,29 @@ def populate_reverse_dns(rev_svn_zones, view=None):
                     pdb.set_trace()
                     pass
 
+    for (name, ttl, rdata) in zone.iterate_rdatas('MX'):
+        name = name.to_text().strip('.')
+        print str(name) + " MX " + str(rdata)
+        exists_domain = Domain.objects.filter(name=name)
+        if exists_domain:
+            label = ''
+            domain = exists_domain[0]
+        else:
+            label = name.split('.')[0]
+            domain_name = '.'.join(name.split('.')[1:])
+            domain = ensure_domain(domain_name)
+        priority = rdata.preference
+        server = rdata.exchange.to_text().strip('.')
+        mx, _ = MX.objects.get_or_create(label=label, domain=domain,
+                server= server, priority=priority, ttl="3600")
+        if view:
+            mx.views.add(view)
+            try:
+                mx.save()
+                mx.views.all()
+            except Exception, e:
+                pdb.set_trace()
+
         """
         for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
             name = name.to_text().strip('.')
@@ -584,16 +607,17 @@ def populate_forward_dns(zone, root_domain, view=None):
                 domain_name = domain_name.strip('.')
                 # We need to check for A records who have a name with this
                 # domain.
-                addrs = AddressRecord.objects.filter(fqdn=domain_name,
-                        ip_type='6')
+                addrs = AddressRecord.objects.filter(fqdn=domain_name)
                 clober_objects = []
                 if addrs:
                     for exists_a in addrs:
                         # It got here. It exists
                         need_to_recreate_a = True
                         ip_str = exists_a.ip_str
+                        ip_type = exists_a.ip_type
                         exists_a.delete(check_cname=False)
-                        a = AddressRecord(label='', ip_str=ip_str, ip_type='6')
+                        a = AddressRecord(label='', ip_str=ip_str,
+                                ip_type=ip_type)
                         clober_objects.append(a)
                 domain, created = Domain.objects.get_or_create(name=
                         domain_name)
