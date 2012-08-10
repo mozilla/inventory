@@ -13,6 +13,7 @@ from tastytools.test.resources import ResourceTestData
 from tastypie.authorization import Authorization
 from core.interface.static_intr.models import StaticInterface
 from core.interface.static_intr.models import StaticIntrKeyValue
+from core.range.models import Range
 from mozdns.domain.models import Domain
 import json
 import re
@@ -152,15 +153,25 @@ class SystemResource(CustomAPIResource):
             label = sys.hostname.split('.')[0]
             domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.mozilla.com'
             domain = Domain.objects.filter(name=domain_parsed)[0]
-            # ip_str will get auto generated eventually
+
             if interface:
                 interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
             else:
                 interface_type, primary, alias = sys.get_next_adapter()
             if not ip_str:
-                ip_str = '10.99.99.97'
+                range = Range.objects.filter(
+                    network__site__name__icontains=domain_parsed.split(".")[1],
+                    network__vlan__name__icontains=domain_parsed.split(".")[0])[0]
+                ret_ip = range.get_next_ip()
+                ip_str = ret_ip.exploded
             try:
-                s = StaticInterface(label=label, mac=mac_addr, domain=domain, ip_str=ip_str, ip_type='4', system=sys)
+                s = StaticInterface(
+                    label=label,
+                    mac=mac_addr,
+                    domain=domain,
+                    ip_str=ip_str,
+                    ip_type='4',
+                    system=sys)
                 s.clean()
                 s.save()
                 s.update_attrs()
@@ -169,6 +180,7 @@ class SystemResource(CustomAPIResource):
                 s.attrs.alias = alias
             except ValidationError, e:
                 bundle.errors['error_message'] = " ".join(e.messages)
+                raise ValidationError(join(e.messages))
             except Exception, e:
                 print e
 

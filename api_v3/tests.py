@@ -308,6 +308,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(adapters[0].attrs.interface_type, 'eth')
         self.assertEqual(adapters[0].attrs.primary, '0')
         self.assertEqual(adapters[0].attrs.alias, '0')
+        #import pdb; pdb.set_trace()
         resp = self.api_client.patch(
             '/en-US/tasty/v3/system/%s/' % self.test_hostname,
             format='json', data=delete_data)
