@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 
 import string
 import pdb
+import ipaddr
 
 
 def do_zone_validation(domain):
@@ -260,7 +261,7 @@ def validate_label(label, valid_chars=None):
         # ASCII letters, digits, and the `-' character." "[T]he
         # following characters are recommended for use in a host name:
         # "A-Z", "a-z", "0-9", dash and underscore"
-        valid_chars = string.ascii_letters + "0123456789" + "-"
+        valid_chars = string.ascii_letters + "0123456789" + "-" + "_"
 
     # Labels may not be all numbers, but may have a leading digit TODO
     # Labels must end and begin only with a letter or digit TODO
@@ -425,6 +426,8 @@ def validate_srv_label(srv_label):
     """This function is the same as :func:`validate_label` expect
     :class:`SRV` records can have a ``_`` preceding its label.
     """
+    if srv_label == "":
+        return
     if srv_label and srv_label[0] != '_':
         raise ValidationError("Error: SRV label must start with '_'")
     validate_label(srv_label[1:])  # Get rid of '_'
@@ -440,6 +443,12 @@ def validate_srv_name(srv_name):
         raise ValidationError("Error: SRV label must not be None")
     mod_srv_name = srv_name[1:]  # Get rid of '_'
     validate_name(mod_srv_name)
+
+def validate_srv_target(srv_target):
+    if srv_target == ".":
+        return
+    else:
+        validate_name(srv_target)
 
 ###################################################################
 #               Functions that Validate MX fields                 #
@@ -467,3 +476,64 @@ def validate_ip_type(ip_type):
     """
     if ip_type not in ('4', '6'):
         raise ValidationError("Error: Plase provide a valid ip type.")
+
+###################################################################
+#              Functions Validate RFC1918 requirements            #
+###################################################################
+
+
+def is_rfc1918(ip_str):
+    """Returns True if the IP is private. If the IP isn't a valid IPv4 address
+    this function will raise a :class:`ValidationError`.
+    """
+    private_networks = ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
+    try:
+        ip_str_network = ipaddr.IPv4Network(ip_str)
+    except ipaddr.AddressValueError, e:
+        raise ValidationError("{0} is not a valid IPv4 address".format(ip_str))
+    for network in private_networks:
+        if ipaddr.IPv4Network(network).overlaps(ip_str_network):
+            return True
+    return False
+
+def is_rfc4193(ip_str):
+    """Returns True if the IP is private. If the IP isn't a valid IPv6 address
+    this function will raise a :class:`ValidationError`.
+    """
+    private_networks = ["fc00::/7"]
+    try:
+        ip_str_network = ipaddr.IPv6Network(ip_str)
+    except ipaddr.AddressValueError, e:
+        raise ValidationError("{0} is not a valid IPv6 address".format(ip_str))
+    for network in private_networks:
+        if ipaddr.IPv6Network(network).overlaps(ip_str_network):
+            return True
+    return False
+
+
+def validate_views(views, ip_str, ip_type):
+    """If the 'private' :class:`View` object is in ``views`` and ``ip_str`` is
+    in one of the RFC 1918 networks, raise a :class:`ValidationError`.
+    """
+    if views.filter(name="public").exists():
+        if ip_type == '4' and is_rfc1918(ip_str):
+            raise ValidationError("{0} is a private IP address. You"
+                    "cannot put a record that contains private data into"
+                    "a public view.")
+        if ip_type == '6' and is_rfc4193(ip_str):
+            raise ValidationError("{0} is a private IP address. You"
+                    "cannot put a record that contains private data into"
+                    "a public view.")
+
+def validate_view(view, ip_str, ip_type):
+    """If view is the private view and ``ip_str`` is
+    in one of the RFC 1918 networks, raise a :class:`ValidationError`.
+    """
+    if ip_type == '4' and is_rfc1918(ip_str):
+        raise ValidationError("{0} is a private IP address. You"
+                "cannot put a record that contains private data into"
+                "a public view.")
+    if ip_type == '6' and is_rfc4193(ip_str):
+        raise ValidationError("{0} is a private IP address. You"
+                "cannot put a record that contains private data into"
+                "a public view.")

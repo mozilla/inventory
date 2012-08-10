@@ -35,7 +35,7 @@ class DomainTests(TestCase):
         str(foo)
         foo.__repr__()
 
-    def test_add_domain(self):
+    def test1_add_domain(self):
         c = Domain( name = 'com')
         c.save()
 
@@ -55,6 +55,16 @@ class DomainTests(TestCase):
         b_b_c = Domain( name = 'baz.bar.com')
         b_b_c.save()
         self.assertTrue( b_b_c.master_domain == b_c)
+
+    def test2_add_domain(self):
+        # Some domains have '_' in their name. Make sure validation allows
+        # this.
+        c = Domain( name = 'cz')
+        c.save()
+        c1 = Domain( name = '_foo.cz')
+        c1.save()
+        c2 = Domain( name = 'moo_foo._foo.cz')
+        c2.save()
 
     def test_soa_validators(self):
         m = Domain( name = 'moo')

@@ -41,12 +41,12 @@ def print_system(system):
     return "{0} ({1}systems/edit/{2}/)".format(system, INV_URL, system.pk)
 
 """
->>> ip2dns_form('10.20.30.40')
+>>> ip_to_domain_name('10.20.30.40')
 '40.30.20.10.IN-ADDR.ARPA'
->>> ip2dns_form('10.20.30.40', lowercase=True)
+>>> ip_to_domain_name('10.20.30.40', lowercase=True)
 '40.30.20.10.in-addr.arpa'
 """
-def _ip2dns_form(ip, lowercase=False):
+def _ip_to_domain_name(ip, lowercase=False):
     """Convert an ip to dns zone form. The ip is assumed to be in valid dotted
     decimal format."""
     octets = ip.split('.')

@@ -32,7 +32,7 @@ from mozdns.srv.models import SRV
 from mozdns.tests.view_tests import random_label
 from mozdns.txt.models import TXT
 from mozdns.domain.utils import *
-from mozdns.ip.utils import ip2dns_form
+from mozdns.ip.utils import ip_to_domain_name
 from mozdns.view.models import View
 
 import os.path

@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 
 from mozdns.domain.models import Domain, name_to_domain
 from mozdns.validation import validate_ip_type
-from mozdns.ip.utils import ip2dns_form, nibbilize
+from mozdns.ip.utils import ip_to_domain_name, nibbilize
 
 import ipaddr
 
@@ -97,7 +97,7 @@ class Ip(models.Model):
                 raise ValidationError("Invalid Ip address {0}".
                                       format(self.ip_str))
             if update_reverse_domain:
-                self.reverse_domain = name_to_domain(ip2dns_form(self.ip_str,
+                self.reverse_domain = name_to_domain(ip_to_domain_name(self.ip_str,
                     ip_type='4'))
                 if (self.reverse_domain is None or self.reverse_domain.name in
                         ('arpa', 'in-addr.arpa', 'ipv6.arpa')):
@@ -115,7 +115,7 @@ class Ip(models.Model):
 
             if update_reverse_domain:
                 nibz = nibbilize(self.ip_str)
-                revname = ip2dns_form(nibz, ip_type='6')
+                revname = ip_to_domain_name(nibz, ip_type='6')
                 self.reverse_domain = name_to_domain(revname)
                 if (self.reverse_domain is None or self.reverse_domain.name in
                         ('arpa', 'in-addr.arpa', 'ipv6.arpa')):
@@ -150,7 +150,7 @@ def ipv6_to_longs(addr):
     try:
         ip = ipaddr.IPv6Address(addr)
     except ipaddr.AddressValueError, e:
-        raise ValidationError("AddressValueError: Invalid Ip address {0}".
+        raise ValidationError("AddressValueError: Invalid IPv6 address {0}".
                               format(addr))
     # TODO, use int() instead of _int. Make sure tests pass
     ip_upper = ip._ip >> 64  # Put the last 64 bits in the first 64

@@ -4,7 +4,9 @@ from django.core.exceptions import ValidationError
 from mozdns.view.models import View
 from mozdns.domain.models import Domain, _name_to_domain
 from mozdns.ip.models import Ip
-from mozdns.validation import validate_name
+from mozdns.ip.utils import ip_to_dns_form
+from mozdns.validation import validate_name, validate_ttl
+from mozdns.validation import validate_views
 from mozdns.mixins import ObjectUrlMixin
 from core.interface.static_intr.models import StaticInterface
 
@@ -19,10 +21,13 @@ class PTR(Ip, ObjectUrlMixin):
     """
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, validators=[validate_name])
+    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
+            validators=[validate_ttl])
     reverse_domain = models.ForeignKey(Domain, null=False, blank=True)
     data_domain = models.ForeignKey(Domain, null=True, blank=True,
             related_name='ptrs', on_delete=models.SET_NULL)
     views = models.ManyToManyField(View)
+    comment = models.CharField(max_length=1000, null=True, blank=True)
 
     search_fields = ('ip_str', 'name')
 
@@ -39,6 +44,7 @@ class PTR(Ip, ObjectUrlMixin):
 
     def save(self, *args, **kwargs):
         if self.pk:  # We need to exist in the db first.
+            #validate_views(self.views, self.ip_str, self.ip_type)
             db_self = PTR.objects.get(pk=self.pk)
             if db_self.name == self.name and db_self.ip_str == self.ip_str:
                 # Nothing important changed. Don't rebuild the zone file.
@@ -94,3 +100,10 @@ class PTR(Ip, ObjectUrlMixin):
 
     def __repr__(self):
         return "<{0}>".format(str(self))
+
+    def dns_name(self):
+        """Return the cononical name of this ptr that can be placed in a
+        reverse zone file."""
+        return ip_to_dns_form(self.ip_str, ip_type=self.ip_type)
+
+

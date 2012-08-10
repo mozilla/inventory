@@ -163,9 +163,13 @@ class Range(models.Model, ObjectUrlMixin):
 
     def display(self):
         return "Range: {3} to {4}  {0} -- {2} -- {1}  ".format(
-                #'self.network.site', 'self.network.vlan', self.network,
                 self.network.site, self.network.vlan, self.network,
                 self.start_str, self.end_str)
+
+    def choice_display(self):
+        return "{0} - {1} - {2}".format(
+                str(self.network.site).upper(), self.network.vlan, self.network,
+                self.start_str)
 
     def __repr__(self):
         return "<Range: {0}>".format(str(self))
@@ -191,7 +195,7 @@ class Range(models.Model, ObjectUrlMixin):
         if not records and not intrs:
             ip = ipaddr.IPv4Address(start)
             return ip
-        for i in range(start, end + 1):
+        for i in xrange(start, end + 1):
             taken = False
             for record in records:
                 if record.ip_lower == i:

@@ -12,7 +12,7 @@ from mozdns.ptr.models import PTR
 from mozdns.tests.view_tests import random_label
 
 from mozdns.ip.models import ipv6_to_longs, Ip
-from mozdns.ip.utils import ip2dns_form, nibbilize
+from mozdns.ip.utils import ip_to_domain_name, nibbilize
 
 from mozdns.domain.models import Domain, boot_strap_ipv6_reverse_domain
 from mozdns.soa.models import SOA
@@ -43,7 +43,7 @@ class ReverseDomainTests(TestCase):
         if name in ('arpa', 'in-addr.arpa', 'ipv6.arpa'):
             pass
         else:
-            name = ip2dns_form(name, ip_type=ip_type)
+            name = ip_to_domain_name(name, ip_type=ip_type)
         d = Domain(name = name, delegated=delegated)
         d.clean()
         self.assertTrue(d.is_reverse)
@@ -518,7 +518,7 @@ class ReverseDomainTests(TestCase):
             self.assertTrue(rd[1].get_delete_url())
 
         try:
-            Domain.objects.filter(name=ip2dns_form('1.2.8.3.0.0.0.0.4.3.4.5.6.6.5.6.7.0.0',
+            Domain.objects.filter(name=ip_to_domain_name('1.2.8.3.0.0.0.0.4.3.4.5.6.6.5.6.7.0.0',
                 ip_type='6'))[0].delete()
         except ValidationError, e:
             pass

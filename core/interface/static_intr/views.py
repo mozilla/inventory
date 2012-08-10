@@ -29,13 +29,21 @@ import ipaddr
 import simplejson as json
 
 
-def do_combine_a_ptr_to_interface(addr, ptr, system, mac_address):
+def do_combine_a_ptr_to_interface(
+        addr, ptr, system, mac_address=None,
+        interface=None, dhcp_hostname=None,
+        dhcp_domain_name=None, dhcp_domain_name_servers=None,
+        dhcp_filename=None):
+
+    if mac_address == '00:00:00:00:00:00' or mac_address is None:
+        next_adapter = system.get_next_key_value_adapter()
     if (addr.ip_str != ptr.ip_str or addr.fqdn != ptr.name or
         addr.ip_type != ptr.ip_type):
         raise ValidationError("This A and PTR have different data.")
 
-    intr = StaticInterface(label=addr.label, mac=mac_address, domain=addr.domain,
-            ip_str=addr.ip_str, ip_type=addr.ip_type, system=system)
+    intr = StaticInterface(
+        label=addr.label, mac=mac_address, domain=addr.domain,
+        ip_str=addr.ip_str, ip_type=addr.ip_type, system=system)
     addr_deleted = False
     ptr_deleted = False
 
@@ -45,6 +53,25 @@ def do_combine_a_ptr_to_interface(addr, ptr, system, mac_address):
     ptr_deleted = True
     intr.full_clean()
     intr.save()
+    if interface:
+        from api_v3.system_api import SystemResource
+        intr.update_attrs()
+        adapter_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+        intr.attrs.primary = primary
+        intr.attrs.alias = alias
+        intr.attrs.interface_type = adapter_type
+        if dhcp_hostname:
+            intr.attrs.hostname = dhcp_hostname
+
+        if dhcp_filename:
+            intr.attrs.filename = dhcp_filename
+
+        if dhcp_domain_name:
+            intr.attrs.domain_name = dhcp_domain_name
+
+        if dhcp_domain_name_servers:
+            intr.attrs.domain_name_servers = dhcp_domain_name_servers
+
     return intr, addr_deleted, ptr_deleted
 
 
@@ -72,9 +99,8 @@ def combine_a_ptr_to_interface(request, addr_pk, ptr_pk):
                 system = None
         if system:
             try:
-                ### Come up with way to get mac address
                 intr, addr_deleted, ptr_deleted = do_combine_a_ptr_to_interface(
-                        addr, ptr, system, '00:00:00:00:00:00')
+                        addr, ptr, system, mac_address="00:00:00:00:00:00")
             except ValidationError, e:
                 return HttpResponse(json.dumps({'success': False, 'error':
                     e.messages[0]}))
@@ -218,7 +244,16 @@ def edit_static_interface(request, intr_pk):
                     'domain': intr.domain
                 })
         else:
-            raise ValidationError(interface_form.errors)
+            return render(request, 'static_intr/static_intr_edit.html', {
+                'form': interface_form,
+                'intr': intr,
+                'attrs': attrs,
+                'aa': json.dumps(aa),
+                'docs': docs,
+                'form_title': 'Edit Interface for System {0}'.format(
+                    system),
+                'domain': intr.domain
+            })
 
         messages.success(request, "Success! Interface Updated.")
         return redirect(intr.get_edit_url())

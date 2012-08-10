@@ -49,6 +49,11 @@ def build_subnet(network):
     for mrange in ranges:
         build_str += build_pool(mrange)
 
+    if raw:
+        # reset the build_str to '' if set to raw
+        # raw should only output the hosts
+        build_str = ''
+
     for intr in intrs:
         build_str += "\thost {0} {{\n".format(intr.fqdn)
         build_str += "\t\thardware ethernet {0};\n".format(intr.mac)

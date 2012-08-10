@@ -52,7 +52,13 @@ def nif(network, root=True):
     misc = set()
     misc = set()
     if root:
-        misc.add(network)
+        try:
+            n = Network.objects.get(ip_upper=network.ip_upper,
+                    ip_lower=network.ip_lower, ip_type=network.ip_type,
+                    prefixlen=network.prefixlen)
+            misc.add(n)
+        except ObjectDoesNotExist, e:
+            pass
         if network.vlan:
             misc.add(network.vlan)
     if network.site:
@@ -198,7 +204,7 @@ def compile_search(args):
             vlan = Vlan.objects.get(name=vlan_str)
         except ObjectDoesNotExist, e:
             try:
-                vlan = Vlan.objects.get(number=vlan_str)
+                vlan = Vlan.objects.get(name=vlan_str)
             except ObjectDoesNotExist, e:
                 continue
         queries, v_misc = vif(vlan)
@@ -207,6 +213,7 @@ def compile_search(args):
 
     def str_upper(str_):  # LOL php
         return str_.upper()
+
     if type_fs:
         type_fs = map(str_upper, type_fs)
         # If we have a type filter, only make query set's it it's type is in
@@ -235,6 +242,7 @@ def compile_search(args):
                 ptrs = None
             srvs = None
             txts = None
+            sshfps = None
         else:
             if "A" in type_fs:
                 AddressRecord = mozdns.address_record.models.AddressRecord
@@ -289,6 +297,12 @@ def compile_search(args):
                 txts = TXT.objects.all()
             else:
                 txts = None
+
+            if "SSHFP" in type_fs:
+                SSHFP = mozdns.sshfp.models.SSHFP
+                sshfps = SSHFP.objects.all()
+            else:
+                sshfps = None
     else:
         if range_queries:
             # We need to AND all of these Q set's together.
@@ -305,6 +319,7 @@ def compile_search(args):
             ptrs = PTR.objects.filter(*mega_filter)
             srvs = None
             txts = None
+            sshfps = None
         else:
             AddressRecord = mozdns.address_record.models.AddressRecord
             addrs = AddressRecord.objects.all()
@@ -332,6 +347,9 @@ def compile_search(args):
 
             TXT = mozdns.txt.models.TXT
             txts = TXT.objects.all()
+
+            SSHFP = mozdns.sshfp.models.SSHFP
+            sshfps = SSHFP.objects.all()
 
     # Exclude types
 
@@ -362,6 +380,9 @@ def compile_search(args):
 
         if "TXT" in type_fs:
             txts = None
+
+        if "SSHFP" in type_fs:
+            sshfps = None
     # NAME FILTER
 
     for f in text_fs:
@@ -392,6 +413,9 @@ def compile_search(args):
         if txts:
             txt_filter = build_filter(f, TXT.search_fields)
             txts = txts.filter(txt_filter)
+        if sshfps:
+            sshfp_filter = build_filter(f, SSHFP.search_fields)
+            sshfps = sshfps.filter(sshfp_filter)
 
     # Exclude NAME FILTER
     for ef in n_text_fs:

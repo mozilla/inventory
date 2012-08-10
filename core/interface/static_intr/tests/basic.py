@@ -8,7 +8,7 @@ from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
 from mozdns.view.models import View
 
-from mozdns.ip.utils import ip2dns_form, nibbilize
+from mozdns.ip.utils import ip_to_domain_name, nibbilize
 
 import pdb
 
@@ -19,7 +19,7 @@ class StaticInterTests(TestCase):
         if name in ('arpa', 'in-addr.arpa', 'ipv6.arpa'):
             pass
         else:
-            name = ip2dns_form(name, ip_type=ip_type)
+            name = ip_to_domain_name(name, ip_type=ip_type)
         d = Domain(name = name, delegated=delegated)
         d.clean()
         self.assertTrue(d.is_reverse)
@@ -94,7 +94,18 @@ class StaticInterTests(TestCase):
         ip_str = "10.0.0.1"
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
         i = self.do_add(**kwargs)
+
+        i.dhcp_enabled = False
         i.clean()
+        i.save()
+        i2 = StaticInterface.objects.get(pk=i.pk)
+        self.assertFalse(i2.dhcp_enabled)
+
+        i.dhcp_enabled = True
+        i.clean()
+        i.save()
+        i3 = StaticInterface.objects.get(pk=i.pk)
+        self.assertTrue(i3.dhcp_enabled)
 
     def test3_create_basic(self):
         mac = "11:22:33:44:55:66"

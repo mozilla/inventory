@@ -1,15 +1,76 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
+from django.dispatch import receiver
+from django.db.models.signals import m2m_changed
 
 import mozdns
 from mozdns.domain.models import Domain, _check_TLD_condition
 from mozdns.view.models import View
 from mozdns.mixins import ObjectUrlMixin
 from mozdns.validation import validate_first_label, validate_name
+from mozdns.validation import validate_ttl, is_rfc1918, is_rfc4193
 from settings import MOZDNS_BASE_URL
 
 import pdb
 
+@receiver(m2m_changed)
+def views_handler(sender, **kwargs):
+    """
+    FUICKING DJANGO!!! WHAT A PEICE OF SHIT! FUCKIN GET A REAL ORM YOU PIECE OF
+    CRAP>! Here is the code bomb that will make me pissed off because it's so
+    unelaquent and is a pile of steamed hack. FOR FUCK SAKE! There is NOOOOO
+    sane way to validate a many to many relation ship? LIKE WOW!
+
+    http://python.6.n6.nabble.com/Signals-for-ManyToMany-relations-question-td460014.html
+    http://stackoverflow.com/questions/1925383/issue-with-manytomany-relationships-not-updating-inmediatly-after-save
+    This is what I want to do:
+
+    Fake models
+    -----------
+    ::
+        class Foo(models.Model):
+            items = fields.ManyToMany(Item)
+            ...
+            ...
+
+        class Item(models.Model):
+            name = fields.CharField()
+            ...
+
+    Example:
+    --------
+    Let's assume I don't ever want to associate a Foo object with an item that has name == "Green"
+
+        >>> f = Foo()
+        >>> item = Item("Green")
+        >>> f.items.add(item)
+
+        ^ I want an exception raised during "add(item)"
+
+    Why can't I do that sainly?!?!
+
+    This function catches any changes to a manymany relationship and just nukes
+    the relationship to the "private" view if one exists.
+
+    One awesome side affect of this hack is there is NO way for this function
+    to relay that there was an error to the user. If we want to tell the user
+    that we nucked the records relationship to the public view we will need to
+    do that in a form.
+    """
+    if kwargs['action'] != "post_add":
+        return
+    instance = kwargs.pop('instance', None)
+    if (not instance or not hasattr(instance, 'ip_str') or
+            not hasattr(instance, 'ip_type')):
+        return
+    model = kwargs.pop('model', None)
+    if not View == model:
+        return
+    if instance.views.filter(name="public").exists():
+        if instance.ip_type == '4' and is_rfc1918(instance.ip_str):
+            instance.views.remove(View.objects.get(name="public"))
+        elif instance.ip_type == '6' and is_rfc4193(instance.ip_str):
+            instance.views.remove(View.objects.get(name="public"))
 
 class MozdnsRecord(models.Model, ObjectUrlMixin):
     """
@@ -41,9 +102,6 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
     looking at ``obj.label`` together with ``obj.domain.name``, you can
     just search the ``obj.fqdn`` field.
 
-    As of commit 7b2fd19f, the build scripts do not care about ``fqdn``.
-    This could change.
-
     "the total number of octets that represent a name (i.e., the sum of
     all label octets and label lengths) is limited to 255" - RFC 4471
     """
@@ -53,7 +111,10 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
                              validators=[validate_first_label])
     fqdn = models.CharField(max_length=255, blank=True, null=True,
                             validators=[validate_name])
+    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
+            validators=[validate_ttl])
     views = models.ManyToManyField(View)
+    comment = models.CharField(max_length=1000, blank=True, null=True)
     # fqdn = label + domain.name <--- see set_fqdn
 
     class Meta:

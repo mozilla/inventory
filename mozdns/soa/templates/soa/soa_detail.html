@@ -10,13 +10,7 @@
     {{ super() }}
 
     {% from "mozdns/tables.html" import render_table %}
-    {% if soa.domain_set.all().exists() %}
-        {% if soa.domain_set.all()[0].is_reverse %}
-            <p><a href='/mozdns/bind/reverse/{{ soa.pk }}/build/'>See compiled BIND file for this Zone</a></p>
-        {% else %}
-            <p><a href='/mozdns/bind/forward/{{ soa.pk }}/build/'>See compiled BIND file for this Zone</a></p>
-        {% endif %}
-    {% endif %}
+    <p><a href='/mozdns/bind/build_debug/{{ soa.pk }}/'>See compiled BIND file for this Zone</a></p>
 
     {% if dom_matrix %}
         <h3> Domains </h3>

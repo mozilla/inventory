@@ -3,8 +3,8 @@
 {% block dns_content %}
 
 <div class='dns-title'>PTR {{ object.name }}</div>
-    {% if object.domain %}
-        <a class="btn" href="{{ object.domain.get_absolute_url() }}">View Domain</a>
+    {% if object.reverse_domain %}
+        <a class="btn" href="{{ object.reverse_domain.get_absolute_url() }}">View Reverse Domain</a>
     {% endif %}
 
         <a class="btn" href="{{ object.get_edit_url() }}">Edit</a>
@@ -17,6 +17,7 @@
             {% for item, value in object.details() %}
                 <th>{{ item }}</th>
             {% endfor %}
+                <th>Views</th>
         </thead>
 
         <tbody>
@@ -32,6 +33,11 @@
                     {% else %}
                         {{ value }}
                     {% endif %}
+                </td>
+            {% endfor %}
+            {% for view in object.views.all() %}
+                <td>
+                    {{ view }}
                 </td>
             {% endfor %}
             </tr>

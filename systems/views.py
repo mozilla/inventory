@@ -26,6 +26,7 @@ from jingo import render
 from django.views.decorators.csrf import csrf_exempt
 from Rack import Rack
 from core.interface.static_intr.models import StaticInterface
+from core.range.models import Range
 
 from MozInvAuthorization.KeyValueACL import KeyValueACL 
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
@@ -54,7 +55,7 @@ def parse_title_num(title):
       pass
    return val
 
-def check_dupe_nic(request,system_id,adapter_number):
+def check_dupe_nic(request,system_id, adapter_number):
     try:
         system = models.System.objects.get(id=system_id)
         found = system.check_for_adapter(adapter_number)
@@ -82,6 +83,113 @@ def system_rack_elevation(request, rack_id):
         'data':data,
         },
         RequestContext(request))
+
+def get_all_ranges_ajax(request):
+    ret_list = []
+    for r in Range.objects.all().order_by('network__site'):
+        ret_list.append({'id': r.id, 'display': r.choice_display()})
+    return HttpResponse(json.dumps(ret_list))
+
+
+def get_next_available_ip_by_range(request, range_id):
+    range = get_object_or_404(Range, id=range_id)
+    ret = {}
+    ret_ip = range.get_next_ip()
+    display_ip = ret_ip.exploded
+    ret['success'] = True
+    ret['ip_address'] = display_ip
+    return HttpResponse(json.dumps(ret))
+
+
+@csrf_exempt
+def create_adapter(request, system_id):
+    from api_v3.system_api import SystemResource
+    from mozdns.domain.models import Domain
+    from mozdns.view.models import View
+    system = get_object_or_404(models.System, id=system_id)
+    ip_address = request.POST.get('ip_address')
+    mac_address = request.POST.get('mac_address')
+    interface = request.POST.get('interface')
+    enable_dhcp = True
+    enable_dns = True
+    enable_public = True
+    enable_private = True
+
+    if request.POST.get('is_ajax'):
+        label = request.POST.get('hostname')
+        the_range = Range.objects.get(id=request.POST.get('range'))
+        domain_parsed = "%s.%s.mozilla.com" % (the_range.network.vlan.name, the_range.network.site.name)
+        if request.POST.get('enable_dhcp') == 'false':
+            enable_dhcp = False
+        if request.POST.get('enable_dns') == 'false':
+            enable_dns = False
+        else:
+            enable_public = False if request.POST.get('enable_public') == 'false' else True
+            enable_private = False if request.POST.get('enable_private') == 'false' else True
+            #Do something here
+    else:
+        label = system.hostname.split('.')[0]
+        domain_parsed = ".".join(system.hostname.split('.')[1:]) + '.mozilla.com'
+
+    try:
+        domain = Domain.objects.filter(name=domain_parsed)[0]
+    except IndexError, e:
+        return HttpResponse(json.dumps({'success': False, 'error_message': "Domain Not Found"}))
+        
+
+    if interface:
+        try:
+            interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+        except ValidationError, e:
+            return HttpResponse(json.dumps({'success': False, 'error_message': " ".join(e.messages)}))
+    else:
+        interface_type, primary, alias = system.get_next_adapter()
+    print interface
+    s = StaticInterface(label=label, mac=mac_address, domain=domain, ip_str=ip_address, ip_type='4', system=system)
+    s.dhcp_enabled = enable_dhcp
+    s.dns_enabled = enable_dns
+
+
+    try:
+        s.clean()
+        s.save()
+        if enable_dns and enable_public:
+            public = View.objects.get(name='public')
+            private = View.objects.get(name='private')
+            s.views.add(public)
+            s.views.add(private)
+            s.save()
+
+        elif enable_dns and enable_private and not enable_public:
+            private = View.objects.get(name='private')
+            s.views.add(private)
+            s.save()
+
+    except ValidationError, e:
+        return HttpResponse(json.dumps({'success': False, 'error_message': " ".join(e.messages)}))
+ 
+    s.update_attrs()
+    try:
+        s.attrs.primary = primary
+        s.attrs.interface_type = interface_type
+        s.attrs.alias = alias
+    except AttributeError, e:
+        return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))
+    """try:
+        s = StaticInterface(label=label, mac=mac_address, domain=domain, ip_str=ip_address, ip_type='4', system=system)
+        s.clean()
+        s.save()
+        s.update_attrs()
+        s.attrs.primary = primary
+        s.attrs.interface_type = interface_type
+        s.attrs.alias = alias
+    except ValidationError, e:
+        return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))
+    except Exception, e:
+        return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))"""
+
+    return HttpResponse(json.dumps({'success': True}))
+
 
 @allow_anyone
 def system_auto_complete_ajax(request):
@@ -813,6 +921,7 @@ def rack_delete(request, object_id):
             },
             RequestContext(request))
 
+
 def rack_edit(request, object_id):
     rack = get_object_or_404(models.SystemRack, pk=object_id)
     from forms import SystemRackForm
@@ -825,10 +934,14 @@ def rack_edit(request, object_id):
     else:
         form = SystemRackForm(instance=rack)
 
-    return render_to_response('systems/generic_form.html', {
+    return render_to_response(
+        'systems/generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def rack_new(request):
     from forms import SystemRackForm
     initial = {}
@@ -840,17 +953,25 @@ def rack_new(request):
     else:
         form = SystemRackForm(initial=initial)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_show(request, object_id):
     object = get_object_or_404(models.Location, pk=object_id)
 
-    return render_to_response('systems/location_detail.html', {
+    return render_to_response(
+        'systems/location_detail.html',
+        {
             'object': object,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_edit(request, object_id):
     location = get_object_or_404(models.Location, pk=object_id)
     from forms import LocationForm
@@ -863,10 +984,14 @@ def location_edit(request, object_id):
     else:
         form = LocationForm(instance=location)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_new(request):
     from forms import LocationForm
     initial = {}
@@ -878,10 +1003,14 @@ def location_new(request):
     else:
         form = LocationForm(initial=initial)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def server_model_edit(request, object_id):
     server_model = get_object_or_404(models.ServerModel, pk=object_id)
     from forms import ServerModelForm
@@ -894,10 +1023,13 @@ def server_model_edit(request, object_id):
     else:
         form = ServerModelForm(instance=server_model)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
 
 @csrf_exempt
 def operating_system_create_ajax(request):
@@ -905,10 +1037,11 @@ def operating_system_create_ajax(request):
         if 'name' in request.POST and 'version' in request.POST:
             name = request.POST['name']
             version = request.POST['version']
-        models.OperatingSystem(name=name,version=version).save()
+        models.OperatingSystem(name=name, version=version).save()
         return operating_system_list_ajax(request)
     else:
         return HttpResponse("OK")
+
 
 @csrf_exempt
 def server_model_create_ajax(request):
@@ -916,46 +1049,60 @@ def server_model_create_ajax(request):
         if 'model' in request.POST and 'vendor' in request.POST:
             model = request.POST['model']
             vendor = request.POST['vendor']
-        models.ServerModel(vendor=vendor,model=model).save()
+        models.ServerModel(vendor=vendor, model=model).save()
         return server_model_list_ajax(request)
     else:
         return HttpResponse("OK")
 
+
 def operating_system_list_ajax(request):
     ret = []
     for m in models.OperatingSystem.objects.all():
-        ret.append({'id':m.id, 'name': "%s - %s" % (m.name, m.version)})
+        ret.append({'id': m.id, 'name': "%s - %s" % (m.name, m.version)})
 
     return HttpResponse(json.dumps(ret))
+
 
 def server_model_list_ajax(request):
     ret = []
     for m in models.ServerModel.objects.all():
-        ret.append({'id':m.id, 'name': "%s - %s" % (m.vendor, m.model)})
+        ret.append({'id': m.id, 'name': "%s - %s" % (m.vendor, m.model)})
 
     return HttpResponse(json.dumps(ret))
+
 
 def server_model_show(request, object_id):
     object = get_object_or_404(models.ServerModel, pk=object_id)
 
-    return render_to_response('systems/servermodel_detail.html', {
+    return render_to_response(
+        'systems/servermodel_detail.html',
+        {
             'object': object,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def server_model_list(request):
     object_list = models.ServerModel.objects.all()
-    print object_list
-    return render_to_response('systems/servermodel_list.html', {
+    return render_to_response(
+        'systems/servermodel_list.html',
+        {
             'object_list': object_list,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_show(request, object_id):
     object = get_object_or_404(models.Allocation, pk=object_id)
 
-    return render_to_response('systems/allocation_detail.html', {
+    return render_to_response(
+        'systems/allocation_detail.html',
+        {
             'object': object,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_edit(request, object_id):
     allocation = get_object_or_404(models.Allocation, pk=object_id)
     from forms import AllocationForm
@@ -968,16 +1115,24 @@ def allocation_edit(request, object_id):
     else:
         form = AllocationForm(instance=allocation)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_list(request):
     object_list = models.Allocation.objects.all()
-    return render_to_response('systems/allocation_list.html', {
+    return render_to_response(
+        'systems/allocation_list.html',
+        {
             'object_list': object_list,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_new(request):
     from forms import AllocationForm
     initial = {}
@@ -989,18 +1144,27 @@ def allocation_new(request):
     else:
         form = AllocationForm(initial=initial)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_list(request):
     object_list = models.Location.objects.all()
-    return render_to_response('systems/location_list.html', {
+    return render_to_response(
+        'systems/location_list.html',
+        {
             'object_list': object_list,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def csv_import(request):
     from forms import CSVImportForm
+
     def generic_getter(field):
         return field
 
@@ -1054,8 +1218,9 @@ def csv_import(request):
             for line in csv_reader:
                 cur_data = dict(zip(headers, line))
 
-                system_data = dict((a, getter(cur_data.get(a, None)))
-                                        for a, getter in ALLOWED_COLUMNS.iteritems())
+                system_data = dict(
+                    (a, getter(cur_data.get(a, None)))
+                    for a, getter in ALLOWED_COLUMNS.iteritems())
 
                 s = models.System(**system_data)
                 try:
@@ -1069,9 +1234,11 @@ def csv_import(request):
     else:
         form = CSVImportForm()
 
-    return render_to_response('systems/csv_import.html', {
-        'form': form,
-        'allowed_columns': ALLOWED_COLUMNS,
-        'new_systems': new_systems,
+    return render_to_response(
+        'systems/csv_import.html',
+        {
+            'form': form,
+            'allowed_columns': ALLOWED_COLUMNS,
+            'new_systems': new_systems,
         },
         RequestContext(request))

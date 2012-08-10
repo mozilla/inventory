@@ -91,11 +91,10 @@ class Network(models.Model, ObjectUrlMixin):
                 fail = True
 
             if self.ip_type == '4':
-                IPClass = ipaddr.IPv4Network
+                brdcst_upper, brdcst_lower = 0, int(self.network.broadcast)
             else:
-                IPClass = ipaddr.IPv6Network
-            brdcst_upper, brdcst_lower = ipv6_to_longs(str(
-                self.network.broadcast))
+                brdcst_upper, brdcst_lower = ipv6_to_longs(str(
+                    self.network.broadcast))
 
             # Check the end addresses.
             if range_.end_upper > brdcst_upper:

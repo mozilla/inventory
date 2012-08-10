@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 import ipaddr
 from mozdns.ip.models import ipv6_to_longs, Ip
 from mozdns.domain.models import boot_strap_ipv6_reverse_domain, Domain
-from mozdns.ip.utils import ip2dns_form
+from mozdns.ip.utils import ip_to_domain_name
 
 import pdb
 
@@ -34,7 +34,7 @@ class SimpleTest(TestCase):
         if name in ('arpa', 'in-addr.arpa', 'ipv6.arpa'):
             pass
         else:
-            name = ip2dns_form(name, ip_type=ip_type)
+            name = ip_to_domain_name(name, ip_type=ip_type)
         d = Domain(name = name, delegated=delegated)
         d.clean()
         self.assertTrue(d.is_reverse)
