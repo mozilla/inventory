@@ -269,6 +269,10 @@ class LibTests(TestCase):
                 "11:22:33:4e:55:66", "mozilla.com")
         self.assertTrue('network' in errors)
         self.assertTrue(errors['network'][0].find("too many networks associated") != -1)
+        # Look for a non-existant network
+        intr, errors = create_ipv4_interface("foo", "12db", "12scl3", self.system,
+                "11:22:33:4e:55:66", "mozilla.com", network_str="12.0.99.0/24")
+        self.assertTrue('network' in errors)
         intr, errors = create_ipv4_interface("foo", "12db", "12scl3", self.system,
                 "11:22:33:4e:55:66", "mozilla.com", network_str="12.0.0.0/24")
         self.assertFalse(errors)
