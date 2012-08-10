@@ -233,3 +233,43 @@ class LibTests(TestCase):
                 "11:22:33:44:55:66")
         self.assertEqual(errors, None)
         self.assertTrue(isinstance(intr, StaticInterface))
+
+    def test1_create_ipv4_interface_network_str(self):
+        v, _ = Vlan.objects.get_or_create(name="12db", number=3)
+        s, _ = Site.objects.get_or_create(name="12scl3")
+        d, _ = Domain.objects.get_or_create(name="12scl3.mozilla.com")
+        d, _ = Domain.objects.get_or_create(name="12db.12scl3.mozilla.com")
+
+        d, _ = Domain.objects.get_or_create(name="arpa")
+        d, _ = Domain.objects.get_or_create(name="in-addr.arpa")
+        d, _ = Domain.objects.get_or_create(name="12.in-addr.arpa")
+        n = Network(network_str="12.0.0.0/24", ip_type="4")
+        n.clean()
+        n.site = s
+        n.vlan = v
+        n.save()
+
+        n1 = Network(network_str="12.0.1.0/24", ip_type="4")
+        n1.clean()
+        n1.site = s
+        n1.vlan = v
+        n1.save()
+
+        r = Range(start_str="12.0.0.0", end_str="12.0.0.2",
+                network=n)
+        r.clean()
+        r.save()
+
+        r1 = Range(start_str="12.0.1.0", end_str="12.0.1.2",
+                network=n1)
+        r1.clean()
+        r1.save()
+
+        intr, errors = create_ipv4_interface("foo", "12db", "12scl3", self.system,
+                "11:22:33:4e:55:66", "mozilla.com")
+        self.assertTrue('network' in errors)
+        self.assertTrue(errors['network'][0].find("too many networks associated") != -1)
+        intr, errors = create_ipv4_interface("foo", "12db", "12scl3", self.system,
+                "11:22:33:4e:55:66", "mozilla.com", network_str="12.0.0.0/24")
+        self.assertFalse(errors)
+        self.assertTrue(isinstance(intr, StaticInterface))
