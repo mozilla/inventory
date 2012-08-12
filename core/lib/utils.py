@@ -170,9 +170,11 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
         try:
             network = vlan.network_set.get(site=site)
         except MultipleObjectsReturned, e:
+            networks = vlan.network_set.filter(site=site)
             errors['network'] = ErrorList(["There were too many networks "
                     "associated with vlan {0} in {1}. Manually specify which "
-                    "network to use.".format(vlan, site)])
+                    "network to use. Your choces are {2}".format(vlan, site,
+                    ", ".join([n.ip_str for n in networks])])
             return None, errors
         except ObjectDoesNotExist, e:
             errors['network'] = "No network for vlan {0} in {1}.".format(vlan, site)
