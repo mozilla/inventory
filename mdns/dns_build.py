@@ -246,17 +246,25 @@ def zone_build_from_config(job=None):
             ztype = config['direction']
             view = config['view']
             relative_path = config['relative_path']
-            view_obj, _ = View.objects.get_or_create(name=view)
+            if view == "both":
+                private , _ = View.objects.get_or_create(name="private")
+                public , _ = View.objects.get_or_create(name="public")
+                views = [private, public]
+            else:
+                view_obj, _ = View.objects.get_or_create(name=view)
+                views = [view_obj]
+
             try:
                 if ztype == 'f':
                     print view
                     svn_zone = collect_svn_zone(root_domain, zone_path, ZONE_PATH)
-                    populate_forward_dns(svn_zone, root_domain, view=view_obj)
+                    populate_forward_dns(svn_zone, root_domain,
+                            views=views)
                     del svn_zone
                 if ztype == 'r':
                     rev_svn_zones = {root_domain:('', ((collect_rev_svn_zone(root_domain, zone_path,
                         ZONE_PATH)), ''))}
-                    populate_reverse_dns(rev_svn_zones, view=view_obj)
+                    populate_reverse_dns(rev_svn_zones, views=views)
             except dns.zone.NoSOA, e:
                 print "----------------------"
                 print "ERROR: NoSOA()"
@@ -273,10 +281,16 @@ def zone_build_from_config(job=None):
             ztype = config['direction']
             view = config['view']
             relative_path = config['relative_path']
-            view_obj, _ = View.objects.get_or_create(name=view)
+            if view == "both":
+                private , _ = View.objects.get_or_create(name="private")
+                public , _ = View.objects.get_or_create(name="public")
+                views = [private, public]
+            else:
+                view_obj, _ = View.objects.get_or_create(name=view)
+                views = [view_obj]
             if ztype == 'f':
                 svn_zone = collect_svn_zone(root_domain, zone_path, ZONE_PATH)
-                populate_forward_dns(svn_zone, root_domain, view=view_obj)
+                populate_forward_dns(svn_zone, root_domain, views=views)
                 del svn_zone
         return
 
@@ -289,10 +303,16 @@ def zone_build_from_config(job=None):
             ztype = config['direction']
             view = config['view']
             relative_path = config['relative_path']
-            view_obj, _ = View.objects.get_or_create(name=view)
+            if view == "both":
+                private , _ = View.objects.get_or_create(name="private")
+                public , _ = View.objects.get_or_create(name="public")
+                views = [private, public]
+            else:
+                view_obj, _ = View.objects.get_or_create(name=view)
+                views = [view_obj]
             if ztype == 'f':
                 svn_zone = collect_svn_zone(root_domain, zone_path, ZONE_PATH)
-                populate_forward_dns(svn_zone, root_domain, view=view_obj)
+                populate_forward_dns(svn_zone, root_domain, views=views)
                 del svn_zone
         return
 
@@ -306,10 +326,17 @@ def zone_build_from_config(job=None):
                 ztype = config['direction']
                 view = config['view']
                 relative_path = config['relative_path']
-                view_obj, _ = View.objects.get_or_create(name=view)
+                if view == "both":
+                    private , _ = View.objects.get_or_create(name="private")
+                    public , _ = View.objects.get_or_create(name="public")
+                    views = [private, public]
+                else:
+                    view_obj, _ = View.objects.get_or_create(name=view)
+                    views = [view_obj]
                 if ztype == 'f':
                     svn_zone = collect_svn_zone(root_domain, zone_path, ZONE_PATH)
-                    populate_forward_dns(svn_zone, root_domain, view=view_obj)
+                    populate_forward_dns(svn_zone, root_domain,
+                            views=views)
                     del svn_zone
             return
     except Exception, e:
@@ -325,10 +352,16 @@ def zone_build_from_config(job=None):
             ztype = config['direction']
             view = config['view']
             relative_path = config['relative_path']
-            view_obj, _ = View.objects.get_or_create(name=view)
+            if view == "both":
+                private , _ = View.objects.get_or_create(name="private")
+                public , _ = View.objects.get_or_create(name="public")
+                views = [private, public]
+            else:
+                view_obj, _ = View.objects.get_or_create(name=view)
+                views = [view_obj]
             if ztype == 'f':
                 svn_zone = collect_svn_zone(root_domain, zone_path, ZONE_PATH)
-                populate_forward_dns(svn_zone, root_domain, view=view_obj)
+                populate_forward_dns(svn_zone, root_domain, views=views)
                 del svn_zone
         return
 
@@ -341,14 +374,20 @@ def zone_build_from_config(job=None):
             ztype = config['direction']
             view = config['view']
             relative_path = config['relative_path']
-            view_obj, _ = View.objects.get_or_create(name=view)
+            if view == "both":
+                private , _ = View.objects.get_or_create(name="private")
+                public , _ = View.objects.get_or_create(name="public")
+                views = [private, public]
+            else:
+                view_obj, _ = View.objects.get_or_create(name=view)
+                views = [view_obj]
             if ztype == 'r':
                 rev_svn_zones = {root_domain:('', ((collect_rev_svn_zone(root_domain, zone_path,
                     ZONE_PATH)), ''))}
-                populate_reverse_dns(rev_svn_zones, view=view_obj)
+                populate_reverse_dns(rev_svn_zones, views=views)
 
 
-def populate_reverse_dns(rev_svn_zones, view=None):
+def populate_reverse_dns(rev_svn_zones, views=None):
     arpa = create_domain( name = 'arpa')
     i_arpa = create_domain( name = 'in-addr.arpa')
     i6_arpa = create_domain( name = 'ipv6.arpa')
@@ -396,9 +435,10 @@ def populate_reverse_dns(rev_svn_zones, view=None):
             domain = ensure_rev_domain(domain_name)
             ns, _ = Nameserver.objects.get_or_create(domain=domain,
                     server=rdata.target.to_text().strip('.'))
-            if view:
-                ns.views.add(view)
-                ns.save()
+            if views:
+                for view in views:
+                    ns.views.add(view)
+                    ns.save()
         for (name, ttl, rdata) in zone.iterate_rdatas('PTR'):
             ip_str = name.to_text().strip('.')
             ip_str = ip_str.replace('.IN-ADDR.ARPA','')
@@ -414,18 +454,22 @@ def populate_reverse_dns(rev_svn_zones, view=None):
             print str(name) + " PTR " + str(fqdn)
             ptr = PTR.objects.filter(name = fqdn, ip_str = ip_str, ip_type='4')
             if ptr:
-                continue
+                ptr = ptr[0]
             else:
                 try:
                     ptr = PTR(name = fqdn, ip_str = ip_str, ip_type='4')
                     ptr.full_clean()
                     ptr.save()
-                    if view:
-                        ptr.views.add(view)
-                        ptr.save()
+                    if views:
+                        for view in views:
+                            ptr.views.add(view)
+                            ptr.save()
                 except Exception, e:
                     pdb.set_trace()
-                    pass
+
+            if views:
+                for view in views:
+                    ptr.views.add(view)
 
     for (name, ttl, rdata) in zone.iterate_rdatas('MX'):
         name = name.to_text().strip('.')
@@ -442,13 +486,14 @@ def populate_reverse_dns(rev_svn_zones, view=None):
         server = rdata.exchange.to_text().strip('.')
         mx, _ = MX.objects.get_or_create(label=label, domain=domain,
                 server= server, priority=priority, ttl="3600")
-        if view:
-            mx.views.add(view)
-            try:
-                mx.save()
-                mx.views.all()
-            except Exception, e:
-                pdb.set_trace()
+        if views:
+            for view in views:
+                mx.views.add(view)
+                try:
+                    mx.save()
+                    mx.views.all()
+                except Exception, e:
+                    pdb.set_trace()
 
         """
         for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
@@ -502,7 +547,7 @@ def null_all_soas(domain):
         child_domain.soa = None
         child_domain.save()
 
-def populate_forward_dns(zone, root_domain, view=None):
+def populate_forward_dns(zone, root_domain, views=None):
     for (name, ttl, rdata) in zone.iterate_rdatas('SOA'):
         print str(name) + " SOA " + str(rdata)
         exists = SOA.objects.filter(minimum=rdata.minimum,
@@ -581,13 +626,14 @@ def populate_forward_dns(zone, root_domain, view=None):
                     set_all_soas(domain, domain.master_domain.soa)
         a, _ = AddressRecord.objects.get_or_create( label = label,
             domain=domain, ip_str=rdata.to_text(), ip_type='4')
-        if view:
-            a.views.add(view)
-            try:
-                a.save()
-            except Exception, e:
-                pdb.set_trace()
-                pass
+        if views:
+            for view in views:
+                a.views.add(view)
+                try:
+                    a.save()
+                except Exception, e:
+                    pdb.set_trace()
+                    pass
 
     for (name, ttl, rdata) in zone.iterate_rdatas('AAAA'):
         name = name.to_text().strip('.')
@@ -645,13 +691,14 @@ def populate_forward_dns(zone, root_domain, view=None):
         else:
             a, _ = AddressRecord.objects.get_or_create(label=label,
                     domain=domain, ip_str=rdata.to_text(), ip_type='6')
-        if view:
-            a.views.add(view)
-            try:
-                a.save()
-            except Exception, e:
-                pdb.set_trace()
-                pass
+        if views:
+            for view in views:
+                a.views.add(view)
+                try:
+                    a.save()
+                except Exception, e:
+                    pdb.set_trace()
+                    pass
 
 
     for (name, ttl, rdata) in zone.iterate_rdatas('NS'):
@@ -661,9 +708,10 @@ def populate_forward_dns(zone, root_domain, view=None):
         domain = ensure_domain(name)
         ns, _ = Nameserver.objects.get_or_create(domain=domain,
                 server=rdata.target.to_text().strip('.'))
-        if view:
-            ns.views.add(view)
-            ns.save()
+        if views:
+            for view in views:
+                ns.views.add(view)
+                ns.save()
 
     for (name, ttl, rdata) in zone.iterate_rdatas('MX'):
         name = name.to_text().strip('.')
@@ -680,13 +728,14 @@ def populate_forward_dns(zone, root_domain, view=None):
         server = rdata.exchange.to_text().strip('.')
         mx, _ = MX.objects.get_or_create(label=label, domain=domain,
                 server= server, priority=priority, ttl="3600")
-        if view:
-            mx.views.add(view)
-            try:
-                mx.save()
-                mx.views.all()
-            except Exception, e:
-                pdb.set_trace()
+        if views:
+            for view in views:
+                mx.views.add(view)
+                try:
+                    mx.save()
+                    mx.views.all()
+                except Exception, e:
+                    pdb.set_trace()
 
     for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
         name = name.to_text().strip('.')
@@ -707,9 +756,10 @@ def populate_forward_dns(zone, root_domain, view=None):
                     data = data)
             cn.full_clean()
             cn.save()
-            if view:
-                cn.views.add(view)
-                cn.save()
+            if views:
+                for view in views:
+                    cn.views.add(view)
+                    cn.save()
     # TODO, records not done yet. TXT, SSHFP, AAAA
     # Create list
     for (name, ttl, rdata) in zone.iterate_rdatas('TXT'):
@@ -731,9 +781,10 @@ def populate_forward_dns(zone, root_domain, view=None):
                     txt_data = data)
             txt.full_clean()
             txt.save()
-            if view:
-                txt.views.add(view)
-                txt.save()
+            if views:
+                for view in views:
+                    txt.views.add(view)
+                    txt.save()
 
     for (name, ttl, rdata) in zone.iterate_rdatas('SSHFP'):
         name = name.to_text().strip('.')
@@ -766,9 +817,10 @@ def populate_forward_dns(zone, root_domain, view=None):
                 priority=prio)
             srv.full_clean()
             srv.save()
-            if view:
-                srv.views.add(view)
-                srv.save()
+            if views:
+                for view in views:
+                    srv.views.add(view)
+                    srv.save()
 
 
     set_all_soas(base_domain, base_domain.soa)
