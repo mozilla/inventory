@@ -56,8 +56,10 @@ def choose_zone_path(soa, root_domain):
     exist.
 
     .. note::
+
         In all cases the zone_path is prepended with the ``BUILD_PATH`` varable
         found in ``settings/local.py``
+
     """
     soa.update_attrs()
     zone_path = None
@@ -236,15 +238,6 @@ def build_zone(ztype, soa, root_domain):
             DEBUG_STRING)
 
 def build_dns():
-    """
-    Things every zone needs:
-        1) data file's
-            1.forward) Forward needs private and reverse
-            1.reverse) Reverse needs one in /in-addr/private or /in-addr/public
-        2) An zone entry in public and/or private named.conf include
-            2.public) public get's a statement in public and private includes
-            2.private) public get's a statement in only private includes
-    """
     master_public_zones = ""
     master_private_zones = ""
 
