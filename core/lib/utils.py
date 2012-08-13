@@ -174,7 +174,7 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
             errors['network'] = ErrorList(["There were too many networks "
                     "associated with vlan {0} in {1}. Manually specify which "
                     "network to use. Your choces are {2}".format(vlan, site,
-                    ", ".join([n.ip_str for n in networks])])
+                    ", ".join([n.ip_str for n in networks])]))
             return None, errors
         except ObjectDoesNotExist, e:
             errors['network'] = "No network for vlan {0} in {1}.".format(vlan, site)
