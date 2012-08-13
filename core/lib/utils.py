@@ -18,7 +18,7 @@ is_mozilla_tld = re.compile(".*mozilla\.(org|net|ru|co|it|me|de|hu|pt|"
 
 def create_ipv4_intr_from_domain(label, domain_name, system, mac,
         network_str=None):
-    """A wrapper for :ref:`create_ipv4_interface`."""
+    """A wrapper for :func:`create_ipv4_interface`."""
     if is_mozilla_tld.match(domain_name):
         d = domain_name.split('.')[:-2]
         domain_suffix = '.'.join(d[-2:])
@@ -67,7 +67,7 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
 
     Using this function requires that certain objects exist in the database.
     *Understanding these objects before using this function is a good thing*.
-        ::
+    ::
 
                     <label> (.<BU>) .<DC> . <domain_suffix>
 
@@ -174,7 +174,7 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
             errors['network'] = ErrorList(["There were too many networks "
                     "associated with vlan {0} in {1}. Manually specify which "
                     "network to use. Your choces are {2}".format(vlan, site,
-                    ", ".join([n.ip_str for n in networks])])
+                    ", ".join([n.ip_str for n in networks]))])
             return None, errors
         except ObjectDoesNotExist, e:
             errors['network'] = "No network for vlan {0} in {1}.".format(vlan, site)

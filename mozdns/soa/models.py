@@ -36,14 +36,13 @@ class SOA(models.Model, ObjectUrlMixin):
                            <expire>
                            <minimum> )
 
-    An SOA instance can be created using the SOA class constructure::
 
         >>> SOA(primary=primary, contact=contact, retry=retry,
         ... refresh=refresh, comment=comment)
 
-    Each DNS zone must have it's own SOA object. Use the comment field
-    to remind yourself of which zone an SOA corresponds to if a zone has
-    similar ``primary`` and ``contact`` values.
+    Each DNS zone must have it's own SOA object. Use the comment field to
+    remind yourself which zone an SOA corresponds to if different SOA's have a
+    similar ``primary`` and ``contact`` value.
     """
 
     id = models.AutoField(primary_key=True)
