@@ -248,8 +248,9 @@
                 return false;
             // end of .system_quick_add_interface.click()
         });
+        alert($("#hostname_dd").html());
         $(".system_add_interface_combined").click(function(){
-                $("#add_adapter_hostname").val($("#hostname_dd").html());
+                $("#add_adapter_hostname").val($("#hostname_dd").html().split('.')[0]);
                 $.ajax({
                         type: "GET",
                         url: "/en-US/systems/get_all_ranges_ajax/",
