@@ -68,7 +68,7 @@
 <dd>{{ system.server_model }}</dd>
 <div style="clear:both;"></div>
 
-<dt>Allocated to:</dt> 
+<dt>Allocated to:</dt>
 <dd>{{ system.allocation }}</dd>
 <div style="clear:both;"></div>
 
@@ -97,7 +97,7 @@
 {% endif %}
 
 {% if system.warranty_link %}
-<dt>Warranty Check:</dt> 
+<dt>Warranty Check:</dt>
 <dd>
 <a href="{{ system.warranty_link }}">Warranty Check</a>
 
@@ -106,25 +106,25 @@
 {% endif %}
 
 {% if system.build_attribute %}
-  <dt>Support Tier: </dt> 
+  <dt>Support Tier: </dt>
   <dd>{{ system.build_attribute.support_tier }}</dd>
   <div style="clear:both;"></div>
-  <dt>Tinderbox Tree URL: </dt> 
+  <dt>Tinderbox Tree URL: </dt>
   <dd><%= auto_link h(@system.build_attribute.tboxtree_url) %></dd>
   <div style="clear:both;"></div>
-  <dt>Repository Branch: </dt> 
+  <dt>Repository Branch: </dt>
   <dd>{{ system.build_attribute.cvsbranch }}</dd>
   <div style="clear:both;"></div>
-  <dt>Cpu Throttled?: </dt> 
+  <dt>Cpu Throttled?: </dt>
   <dd>{{ system.build_attribute.cpu_throttled }}</dd>
   <div style="clear:both;"></div>
-  <dt>Product Branch: </dt> 
+  <dt>Product Branch: </dt>
   <dd>{{ system.build_attribute.product_branch }}</dd>
   <div style="clear:both;"></div>
-  <dt>Closes Tree?: </dt> 
+  <dt>Closes Tree?: </dt>
   <dd>{{ system.build_attribute.closes_tree }}</dd>
   <div style="clear:both;"></div>
-  <dt>Support Doc: </dt> 
+  <dt>Support Doc: </dt>
   <dd><%= auto_link h(@system.build_attribute.support_doc) %></dd>
   <div style="clear:both;"></div>
 {% endif %}
@@ -235,14 +235,14 @@
 
                                     }
                                 });
-                                
+
                                 $( this ).dialog( "close" );
                             },
                             Cancel: function() {
                                 $( this ).dialog( "close" );
                             }
                         }
-                        
+
                         });
                 d.show();
                 return false;
@@ -250,26 +250,26 @@
         });
         $(".system_add_interface_combined").click(function(){
                 $("#add_adapter_hostname").val($("#hostname_dd").html());
-                $.ajax({ 
-                        type: "GET", 
+                $.ajax({
+                        type: "GET",
                         url: "/en-US/systems/get_all_ranges_ajax/",
-                        data: "{}", 
-                        contentType: "application/json; charset=utf-8", 
-                        dataType: "json", 
-                        beforeSend: function(){ 
-                                $("#add_adapter_range").get(0).options[0] = new Option("Loading...", "");    
+                        data: "{}",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        beforeSend: function(){
+                                $("#add_adapter_range").get(0).options[0] = new Option("Loading...", "");
                         },
-                        success: function(msg) { 
-                                $("#add_adapter_range").get(0).options.length = 0; 
-                                $("#add_adapter_range").get(0).options[0] = new Option("Select Range", "");    
-                                $.each(msg, function(index, item) { 
+                        success: function(msg) {
+                                $("#add_adapter_range").get(0).options.length = 0;
+                                $("#add_adapter_range").get(0).options[0] = new Option("Select Range", "");
+                                $.each(msg, function(index, item) {
                                     $("#add_adapter_range").get(0).options[$("#add_adapter_range").get(0).options.length] = new Option(item.display, item.id);
-                                }); 
-                        }, 
-                        error: function() { 
-                            alert("Failed to load racks"); 
-                        } 
-                    }); 
+                                });
+                        },
+                        error: function() {
+                            alert("Failed to load racks");
+                        }
+                    });
                                 var d = $( "#add-dialog" ).dialog({
                                         title: 'Add Adapter to System',
                                         autoShow: true,
@@ -289,7 +289,7 @@
                                                     return;
                                                 }
                                             $.post('/en-US/systems/create_adapter/' + system_id + '/',
-                                                { 
+                                                {
                                                     'is_ajax': '1',
                                                     'ip_address': $("#add_adapter_ip_address").val(),
                                                     'interface': $("#add_adapter_interface").val(),
@@ -314,7 +314,7 @@
                                                 });
                                             },
                                             Cancel: function() {
-                                                $("#add_adapter_range").get(0).options.length = 0; 
+                                                $("#add_adapter_range").get(0).options.length = 0;
                                                 $( this ).dialog( "close" );
                                             }
                                         },
@@ -331,10 +331,10 @@
                                             $("#add_adapter_public").attr("checked", "");
                                         },
                                         close: function(event, ui){
-                                            $("#add_adapter_range").get(0).options.length = 0; 
+                                            $("#add_adapter_range").get(0).options.length = 0;
 
                                         }
-                                        
+
                             });
                             d.show();
                 return false;
