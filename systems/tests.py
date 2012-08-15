@@ -324,7 +324,7 @@ class SystemAdapterTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         obj = json.loads(resp.content)
         self.assertEqual(obj['success'], False)
-        self.assertEqual(obj['error_message'], "Domain Not Found")
+        self.assertTrue(obj['error_message'].find("was not not found") != -1)
 
     def test7_system_adapter_add_adapter_test_ajax_all_enabled(self):
         post_dict = {
