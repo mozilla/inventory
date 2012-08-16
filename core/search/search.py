@@ -449,5 +449,3 @@ def compile_search(args):
 
 
     return addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc
-
-
