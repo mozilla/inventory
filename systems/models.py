@@ -409,7 +409,7 @@ class System(DirtyFieldsMixin, models.Model):
                 adapters.append(i)
         return adapters
 
-    def get_next_adapter(self, type='eth'):
+    def get_next_adapter(self, intr_type='eth'):
         """
             method to get the next adapter
             we'll want to always return an adapter with a 0 alias
@@ -420,19 +420,25 @@ class System(DirtyFieldsMixin, models.Model):
             :return: 3 strings 'adapter_name', 'primary_number', 'alias_number'
         """
         if self.staticinterface_set.count() == 0:
-            return type, '0', '0'
+            return intr_type, '0', '0'
         else:
             primary_list = []
             for i in self.staticinterface_set.all():
                 i.update_attrs()
-                primary_list.append(int(i.attrs.primary))
+                try:
+                    primary_list.append(int(i.attrs.primary))
+                except AttributeError, e:
+                    continue
 
             ## sort and reverse the list to get the highest
             ## perhaps someday come up with the lowest available
             ## this should work for now
             primary_list.sort()
             primary_list.reverse()
-            return type, str(primary_list[0] + 1), '0'
+            if not primary_list:
+                return intr_type, '0', '0'
+            else:
+                return intr_type, str(primary_list[0] + 1), '0'
 
     def get_next_key_value_adapter(self):
         """

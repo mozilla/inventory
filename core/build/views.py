@@ -8,7 +8,7 @@ import pdb
 
 def build_network(request, network_pk):
     network = get_object_or_404(Network, pk=network_pk)
-    if request.GET.get('raw'):
+    if request.GET.get('raw', False):
         DEBUG_BUILD_STRING = build_subnet(network, raw=True)
         return HttpResponse(DEBUG_BUILD_STRING)
     else:

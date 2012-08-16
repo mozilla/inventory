@@ -5,7 +5,7 @@ import pdb
 
 # This doesn't work for IPv6
 
-def build_subnet(network):
+def build_subnet(network, raw=False):
     """The core function of building DHCP files.
 
     :param network: The network that will be searched for
