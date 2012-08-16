@@ -15,55 +15,21 @@ import pdb
 
 @receiver(m2m_changed)
 def views_handler(sender, **kwargs):
-    """
-    FUICKING DJANGO!!! WHAT A PEICE OF SHIT! FUCKIN GET A REAL ORM YOU PIECE OF
-    CRAP>! Here is the code bomb that will make me pissed off because it's so
-    unelaquent and is a pile of steamed hack. FOR FUCK SAKE! There is NOOOOO
-    sane way to validate a many to many relation ship? LIKE WOW!
-
-    http://python.6.n6.nabble.com/Signals-for-ManyToMany-relations-question-td460014.html
-    http://stackoverflow.com/questions/1925383/issue-with-manytomany-relationships-not-updating-inmediatly-after-save
-    This is what I want to do:
-
-    Fake models
-    -----------
-    ::
-        class Foo(models.Model):
-            items = fields.ManyToMany(Item)
-            ...
-            ...
-
-        class Item(models.Model):
-            name = fields.CharField()
-            ...
-
-    Example:
-    --------
-    Let's assume I don't ever want to associate a Foo object with an item that has name == "Green"
-
-        >>> f = Foo()
-        >>> item = Item("Green")
-        >>> f.items.add(item)
-
-        ^ I want an exception raised during "add(item)"
-
-    Why can't I do that sainly?!?!
-
-    This function catches any changes to a manymany relationship and just nukes
+    """ This function catches any changes to a manymany relationship and just nukes
     the relationship to the "private" view if one exists.
 
     One awesome side affect of this hack is there is NO way for this function
     to relay that there was an error to the user. If we want to tell the user
-    that we nucked the records relationship to the public view we will need to
+    that we nuked the record's relationship to the public view we will need to
     do that in a form.
     """
-    if kwargs['action'] != "post_add":
+    if kwargs["action"] != "post_add":
         return
-    instance = kwargs.pop('instance', None)
-    if (not instance or not hasattr(instance, 'ip_str') or
-            not hasattr(instance, 'ip_type')):
+    instance = kwargs.pop("instance", None)
+    if (not instance or not hasattr(instance, "ip_str") or
+            not hasattr(instance, "ip_type")):
         return
-    model = kwargs.pop('model', None)
+    model = kwargs.pop("model", None)
     if not View == model:
         return
     if instance.views.filter(name="public").exists():
@@ -126,7 +92,7 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
 
     def save(self, *args, **kwargs):
         # Only CNAME uses this kwarg.
-        no_build = kwargs.pop('no_build', False)
+        no_build = kwargs.pop("no_build", False)
         super(MozdnsRecord, self).save(*args, **kwargs)
         if no_build:
             pass
