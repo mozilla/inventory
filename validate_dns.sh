@@ -1,7 +1,8 @@
 #!/bin/bash
 # NOTES: https://bugzilla.mozilla.org/show_bug.cgi?id=757307
 NS1=toolsdev1.dmz.scl3.mozilla.com
-NS2=ns1.mozilla.org
+#NS1=ns1.private.phx1.mozilla.com
+NS2=ns1.private.scl3.mozilla.com
 #NS2=NS1.private.scl3.mozilla.com
 
 
@@ -18,8 +19,8 @@ function print_cl (){
 }
 #python validate_dns.py mozilla.com /home/juber/sysadmins/dnsconfig/external/mozilla.com NS1.mozilla.org NS1.mozilla.org
 
+
 function private_reverse () {
-    print_cl phx1.mozilla.com $DNSCONFIG/zones/mozilla.com/phx1/private $NS1 $NS2 >> $TO_VALIDATE
     print_cl 0.0.10.in-addr.arpa $DNSCONFIG/zones/in-addr/10.0/10.0.0 $NS1 $NS2 >> $TO_VALIDATE
     print_cl 22.0.10.in-addr.arpa $DNSCONFIG/zones/in-addr/10.0/10.0.22 $NS1 $NS2 >> $TO_VALIDATE
     print_cl 250.0.10.in-addr.arpa $DNSCONFIG/zones/in-addr/10.0/10.0.250 $NS1 $NS2 >> $TO_VALIDATE
@@ -379,8 +380,9 @@ echo "" > $TO_VALIDATE
 echo "things = [" >> $TO_VALIDATE
 #phx1.mozilla.com $DNSCONFIG/zones/mozilla.com/phx1/private $NS1 $NS2
 #print_cl mozilla.com $DNSCONFIG/external/mozilla.com $NS1 $NS2 >> $TO_VALIDATE
-#private_reverse
-public_reverse
+private_reverse
+#public_reverse
+#print_cl phx1.mozilla.com $DNSCONFIG/zones/mozilla.com/phx1/private $NS1 $NS2 >> $TO_VALIDATE
 echo "]" >> $TO_VALIDATE
 
 python validate_dns.py

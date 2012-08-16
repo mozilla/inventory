@@ -34,7 +34,7 @@ def check_rdtype(zone, nss, rdtype):
         results = []
         for ns in nss:
             res = resolve(name, ns, rdclass=rdtype)
-            if res.strip('\n').startswith("unused"):
+            if res.strip('\n').find("unused") != -1:
                 continue
             results.append(res)
         if len(set(results)) > 1:

@@ -188,6 +188,7 @@ def build_zone(ztype, soa, root_domain):
             public_file_path = zone_path + root_domain.name + ".public"
     except ObjectDoesNotExist, e:
         data = "; The views public and private do not exist\n"
+        public_data = ""
     try:
         private = View.objects.get(name="private")
         if ztype == "forward":
@@ -199,6 +200,7 @@ def build_zone(ztype, soa, root_domain):
             private_file_path = zone_path + root_domain.name + ".private"
     except ObjectDoesNotExist, e:
         data = "; The views public and private do not exist\n"
+        private_data = ""
 
     if not os.access(BUILD_PATH + zone_path, os.R_OK):
         os.makedirs(BUILD_PATH + zone_path)
