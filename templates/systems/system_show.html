@@ -248,7 +248,6 @@
                 return false;
             // end of .system_quick_add_interface.click()
         });
-        alert($("#hostname_dd").html());
         $(".system_add_interface_combined").click(function(){
                 $("#add_adapter_hostname").val($("#hostname_dd").html().split('.')[0]);
                 $.ajax({
@@ -324,12 +323,10 @@
                                             $("#add_adapter_mac_address").val('');
                                             $("#add_adapter_ip_address").attr("disabled", "");
                                             $("#auto_assign_ip").attr("checked", "");
-                                            $("#add_adapter_dns").attr("checked", "");
-                                            $("#add_adapter_dhcp").attr("checked", "");
-                                            $("#add_adapter_private").attr("checked", "");
-                                            $("#add_adapter_public").attr("checked", "");
+                                            $("#add_adapter_dns").attr("checked", "checked");
+                                            $("#add_adapter_dhcp").attr("checked", "checked");
                                             $("#add_adapter_private").attr("checked", "checked");
-                                            $("#add_adapter_public").attr("checked", "");
+                                            $("#add_adapter_public").attr("", "");
                                         },
                                         close: function(event, ui){
                                             $("#add_adapter_range").get(0).options.length = 0;
@@ -355,8 +352,6 @@
                 } else {
                     $("#add_adapter_private").attr("disabled", "disabled");
                     $("#add_adapter_public").attr("disabled", "disabled");
-                    $("#add_adapter_private").attr("checked", "");
-                    $("#add_adapter_public").attr("checked", "");
                 }
 
             });
@@ -403,9 +398,9 @@
         <tr><td>Auto Assign IP:</td><td><input type='checkbox' name='auto_assign_ip' id='auto_assign_ip' style='width: 159px;' value='1'></td></tr>
         <tr><td colspan="2">IP Address: <input type='text' name='add_adapter_ip_address' id='add_adapter_ip_address' style='width: 159px;' value=''></td></tr>
         <tr><td colspan="2">Mac Address: <input type='text' name='add_adapter_mac_address' id='add_adapter_mac_address' style='width: 159px;' value=''></td></tr>
-        <tr><td>Enable DHCP:</td><td><input type='checkbox' name='add_adapter_dhcp' id='add_adapter_dhcp' style='width: 159px;' value='1'></td></tr>
+        <tr><td>Enable DHCP:</td><td><input type='checkbox' name='add_adapter_dhcp' id='add_adapter_dhcp' style='width: 159px;' value='1' checked="checked"></td></tr>
         <tr><td>Enable DNS:</td><td><input type='checkbox' name='add_adapter_dns' id='add_adapter_dns' style='width: 159px;' value='1' checked="checked"></td></tr>
-        <tr><td>Public DNS:</td><td><input type='checkbox' name='add_adapter_public' id='add_adapter_public' style='width: 159px;' value='1' checked=""></td></tr>
+        <tr><td>Public DNS:</td><td><input type='checkbox' name='add_adapter_public' id='add_adapter_public' style='width: 159px;'></td></tr>
         <tr><td>Private DNS:</td><td><input type='checkbox' name='add_adapter_private' id='add_adapter_private' style='width: 159px;' value='1' checked=""></td></tr>
     </table>
 </div>
