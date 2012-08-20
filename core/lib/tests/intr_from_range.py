@@ -67,14 +67,16 @@ class LibTestsRange(TestCase):
     def test2_create_ipv4_interface_from_range(self):
         # test soa inherit
         intr, errors = create_ipv4_intr_from_range("foo",
-                "superprivate.corp.phx1.mozilla.com", self.system,
+                "superprivate.foo.corp.phx1.mozilla.com", self.system,
                 "11:22:33:44:55:66", "15.0.0.20", "15.0.0.22")
         intr.save()
         self.assertEqual(errors, None)
         self.assertTrue(isinstance(intr, StaticInterface))
         self.assertEqual(intr.ip_str, "15.0.0.20")
         self.assertEqual(intr.domain.soa, self.s)
-        self.assertEqual(intr.domain.name, "superprivate.corp.phx1.mozilla.com")
+        self.assertEqual(intr.domain.name, "superprivate.foo.corp.phx1.mozilla.com")
+        self.assertEqual(intr.domain.master_domain.name, "foo.corp.phx1.mozilla.com")
+        self.assertEqual(intr.domain.master_domain.soa, self.s)
 
     def test3_create_ipv4_interface_from_range(self):
         # Test for an error when all the IP's are in use.
