@@ -73,8 +73,7 @@ class Range(models.Model, ObjectUrlMixin):
             elif self.network.ip_type == '6':
                 self.start_upper, self.start_lower = ipv6_to_longs(
                         self.start_str)
-                self.end_upper, self.end_lower = ipv6_to_longs(
-                        self.end_str)
+                self.end_upper, self.end_lower = ipv6_to_longs(self.end_str)
             else:
                 raise ValidationError("ERROR: could not determine the ip type")
         except ipaddr.AddressValueError, e:

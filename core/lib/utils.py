@@ -1,4 +1,5 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db.models import Q
 from django.core.exceptions import MultipleObjectsReturned
 from django.forms.util import ErrorDict, ErrorList
 
@@ -10,7 +11,11 @@ from core.range.models import find_free_ip
 from core.interface.static_intr.models import StaticInterface
 
 from mozdns.utils import ensure_domain
+from mozdns.ip.utils import i64_to_i128, i128_to_i64
 from mozdns.domain.models import Domain
+from mozdns.address_record.models import AddressRecord
+from mozdns.ptr.models import PTR
+
 
 import pdb
 import re
@@ -286,14 +291,49 @@ def _create_ipv4_intr_from_range(label, domain_name, system, mac, range_start,
         errors['interface'] = ErrorList(e.messages)
     return intr, None
 
-def calc_free_ips(range_start, range_end):
-    records = AddressRecord.objects.filter(ip_upper=0, ip_lower__gte=start,
-                ip_lower__lte=end)
+def calc_free_ips_str(range_start_str, range_end_str, ip_type='4'):
+    """This function counts the number of unused ip addresses in a range. An IP
+    is considered 'used' if an A, PTR, or StaticInterface uses the IP.
+
+    :param range_start_str: The IP where this function should start looking for
+        a free ip (inclusive).
+    :type range_start: str
+    :param range_end_str: The last IP where this function should look for
+        a free ip (inclusive).
+    :type range_end: str
+    """
+    try:
+        start = ipaddr.IPv4Address(range_start_str)
+    except ipaddr.ValidationError, e:
+        return None
+    try:
+        end = ipaddr.IPv4Address(range_end_str)
+    except ipaddr.ValidationError, e:
+        return None
+    return calc_free_ips_int(int(start), int(end))
+
+
+def calc_free_ips_int(range_start, range_end):
+    """This function is like calc_free_ips_str except it's arguements are
+    integers.
+    """
+    range_start_upper, range_start_lower = i128_to_i64(range_start)
+    range_end_upper, range_end_lower = i128_to_i64(range_end)
+
+    if range_start_upper == range_end_upper:
+        ip_query = Q(ip_upper=range_start_upper, ip_lower__gte=range_start,
+                ip_lower__lte=range_end_lower)
+    else:
+        ip_query = Q(ip_upper__gte=range_start_upper,
+                ip_upper__lte=range_end_upper)
+
+    records = AddressRecord.objects.filter(ip_query)
     ips = [record.ip_str for record in records]
-    ptrs = PTR.objects.filter(ip_upper=0, ip_lower__gte=start,
-            ip_lower__lte=end)
+
+    ptrs = PTR.objects.filter(ip_query)
     ips += [ptr.ip_str for ptr in ptrs]
-    intrs = StaticInterface.objects.filter(ip_upper=0, ip_lower__gte=start,
-            ip_lower__lte=end)
+
+    intrs = StaticInterface.objects.filter(ip_query)
     ips += [intr.ip_str for intr in intrs]
-    return len(set(ips))
+
+    return range_end - range_start - len(set(ips))
