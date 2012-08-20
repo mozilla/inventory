@@ -248,9 +248,9 @@ def create_ipv4_intr_from_range(label, domain_name, system, mac,
     :type system: :class:`System`
     :param mac: The mac address of the interface
     :type mac: str
-    :param range_start: The IP where this function should start looking for
+    :param range_start_str: The IP where this function should start looking for
         a free ip (inclusive).
-    :type range_start: str
+    :type range_start_str: str
     :param range_end: The last IP where this function should look for
         a free ip (inclusive).
     :type range_end: str
