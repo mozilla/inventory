@@ -43,6 +43,7 @@ class SystemResource(CustomAPIResource):
     server_model = fields.ForeignKey('api_v3.system_api.ServerModelResource', 'server_model', null=True, full=True)
     operating_system = fields.ForeignKey('api_v3.system_api.OperatingSystemResource', 'operating_system', null=True, full=True)
     system_rack = fields.ForeignKey('api_v3.system_api.SystemRackResource', 'system_rack', null=True, full=True)
+    allocation = fields.ForeignKey('api_v3.system_api.AllocationResource', 'allocation', null=True, full=True)
     
     def prepend_urls(self):
             return [
@@ -56,6 +57,7 @@ class SystemResource(CustomAPIResource):
                 'notes': ALL,
                 'asset_tag': ALL,
                 'key_value': ALL_WITH_RELATIONS,
+                'allocation': ALL_WITH_RELATIONS,
                 'key_value__key': ALL_WITH_RELATIONS,
                 }
         fields = [
@@ -74,8 +76,6 @@ class ServerModelResource(CustomAPIResource):
             'name': ALL,
             'vendor': ALL,
             'model': ALL
-
-
         }
         serializer = PrettyJSONSerializer()
         resource_name = 'server_model'
@@ -83,6 +83,9 @@ class ServerModelResource(CustomAPIResource):
 
 class AllocationResource(CustomAPIResource):
     class Meta(CustomAPIResource.Meta):
+        filtering = {
+            'name': ALL,
+        }
         resource_name = 'allocation'
         queryset = system_model.Allocation.objects.all()
 
