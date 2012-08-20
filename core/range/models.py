@@ -7,6 +7,7 @@ from core.keyvalue.base_option import CommonOption
 from core.interface.static_intr.models import StaticInterface
 from mozdns.ip.models import ipv6_to_longs
 from mozdns.address_record.models import AddressRecord
+from mozdns.ptr.models import PTR
 
 import ipaddr
 
@@ -187,8 +188,25 @@ class Range(models.Model, ObjectUrlMixin):
         end = self.end_lower
         if start >= end - 1:
             return HttpResponse("Too small of a range.")
+        ip = find_free_ip(start, end, ip_type = '4')
+        if ip:
+            return ip
+        else:
+            return None
 
+def find_free_ip(start, end, ip_type='4'):
+    """Given start and end numbers, find a free ip.
+    :param start: The start number
+    :type start: int
+    :param end: The end number
+    :type end: int
+    :param ip_type: The type of IP you are looking for.
+    :type ip_type: str either '4' or '6'
+    """
+    if ip_type == '4':
         records = AddressRecord.objects.filter(ip_upper=0, ip_lower__gte=start,
+                ip_lower__lte=end)
+        ptrs = PTR.objects.filter(ip_upper=0, ip_lower__gte=start,
                 ip_lower__lte=end)
         intrs = StaticInterface.objects.filter(ip_upper=0, ip_lower__gte=start,
                 ip_lower__lte=end)
@@ -201,6 +219,10 @@ class Range(models.Model, ObjectUrlMixin):
                 if record.ip_lower == i:
                     taken = True
                     break
+            for ptr in ptrs:
+                if ptr.ip_lower == i:
+                    taken = True
+                    break
             if taken == False:
                 for intr in intrs:
                     if intr.ip_lower == i:
@@ -209,8 +231,8 @@ class Range(models.Model, ObjectUrlMixin):
             if taken == False:
                 ip = ipaddr.IPv4Address(i)
                 return ip
-        return None
-
+    else:
+        raise NotImplemented
 
 class RangeKeyValue(CommonOption):
     range = models.ForeignKey(Range, null=False)

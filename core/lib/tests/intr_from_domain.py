@@ -16,7 +16,7 @@ import random
 import ipaddr
 import pdb
 
-class LibTests(TestCase):
+class LibTestsDomain(TestCase):
     def setUp(self):
         self.system = System()
         Domain.objects.get_or_create(name="com")

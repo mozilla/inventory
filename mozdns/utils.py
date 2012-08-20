@@ -1,7 +1,14 @@
 # Random functions that get used in different places.
 from django.http import Http404
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 from mozdns.domain.models import Domain
+from mozdns.mx.models import MX
+from mozdns.txt.models import TXT
+from mozdns.srv.models import SRV
+from mozdns.address_record.models import AddressRecord
+from mozdns.cname.models import CNAME
+from core.interface.static_intr.models import StaticInterface
 import pdb
 
 
@@ -62,3 +69,51 @@ def slim_form(domain_pk=None, form=None):
         form.fields['domain'].widget.choices.queryset = query_set
         form.fields['domain'].empty_label = None
     return form
+
+def get_clobbered(domain_name):
+    classes = [MX, AddressRecord, CNAME, TXT, SRV, StaticInterface]
+    clobber_objects = []  # Objects that have the same name as a domain
+    for Klass in classes:
+        objs = Klass.objects.filter(fqdn=domain_name)
+        for obj in objs:
+            obj_views = [view.name for view in obj.views.all()]
+            new_obj = deepcopy(obj)
+            new_obj.id = None
+            clobber_objects.append((new_obj, obj_views))
+            if Klass == AddressRecord:
+                kwargs = {"check_cname": False}
+            else:
+                kwargs = {}
+            obj.delete(**kwargs)
+    return clobber_objects
+
+def ensure_domain(name, inherit_soa=False):
+    try:
+        domain = Domain.objects.get(name=name)
+        return domain
+    except ObjectDoesNotExist, e:
+        pass
+    parts = list(reversed(name.split('.')))
+    domain_name = ''
+    for i in range(len(parts)):
+        domain_name = parts[i] + '.' + domain_name
+        domain_name = domain_name.strip('.')
+        clobber_objects = get_clobbered(domain_name)
+        # need to be deleted and then recreated
+        domain, created = Domain.objects.get_or_create(name=domain_name)
+        if inherit_soa and created and domain.master_domain.soa is not None:
+            domain.soa = domain.master_domain.soa
+        for object_, views in clobber_objects:
+            try:
+                object_.domain = domain
+                object_.clean()
+                object_.save()
+                for view_name in views:
+                    view = View.objects.get(name=view_name)
+                    object_.views.add(view)
+                    object_.save()
+            except ValidationError, e:
+                # this is bad
+                pdb.set_trace()
+                pass
+    return domain

@@ -6,9 +6,12 @@ from core.site.models import Site
 from core.vlan.models import Vlan
 from core.network.models import Network
 from core.site.models import Site
+from core.range.models import find_free_ip
 from core.interface.static_intr.models import StaticInterface
 
+from mozdns.utils import ensure_domain
 from mozdns.domain.models import Domain
+
 import pdb
 import re
 import ipaddr
@@ -212,20 +215,85 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
             "with vlan {0} in {1}".format(network, vlan, site)])
         return None, errors
 
-    ip = None
-    for range_ in network.range_set.all():
-        ip = range_.get_next_ip()
-
-    if not ip:
-        errors['ip'] = ErrorList(["Could not find free ip in range."])
+    if network.range_set.all().count() > 1:
+        errors['ip'] = ErrorList(["Too many ranges. In the face of ambiguity, "
+            "*this script* has refused the temptation to guess which range "
+            "you want to put the interface in."])
         return None, errors
 
+    range_ = network.range_set.all()[0]
+    return _create_ipv4_intr_from_range(label, domain.name, system, mac,
+            range_.start_lower, range_.end_lower)
+
+
+def create_ipv4_intr_from_range(label, domain_name, system, mac,
+        range_start_str, range_end_str):
+    """This function creates an interface using the first free ip in the
+    specified range. This function will also ensure that a :class:`Domain` with
+    the name=``domain_name`` exists in the database. If a new domain is created
+    it will enheirit it's master's SOA. If the name ``<label>.<domain_name>``
+    is already a domain, the new interface's label will be set to the empty
+    string.
+
+    :param label: The desired label of the interface.
+    :type lable: str
+    :param domain_name: The name of the domain to create the interface in.
+    :type domain_name: str
+    :param system: The system object that the interface should be associated to
+    :type system: :class:`System`
+    :param mac: The mac address of the interface
+    :type mac: str
+    :param range_start: The IP where this function should start looking for
+        a free ip (inclusive).
+    :type range_start: str
+    :param range_end: The last IP where this function should look for
+        a free ip (inclusive).
+    :type range_end: str
+    """
+    errors = ErrorDict()
+    try:
+        start = ipaddr.IPv4Address(range_start_str)
+    except ipaddr.ValidationError, e:
+        errors['ip'] = ErrorList(["Invalid IPv4 ip {0}".format(range_start_str)])
+        return None, errors
+    try:
+        end = ipaddr.IPv4Address(range_end_str)
+    except ipaddr.ValidationError, e:
+        errors['ip'] = ErrorList(["Invalid IPv4 ip {0}".format(range_end_str)])
+        return None, errors
+    return _create_ipv4_intr_from_range(label, domain_name, system, mac,
+            int(start), int(end))
+
+def _create_ipv4_intr_from_range(label, domain_name, system, mac, range_start,
+                                range_end):
+    if range_start >= range_end -1:
+        errors['ip'] = ErrorList(["The start ip must be less than end ip."])
+        return None, errors
+
+    ip = find_free_ip(range_start, range_end, ip_type='4')
+    errors = ErrorDict()
+    if not ip:
+        errors['ip'] = ErrorList(["Could not find free ip in range {0} - "
+                        "{1}".format(range_start, range_end)])
+        return None, errors
+
+    domain = ensure_domain(domain_name, inherit_soa=True)
     try:
         intr = StaticInterface(label=label, domain=domain, ip_str=str(ip),
-            ip_type='4', system=system, mac=mac)
+                ip_type='4', system=system, mac=mac)
         intr.clean()
     except ValidationError, e:
         errors['interface'] = ErrorList(e.messages)
-        return None, errors
-
     return intr, None
+
+def calc_free_ips(range_start, range_end):
+    records = AddressRecord.objects.filter(ip_upper=0, ip_lower__gte=start,
+                ip_lower__lte=end)
+    ips = [record.ip_str for record in records]
+    ptrs = PTR.objects.filter(ip_upper=0, ip_lower__gte=start,
+            ip_lower__lte=end)
+    ips += [ptr.ip_str for ptr in ptrs]
+    intrs = StaticInterface.objects.filter(ip_upper=0, ip_lower__gte=start,
+            ip_lower__lte=end)
+    ips += [intr.ip_str for intr in intrs]
+    return len(set(ips))
