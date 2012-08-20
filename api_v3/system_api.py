@@ -160,9 +160,9 @@ class SystemResource(CustomAPIResource):
                     label,
                     domain_parsed,
                     sys,
-                    mac_addr,
-                    specific_site=True)
+                    mac_addr,)
                 if s:
+                    import pdb; pdb.set_trace()
                     s.update_attrs()
 
                     if interface:
@@ -199,12 +199,14 @@ class SystemResource(CustomAPIResource):
         super(SystemResource, self).full_dehydrate(bundle)
         for intr in bundle.obj.staticinterface_set.all():
             intr.update_attrs()
-            bundle.data['interface:%s%s.%s:ip_address' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.ip_str
-            bundle.data['interface:%s%s.%s:fqdn' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.fqdn
-            bundle.data['interface:%s%s.%s:mac_address' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.mac
-            bundle.data['interface:%s%s.%s:dns_enabled' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.dns_enabled
-            bundle.data['interface:%s%s.%s:dhcp_enabled' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.dhcp_enabled
-            bundle.data['interface:%s%s.%s:label' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.label
+            if hasattr(intr, 'attrs'):
+                if hasattr(intr.attrs, 'primary'):
+                    bundle.data['interface:%s%s.%s:ip_address' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.ip_str
+                    bundle.data['interface:%s%s.%s:fqdn' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.fqdn
+                    bundle.data['interface:%s%s.%s:mac_address' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.mac
+                    bundle.data['interface:%s%s.%s:dns_enabled' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.dns_enabled
+                    bundle.data['interface:%s%s.%s:dhcp_enabled' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.dhcp_enabled
+                    bundle.data['interface:%s%s.%s:label' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.label
         #bundle.data['interface'] = "%s%s.%s" %\
         #(bundle.obj.attrs.interface_type,
         #    bundle.obj.attrs.primary, bundle.obj.attrs.alias)
