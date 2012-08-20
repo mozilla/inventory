@@ -251,9 +251,9 @@ def create_ipv4_intr_from_range(label, domain_name, system, mac,
     :param range_start_str: The IP where this function should start looking for
         a free ip (inclusive).
     :type range_start_str: str
-    :param range_end: The last IP where this function should look for
+    :param range_end_str: The last IP where this function should look for
         a free ip (inclusive).
-    :type range_end: str
+    :type range_end_str: str
     """
     errors = ErrorDict()
     try:
