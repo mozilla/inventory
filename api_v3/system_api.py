@@ -13,7 +13,10 @@ from tastytools.test.resources import ResourceTestData
 from tastypie.authorization import Authorization
 from core.interface.static_intr.models import StaticInterface
 from core.interface.static_intr.models import StaticIntrKeyValue
+from core.range.models import Range
+from mozdns.view.models import View
 from mozdns.domain.models import Domain
+from core.lib.utils import create_ipv4_intr_from_domain
 import json
 import re
 class PrettyJSONSerializer(Serializer):
@@ -49,8 +52,11 @@ class SystemResource(CustomAPIResource):
     server_model = fields.ForeignKey('api_v3.system_api.ServerModelResource', 'server_model', null=True, full=True)
     operating_system = fields.ForeignKey('api_v3.system_api.OperatingSystemResource', 'operating_system', null=True, full=True)
     system_rack = fields.ForeignKey('api_v3.system_api.SystemRackResource', 'system_rack', null=True, full=True)
-    interface = fields.ToManyField('api_v3.system_api.StaticInterfaceResource', 'staticinterface_set', null=True, full=True)
-
+    """
+        Do not enable the following. It will fail due to the m2m validation routine written by uberj.
+        Instead I'm overriding full_dehydrate to get the attributes that we want
+        interface = fields.ToManyField('api_v3.system_api.StaticInterfaceResource', 'staticinterface_set', null=True, full=True)
+    """
 
     def __init__(self, *args, **kwargs):
         super(SystemResource, self).__init__(*args, **kwargs)
@@ -140,42 +146,102 @@ class SystemResource(CustomAPIResource):
                 sys.update_adapter(**patch_dict)
 
         ## Entry point for adding a new adapter by mac address via the rest API
-        if patch_dict.has_key('mac_address') and patch_dict.has_key('auto_create_interface') and patch_dict['auto_create_interface'].upper() == 'TRUE':
-            mac_addr = patch_dict.pop('mac_address')
-            patch_dict.pop('auto_create_interface')
-            ip_str = patch_dict.pop('ip_address', None)
-            interface = patch_dict.pop('interface', None)
+        if patch_dict.has_key('mac') and patch_dict.has_key('range'):
+            enable_dns = True
+            enable_private = True
+            enable_public = False
             sys = bundle.obj
-            label = sys.hostname.split('.')[0]
-            domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.mozilla.com'
-            domain = Domain.objects.filter(name=domain_parsed)[0]
-            # ip_str will get auto generated eventually
-            if interface:
-                interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+            fqdn = patch_dict.pop('fqdn', None)
+            domain = patch_dict.pop('domain', 'mozilla.com')
+            from core.lib.utils import create_ipv4_intr_from_range
+            mac = patch_dict['mac']
+            interface = patch_dict.pop('interface', None)
+            if not fqdn:
+                domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.' + domain
+                domain_name = domain_parsed.lower()
+                label = sys.hostname.split('.')[0]
             else:
-                interface_type, primary, alias = sys.get_next_adapter()
-            if not ip_str:
-                ip_str = '10.99.99.97'
+                domain_parsed = ".".join(fqdn.split('.')[1:])
+                domain_name = domain_parsed.lower()
+                label = fqdn.split('.')[0]
+
+
+            range_start_str = patch_dict['range'].split(',')[0]
+            range_end_str = patch_dict['range'].split(',')[1]
+            s, errors = create_ipv4_intr_from_range(label, domain_name, sys, mac, range_start_str, range_end_str)
             try:
-                s = StaticInterface(label=label, mac=mac_addr, domain=domain, ip_str=ip_str, ip_type='4', system=sys)
-                s.clean()
-                s.save()
-                s.update_attrs()
-                s.attrs.primary = primary
-                s.attrs.interface_type = interface_type
-                s.attrs.alias = alias
+                if s:
+                    s.save()
+                    s.update_attrs()
+                    if enable_dns and enable_public:
+                        private = View.objects.get(name='private')
+                        s.views.add(private)
+                        s.save()
+
+                    elif enable_dns and enable_private and not enable_public:
+                        private = View.objects.get(name='private')
+                        s.views.add(private)
+                        s.save()
+
+                    if interface:
+                        interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+                    else:
+                        interface_type, primary, alias = sys.get_next_adapter()
+
+                    s.attrs.primary = primary
+                    s.attrs.interface_type = interface_type
+                    s.attrs.alias = alias
+                    bundle.data['success'] = 'asdfasfdasdfsadfsadf'
+                else:
+                    print 'We failed'
+                    bundle.errors['error_message'] = "Unable to create adapter for unknown reason"
+                    raise ValidationError(join(e.messages))
             except ValidationError, e:
                 bundle.errors['error_message'] = " ".join(e.messages)
+                raise ValidationError(join(e.messages))
             except Exception, e:
                 print e
+
+        return self.create_response(
+                request, bundle
+
+
+                )
 
     def obj_create(self, bundle, request, **kwargs):
         ret_bundle = super(SystemResource, self).obj_create(bundle, request, **kwargs)
         self.process_extra(ret_bundle, request, **kwargs)
 
     def obj_update(self, bundle, request, **kwargs):
+        for intr in bundle.obj.staticinterface_set.all():
+            intr.update_attrs()
         ret_bundle = super(SystemResource, self).obj_update(bundle, request, **kwargs)
-        self.process_extra(ret_bundle, request, **kwargs)
+        ret_bundle = self.process_extra(ret_bundle, request, **kwargs)
+        return ret_bundle
+
+    def full_dehydrate(self, bundle):
+        """
+            Overrideing full dehydrate here. We want to display the iinterface
+            attributes, but fails due to m2m validation.
+        """
+        super(SystemResource, self).full_dehydrate(bundle)
+        for intr in bundle.obj.staticinterface_set.all():
+            intr.update_attrs()
+            if hasattr(intr, 'attrs'):
+                if hasattr(intr.attrs, 'primary'):
+                    bundle.data['interface:%s%s.%s:ip_address' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.ip_str
+                    bundle.data['interface:%s%s.%s:fqdn' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.fqdn
+                    bundle.data['interface:%s%s.%s:mac_address' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.mac
+                    bundle.data['interface:%s%s.%s:dns_enabled' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.dns_enabled
+                    bundle.data['interface:%s%s.%s:dhcp_enabled' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.dhcp_enabled
+                    bundle.data['interface:%s%s.%s:label' % (intr.attrs.interface_type, intr.attrs.primary, intr.attrs.alias)] = intr.label
+        #bundle.data['interface'] = "%s%s.%s" %\
+        #(bundle.obj.attrs.interface_type,
+        #    bundle.obj.attrs.primary, bundle.obj.attrs.alias)
+        #del bundle.data['ip_lower']
+        #del bundle.data['ip_upper']
+        #del bundle.data['resource_uri']
+        return bundle
 
 
     def prepend_urls(self):
@@ -242,6 +308,11 @@ class SystemStatusResource(CustomAPIResource):
 
 class StaticInterfaceResource(CustomAPIResource):
        
+    system = fields.ToOneField(SystemResource, 'system', full=True)
+    #system = fields.ForeignKey(SystemResource, 'system', full=True)
+    def __init__(self, *args, **kwargs):
+        super(StaticInterfaceResource, self).__init__(*args, **kwargs)
+
     def full_dehydrate(self, bundle):
         super(StaticInterfaceResource, self).full_dehydrate(bundle)
         bundle.obj.update_attrs()

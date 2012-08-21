@@ -28,14 +28,14 @@ class BaseAddressRecord(Ip):
     ############################
 
     label = models.CharField(max_length=100, blank=True, null=True,
-                             validators=[validate_first_label])
-    domain = models.ForeignKey(Domain, null=False)
+                             validators=[validate_first_label], help_text='You probably want the short hostname here')
+    domain = models.ForeignKey(Domain, null=False, help_text='FQDN of the domain after the short hostname. vlan.dc.mozilla.com')
     fqdn = models.CharField(max_length=255, blank=True, null=True,
-                            validators=[validate_name])
+                            validators=[validate_name], help_text='FQDN of the system (foo.vlan.dc.mozilla.com)')
     views = models.ManyToManyField(View)
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-            validators=[validate_ttl])
-    comment = models.CharField(max_length=1000, blank=True, null=True)
+            validators=[validate_ttl], help_text='Time to Live of the record')
+    comment = models.CharField(max_length=1000, blank=True, null=True, help_text='Comment to be associated with this record')
 
     search_fields = ('fqdn', 'ip_str')
 

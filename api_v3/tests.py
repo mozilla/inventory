@@ -251,9 +251,8 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.create_domains()
         data = {
             'hostname': self.test_hostname,
-            'auto_create_interface': 'True',
-            'mac_address': '00:00:00:00:00:00',
-            'ip_address': '10.99.99.99', }
+            'mac': '00:00:00:00:00:00',
+            'range': '10.99.99.0,10.99.99.254', }
         resp = self.api_client.post(
             '/en-US/tasty/v3/system/', format='json', data=data)
         resp = self.api_client.get(
@@ -291,8 +290,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.create_domains()
         data = {
             'hostname': self.test_hostname,
-            'auto_create_interface': 'True',
-            'mac_address': '00:00:00:00:00:00',
+            'mac': '00:00:00:00:00:00',
             'ip_address': '10.99.99.99', }
         delete_data = {
             'delete_interface': 'True',
@@ -308,6 +306,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(adapters[0].attrs.interface_type, 'eth')
         self.assertEqual(adapters[0].attrs.primary, '0')
         self.assertEqual(adapters[0].attrs.alias, '0')
+        #import pdb; pdb.set_trace()
         resp = self.api_client.patch(
             '/en-US/tasty/v3/system/%s/' % self.test_hostname,
             format='json', data=delete_data)

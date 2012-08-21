@@ -24,6 +24,11 @@ import ipaddr
 is_mozilla_tld = re.compile(".*mozilla\.(org|net|ru|co|it|me|de|hu|pt|"
         "at|uk|rs|la|tv)$")
 
+def create_ipv4_intr_from_domain(
+        label, domain_name, system, mac,
+        specific_site=False):
+    """A wrapper for `create_ipv4_interface`."""
+
 def create_ipv4_intr_from_domain(label, domain_name, system, mac,
         network_str=None):
     """A wrapper for :func:`create_ipv4_interface`."""
@@ -32,7 +37,7 @@ def create_ipv4_intr_from_domain(label, domain_name, system, mac,
         domain_suffix = '.'.join(d[-2:])
     else:
         # It's probably a mozilla.com TLD
-       d_str = domain_name.replace("mozilla.com","")
+       d_str = domain_name.replace(".mozilla.com","")
        d = d_str.split('.')
        domain_suffix = "mozilla.com"
 

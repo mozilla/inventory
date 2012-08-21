@@ -57,7 +57,7 @@ class Ip(models.Model):
 
     """
     IP_TYPE_CHOICES = (('4', 'ipv4'), ('6', 'ipv6'))
-    ip_str = models.CharField(max_length=39, editable=True)
+    ip_str = models.CharField(max_length=39, editable=True, help_text='IP Address in IPv4 or IPv6 Format')
     # ip_upper/lower are calculated from ip_str on ip_clean.
     # TODO rename ip_* to ipaddr_*
     ip_upper = models.BigIntegerField(null=True, blank=True)
@@ -75,7 +75,7 @@ class Ip(models.Model):
     # the definition for 'domain'.
     #reverse_domain = models.ForeignKey(Domain, null=True, blank=True)
     ip_type = models.CharField(max_length=1, choices=IP_TYPE_CHOICES,
-                               editable=True)
+                               editable=True, help_text='IPv4 or IPv6 Address type')
 
     class Meta:
         abstract = True
