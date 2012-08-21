@@ -233,6 +233,9 @@ def migrate_A(zone, root_domain, soa, views):
 
     for name, rdata in sorted_names:
         print str(name) + " A " + str(rdata)
+        if name.startswith("unusedspace"):
+            print "Skipping {0} A {1}".format(name, rdata)
+            continue
         exists_domain =  Domain.objects.filter(name=name)
         if exists_domain:
             label = ''
