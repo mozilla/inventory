@@ -11,7 +11,6 @@ do
     then
         continue
     fi
-
     if [ "$file" == "svc" ]
     then
         # Services is weird
@@ -30,10 +29,19 @@ do
         continue
     fi
 
-    python $MC $file.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/$file/public f public False
+    python $MC $file.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/$file/public f both False
     python $MC $file.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/$file/private f private False
+    if [ -f $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/$file/public.split ]
+    then
+        python $MC $file.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/$file/public.split f public False
+    fi
+    if [ -f $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/$file/private.split ]
+    then
+        python $MC $file.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/$file/private.split f private False
+    fi
 
 done
-    python $MC corp.phx1.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/phx1/corp/public f public False
+    python $MC corp.phx1.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/phx1/corp/public f both False
     python $MC corp.phx1.mozilla.com $REL_PATH/sysadmins/dnsconfig/zones/mozilla.com/phx1/corp/private f private False
+
 echo "]"

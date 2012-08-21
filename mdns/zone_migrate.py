@@ -14,6 +14,7 @@ from mozdns.domain.utils import *
 from mozdns.ip.utils import ip_to_domain_name
 from mozdns.ip.models import ipv6_to_longs
 from mozdns.view.models import View
+from mozdns.utils import ensure_domain
 
 from settings import ZONE_PATH
 
@@ -410,6 +411,7 @@ def get_clobbered(domain_name):
             obj.delete(**kwargs)
     return clobber_objects
 
+"""
 def ensure_domain(name):
     try:
         domain = Domain.objects.get(name=name)
@@ -438,3 +440,4 @@ def ensure_domain(name):
                 pdb.set_trace()
                 pass
     return domain
+"""
