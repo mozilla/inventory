@@ -31,11 +31,11 @@
                     {% endif %}
                 </td>
             {% endfor %}
+            <td>
             {% for view in object.views.all() %}
-                <td>
                     {{ view }}
-                </td>
             {% endfor %}
+            </td>
             </tr>
         </tbody>
     </table>

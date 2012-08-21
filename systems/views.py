@@ -134,8 +134,9 @@ def create_adapter(request, system_id):
     try:
         domain = Domain.objects.filter(name=domain_parsed)[0]
     except IndexError, e:
-        return HttpResponse(json.dumps({'success': False, 'error_message': "Domain Not Found"}))
-        
+        return HttpResponse(json.dumps({'success': False,
+                    'error_message': "The Domain {0} was not not "
+                    "found".format(domain_parsed)}))
 
     if interface:
         try:

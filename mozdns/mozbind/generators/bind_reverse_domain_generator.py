@@ -1,4 +1,5 @@
 from mozdns.mozbind.generators.bind_domain_generator import render_ns
+from mozdns.ip.utils import ip_to_dns_form
 
 from string import Template
 import pdb
@@ -34,11 +35,11 @@ def render_intr(interface_set):
     template = template.substitute(ip_just=ip_just, class_just=class_just,
                         type_just=type_just, name_just=name_just)
     for intr in interface_set:
-        if ptr.ttl == 3600:
+        if intr.ttl == 3600:
             ttl = ''
         else:
-            ttl = str(ptr.ttl)
-        BUILD_STR += template.format(ip=intr.ip_str, ttl=ttl, rclass='IN',
+            ttl = str(intr.ttl)
+        BUILD_STR += template.format(ip=ip_to_dns_form(intr.ip_str), ttl=ttl, rclass='IN',
                 rtype='PTR', name=intr.fqdn)
     return BUILD_STR
 

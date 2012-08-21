@@ -65,3 +65,12 @@ def nibbilize(addr):
         raise ValidationError("Error: Invalid IPv6 address {0}.".format(addr))
 
     return '.'.join(list(ip_str.replace(':', '')))
+
+
+def i64_to_i128(upper_int, lower_int):
+    return upper_int << 64 + lower_int
+
+def i128_to_i64(bigint):
+    ip_upper = bigint >> 64
+    ip_lower = bigint & (1 << 64) - 1
+    return ip_upper, ip_lower
