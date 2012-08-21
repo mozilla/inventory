@@ -8,7 +8,10 @@ from mozdns.txt.models import TXT
 from mozdns.srv.models import SRV
 from mozdns.address_record.models import AddressRecord
 from mozdns.cname.models import CNAME
+from mozdns.view.models import View
 from core.interface.static_intr.models import StaticInterface
+
+from copy import deepcopy
 import pdb
 
 
@@ -79,6 +82,7 @@ def get_clobbered(domain_name):
             obj_views = [view.name for view in obj.views.all()]
             new_obj = deepcopy(obj)
             new_obj.id = None
+            new_obj.label = ""
             clobber_objects.append((new_obj, obj_views))
             if Klass == AddressRecord:
                 kwargs = {"check_cname": False}
@@ -103,6 +107,7 @@ def ensure_domain(name, inherit_soa=False):
         domain, created = Domain.objects.get_or_create(name=domain_name)
         if inherit_soa and created and domain.master_domain.soa is not None:
             domain.soa = domain.master_domain.soa
+            domain.save()
         for object_, views in clobber_objects:
             try:
                 object_.domain = domain
