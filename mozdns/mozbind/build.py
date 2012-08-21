@@ -249,7 +249,9 @@ def build_dns():
     for soa in SOA.objects.all().order_by("comment"):
         root_domain = find_root_domain(soa)
         if not root_domain:
-            pdb.set_trace()
+            print ("Couldn't find root domain. No zone statement was printed "
+                "for {0}".format(soa))
+            continue
         if root_domain.is_reverse:
             masters, slaves, _ =  build_zone("reverse", soa, root_domain)
         else:
