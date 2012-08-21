@@ -17,8 +17,57 @@ function print_cl (){
     echo "        'ns2': '"$4"'"
     echo "    },"
 }
-#python validate_dns.py mozilla.com /home/juber/sysadmins/dnsconfig/external/mozilla.com NS1.mozilla.org NS1.mozilla.org
+function mozilla_com_public () {
+    print_cl ad.mozilla.com $DNSCONFIG/zones/mozilla.com/ad/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl akl1.mozilla.com $DNSCONFIG/zones/mozilla.com/akl1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl ams1.mozilla.com $DNSCONFIG/zones/mozilla.com/ams1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl any1.mozilla.com $DNSCONFIG/zones/mozilla.com/any1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl lon1.mozilla.com $DNSCONFIG/zones/mozilla.com/lon1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl mtv1.mozilla.com $DNSCONFIG/zones/mozilla.com/mtv1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl pao1.mozilla.com $DNSCONFIG/zones/mozilla.com/pao1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl par1.mozilla.com $DNSCONFIG/zones/mozilla.com/par1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl par2.mozilla.com $DNSCONFIG/zones/mozilla.com/par2/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl pek1.mozilla.com $DNSCONFIG/zones/mozilla.com/pek1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl pek2.mozilla.com $DNSCONFIG/zones/mozilla.com/pek2/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl phx1.mozilla.com $DNSCONFIG/zones/mozilla.com/phx1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl scl1.mozilla.com $DNSCONFIG/zones/mozilla.com/scl1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl scl2.mozilla.com $DNSCONFIG/zones/mozilla.com/scl2/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl scl3.mozilla.com $DNSCONFIG/zones/mozilla.com/scl3/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl sfo1.mozilla.com $DNSCONFIG/zones/mozilla.com/sfo1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl sjc1.mozilla.com $DNSCONFIG/zones/mozilla.com/sjc1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl sjc2.mozilla.com $DNSCONFIG/zones/mozilla.com/sjc2/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl tor1.mozilla.com $DNSCONFIG/zones/mozilla.com/tor1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl tpe1.mozilla.com $DNSCONFIG/zones/mozilla.com/tpe1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl weave.mozilla.com $DNSCONFIG/zones/mozilla.com/weave/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl yvr1.mozilla.com $DNSCONFIG/zones/mozilla.com/yvr1/public $NS1 $NS2 >> $TO_VALIDATE
+    print_cl corp.mozilla.com $DNSCONFIG/zones/mozilla.com/phx1/corp/public $NS1 $NS2 >> $TO_VALIDATE
+}
 
+function mozilla_com_private () {
+    print_cl ad.mozilla.com $DNSCONFIG/zones/mozilla.com/ad/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl akl1.mozilla.com $DNSCONFIG/zones/mozilla.com/akl1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl ams1.mozilla.com $DNSCONFIG/zones/mozilla.com/ams1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl any1.mozilla.com $DNSCONFIG/zones/mozilla.com/any1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl lon1.mozilla.com $DNSCONFIG/zones/mozilla.com/lon1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl mtv1.mozilla.com $DNSCONFIG/zones/mozilla.com/mtv1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl pao1.mozilla.com $DNSCONFIG/zones/mozilla.com/pao1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl par1.mozilla.com $DNSCONFIG/zones/mozilla.com/par1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl par2.mozilla.com $DNSCONFIG/zones/mozilla.com/par2/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl pek1.mozilla.com $DNSCONFIG/zones/mozilla.com/pek1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl pek2.mozilla.com $DNSCONFIG/zones/mozilla.com/pek2/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl phx1.mozilla.com $DNSCONFIG/zones/mozilla.com/phx1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl scl1.mozilla.com $DNSCONFIG/zones/mozilla.com/scl1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl scl2.mozilla.com $DNSCONFIG/zones/mozilla.com/scl2/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl scl3.mozilla.com $DNSCONFIG/zones/mozilla.com/scl3/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl sfo1.mozilla.com $DNSCONFIG/zones/mozilla.com/sfo1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl sjc1.mozilla.com $DNSCONFIG/zones/mozilla.com/sjc1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl sjc2.mozilla.com $DNSCONFIG/zones/mozilla.com/sjc2/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl tor1.mozilla.com $DNSCONFIG/zones/mozilla.com/tor1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl tpe1.mozilla.com $DNSCONFIG/zones/mozilla.com/tpe1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl weave.mozilla.com $DNSCONFIG/zones/mozilla.com/weave/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl yvr1.mozilla.com $DNSCONFIG/zones/mozilla.com/yvr1/private $NS1 $NS2 >> $TO_VALIDATE
+    print_cl corp.mozilla.com $DNSCONFIG/zones/mozilla.com/phx1/corp/private $NS1 $NS2 >> $TO_VALIDATE
+}
 
 function private_reverse () {
     print_cl 0.0.10.in-addr.arpa $DNSCONFIG/zones/in-addr/10.0/10.0.0 $NS1 $NS2 >> $TO_VALIDATE
@@ -378,11 +427,12 @@ function public_reverse () {
 
 echo "" > $TO_VALIDATE
 echo "things = [" >> $TO_VALIDATE
-#phx1.mozilla.com $DNSCONFIG/zones/mozilla.com/phx1/private $NS1 $NS2
 #print_cl mozilla.com $DNSCONFIG/external/mozilla.com $NS1 $NS2 >> $TO_VALIDATE
 private_reverse
+mozilla_com_private
 #public_reverse
 #print_cl phx1.mozilla.com $DNSCONFIG/zones/mozilla.com/phx1/private $NS1 $NS2 >> $TO_VALIDATE
+#print_cl scl3.mozilla.com $DNSCONFIG/zones/mozilla.com/scl3/private $NS1 $NS2 >> $TO_VALIDATE
 echo "]" >> $TO_VALIDATE
 
 python validate_dns.py
