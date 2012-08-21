@@ -14,6 +14,7 @@ from tastypie.authorization import Authorization
 from core.interface.static_intr.models import StaticInterface
 from core.interface.static_intr.models import StaticIntrKeyValue
 from core.range.models import Range
+from mozdns.view.models import View
 from mozdns.domain.models import Domain
 from core.lib.utils import create_ipv4_intr_from_domain
 import json
@@ -145,6 +146,60 @@ class SystemResource(CustomAPIResource):
                 sys.update_adapter(**patch_dict)
 
         ## Entry point for adding a new adapter by mac address via the rest API
+        if patch_dict.has_key('mac') and patch_dict.has_key('range'):
+            enable_dns = True
+            enable_private = True
+            enable_public = False
+            sys = bundle.obj
+            fqdn = patch_dict.pop('fqdn', None)
+            domain = patch_dict.pop('domain', 'mozilla.com')
+            from core.lib.utils import create_ipv4_intr_from_range
+            mac = patch_dict['mac']
+            interface = patch_dict.pop('interface', None)
+            import pdb; pdb.set_trace()
+            if not fqdn:
+                domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.' + mozilla.com
+                domain_name = domain_parsed.lower()
+                label = sys.hostname.split('.')[0]
+            else:
+                domain_parsed = ".".join(fqdn.split('.')[1:])
+                domain_name = domain_parsed.lower()
+                label = fqdn.split('.')[0]
+
+
+            range_start_str = patch_dict['range'].split(',')[0]
+            range_end_str = patch_dict['range'].split(',')[1]
+            s, errors = create_ipv4_intr_from_range(label, domain_name, sys, mac, range_start_str, range_end_str)
+            try:
+                if s:
+                    s.save()
+                    s.update_attrs()
+                    if enable_dns and enable_public:
+                        private = View.objects.get(name='private')
+                        s.views.add(private)
+                        s.save()
+
+                    elif enable_dns and enable_private and not enable_public:
+                        private = View.objects.get(name='private')
+                        s.views.add(private)
+                        s.save()
+
+                    if interface:
+                        interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+                    else:
+                        interface_type, primary, alias = sys.get_next_adapter()
+
+                    s.attrs.primary = primary
+                    s.attrs.interface_type = interface_type
+                    s.attrs.alias = alias
+                else:
+                    print 'We failed'
+            except ValidationError, e:
+                bundle.errors['error_message'] = " ".join(e.messages)
+                raise ValidationError(join(e.messages))
+            except Exception, e:
+                print e
+
         if patch_dict.has_key('mac_address') and patch_dict.has_key('auto_create_interface') and patch_dict['auto_create_interface'].upper() == 'TRUE':
             mac_addr = patch_dict.pop('mac_address')
             patch_dict.pop('auto_create_interface')
@@ -162,7 +217,6 @@ class SystemResource(CustomAPIResource):
                     sys,
                     mac_addr,)
                 if s:
-                    import pdb; pdb.set_trace()
                     s.update_attrs()
 
                     if interface:
