@@ -18,6 +18,7 @@
             {% for item, value in object.details() %}
                 <th>{{ item }}</th>
             {% endfor %}
+                <th>Views</th>
         </thead>
 
         <tbody>
@@ -35,6 +36,11 @@
                     {% endif %}
                 </td>
             {% endfor %}
+            <td>
+            {% for view in object.views.all() %}
+                    {{ view }}
+            {% endfor %}
+            </td>
             </tr>
         </tbody>
     </table>
