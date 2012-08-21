@@ -20,7 +20,7 @@ class CNAME(MozdnsRecord):
     """
     # TODO cite an RFC for that ^ (it's around somewhere)
     id = models.AutoField(primary_key=True)
-    data = models.CharField(max_length=100, validators=[validate_name])
+    data = models.CharField(max_length=100, validators=[validate_name], help_text='CNAME Destination')
     data_domain = models.ForeignKey(Domain, null=True,
                                     related_name='data_domains', blank=True,
                                     on_delete=models.SET_NULL)

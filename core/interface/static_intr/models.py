@@ -81,13 +81,13 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     changes to propagate to the database.
     """
     id = models.AutoField(primary_key=True)
-    mac = models.CharField(max_length=17, validators=[validate_mac])
+    mac = models.CharField(max_length=17, validators=[validate_mac], help_text='Mac address in format 00:00:00:00:00:00')
     reverse_domain = models.ForeignKey(Domain, null=True, blank=True,
-            related_name='staticintrdomain_set')
+            related_name='staticintrdomain_set', help_text='Domain to associate this interface with for DNS purposes')
 
-    system = models.ForeignKey(System, null=True, blank=True)
-    dhcp_enabled = models.BooleanField(default=True)
-    dns_enabled = models.BooleanField(default=True)
+    system = models.ForeignKey(System, null=True, blank=True, help_text='System to associate the interface with')
+    dhcp_enabled = models.BooleanField(default=True, help_text='Enable dhcp for this interface?')
+    dns_enabled = models.BooleanField(default=True, help_text='Enable dns for this interface?')
 
     attrs = None
 

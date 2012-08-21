@@ -53,3 +53,11 @@
         });
         return this;
     }
+    $(document).ready(function(){
+        $("input, select").mouseover(function(){
+            $(this).next('span.helptext').css('display','inline');
+        });
+        $("input, select").mouseout(function(){
+            $(this).next('span.helptext').css('display','none');
+        });
+    });

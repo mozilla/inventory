@@ -321,3 +321,7 @@ a.nav-link:hover {
     text-decoration: none;
 }
 
+span.helptext {
+    display: none;
+
+}

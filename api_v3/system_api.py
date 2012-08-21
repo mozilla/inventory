@@ -156,9 +156,8 @@ class SystemResource(CustomAPIResource):
             from core.lib.utils import create_ipv4_intr_from_range
             mac = patch_dict['mac']
             interface = patch_dict.pop('interface', None)
-            import pdb; pdb.set_trace()
             if not fqdn:
-                domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.' + mozilla.com
+                domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.' + domain
                 domain_name = domain_parsed.lower()
                 label = sys.hostname.split('.')[0]
             else:
@@ -192,48 +191,22 @@ class SystemResource(CustomAPIResource):
                     s.attrs.primary = primary
                     s.attrs.interface_type = interface_type
                     s.attrs.alias = alias
+                    bundle.data['success'] = 'asdfasfdasdfsadfsadf'
                 else:
                     print 'We failed'
+                    bundle.errors['error_message'] = "Unable to create adapter for unknown reason"
+                    raise ValidationError(join(e.messages))
             except ValidationError, e:
                 bundle.errors['error_message'] = " ".join(e.messages)
                 raise ValidationError(join(e.messages))
             except Exception, e:
                 print e
 
-        if patch_dict.has_key('mac_address') and patch_dict.has_key('auto_create_interface') and patch_dict['auto_create_interface'].upper() == 'TRUE':
-            mac_addr = patch_dict.pop('mac_address')
-            patch_dict.pop('auto_create_interface')
-            ip_str = patch_dict.pop('ip_address', None)
-            interface = patch_dict.pop('interface', None)
-            sys = bundle.obj
-            label = sys.hostname.split('.')[0]
-            domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.mozilla.com'
-            domain_parsed = domain_parsed.lower()
-            domain = Domain.objects.filter(name=domain_parsed)[0]
-            try:
-                s, errors = create_ipv4_intr_from_domain(
-                    label,
-                    domain_parsed,
-                    sys,
-                    mac_addr,)
-                if s:
-                    s.update_attrs()
+        return self.create_response(
+                request, bundle
 
-                    if interface:
-                        interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
-                    else:
-                        interface_type, primary, alias = sys.get_next_adapter()
 
-                    s.attrs.primary = primary
-                    s.attrs.interface_type = interface_type
-                    s.attrs.alias = alias
-                else:
-                    print 'We failed'
-            except ValidationError, e:
-                bundle.errors['error_message'] = " ".join(e.messages)
-                raise ValidationError(join(e.messages))
-            except Exception, e:
-                print e
+                )
 
     def obj_create(self, bundle, request, **kwargs):
         ret_bundle = super(SystemResource, self).obj_create(bundle, request, **kwargs)
@@ -243,7 +216,8 @@ class SystemResource(CustomAPIResource):
         for intr in bundle.obj.staticinterface_set.all():
             intr.update_attrs()
         ret_bundle = super(SystemResource, self).obj_update(bundle, request, **kwargs)
-        self.process_extra(ret_bundle, request, **kwargs)
+        ret_bundle = self.process_extra(ret_bundle, request, **kwargs)
+        return ret_bundle
 
     def full_dehydrate(self, bundle):
         """
