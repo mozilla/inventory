@@ -167,9 +167,9 @@ class Range(models.Model, ObjectUrlMixin):
                 self.start_str, self.end_str)
 
     def choice_display(self):
-        return "{0} - {1} - {2}".format(
+        return "{0} - {1} - ({2}) {3} to {4}".format(
                 str(self.network.site).upper(), self.network.vlan, self.network,
-                self.start_str)
+                self.start_str, self.end_str)
 
     def __repr__(self):
         return "<Range: {0}>".format(str(self))
