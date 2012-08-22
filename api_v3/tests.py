@@ -34,7 +34,6 @@ class Tasty1SystemTest(ResourceTestCase):
 
     def test3_get_system_by_id(self):
         self.create_system({'hostname': self.test_hostname})
-        self.assertEqual(resp.status_code, 200)
         resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
         self.assertEqual(resp.status_code, 200)
 
