@@ -124,8 +124,8 @@ class SystemResource(CustomAPIResource):
         if m:
             nic_type = m.group(1) if m.group(1) else "eth"
             primary = m.group(2) if m.group(2) else "0"
-            alias = m.group(3) if m.group(3) else "0"
-            return nic_type, primary, alias
+            nic_alias = m.group(3) if m.group(3) else "0"
+            return nic_type, primary, nic_alias
         else:
             raise ValidationError("Invalid format for adapter name. ex: eth0.0")
 
@@ -146,16 +146,24 @@ class SystemResource(CustomAPIResource):
                 sys.update_adapter(**patch_dict)
 
         ## Entry point for adding a new adapter by mac address via the rest API
-        if patch_dict.has_key('mac') and patch_dict.has_key('range'):
+        if patch_dict.has_key('mac'):
+
             enable_dns = True
             enable_private = True
             enable_public = False
             sys = bundle.obj
+            range = patch_dict.pop('range', None)
             fqdn = patch_dict.pop('fqdn', None)
+            ip_str = patch_dict.pop('ip_address', None)
+            interface = patch_dict.pop('interface', None)
             domain = patch_dict.pop('domain', 'mozilla.com')
             from core.lib.utils import create_ipv4_intr_from_range
             mac = patch_dict['mac']
-            interface = patch_dict.pop('interface', None)
+            if interface:
+                interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
+            else:
+                interface_type, primary, alias = sys.get_next_adapter()
+
             if not fqdn:
                 domain_parsed = ".".join(sys.hostname.split('.')[1:]) + '.' + domain
                 domain_name = domain_parsed.lower()
@@ -166,9 +174,13 @@ class SystemResource(CustomAPIResource):
                 label = fqdn.split('.')[0]
 
 
-            range_start_str = patch_dict['range'].split(',')[0]
-            range_end_str = patch_dict['range'].split(',')[1]
-            s, errors = create_ipv4_intr_from_range(label, domain_name, sys, mac, range_start_str, range_end_str)
+            if range:
+                range_start_str = range.split(',')[0]
+                range_end_str = range.split(',')[1]
+                s, errors = create_ipv4_intr_from_range(label, domain_name, sys, mac, range_start_str, range_end_str)
+            if ip_str:
+                domain = Domain.objects.filter(name=domain_parsed)[0]
+                s = StaticInterface(label=label, mac=mac, domain=domain, ip_str=ip_str, ip_type='4', system=sys)
             try:
                 if s:
                     s.save()
@@ -191,7 +203,6 @@ class SystemResource(CustomAPIResource):
                     s.attrs.primary = primary
                     s.attrs.interface_type = interface_type
                     s.attrs.alias = alias
-                    bundle.data['success'] = 'asdfasfdasdfsadfsadf'
                 else:
                     print 'We failed'
                     bundle.errors['error_message'] = "Unable to create adapter for unknown reason"
@@ -202,11 +213,6 @@ class SystemResource(CustomAPIResource):
             except Exception, e:
                 print e
 
-        return self.create_response(
-                request, bundle
-
-
-                )
 
     def obj_create(self, bundle, request, **kwargs):
         ret_bundle = super(SystemResource, self).obj_create(bundle, request, **kwargs)

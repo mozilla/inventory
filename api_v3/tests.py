@@ -34,7 +34,8 @@ class Tasty1SystemTest(ResourceTestCase):
 
     def test3_get_system_by_id(self):
         self.create_system({'hostname': self.test_hostname})
-        resp = self.api_client.get('/en-US/tasty/v3/system/2/', format='json')
+        self.assertEqual(resp.status_code, 200)
+        resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
         self.assertEqual(resp.status_code, 200)
 
     def test4_get_system_by_hostname(self):
@@ -147,8 +148,8 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.create_domains()
         data = {
             'hostname': self.test_hostname,
-            'auto_create_interface': 'True',
-            'mac_address': '00:00:00:00:00:00', }
+            'range': '10.99.99.0,10.99.99.254',
+            'mac': '00:00:00:00:00:00', }
         resp = self.api_client.post(
             '/en-US/tasty/v3/system/', format='json', data=data)
         self.assertEqual(resp.status_code, 201)
@@ -158,7 +159,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         system = System.objects.get(id=system_tmp['id'])
         eth0 = system.staticinterface_set.all()[0]
         eth0.update_attrs()
-        self.assertEqual(eth0.ip_str, '10.99.99.97')
+        self.assertEqual(eth0.ip_str, '10.99.99.0')
         self.assertEqual(eth0.mac, '00:00:00:00:00:00')
         self.assertEqual(eth0.ip_type, '4')
         self.assertEqual(eth0.attrs.primary, '0')
@@ -169,8 +170,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.create_domains()
         data = {
             'hostname': self.test_hostname,
-            'auto_create_interface': 'True',
-            'mac_address': '00:00:00:00:00:00',
+            'mac': '00:00:00:00:00:00',
             'ip_address': '10.99.99.99', }
         resp = self.api_client.post(
             '/en-US/tasty/v3/system/', format='json', data=data)
@@ -212,8 +212,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.create_domains()
         data = {
             'hostname': self.test_hostname,
-            'auto_create_interface': 'True',
-            'mac_address': '00:00:00:00:00:00',
+            'mac': '00:00:00:00:00:00',
             'interface': 'mgmt2.5',
             'ip_address': '10.99.99.99', }
         resp = self.api_client.post(
@@ -268,8 +267,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.create_domains()
         data = {
             'hostname': self.test_hostname,
-            'auto_create_interface': 'True',
-            'mac_address': '00:00:00:00:00:00',
+            'mac': '00:00:00:00:00:00',
             'ip_address': '10.99.99.99', }
         resp = self.api_client.post(
             '/en-US/tasty/v3/system/', format='json', data=data)
@@ -306,8 +304,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(adapters[0].attrs.interface_type, 'eth')
         self.assertEqual(adapters[0].attrs.primary, '0')
         self.assertEqual(adapters[0].attrs.alias, '0')
-        #import pdb; pdb.set_trace()
-        resp = self.api_client.patch(
+        resp = self.api_client.put(
             '/en-US/tasty/v3/system/%s/' % self.test_hostname,
             format='json', data=delete_data)
         resp = self.api_client.get(
@@ -321,8 +318,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.create_domains()
         data = {
             'hostname': self.test_hostname,
-            'auto_create_interface': 'True',
-            'mac_address': '00:00:00:00:00:00',
+            'mac': '00:00:00:00:00:00',
             'ip_address': '10.99.99.99', }
         resp = self.api_client.post(
             '/en-US/tasty/v3/system/', format='json', data=data)
@@ -354,8 +350,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.create_domains()
         data = {
             'hostname': self.test_hostname,
-            'auto_create_interface': 'True',
-            'mac_address': '00:00:00:00:00:00',
+            'mac': '00:00:00:00:00:00',
             'ip_address': '10.99.99.99', }
         update_dict = {
             "ip_address": "10.99.99.1",
