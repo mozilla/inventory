@@ -14,6 +14,7 @@ from mozdns.domain.utils import *
 from mozdns.ip.utils import ip_to_domain_name
 from mozdns.ip.models import ipv6_to_longs
 from mozdns.view.models import View
+from mozdns.utils import ensure_domain
 
 from settings import ZONE_PATH
 
@@ -233,6 +234,9 @@ def migrate_A(zone, root_domain, soa, views):
 
     for name, rdata in sorted_names:
         print str(name) + " A " + str(rdata)
+        if name.startswith("unusedspace"):
+            print "Skipping {0} A {1}".format(name, rdata)
+            continue
         exists_domain =  Domain.objects.filter(name=name)
         if exists_domain:
             label = ''
@@ -407,6 +411,7 @@ def get_clobbered(domain_name):
             obj.delete(**kwargs)
     return clobber_objects
 
+"""
 def ensure_domain(name):
     try:
         domain = Domain.objects.get(name=name)
@@ -435,3 +440,4 @@ def ensure_domain(name):
                 pdb.set_trace()
                 pass
     return domain
+"""
