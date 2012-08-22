@@ -28,25 +28,30 @@ class BaseAddressRecord(Ip):
     ############################
 
     label = models.CharField(max_length=100, blank=True, null=True,
-                             validators=[validate_first_label], help_text='You probably want the short hostname here')
-    domain = models.ForeignKey(Domain, null=False, help_text='FQDN of the domain after the short hostname. vlan.dc.mozilla.com')
+                validators=[validate_first_label],
+                help_text="The short hostname goes here. If this is a record "
+                "for the selected domain, leave this field blank")
+    domain = models.ForeignKey(Domain, null=False, help_text="FQDN of the "
+                "domain after the short hostname. "
+                "(Ex: <Vlan>.<DC>.mozilla.com")
     fqdn = models.CharField(max_length=255, blank=True, null=True,
-                            validators=[validate_name], help_text='FQDN of the system (foo.vlan.dc.mozilla.com)')
-    views = models.ManyToManyField(View)
+                validators=[validate_name])
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-            validators=[validate_ttl], help_text='Time to Live of the record')
-    comment = models.CharField(max_length=1000, blank=True, null=True, help_text='Comment to be associated with this record')
+            validators=[validate_ttl], help_text="Time to Live of the record")
+    comment = models.CharField(max_length=1000, blank=True, null=True,
+                help_text="Comment to be associated with this record")
+    views = models.ManyToManyField(View)
 
-    search_fields = ('fqdn', 'ip_str')
+    search_fields = ("fqdn", "ip_str")
 
     class Meta:
         abstract = True
 
     def details(self):
         return  (
-                    ('FQDN', self.fqdn),
-                    ('Record Type', self.record_type()),
-                    ('IP', str(self.ip_str)),
+                    ("FQDN", self.fqdn),
+                    ("Record Type", self.record_type()),
+                    ("IP", str(self.ip_str)),
                 )
 
     def save(self, *args, **kwargs):
@@ -58,7 +63,7 @@ class BaseAddressRecord(Ip):
         super(BaseAddressRecord, self).save(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
-        validate_glue = kwargs.pop('validate_glue', True)
+        validate_glue = kwargs.pop("validate_glue", True)
         if validate_glue:
             self.check_glue_status()
         set_fqdn(self)
@@ -68,10 +73,10 @@ class BaseAddressRecord(Ip):
         check_for_cname(self)
 
 
-        urd = kwargs.pop('update_reverse_domain', False)
+        urd = kwargs.pop("update_reverse_domain", False)
         self.clean_ip(update_reverse_domain=urd)
 
-        if not kwargs.pop('ignore_interface', False):
+        if not kwargs.pop("ignore_interface", False):
             from core.interface.static_intr.models import StaticInterface
             if StaticInterface.objects.filter(fqdn=self.fqdn,
                     ip_upper=self.ip_upper, ip_lower=self.ip_lower).exists():
@@ -82,11 +87,11 @@ class BaseAddressRecord(Ip):
         """Address Records that are glue records or that are pointed to
         by a CNAME should not be removed from the database.
         """
-        if kwargs.pop('validate_glue', True):
+        if kwargs.pop("validate_glue", True):
             if self.nameserver_set.exists():
                 raise ValidationError("Cannot delete the record {0}. It is "
                     "a glue record.".format(self.record_type()))
-        if kwargs.pop('check_cname', True):
+        if kwargs.pop("check_cname", True):
             if CNAME.objects.filter(data=self.fqdn):
                 raise ValidationError("A CNAME points to this {0} record. "
                     "Change the CNAME before deleting this record.".
@@ -107,7 +112,7 @@ class BaseAddressRecord(Ip):
                 "delegated domain that have an NS record pointing to them.")
 
     def check_glue_status(self):
-        """If this record is a 'glue' record for a Nameserver instance,
+        """If this record is a "glue" record for a Nameserver instance,
         do not allow modifications to this record. The Nameserver will
         need to point to a different record before this record can
         be updated.
@@ -153,9 +158,9 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
     ############################
     id = models.AutoField(primary_key=True)
     reverse_domain = models.ForeignKey(Domain, null=True, blank=True,
-            related_name='addressrecordomain_set')
+            related_name="addressrecordomain_set")
 
     class Meta:
-        db_table = 'address_record'
-        unique_together = ('label', 'domain', 'ip_upper', 'ip_lower',
-                'ip_type')
+        db_table = "address_record"
+        unique_together = ("label", "domain", "ip_upper", "ip_lower",
+                "ip_type")
