@@ -301,7 +301,8 @@ class SystemAdapterTest(TestCase):
         resp = self.client.get(reverse("get-all-ranges-ajax"), follow=True)
         self.assertEqual(resp.status_code, 200)
         obj = json.loads(resp.content)
-        self.assertEqual(obj[0]['display'], 'NONE - None - 66.66.66.0/24')
+        self.assertEqual(obj[0]['display'], 'NONE - None - (66.66.66.0/24) '
+                '66.66.66.1 to 66.66.66.254')
 
     def test5_system_adapter_next_available_ip(self):
         range_id = Range.objects.get(start_str='10.99.99.1').id
