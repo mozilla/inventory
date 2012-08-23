@@ -9,15 +9,15 @@ class TXT(MozdnsRecord):
     """
 
     id = models.AutoField(primary_key=True)
-    txt_data = models.TextField()
+    txt_data = models.TextField(help_text="The text data for this record.")
 
-    search_fields = ('fqdn', 'txt_data')
+    search_fields = ("fqdn", "txt_data")
 
     def details(self):
         return (
-                ('FQDN', self.fqdn),
-                ('Record Type', 'TXT'),
-                ('Text', self.txt_data)
+                ("FQDN", self.fqdn),
+                ("Record Type", "TXT"),
+                ("Text", self.txt_data)
                )
 
     def save(self, *args, **kwargs):
@@ -30,11 +30,11 @@ class TXT(MozdnsRecord):
         super(TXT, self).check_for_cname()
 
     class Meta:
-        db_table = 'txt'
-        # unique_together = ('domain', 'label', 'txt_data')
+        db_table = "txt"
+        # unique_together = ("domain", "label", "txt_data")
         # TODO
         # _mysql_exceptions.OperationalError: (1170, "BLOB/TEXT column
-        # 'txt_data' used in key specification without a key length")
+        # "txt_data" used in key specification without a key length")
         # Fix that ^
 
     def __str__(self):

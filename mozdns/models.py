@@ -72,20 +72,20 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
     all label octets and label lengths) is limited to 255" - RFC 4471
     """
 
-    domain = models.ForeignKey(Domain, null=False,
-                help_text="Top Level domain for address record")
+    domain = models.ForeignKey(Domain, null=False, help_text="FQDN of the "
+                "domain after the short hostname. "
+                "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
     label = models.CharField(max_length=100, blank=True, null=True,
                 validators=[validate_first_label],
                 help_text="Short name of the fqdn")
     fqdn = models.CharField(max_length=255, blank=True, null=True,
-                validators=[validate_name],
-                help_text="Fully Qualified Domain Name")
+                validators=[validate_name])
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
             validators=[validate_ttl],
             help_text="Time to Live of this record")
     views = models.ManyToManyField(View)
     comment = models.CharField(max_length=1000, blank=True, null=True,
-            help_text="Generic comment for this record")
+                help_text="Comments about this record.")
     # fqdn = label + domain.name <--- see set_fqdn
 
     class Meta:
