@@ -1,18 +1,47 @@
 {% extends "mozdns/mozdns_base.html" %}
 
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
 
 {% block dns_content %}
     <h1>Moz DNS</h1>
     <div class="wrap main container-fluid">
 
-        {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-
+                <span class="mozdns-item">
+                    <a class="mozdns-action" href="/mozdns/domain/create/">Create Domain</a>
+                </span>
+                <span class="mozdns-item">
+                    <a class="mozdns-action" href="/mozdns/address_record/create/">Create Address Record</a>
+                </span>
+                <span class="mozdns-item">
+                    <a class="mozdns-action" href="/mozdns/mx/create/">Create MX</a>
+                </span>
+                <span class="mozdns-item">
+                    <a class="mozdns-action" href="/mozdns/soa/create/">Create SOA</a>
+                </span>
+                <span class="mozdns-item">
+                    <a class="mozdns-action" href="/mozdns/nameserver/create/">Create NS</a>
+                </span>
+                <span class="mozdns-item">
+                    <a class="mozdns-action" href="/mozdns/srv/create/">Create SRV</a>
+                </span>
+                <span class="mozdns-item">
+                    <a class="mozdns-action" href="/mozdns/txt/create/">Create TXT</a>
+                </span>
+                <span class="mozdns-item">
+                    <a class="mozdns-action" href="/mozdns/cname/create/">Create CNAME</a>
+                </span>
+                <span class="mozdns-item">
+                    <a class="mozdns-action" href="/mozdns/ptr/create/">Create PTR</a>
+                </span>
+                <span class="mozdns-item">
+                    <a class="mozdns-action" href="/mozdns/sshfp/create/create/">Create SSHFP</a>
+                </span>
 
     </div>
 {% endblock %}
