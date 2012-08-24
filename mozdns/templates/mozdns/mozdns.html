@@ -274,6 +274,7 @@
                     var target_name = $('#' + rec_type + '_build_target_name').val();
                     var ip_str = $('#' + rec_type + '_build_ip').val();
                     commit_data = {
+                        'pk': pk,
                         'rtype': rec_type,
                         'name': target_name,
                         'ip_str': ip_str,
@@ -286,6 +287,7 @@
                     var weight = $('#' + rec_type + '_build_Weight').val();
                     var priority = $('#' + rec_type + '_build_Priority').val();
                     commit_data = {
+                        'pk': pk,
                         'rtype': rec_type,
                         'target': target_name,
                         'port': port,
@@ -298,6 +300,7 @@
                 case 'CNAME':
                     var target_name = $('#' + rec_type + '_build_target_name').val();
                     commit_data = {
+                        'pk': pk,
                         'rtype': rec_type,
                         'data': target_name,
                     }
@@ -308,6 +311,7 @@
                     var target_name = $('#' + rec_type + '_build_target_name').val();
                     var domain = $('#' + rec_type + '_build_domain').find(":selected").text();
                     commit_data = {
+                        'pk': pk,
                         'rtype': rec_type,
                         'server': target_name,
                         'domain': domain,
@@ -318,6 +322,7 @@
                     var text = $('#' + rec_type + '_build_text').val();
                     var domain = $('#' + rec_type + '_build_domain').find(":selected").text();
                     commit_data = {
+                        'pk': pk,
                         'rtype': rec_type,
                         'txt_data': text,
                     }
@@ -328,6 +333,7 @@
                     var target_name = $('#' + rec_type + '_build_target_name').val();
                     var priority = $('#' + rec_type + '_build_Priority').val();
                     commit_data = {
+                        'pk': pk,
                         'rtype': rec_type,
                         'server': target_name,
                         'priority': priority,
@@ -337,6 +343,7 @@
                     break;
             }
             commit_data = jQuery.extend(commit_data, get_views(rec_type));
+            console.log(commit_data);
             $.post('/mozdns/commit_record/', JSON.stringify(commit_data), function(data) {
                 var data = jQuery.parseJSON(data)
                 $('#error_list').empty();
@@ -538,7 +545,7 @@
     </div>
 
     <div id="MX_display">
-        <div class="rec_build" id="MX_build">
+        <div class="rec_build" id="MX_build" pk="">
             <table>
             <tr>
                 <td>{{ draw_build_label('MX') }}</td>
@@ -577,7 +584,7 @@
         </div>
     </div>
     <div id="NS_display">
-        <div class="rec_build" id="NS_build">
+        <div class="rec_build" id="NS_build" pk="">
             <table>
             <tr>
                 <td>{{ draw_build_domain('NS', domains) }}</td>
@@ -610,7 +617,7 @@
         </div>
     </div>
     <div id="PTR_display">
-        <div class="rec_build" id="PTR_build">
+        <div class="rec_build" id="PTR_build" pk="">
             <table>
             <tr>
                 <td>{{ draw_build_ip('PTR') }}</td>
@@ -644,7 +651,7 @@
     </div>
 
     <div id="CNAME_display">
-        <div class="rec_build" id="CNAME_build">
+        <div class="rec_build" id="CNAME_build" pk="">
             <table>
             <tr>
                 <td>{{ draw_build_label('CNAME') }}</td>
@@ -679,7 +686,7 @@
     </div>
 
     <div id="SRV_display">
-        <div class="rec_build" id="SRV_build">
+        <div class="rec_build" id="SRV_build" pk="">
             <table>
             <tr>
                 <td>{{ draw_build_label('SRV') }}</td>
