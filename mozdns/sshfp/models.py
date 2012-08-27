@@ -14,7 +14,8 @@ def validate_fingerprint(number):
 
 class SSHFP(MozdnsRecord):
     """
-    >>> SSHFP(label=label, domain=domain, key=key_data)
+    >>> SSHFP(label=label, domain=domain, key=key_data,
+    ... algorithm_number=algo_num, fingerprint_type=fing_type)
     """
 
     id = models.AutoField(primary_key=True)
