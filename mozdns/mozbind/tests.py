@@ -67,7 +67,7 @@ class BuildTests(TestCase):
     def test_dirty_cname(self):
         self.soa.dirty = False
         self.dom.dirty = False
-        c = CNAME(label="asfd", domain=self.dom, data="nerp")
+        c = CNAME(label="asfd", domain=self.dom, target="nerp")
         c.full_clean()
         c.save()
         self.assertTrue(self.dom.dirty)

@@ -104,7 +104,7 @@ class MXTests(TestCase):
         label = "cnamederp"
         domain = self.o_e
         data = "foo.com"
-        cn = CNAME( label = label, domain = domain, data = data )
+        cn = CNAME( label = label, domain = domain, target = data )
         cn.full_clean()
         cn.save()
 

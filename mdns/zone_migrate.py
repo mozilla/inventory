@@ -331,7 +331,7 @@ def migrate_CNAME(zone, root_domain, soa, views):
 
         if not CNAME.objects.filter(label = label, domain = domain,
                 data = data).exists():
-            cn = CNAME(label = label, domain = domain, data = data)
+            cn = CNAME(label = label, domain = domain, target = data)
             cn.full_clean()
             cn.save()
             for view in views:

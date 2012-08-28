@@ -103,7 +103,7 @@ class MasterFormTests(TestCase):
     def test_CNAME(self):
         data = {'rtype':'CNAME'}
         data.update(self.craft_label_domain())
-        data.update({'data': random_label()})
+        data.update({'target': random_label()})
         data.update(self.craft_ttl_and_comment())
         request = FakeRequest(json.dumps(data))
         response = commit_record(request)

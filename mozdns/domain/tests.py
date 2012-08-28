@@ -209,7 +209,7 @@ class DomainTests(TestCase):
         ns = Nameserver(domain=dom, server="ns1."+dom.name)
         self.assertRaises(ValidationError, ns.save)
 
-        cn = CNAME(label = "999asdf", domain = dom, data = "asdf.asdf")
+        cn = CNAME(label = "999asdf", domain = dom, target = "asdf.asdf")
         self.assertRaises(ValidationError, cn.full_clean)
 
         # Undelegate (unlock) the domain.
@@ -228,7 +228,7 @@ class DomainTests(TestCase):
         arec1 = AddressRecord(label="ns2", domain=dom, ip_str="128.193.99.9", ip_type='4')
         self.assertRaises(ValidationError, arec1.save)
 
-        cn1 = CNAME(label = "1000asdf", domain = dom, data = "asdf.asdf")
+        cn1 = CNAME(label = "1000asdf", domain = dom, target = "asdf.asdf")
         self.assertRaises(ValidationError, cn1.full_clean)
 
         # Editing should be allowed.
@@ -262,7 +262,7 @@ class DomainTests(TestCase):
         name = "to.bo"
         t_dom,_ = Domain.objects.get_or_create( name = name, delegated=False )
 
-        cn = CNAME(domain=t_dom, label="no", data="asdf")
+        cn = CNAME(domain=t_dom, label="no", target="asdf")
         cn.full_clean()
         cn.save()
 
@@ -287,7 +287,7 @@ class DomainTests(TestCase):
         c_dom.save()
 
         cn, _ = CNAME.objects.get_or_create(domain=c_dom, label="nddo",
-                data="really.teebow.sucks")
+                target="really.teebow.sucks")
         cn.full_clean()
         cn.save()
 
@@ -295,7 +295,7 @@ class DomainTests(TestCase):
         ptr.full_clean()
         ptr.save()
 
-        self.assertTrue( cn.data_domain == b_dom )
+        self.assertTrue( cn.target_domain == b_dom )
         self.assertTrue( ptr.data_domain == b_dom )
 
         b_dom,_ = Domain.objects.get_or_create( name = "teebow.sucks", delegated=False )
@@ -305,7 +305,7 @@ class DomainTests(TestCase):
             cn = CNAME.objects.get(pk=cn.pk)
         except:
             self.fail("CNAME was deleted.")
-        self.assertTrue(cn.data_domain == a_dom)
+        self.assertTrue(cn.target_domain == a_dom)
 
         try:
             ptr = PTR.objects.get(pk=ptr.pk)
@@ -323,7 +323,7 @@ class DomainTests(TestCase):
         c_dom.save()
 
         cn, _ = CNAME.objects.get_or_create(domain=c_dom, label="nddo",
-                data="really.teebow.sucks1")
+                target="really.teebow.sucks1")
         cn.full_clean()
         cn.save()
 
@@ -337,7 +337,7 @@ class DomainTests(TestCase):
 
         cn = CNAME.objects.get(pk=cn.pk)
         ptr = PTR.objects.get(pk=ptr.pk)
-        self.assertTrue( cn.data_domain == b_dom )
+        self.assertTrue( cn.target_domain == b_dom )
         self.assertTrue( ptr.data_domain == b_dom )
         cn.label = "fooooobar"
         cn.full_clean()

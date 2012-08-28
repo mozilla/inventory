@@ -575,7 +575,7 @@ class AddressRecordTests(TestCase):
                 '128.193.1.10', ip_type = '4')
         a.clean()
         a.save()
-        cn = CNAME(label="foomom", domain=self.o_e, data = label + "." +
+        cn = CNAME(label="foomom", domain=self.o_e, target = label + "." +
                 self.o_e.name)
         cn.clean()
         cn.save()
