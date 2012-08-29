@@ -60,6 +60,18 @@ class Nameserver(models.Model, ObjectUrlMixin):
         ]
         return tuple(details)
 
+    def delete(self, *args, **kwargs):
+        from mozdns.utils import prune_tree
+        objs_domain = self.domain
+        super(Nameserver, self).delete(*args, **kwargs)
+        prune_tree(objs_domain)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        self.domain.dirty = True
+        self.domain.save()
+        super(Nameserver, self).save(*args, **kwargs)
+
     def get_glue(self):
         if self.addr_glue:
             return self.addr_glue
@@ -134,12 +146,6 @@ class Nameserver(models.Model, ObjectUrlMixin):
         else:
             raise ValidationError("You cannot create a NS record that is the"
                                   "name of a domain.")
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        self.domain.dirty = True
-        self.domain.save()
-        super(Nameserver, self).save(*args, **kwargs)
 
     def __repr__(self):
         return "<Forward '{0}'>".format(str(self))

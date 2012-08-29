@@ -92,6 +92,8 @@ class Domain(models.Model, ObjectUrlMixin):
     is_reverse = models.BooleanField(default=False)
     # This indicates if this domain (and zone) needs to be rebuilt
     dirty = models.BooleanField(default=False)
+    # Read about the label and domain paradigm
+    purgeable = models.BooleanField(default=False)
     delegated = models.BooleanField(default=False, null=False, blank=True)
 
     search_fields = ('name',)
@@ -225,6 +227,25 @@ class Domain(models.Model, ObjectUrlMixin):
         for ptr in ptrs:
             ptr.reverse_domain = self.master_domain
             ptr.save()
+
+    def has_record_set(self):
+        if self.mx_set.exists():
+            return True
+        if self.nameserver_set.exists():
+            return True
+        if self.addressrecord_set.exists():
+            return True
+        if self.staticinterface_set.exists():
+            return True
+        if self.srv_set.exists():
+            return True
+        if self.cname_set.exists():
+            return True
+        if self.txt_set.exists():
+            return True
+        if self.sshfp_set.exists():
+            return True
+        return False
 
 
 def boot_strap_ipv6_reverse_domain(ip, soa=None):

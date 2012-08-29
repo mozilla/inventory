@@ -1,7 +1,6 @@
 from mozdns.validation import validate_domain_name, _name_type_check
 import mozdns
 
-
 def name_to_domain(fqdn):
     """
     This function doesn't through an exception if nothing is found.

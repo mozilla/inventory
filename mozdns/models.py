@@ -95,6 +95,12 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
         set_fqdn(self)
         check_TLD_condition(self)
 
+    def delete(self, *args, **kwargs):
+        from mozdns.utils import prune_tree
+        objs_domain = self.domain
+        super(MozdnsRecord, self).delete(*args, **kwargs)
+        prune_tree(objs_domain)
+
     def save(self, *args, **kwargs):
         # Only CNAME uses this kwarg.
         no_build = kwargs.pop("no_build", False)

@@ -20,8 +20,8 @@ import pdb
 # it's label.  TODO, verify this.
 class SRV(models.Model, ObjectUrlMixin):
     """
-    >>> SRV(domain=domain, label=label, target=target, port=port,
-    ... priority=priority, weight=weight)
+    >>> SRV(label=label, domain=domain, target=target, port=port,
+    ... priority=priority, weight=weight, ttl=ttl)
     """
     id = models.AutoField(primary_key=True)
     label = models.CharField(max_length=100, blank=True, null=True,
@@ -70,7 +70,10 @@ class SRV(models.Model, ObjectUrlMixin):
                            "priority", "weight")
 
     def delete(self, *args, **kwargs):
+        from mozdns.utils import prune_tree
+        objs_domain = self.domain
         super(SRV, self).delete(*args, **kwargs)
+        prune_tree(objs_domain)
 
     def save(self, *args, **kwargs):
         self.full_clean()

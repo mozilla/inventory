@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from mozdns.address_record.tests import *
-from mozdns.domain.tests import *
+from mozdns.domain.tests.all import *
 from mozdns.domain.reverse_tests import *
 from mozdns.ip.tests import *
 from mozdns.nameserver.tests import *

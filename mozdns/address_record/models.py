@@ -96,7 +96,11 @@ class BaseAddressRecord(Ip):
                 raise ValidationError("A CNAME points to this {0} record. "
                     "Change the CNAME before deleting this record.".
                     format(self.record_type()))
+
+        from mozdns.utils import prune_tree
+        objs_domain = self.domain
         super(BaseAddressRecord, self).delete(*args, **kwargs)
+        prune_tree(objs_domain)
 
     def set_fqdn(self):
         set_fqdn(self)
@@ -146,6 +150,7 @@ class BaseAddressRecord(Ip):
         return "<Address Record '{0}'>".format(str(self))
 
 
+
 class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
     """AddressRecord is the class that generates A and AAAA records
 
@@ -164,3 +169,4 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
         db_table = "address_record"
         unique_together = ("label", "domain", "ip_upper", "ip_lower",
                 "ip_type")
+
