@@ -81,31 +81,35 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     changes to propagate to the database.
     """
     id = models.AutoField(primary_key=True)
-    mac = models.CharField(max_length=17, validators=[validate_mac], help_text='Mac address in format 00:00:00:00:00:00')
+    mac = models.CharField(max_length=17, validators=[validate_mac],
+            help_text="Mac address in format XX:XX:XX:XX:XX:XX")
     reverse_domain = models.ForeignKey(Domain, null=True, blank=True,
-            related_name='staticintrdomain_set', help_text='Domain to associate this interface with for DNS purposes')
+                        related_name="staticintrdomain_set")
 
-    system = models.ForeignKey(System, null=True, blank=True, help_text='System to associate the interface with')
-    dhcp_enabled = models.BooleanField(default=True, help_text='Enable dhcp for this interface?')
-    dns_enabled = models.BooleanField(default=True, help_text='Enable dns for this interface?')
+    system = models.ForeignKey(System, null=True, blank=True,
+                help_text="System to associate the interface with")
+    dhcp_enabled = models.BooleanField(default=True,
+                    help_text="Enable dhcp for this interface?")
+    dns_enabled = models.BooleanField(default=True,
+                    help_text="Enable dns for this interface?")
 
     attrs = None
 
-    search_fields = ('mac', 'ip_str', 'fqdn')
+    search_fields = ("mac", "ip_str", "fqdn")
 
     def update_attrs(self):
-        self.attrs = AuxAttr(StaticIntrKeyValue, self, 'intr')
+        self.attrs = AuxAttr(StaticIntrKeyValue, self, "intr")
 
     def details(self):
         return (
-                ('Name', self.fqdn),
-                ('DNS Type', 'A/PTR'),
-                ('IP', self.ip_str),
+                ("Name", self.fqdn),
+                ("DNS Type", "A/PTR"),
+                ("IP", self.ip_str),
                 )
 
     class Meta:
-        db_table = 'static_interface'
-        unique_together = ('ip_upper', 'ip_lower', 'label', 'domain', 'mac')
+        db_table = "static_interface"
+        unique_together = ("ip_upper", "ip_lower", "label", "domain", "mac")
 
     def get_edit_url(self):
         return "/core/interface/{0}/update/".format(self.pk)
@@ -147,14 +151,14 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
                 ).exists():
             raise ValidationError("An A record already uses this Name and IP")
 
-        if kwargs.pop('validate_glue', True):
+        if kwargs.pop("validate_glue", True):
             self.check_glue_status()
 
         super(StaticInterface, self).clean(validate_glue=False,
                 update_reverse_domain=True, ignore_interface=True)
 
-        if self.pk and self.ip_str.startswith('10.'):
-            p = View.objects.filter(name='private')
+        if self.pk and self.ip_str.startswith("10."):
+            p = View.objects.filter(name="private")
             if p:
                 self.views.add(p[0])
                 super(StaticInterface, self).clean(validate_glue=False,
@@ -184,7 +188,7 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         return "A/PTR"
 
     def delete(self, *args, **kwargs):
-        if kwargs.pop('validate_glue', True):
+        if kwargs.pop("validate_glue", True):
             if self.intrnameserver_set.exists():
                 raise ValidationError("Cannot delete the record {0}. It is a "
                     "glue record.".format(self.record_type()))
@@ -210,8 +214,8 @@ class StaticIntrKeyValue(KeyValue):
     intr = models.ForeignKey(StaticInterface, null=False)
 
     class Meta:
-        db_table = 'static_inter_key_value'
-        unique_together = ('key', 'value', 'intr')
+        db_table = "static_inter_key_value"
+        unique_together = ("key", "value", "intr")
 
     def _aa_primary(self):
         """The primary number of this interface (I.E. eth1.0 would have a primary

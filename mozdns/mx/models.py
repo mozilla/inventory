@@ -16,9 +16,10 @@ class MX(MozdnsRecord):
     """
     id = models.AutoField(primary_key=True)
     # The mail server this record should point to.
-    server = models.CharField(max_length=100, validators=[validate_name])
+    server = models.CharField(max_length=100, validators=[validate_name],
+                help_text="The name of the mail server this record points to.")
     priority = models.PositiveIntegerField(null=False,
-                                           validators=[validate_mx_priority])
+                        validators=[validate_mx_priority])
     search_fields = ('fqdn', 'server')
 
     def details(self):

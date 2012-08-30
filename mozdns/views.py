@@ -3,6 +3,9 @@ from mozdns.utils import slim_form
 from base.mozdns.views import BaseListView, BaseDetailView, BaseCreateView
 from base.mozdns.views import BaseUpdateView, BaseDeleteView
 
+import simplejson as json
+
+import pdb
 
 class MozdnsListView(BaseListView):
     """ """

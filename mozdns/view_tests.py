@@ -51,7 +51,7 @@ class CNAMEViewTests(MozdnsViewTests, TestCase):
     def setUp(self):
         test_data = {
             'label': random_label(),
-            'data':random_label()
+            'target':random_label()
         }
         do_setUp(self, "cname", CNAME, test_data)
 
@@ -59,7 +59,7 @@ class CNAMEViewTests(MozdnsViewTests, TestCase):
         return {
             'label': random_label(),
             'domain':self.domain.pk,
-            'data':random_label()
+            'target':random_label()
         }
 
 builder = GenericViewTests()

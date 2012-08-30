@@ -92,6 +92,8 @@ class Domain(models.Model, ObjectUrlMixin):
     is_reverse = models.BooleanField(default=False)
     # This indicates if this domain (and zone) needs to be rebuilt
     dirty = models.BooleanField(default=False)
+    # Read about the label and domain paradigm
+    purgeable = models.BooleanField(default=False)
     delegated = models.BooleanField(default=False, null=False, blank=True)
 
     search_fields = ('name',)
@@ -170,11 +172,11 @@ class Domain(models.Model, ObjectUrlMixin):
         have data domains in this domain."""
         if self.master_domain:
             ptrs = self.master_domain.ptrs.all()
-            cnames = self.master_domain.data_domains.all()
+            cnames = self.master_domain.target_domains.all()
         else:
             CNAME = mozdns.cname.models.CNAME
             PTR = mozdns.ptr.models.PTR
-            cnames = CNAME.objects.filter(data_domain=None)
+            cnames = CNAME.objects.filter(target_domain=None)
             ptrs = PTR.objects.filter(data_domain=None)
 
         for ptr in ptrs:
@@ -182,7 +184,7 @@ class Domain(models.Model, ObjectUrlMixin):
             ptr.save()
 
         for cname in cnames:
-            cname.data_domain = _name_to_domain(cname.data)
+            cname.target_domain = _name_to_domain(cname.target)
             cname.save()
 
     def reassign_data_domains(self):
@@ -198,11 +200,11 @@ class Domain(models.Model, ObjectUrlMixin):
                 ptr.data_domain = None
             ptr.save()
 
-        for cname in self.data_domains.all():
-            if cname.data_domain.master_domain:
-                cname.data_domain = cname.data_domain.master_domain
+        for cname in self.target_domains.all():
+            if cname.target_domain.master_domain:
+                cname.target_domain = cname.target_domain.master_domain
             else:
-                cname.data_domain = None
+                cname.target_domain = None
             cname.save()
 
     ### Reverse Domain Functions
@@ -225,6 +227,25 @@ class Domain(models.Model, ObjectUrlMixin):
         for ptr in ptrs:
             ptr.reverse_domain = self.master_domain
             ptr.save()
+
+    def has_record_set(self):
+        if self.mx_set.exists():
+            return True
+        if self.nameserver_set.exists():
+            return True
+        if self.addressrecord_set.exists():
+            return True
+        if self.staticinterface_set.exists():
+            return True
+        if self.srv_set.exists():
+            return True
+        if self.cname_set.exists():
+            return True
+        if self.txt_set.exists():
+            return True
+        if self.sshfp_set.exists():
+            return True
+        return False
 
 
 def boot_strap_ipv6_reverse_domain(ip, soa=None):

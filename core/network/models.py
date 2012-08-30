@@ -28,12 +28,14 @@ class Network(models.Model, ObjectUrlMixin):
     ip_upper = models.BigIntegerField(null=False, blank=True)
     ip_lower = models.BigIntegerField(null=False, blank=True)
     # This field is here so ES can search this model easier.
-    network_str = models.CharField(max_length=49, editable=True)
-    prefixlen = models.PositiveIntegerField(null=False)
+    network_str = models.CharField(max_length=49, editable=True,
+                    help_text="The network address of this network.")
+    prefixlen = models.PositiveIntegerField(null=False,
+                    help_text="The number of binary 1's in the netmask.")
 
-    dhcpd_raw_include = models.TextField(null=True, blank=True, help_text="""
-        The config options in this box will be included *as is* in the
-        dhcpd.conf file for this subnet.""")
+    dhcpd_raw_include = models.TextField(null=True, blank=True, help_text="The"
+            " config options in this box will be included *as is* in the "
+            "dhcpd.conf file for this subnet.")
 
     network = None
 

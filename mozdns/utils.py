@@ -91,7 +91,10 @@ def get_clobbered(domain_name):
             obj.delete(**kwargs)
     return clobber_objects
 
-def ensure_domain(name, inherit_soa=False):
+def ensure_domain(name, purgeable=False, inherit_soa=False):
+    """This function will take ``domain_name`` and make sure that that domain with that name
+    exists in the db. If this function creates a domain it will set the domain's purgeable flag
+    to the value of the named arguement ``purgeable``."""
     try:
         domain = Domain.objects.get(name=name)
         return domain
@@ -105,6 +108,10 @@ def ensure_domain(name, inherit_soa=False):
         clobber_objects = get_clobbered(domain_name)
         # need to be deleted and then recreated
         domain, created = Domain.objects.get_or_create(name=domain_name)
+        if purgeable and created:
+            domain.purgeable = True
+            domain.save()
+
         if inherit_soa and created and domain.master_domain.soa is not None:
             domain.soa = domain.master_domain.soa
             domain.save()
@@ -122,3 +129,43 @@ def ensure_domain(name, inherit_soa=False):
                 pdb.set_trace()
                 pass
     return domain
+
+
+def ensure_label_domain(fqdn):
+    """Returns a label and domain object."""
+    if Domain.objects.filter(name=fqdn).exists():
+        return '', Domain.objects.get(name=fqdn)
+    fqdn_partition = fqdn.split('.')
+    if len(fqdn_partition) == 1:
+        domain = Domain(name=fqdn)
+        domain.full_clean()
+        domain.save()
+        return '', domain
+    else:
+        label, domain_name = fqdn_partition[0], '.'.join(fqdn_partition[1:])
+        domain = ensure_domain(domain_name, purgeable=True, inherit_soa=True)
+        return label, domain
+
+
+def prune_tree(domain):
+    return prune_tree_helper(domain, [])
+
+
+def prune_tree_helper(domain, deleted_domains):
+    if not domain:
+        return deleted_domains  # We didn't delete anything
+    if domain.domain_set.all():
+        return deleted_domains  # We can't delete this domain. It has children
+    if domain.has_record_set():
+        return deleted_domains  # There are records for this domain
+    elif not domain.purgeable:
+        return deleted_domains  # This domain should not be deleted by a computer.
+    else:
+        master_domain = domain.master_domain
+        if not master_domain:
+            return deleted_domains
+        purged_domain = deepcopy(domain)
+        purged_domain.id = None
+        deleted_domains.append(purged_domain)
+        domain.delete()
+        return prune_tree_helper(master_domain, deleted_domains)

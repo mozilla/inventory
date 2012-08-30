@@ -234,6 +234,35 @@ ul
     right: auto;
 }
 
+/* DNS Main Page */
+.mozdns-item {
+    display: block;
+    position: relative;
+    right: auto;
+}
+
+a.mozdns-action {
+    display: block;
+    width: 200px;
+    padding: .75em .75em .75em 1.5em;
+
+    color: rgb(220,220,220);
+    background: rgb(40,40,40);
+    -moz-border-radius: 4px;
+
+    border-style: solid none;
+    border-width: 1px;
+    border-color: rgb(46,46,46);
+}
+a.mozdns-action:hover {
+    color: rgb(220,220,220);
+    background: rgb(30, 30, 30);
+
+    border-color: rgb(10,10,10);
+
+    text-decoration: none;
+}
+
 /* Pagination */
 .pagination {
   height: 36px;
@@ -304,9 +333,10 @@ ul
 a.nav-link {
     display: block;
     padding: .75em .75em .75em 1.5em;
+    -moz-border-radius: 10px;
 
     color: rgb(220,220,220);
-    background: rgb(40,40,40);
+    background: rgb(0,0,0);
 
     border-style: solid none;
     border-width: 1px;

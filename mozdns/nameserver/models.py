@@ -30,32 +30,47 @@ class Nameserver(models.Model, ObjectUrlMixin):
         record or b) the glue record the NS has isn't valid.
     """
     id = models.AutoField(primary_key=True)
-    server = models.CharField(max_length=255, validators=[validate_name])
+    domain = models.ForeignKey(Domain, null=False, help_text="The domain this "
+                "record is for.")
+    server = models.CharField(max_length=255, validators=[validate_name],
+                help_text="The name of the server this records points to.")
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
             validators=[validate_ttl])
-    domain = models.ForeignKey(Domain, null=False)
     # "If the name server does lie within the domain it should have a
     # corresponding A record."
     addr_glue = models.ForeignKey(AddressRecord, null=True, blank=True,
-            related_name='nameserver_set')
+            related_name="nameserver_set")
     intr_glue = models.ForeignKey(StaticInterface, null=True, blank=True,
-            related_name='intrnameserver_set')
+            related_name="intrnameserver_set")
     views = models.ManyToManyField(View, blank=True)
-    comment = models.CharField(max_length=1000, null=True, blank=True)
+    comment = models.CharField(max_length=1000, null=True, blank=True,
+                help_text="Comments about this record.")
 
-    search_fields = ('server',)
+    search_fields = ("server",)
 
     class Meta:
-        db_table = 'nameserver'
-        unique_together = ('domain', 'server')
+        db_table = "nameserver"
+        unique_together = ("domain", "server")
 
     def details(self):
         details = [
-            ('Server', self.server),
-            ('Domain', self.domain.name),
-            ('Glue', self.get_glue()),
+            ("Server", self.server),
+            ("Domain", self.domain.name),
+            ("Glue", self.get_glue()),
         ]
         return tuple(details)
+
+    def delete(self, *args, **kwargs):
+        from mozdns.utils import prune_tree
+        objs_domain = self.domain
+        super(Nameserver, self).delete(*args, **kwargs)
+        prune_tree(objs_domain)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        self.domain.dirty = True
+        self.domain.save()
+        super(Nameserver, self).save(*args, **kwargs)
 
     def get_glue(self):
         if self.addr_glue:
@@ -132,17 +147,11 @@ class Nameserver(models.Model, ObjectUrlMixin):
             raise ValidationError("You cannot create a NS record that is the"
                                   "name of a domain.")
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        self.domain.dirty = True
-        self.domain.save()
-        super(Nameserver, self).save(*args, **kwargs)
-
     def __repr__(self):
         return "<Forward '{0}'>".format(str(self))
 
     def __str__(self):
-        return "{0} {1} {2}".format(self.domain.name, 'NS', self.server)
+        return "{0} {1} {2}".format(self.domain.name, "NS", self.server)
 
     def _needs_glue(self):
         # Replace the domain portion of the server with "".

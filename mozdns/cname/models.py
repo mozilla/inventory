@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
+import mozdns
 from mozdns.domain.models import Domain, _name_to_domain
 from mozdns.models import MozdnsRecord
 from mozdns.validation import validate_name, find_root_domain
@@ -15,28 +16,29 @@ class CNAME(MozdnsRecord):
     isn't taken by another record. Likewise, all other records must
     check that no CNAME exists with the same name before being created.
 
-    >>> CNAME(label = label, domain = domain, data = data)
+    >>> CNAME(label = label, domain = domain, target = target)
 
     """
     # TODO cite an RFC for that ^ (it's around somewhere)
     id = models.AutoField(primary_key=True)
-    data = models.CharField(max_length=100, validators=[validate_name], help_text='CNAME Destination')
-    data_domain = models.ForeignKey(Domain, null=True,
-                                    related_name='data_domains', blank=True,
-                                    on_delete=models.SET_NULL)
+    target = models.CharField(max_length=100, validators=[validate_name],
+            help_text="CNAME Target")
+    target_domain = models.ForeignKey(Domain, null=True,
+                        related_name='target_domains', blank=True,
+                        on_delete=models.SET_NULL)
 
-    search_fields = ('fqdn', 'data')
+    search_fields = ('fqdn', 'target')
 
     def details(self):
         return  (
                     ('FQDN', self.fqdn),
                     ('Record Type', 'CNAME'),
-                    ('Data', self.data),
+                    ('Target', self.target),
                )
 
     class Meta:
         db_table = 'cname'
-        unique_together = ('domain', 'label', 'data')
+        unique_together = ('domain', 'label', 'target')
 
     def save(self, *args, **kwargs):
         # If label, and domain have not changed, don't mark our domain for
@@ -47,7 +49,7 @@ class CNAME(MozdnsRecord):
                 kwargs['no_build'] = False
             else:
                 kwargs['no_build'] = True  # Either nothing has changed or
-                                        # just data_domain. We want rebuild.
+                                        # just target_domain. We want rebuild.
         super(CNAME, self).save(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
@@ -62,11 +64,11 @@ class CNAME(MozdnsRecord):
         """
         # TODO ^
         self.check_SOA_condition()
-        self.data_domain = _name_to_domain(self.data)
+        self.target_domain = _name_to_domain(self.target)
         self.existing_node_check()
 
     def __str__(self):
-        return "{0} CNAME {1}".format(self.fqdn, self.data)
+        return "{0} CNAME {1}".format(self.fqdn, self.target)
 
     def check_SOA_condition(self):
         """We need to check if the domain is the root domain in a zone.
@@ -116,3 +118,7 @@ class CNAME(MozdnsRecord):
             objects = qset.all()
             raise ValidationError("Objects with this name already exist: {0}".
                                   format(objects))
+        MX = mozdns.mx.models.MX
+        if MX.objects.filter(server=self.fqdn):
+            raise ValidationError("RFC 2181 says you shouldn't point MX "
+                                    "records at CNAMEs")
