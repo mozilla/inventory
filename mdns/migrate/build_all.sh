@@ -44,19 +44,20 @@
 #zeusglb
 #zones
 
-REL_PATH=$HOME
+REL_PATH=/var/www/playdoh-env
 export REL_PATH
 SYSADMINS=$HOME
+export SYSADMINS
 BZ=$REL_PATH/inventory/mdns/migrate/build_migration_configs/bz_legacy.sh
 ZONE_CONFIGS=$REL_PATH/inventory/mdns/migrate/zone_configs
 rm -rf $ZONE_CONFIGS
 mkdir $ZONE_CONFIGS
 touch $ZONE_CONFIGS/__init__.py
 
-$BZ cn $REL_PATH/sysadmins/dnsconfig/cn > $ZONE_CONFIGS/cn_zone_config.py
+$BZ cn $SYSADMINS/sysadmins/dnsconfig/cn > $ZONE_CONFIGS/cn_zone_config.py
 python $ZONE_CONFIGS/cn_zone_config.py
 
-$BZ external $REL_PATH/sysadmins/dnsconfig/external > $ZONE_CONFIGS/external_zone_config.py
+$BZ external $SYSADMINS/sysadmins/dnsconfig/external > $ZONE_CONFIGS/external_zone_config.py
 python $ZONE_CONFIGS/external_zone_config.py
 
 $BZ phx $SYSADMINS/sysadmins/dnsconfig/phx > $ZONE_CONFIGS/phx_zone_config.py
@@ -68,14 +69,14 @@ python $ZONE_CONFIGS/mozilla_com_dc_zone_config.py
 ./build_migration_configs/zones_reverse.sh private_reverse $SYSADMINS/sysadmins/dnsconfig/mozilla.com > $ZONE_CONFIGS/private_reverse.py
 python $ZONE_CONFIGS/private_reverse.py
 
-./build_migration_configs/bz_legacy.sh external $REL_PATH/sysadmins/dnsconfig/external > $ZONE_CONFIGS/external.py
+./build_migration_configs/bz_legacy.sh external $SYSADMINS/sysadmins/dnsconfig/external > $ZONE_CONFIGS/external.py
 python $ZONE_CONFIGS/external.py
 
-./build_migration_configs/mozilla.org mozilla_org $REL_PATH/sysadmins/dnsconfig/zones/mozilla.org > $ZONE_CONFIGS/mozilla_org.py
+./build_migration_configs/mozilla.org mozilla_org $SYSADMINS/sysadmins/dnsconfig/zones/mozilla.org > $ZONE_CONFIGS/mozilla_org.py
 python $ZONE_CONFIGS/mozilla_org.py
 
-./build_migration_configs/mozilla.net.sh mozilla_net $REL_PATH/sysadmins/dnsconfig/zones/mozilla.net > $ZONE_CONFIGS/mozilla_net.py
+./build_migration_configs/mozilla.net.sh mozilla_net $SYSADMINS/sysadmins/dnsconfig/zones/mozilla.net > $ZONE_CONFIGS/mozilla_net.py
 python $ZONE_CONFIGS/mozilla_net.py
 
-./build_migration_configs/zones.sh zones $REL_PATH/sysadmins/dnsconfig/zones/ > $ZONE_CONFIGS/zones.py
+./build_migration_configs/zones.sh zones $SYSADMINS/sysadmins/dnsconfig/zones/ > $ZONE_CONFIGS/zones.py
 python $ZONE_CONFIGS/zones.py

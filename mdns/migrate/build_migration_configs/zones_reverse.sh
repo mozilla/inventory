@@ -5,7 +5,7 @@ MC=$REL_PATH/inventory/mdns/migrate/make_config.py
 echo "SYSADMIN_REPO = ''"
 echo "$1 = ["
 
-SYSADMINS=$REL_PATH/sysadmins
+SYSADMINS=$SYSADMINS/sysadmins
 
 for file in $(ls $SYSADMINS/dnsconfig/zones/in-addr/)
 do
