@@ -41,7 +41,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'mdns.migrate',
     'user_systems',
     'build',
-    #'dhcp',
+    'dhcp',
     'truth',
     'api',
     'api_v2',

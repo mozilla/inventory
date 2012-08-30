@@ -146,6 +146,7 @@ def main():
                                     ip_str=addr.ip_str, ip_type=addr.ip_type, system=system)
                             intr.full_clean()
                             intr.dns_enabled = False
+                            intr.dhcp_enabled = True
                             intr.save()
                             intr.update_attrs()
                             adapter_type, primary, alias = SystemResource.extract_nic_attrs(interface)

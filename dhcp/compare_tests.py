@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.test.client import Client
 import json
-from dhcp.DHCPHash import DHCPHash, compare_lists
+from dhcp.DHCPHash import DHCPHash, compare_lists, DHCPHashCompare
 
 class DHCPMigrateTest(TestCase):
     fixtures = ['testdata.json']
@@ -74,13 +74,8 @@ class DHCPMigrateTest(TestCase):
     def test6_host_different_from_one_list(self):
         a = DHCPHash(self.new_file)
         b = DHCPHash(self.new_file)
-
-        a_unformatted = a.remove_formatting(a.list_string)
-        b_unformatted = b.remove_formatting(b.list_string)
-        a_the_list = a.split_lines(a_unformatted)
-        b_the_list = b.split_lines(b_unformatted)
-        a_hashed_list = a.hash_list(a_the_list)
-        b_hashed_list = b.hash_list(b_the_list)
+        a_hashed_list = a.get_hash()
+        b_hashed_list = b.get_hash()
         self.assertEqual(a_hashed_list, b_hashed_list)
         self.assertEqual(compare_lists(a_hashed_list, b_hashed_list), None)
         self.assertNotEqual(id(a_hashed_list), id(b_hashed_list))
@@ -90,13 +85,8 @@ class DHCPMigrateTest(TestCase):
     def test7_hardware_ethernet_different_from_one_list(self):
         a = DHCPHash(self.new_file)
         b = DHCPHash(self.new_file)
-
-        a_unformatted = a.remove_formatting(a.list_string)
-        b_unformatted = b.remove_formatting(b.list_string)
-        a_the_list = a.split_lines(a_unformatted)
-        b_the_list = b.split_lines(b_unformatted)
-        a_hashed_list = a.hash_list(a_the_list)
-        b_hashed_list = b.hash_list(b_the_list)
+        a_hashed_list = a.get_hash()
+        b_hashed_list = b.get_hash()
         self.assertEqual(a_hashed_list, b_hashed_list)
         self.assertEqual(compare_lists(a_hashed_list, b_hashed_list), None)
         self.assertNotEqual(id(a_hashed_list), id(b_hashed_list))
@@ -114,3 +104,31 @@ class DHCPMigrateTest(TestCase):
         self.assertNotEqual(id(a_hashed_list), id(b_hashed_list))
         a_hashed_list[1]['filename'] = 'asdfasfdasdf.tar.gz'
         self.assertNotEqual(compare_lists(a_hashed_list, b_hashed_list), None)
+
+    def test9_initial_dhcp_hash_compare(self):
+        a = DHCPHash(self.new_file)
+        b = DHCPHash(self.new_file)
+        a_hashed_list = a.get_hash()
+        b_hashed_list = b.get_hash()
+        dc = DHCPHashCompare(a_hashed_list, 'KeyValue List', b_hashed_list, 'StaticINTR Generated')
+        identical, lists = dc.compare_lists(a_hashed_list, b_hashed_list)
+        self.assertTrue(identical)
+        self.assertEqual(lists[0], lists[1])
+
+    def test10_initial_dhcp_hash_compare_missing_host(self):
+        a = DHCPHash(self.new_file)
+        b = DHCPHash(self.new_file)
+        a_hashed_list = a.get_hash()
+        b_hashed_list = b.get_hash()
+
+        del a_hashed_list[1]
+        del b_hashed_list[1]
+        del a_hashed_list[1]
+        ## Pick the first object from the hash and give it a new and different value
+        a_hashed_list[0]['hardware ethernet'] = '00:00:00:00:00:00'
+        a_hashed_list[0]['fixed-address'] = '10.0.0.1'
+        dc = DHCPHashCompare(a_hashed_list, 'KeyValue List', b_hashed_list, 'StaticINTR Generated')
+        identical, lists = dc.compare_lists(a_hashed_list, b_hashed_list)
+        self.assertFalse(identical)
+        msg = dc.analyze()
+        print msg

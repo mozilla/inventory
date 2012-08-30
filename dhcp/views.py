@@ -29,6 +29,7 @@ from libs.jinja import jinja_render_to_response
 
 def showall(request):
     dhcp_scopes = models.DHCP.objects.all()	
+    import pdb; pdb.set_trace()
     client = Client()
     resp = client.get('/en-US/api/keyvalue/?key=is_dhcp_scope', follow=True)
     obj = json.loads(resp.content)
