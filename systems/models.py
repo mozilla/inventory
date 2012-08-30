@@ -16,6 +16,7 @@ from django.db.models.query import QuerySet
 import datetime
 import re
 from django.contrib.auth.models import User
+from settings import BUG_URL
 
 import pdb
 
@@ -379,6 +380,16 @@ class System(DirtyFieldsMixin, models.Model):
                     nic_numbers.append(match)
         return nic_numbers
 
+    @property
+    def notes_with_link(self):
+        patterns = [
+               '[bB]ug#?\D#?(\d+)',
+                ]
+        for pattern in patterns:
+            m = re.search(pattern, self.notes)
+            if m:
+                self.notes = re.sub(pattern, '<a href="%s%s">Bug %s</a>' % (BUG_URL, m.group(1), m.group(1)), self.notes)
+        return self.notes
     def get_next_adapter_number(self):
         nic_numbers = self.get_adapter_numbers()
         if len(nic_numbers) > 0:
