@@ -36,8 +36,8 @@ class Range(models.Model, ObjectUrlMixin):
         *   The new `start` and `end` values are checked against the range's
             network to ensure that the range still exists within the network.
         *   The new `start` and `end` values are checked against all other
-            existing range's `start` and `end` values to make sure that the
-            new range does not overlap.
+            existing range's `start` and `end` values to make sure that the new
+            range does not overlap.
     """
     id = models.AutoField(primary_key=True)
 
@@ -53,9 +53,19 @@ class Range(models.Model, ObjectUrlMixin):
 
     network = models.ForeignKey(Network, null=False)
 
+    STATIC = "st"
+    DYNAMIC = "dy"
+    RANGE_TYPE = (
+        (STATIC, 'Static'),
+        (DYNAMIC, 'Dynamic'),
+    )
+    models.CharField(max_length=2, choices=RANGE_TYPE, default=STATIC,
+                        editable=False)
+
     class Meta:
         db_table = 'range'
-        unique_together = ('start_upper', 'start_lower', 'end_upper', 'end_lower')
+        unique_together = ('start_upper', 'start_lower', 'end_upper',
+                'end_lower')
 
     def save(self, *args, **kwargs):
         self.clean()
@@ -168,8 +178,8 @@ class Range(models.Model, ObjectUrlMixin):
 
     def choice_display(self):
         return "{0} - {1} - ({2}) {3} to {4}".format(
-                str(self.network.site).upper(), self.network.vlan, self.network,
-                self.start_str, self.end_str)
+                str(self.network.site).upper(), self.network.vlan,
+                self.network, self.start_str, self.end_str)
 
     def __repr__(self):
         return "<Range: {0}>".format(str(self))
