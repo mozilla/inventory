@@ -24,10 +24,13 @@ import pdb
 class AutoDeleteTests(TestCase):
 
     def setUp(self):
+        s, _ = SOA.objects.get_or_create(primary="foo", contact="Foo",
+                comment="foo")
         self.c = Domain(name = 'poo')
         self.c.save()
         self.assertFalse(self.c.purgeable)
         self.f_c = Domain(name = 'foo.poo')
+        self.f_c.soa = s
         self.f_c.save()
 
     def test_cleanup_txt(self):
@@ -129,7 +132,10 @@ class AutoDeleteTests(TestCase):
         c = Domain(name = 'foo1')
         c.save()
         self.assertFalse(c.purgeable)
+        s, _ = SOA.objects.get_or_create(primary="foo", contact="Foo",
+                comment="dddfoo")
         f_c = Domain(name = 'foo.foo1')
+        f_c.soa = s
         f_c.save()
 
         self.assertFalse(Domain.objects.filter(name="x.y.z.foo.foo1"))

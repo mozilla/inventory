@@ -170,3 +170,7 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
         unique_together = ("label", "domain", "ip_upper", "ip_lower",
                 "ip_type")
 
+    @classmethod
+    def get_api_fields(cls):
+        return  ['label', 'ip_str', 'ip_type']
+

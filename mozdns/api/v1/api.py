@@ -5,7 +5,12 @@ from tastypie.exceptions import HydrationError
 from tastypie.resources import Resource, DeclarativeMetaclass
 from tastypie.resources import ModelResource
 from mozdns.domain.models import Domain
+from mozdns.address_record.models import AddressRecord
 from mozdns.txt.models import TXT
+from mozdns.srv.models import SRV
+from mozdns.mx.models import MX
+from mozdns.nameserver.models import Nameserver
+from mozdns.sshfp.models import SSHFP
 from mozdns.txt.forms import TXTForm
 from mozdns.cname.models import CNAME
 from mozdns.cname.forms import CNAMEForm
@@ -34,7 +39,6 @@ class CommonDNSResource(Resource):
         return bundle
 
     def hydrate_m2m(self, bundle):
-        pdb.set_trace()
         for view_name in bundle.data['views']:
             try:
                 view = View.objects.get(name=view_name)
@@ -55,7 +59,6 @@ class CommonDNSResource(Resource):
         return bundle
 
     def obj_update(self, bundle, request=None, skip_errors=False, **kwargs):
-        pdb.set_trace()
         obj = bundle.obj
         views = self.extract_views(bundle)
         bundle = self.full_hydrate(bundle)
@@ -135,18 +138,70 @@ class CommonDNSResource(Resource):
         return bundle
 
     def apply_custom_hydrate(self, obj, bundle, action=None):
-        print "No custom hydrate"
         return bundle
 
 
-class CNAMEResource(CommonDNSResource, ModelResource):
+allowed_methods = ['get', 'post', 'patch', 'delete']
+v1_dns_api = Api(api_name="v1_dns")
 
+class CNAMEResource(CommonDNSResource, ModelResource):
     class Meta:
         queryset = CNAME.objects.all()
         fields = CNAME.get_api_fields() + ['domain', 'views']
         authorization = Authorization()
-        allowed_methods = ['get', 'post', 'patch']
-        validation = FormValidation(form_class=CNAMEForm)
+        allowed_methods = allowed_methods
 
-v1_dns_api = Api(api_name="v1_dns")
 v1_dns_api.register(CNAMEResource())
+
+class TXTResource(CommonDNSResource, ModelResource):
+    class Meta:
+        queryset = TXT.objects.all()
+        fields = TXT.get_api_fields() + ['domain', 'views']
+        authorization = Authorization()
+        allowed_methods = allowed_methods
+v1_dns_api.register(TXTResource())
+
+class SRVResource(CommonDNSResource, ModelResource):
+    class Meta:
+        queryset = SRV.objects.all()
+        fields = SRV.get_api_fields() + ['domain', 'views']
+        authorization = Authorization()
+        allowed_methods = allowed_methods
+v1_dns_api.register(SRVResource())
+
+class MXResource(CommonDNSResource, ModelResource):
+    class Meta:
+        queryset = MX.objects.all()
+        fields = MX.get_api_fields() + ['domain', 'views']
+        authorization = Authorization()
+        allowed_methods = allowed_methods
+v1_dns_api.register(MXResource())
+
+class SSHFPResource(CommonDNSResource, ModelResource):
+    class Meta:
+        queryset = SSHFP.objects.all()
+        fields = SSHFP.get_api_fields() + ['domain', 'views']
+        authorization = Authorization()
+        allowed_methods = allowed_methods
+v1_dns_api.register(SSHFPResource())
+
+class AddressRecordResource(CommonDNSResource, ModelResource):
+
+    class Meta:
+        queryset = AddressRecord.objects.all()
+        fields = AddressRecord.get_api_fields() + ['domain', 'views']
+        authorization = Authorization()
+        allowed_methods = allowed_methods
+
+v1_dns_api.register(AddressRecordResource())
+
+"""
+class XXXResource(CommonDNSResource, ModelResource):
+    class Meta:
+        queryset = XXX.objects.all()
+        fields = XXX.get_api_fields() + ['domain', 'views']
+        authorization = Authorization()
+        allowed_methods = allowed_methods
+v1_dns_api.register(XXXResource())
+"""
+

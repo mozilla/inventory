@@ -91,16 +91,44 @@ def get_clobbered(domain_name):
             obj.delete(**kwargs)
     return clobber_objects
 
-def ensure_domain(name, purgeable=False, inherit_soa=False):
+def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
     """This function will take ``domain_name`` and make sure that that domain with that name
     exists in the db. If this function creates a domain it will set the domain's purgeable flag
-    to the value of the named arguement ``purgeable``."""
+    to the value of the named arguement ``purgeable``. See the doc page about
+    Labels and Domains for more information about this function"""
     try:
         domain = Domain.objects.get(name=name)
         return domain
-    except ObjectDoesNotExist, e:
+    except ObjectDoesNotExist:
         pass
+
+    # Looks like we are creating some domains. Make sure the first domain we
+    # create is under a domain that has a non-None SOA reference.
     parts = list(reversed(name.split('.')))
+
+    if not force:
+        domain_name = ''
+        leaf_domain = None
+        # Find the leaf domain.
+        for i in range(len(parts)):
+            domain_name = parts[i] + '.' + domain_name
+            domain_name = domain_name.strip('.')
+            try:
+                tmp_domain = Domain.objects.get(name=domain_name)
+                # It got here so we know we found a domain.
+                leaf_domain = tmp_domain
+            except ObjectDoesNotExist:
+                continue
+
+        if not leaf_domain:
+            raise ValidationError("You cannot autocreate TLD.")
+        if leaf_domain.delegated:
+            raise ValidationError("You cannot autocreate domain's that would "
+                    "live under a delegated domain.")
+        if not leaf_domain.soa:
+            raise ValidationError("You cannot autocreate a domain that would "
+                    "not be in an existing DNS zone.")
+
     domain_name = ''
     for i in range(len(parts)):
         domain_name = parts[i] + '.' + domain_name
@@ -112,7 +140,8 @@ def ensure_domain(name, purgeable=False, inherit_soa=False):
             domain.purgeable = True
             domain.save()
 
-        if inherit_soa and created and domain.master_domain.soa is not None:
+        if (inherit_soa and created and domain.master_domain and
+                domain.master_domain.soa is not None):
             domain.soa = domain.master_domain.soa
             domain.save()
         for object_, views in clobber_objects:

@@ -1,6 +1,7 @@
 from django.db import models
 
 from mozdns.models import MozdnsRecord
+import pdb
 
 
 class TXT(MozdnsRecord):
@@ -19,6 +20,10 @@ class TXT(MozdnsRecord):
                 ("Record Type", "TXT"),
                 ("Text", self.txt_data)
                )
+    @classmethod
+    def get_api_fields(cls):
+        data = super(TXT, cls).get_api_fields() + ['txt_data']
+        return data
 
     def save(self, *args, **kwargs):
         self.full_clean()

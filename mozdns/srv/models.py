@@ -66,8 +66,11 @@ class SRV(models.Model, ObjectUrlMixin):
 
     class Meta:
         db_table = "srv"
-        unique_together = ("label", "domain", "target", "port",
-                           "priority", "weight")
+        unique_together = ("label", "domain", "target", "port")
+
+    @classmethod
+    def get_api_fields(cls):
+        return ['label', 'port', 'ttl', 'weight', 'priority', 'target']
 
     def delete(self, *args, **kwargs):
         from mozdns.utils import prune_tree

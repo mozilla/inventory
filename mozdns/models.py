@@ -91,6 +91,17 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
     class Meta:
         abstract = True
 
+    @classmethod
+    def get_api_fields(cls):
+        """The purpose of this is to help the API decide which fields to expose
+        to the user when they are creating and updateing an Object. This
+        function should be implemented in inheriting models and overriden to
+        provide additional fields. Tastypie ignores any relational fields on
+        the model. See the ModelResource definitions for view and domain
+        fields.
+        """
+        return ['label', 'ttl', 'comment']
+
     def clean(self):
         set_fqdn(self)
         check_TLD_condition(self)

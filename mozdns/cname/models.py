@@ -40,6 +40,10 @@ class CNAME(MozdnsRecord):
         db_table = 'cname'
         unique_together = ('domain', 'label', 'target')
 
+    @classmethod
+    def get_api_fields(cls):
+        return super(CNAME, cls).get_api_fields() + ['target']
+
     def save(self, *args, **kwargs):
         # If label, and domain have not changed, don't mark our domain for
         # rebuilding.

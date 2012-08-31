@@ -2,8 +2,8 @@ from django.test import TestCase
 from django.test.client import Client
 from django.http import Http404
 
-from mozdns.tests.view_tests import random_label
-from mozdns.tests.view_tests import random_byte
+from mozdns.tests.view_tests_template import random_label
+from mozdns.tests.view_tests_template import random_byte
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR

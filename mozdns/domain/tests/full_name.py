@@ -26,6 +26,9 @@ class FullNameTests(TestCase):
         c.save()
         self.assertFalse(c.purgeable)
         f_c = Domain(name = 'foo.com')
+        s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
+                comment="foo.zfoo.comom")
+        f_c.soa = s
         f_c.save()
         self.assertFalse(f_c.purgeable)
         fqdn = "bar.x.y.z.foo.com"
@@ -61,6 +64,9 @@ class FullNameTests(TestCase):
         c.save()
         self.assertFalse(c.purgeable)
         f_c = Domain(name = 'foo.edu')
+        s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
+            comment="foo.edu")
+        f_c.soa = s
         f_c.save()
         self.assertFalse(f_c.purgeable)
         fqdn = "bar.x.y.z.foo.edu"
@@ -112,6 +118,9 @@ class FullNameTests(TestCase):
         c.save()
         self.assertFalse(c.purgeable)
         f_c = Domain(name = 'foo.foo')
+        s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
+                comment="foo.foo")
+        f_c.soa = s
         f_c.save()
         self.assertFalse(f_c.purgeable)
         fqdn = "bar.x.y.z.foo.foo"
@@ -138,6 +147,9 @@ class FullNameTests(TestCase):
         c.save()
         self.assertFalse(c.purgeable)
         f_c = Domain(name = 'foo.goo')
+        s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
+                comment="foo.goo")
+        f_c.soa = s
         f_c.save()
         self.assertFalse(f_c.purgeable)
         fqdn = "bar.x.y.z.foo.goo"
@@ -186,6 +198,9 @@ class FullNameTests(TestCase):
         c.save()
         self.assertFalse(c.purgeable)
         f_c = Domain(name = 'foo.foo22')
+        s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
+                comment="foo.foo22")
+        f_c.soa = s
         f_c.save()
         self.assertFalse(f_c.purgeable)
         fqdn = "bar.x.y.z.foo.foo22"
@@ -228,6 +243,9 @@ class FullNameTests(TestCase):
         c.save()
         self.assertFalse(c.purgeable)
         f_c = Domain(name = 'foo.foo1')
+        s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
+                comment="foo.foo1")
+        f_c.soa = s
         f_c.save()
         self.assertFalse(f_c.purgeable)
         fqdn = "cname.x.y.z.foo.foo1"
