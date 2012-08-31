@@ -134,7 +134,7 @@ def color_zone_tree(domain, clobber_soa, new_soa):
 
 def populate_forward_dns(zone, root_domain_name, views):
     soa = migrate_soa(zone, root_domain_name)
-    root_domain = ensure_domain(root_domain_name)
+    root_domain = ensure_domain(root_domain_name, force=True)
     migrate_A(zone, root_domain, soa, views)
     migrate_AAAA(zone, root_domain, soa, views)
     migrate_NS(zone, root_domain, soa, views)
@@ -151,11 +151,11 @@ def populate_forward_dns(zone, root_domain_name, views):
 
 
 def populate_reverse_dns(zone, name_reversed, root_domain_name, views):
-    ensure_domain("arpa")
-    ensure_domain("in-addr.arpa")
-    ensure_domain("ipv6.arpa")
+    ensure_domain("arpa", force=True)
+    ensure_domain("in-addr.arpa", force=True)
+    ensure_domain("ipv6.arpa", force=True)
     soa = migrate_soa(zone, root_domain_name)
-    root_domain = ensure_domain(root_domain_name)
+    root_domain = ensure_domain(root_domain_name, force=True)
     migrate_NS(zone, root_domain, soa, views)
     migrate_MX(zone, root_domain, soa, views)
     migrate_PTR(zone, root_domain, soa, views)
@@ -244,7 +244,7 @@ def migrate_A(zone, root_domain, soa, views):
         else:
             label = name.split('.')[0]
             domain_name = '.'.join(name.split('.')[1:])
-            domain = ensure_domain(domain_name)
+            domain = ensure_domain(domain_name, force=True)
         a, _ = AddressRecord.objects.get_or_create(label=label,
                 domain=domain, ip_str=rdata.to_text(), ip_type='4')
         for view in views:
@@ -264,7 +264,7 @@ def migrate_AAAA(zone, root_domain, soa, views):
             if label.startswith('unused'):
                 continue
             domain_name = '.'.join(name.split('.')[1:])
-            domain = ensure_domain(domain_name)
+            domain = ensure_domain(domain_name, force=True)
 
         ip_upper, ip_lower = ipv6_to_longs(rdata.to_text())
         if AddressRecord.objects.filter(label=label,
@@ -287,7 +287,7 @@ def migrate_NS(zone, root_domain, soa, views):
         name = name.to_text().strip('.')
         print str(name) + " NS " + str(rdata)
         domain_name = '.'.join(name.split('.')[1:])
-        domain = ensure_domain(name)
+        domain = ensure_domain(name, force=True)
         ns, _ = Nameserver.objects.get_or_create(domain=domain,
                 server=rdata.target.to_text().strip('.'))
         for view in views:
@@ -305,7 +305,7 @@ def migrate_MX(zone, root_domain, soa, views):
         else:
             label = name.split('.')[0]
             domain_name = '.'.join(name.split('.')[1:])
-            domain = ensure_domain(domain_name)
+            domain = ensure_domain(domain_name, force=True)
         priority = rdata.preference
         server = rdata.exchange.to_text().strip('.')
         mx, _ = MX.objects.get_or_create(label=label, domain=domain,
@@ -326,7 +326,7 @@ def migrate_CNAME(zone, root_domain, soa, views):
         else:
             label = name.split('.')[0]
             domain_name = name.split('.')[1:]
-            domain = ensure_domain('.'.join(domain_name))
+            domain = ensure_domain('.'.join(domain_name), force=True)
         data = rdata.target.to_text().strip('.')
 
         if not CNAME.objects.filter(label = label, domain = domain,
@@ -350,7 +350,7 @@ def migrate_TXT(zone, root_domain, soa, views):
         else:
             label = name.split('.')[0]
             domain_name = name.split('.')[1:]
-            domain = ensure_domain('.'.join(domain_name))
+            domain = ensure_domain('.'.join(domain_name), force=True)
         data = rdata.to_text().strip('"')
 
         if not TXT.objects.filter(label = label, domain = domain,
@@ -380,7 +380,7 @@ def migrate_SRV(zone, root_domain, soa, views):
         else:
             label = name.split('.')[0]
             domain_name = name.split('.')[1:]
-            domain = ensure_domain('.'.join(domain_name))
+            domain = ensure_domain('.'.join(domain_name), force=True)
 
         if not SRV.objects.filter(label = label, domain = domain,
                 target=target, port=port, weight=weight,
