@@ -164,7 +164,7 @@ class FullNameTests(TestCase):
         txt.domain = the_domain.master_domain
         the_next_domain = the_domain.master_domain
         txt.save()
-        the_domain = Domain.objects.get(pk=the_domain.pk)
+        self.assertFalse(Domain.objects.filter(pk=the_domain.pk))
         # We should be able to delete now.
         self.assertTrue(prune_tree(the_domain))
         the_domain = the_next_domain
@@ -174,9 +174,8 @@ class FullNameTests(TestCase):
         txt.domain = the_domain.master_domain
         the_next_domain = the_domain.master_domain
         txt.save()
-        the_domain = Domain.objects.get(pk=the_domain.pk)
+        self.assertFalse(Domain.objects.filter(pk=the_domain.pk))
         # We should be able to delete now.
-        self.assertTrue(prune_tree(the_domain))
         the_domain = the_next_domain
 
         # txt makes the domain un-purgeable. z.foo.com
@@ -184,9 +183,8 @@ class FullNameTests(TestCase):
         txt.domain = the_domain.master_domain
         the_next_domain = the_domain.master_domain
         txt.save()
-        the_domain = Domain.objects.get(pk=the_domain.pk)
+        self.assertFalse(Domain.objects.filter(pk=the_domain.pk))
         # We should be able to delete now.
-        self.assertTrue(prune_tree(the_domain))
         the_domain = the_next_domain
 
         # txt makes the domain un-purgeable. foo.com

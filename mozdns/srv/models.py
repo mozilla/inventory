@@ -82,7 +82,18 @@ class SRV(models.Model, ObjectUrlMixin):
         self.full_clean()
         self.domain.dirty = True
         self.domain.clean()
+        if self.pk:
+            # We need to get the domain from the db. If it's not our current
+            # domain, call prune_tree on the domain in the db later.
+            db_domain = self.__class__.objects.get(pk=self.pk).domain
+            if self.domain == db_domain:
+                db_domain = None
+        else:
+            db_domain = None
         super(SRV, self).save(*args, **kwargs)
+        if db_domain:
+            from mozdns.utils import prune_tree
+            prune_tree(db_domain)
 
     def clean(self):
         self.set_fqdn()

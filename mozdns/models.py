@@ -113,7 +113,14 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
         prune_tree(objs_domain)
 
     def save(self, *args, **kwargs):
-        # Only CNAME uses this kwarg.
+        if self.pk:
+            # We need to get the domain from the db. If it's not our current
+            # domain, call prune_tree on the domain in the db later.
+            db_domain = self.__class__.objects.get(pk=self.pk).domain
+            if self.domain == db_domain:
+                db_domain = None
+        else:
+            db_domain = None
         no_build = kwargs.pop("no_build", False)
         super(MozdnsRecord, self).save(*args, **kwargs)
         if no_build:
@@ -122,6 +129,9 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
             # Mark the domain as dirty so it can be rebuilt.
             self.domain.dirty = True
             self.domain.save()
+        if db_domain:
+            from mozdns.utils import prune_tree
+            prune_tree(db_domain)
 
     def set_fqdn(self):
         set_fqdn(self)

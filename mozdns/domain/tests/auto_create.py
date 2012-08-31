@@ -53,4 +53,3 @@ class AutoCreateTests(TestCase):
         # Even with domains there, they aren't part of a zone and should so
         # creation should fail.
         self.assertRaises(ValidationError, ensure_label_domain, fqdn)
-
