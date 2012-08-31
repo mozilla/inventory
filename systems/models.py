@@ -382,14 +382,17 @@ class System(DirtyFieldsMixin, models.Model):
 
     @property
     def notes_with_link(self):
-        patterns = [
-               '[bB]ug#?\D#?(\d+)',
-                ]
-        for pattern in patterns:
-            m = re.search(pattern, self.notes)
-            if m:
-                self.notes = re.sub(pattern, '<a href="%s%s">Bug %s</a>' % (BUG_URL, m.group(1), m.group(1)), self.notes)
-        return self.notes
+        if self.notes:
+            patterns = [
+                '[bB]ug#?\D#?(\d+)',
+                    ]
+            for pattern in patterns:
+                m = re.search(pattern, self.notes)
+                if m:
+                    self.notes = re.sub(pattern, '<a href="%s%s">Bug %s</a>' % (BUG_URL, m.group(1), m.group(1)), self.notes)
+            return self.notes
+        else:
+            return ''
     def get_next_adapter_number(self):
         nic_numbers = self.get_adapter_numbers()
         if len(nic_numbers) > 0:
