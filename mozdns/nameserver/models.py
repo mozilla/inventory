@@ -52,6 +52,10 @@ class Nameserver(models.Model, ObjectUrlMixin):
         db_table = "nameserver"
         unique_together = ("domain", "server")
 
+    @classmethod
+    def get_api_fields(cls):
+        return ['ttl', 'comment', 'server']
+
     def details(self):
         details = [
             ("Server", self.server),

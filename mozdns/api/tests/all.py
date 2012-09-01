@@ -1,1 +1,1 @@
-from mozdns.api.tests.create import *
+from mozdns.api.tests.basic import *

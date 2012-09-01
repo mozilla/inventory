@@ -4,6 +4,8 @@ from tastypie import fields, utils
 from tastypie.exceptions import HydrationError
 from tastypie.resources import Resource, DeclarativeMetaclass
 from tastypie.resources import ModelResource
+
+from mozdns.utils import ensure_label_domain, prune_tree
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.txt.models import TXT
@@ -38,35 +40,63 @@ class CommonDNSResource(Resource):
         bundle.data['domain'] = bundle.obj.domain.name
         return bundle
 
-    def hydrate_m2m(self, bundle):
-        for view_name in bundle.data['views']:
-            try:
-                view = View.objects.get(name=view_name)
-            except ObjectDoesNotExist, e:
-                raise HydrationError("Couldn't find the view "
-                        "{0}".format(view_name))
-        return bundle
-
     def hydrate(self, bundle):
+        """Hydrate handles the conversion of fqdn to a label or domain.
+            This function handles two cases:
+                1) Label and domain are in bundle
+                2) Label and domain are *not* in bundle and fqdn is in bundle.
+            All other cases cause hydration errors to be raised and
+            bundle.errors will be set.
+        """
         # Every DNS Resource should have a domain
-        domain_name = bundle.data.get('domain', '')
-        try:
-            domain = Domain.objects.get(name=domain_name)
-        except ObjectDoesNotExist, e:
-            raise HydrationError("Couldn't find domain "
-                    "{0}".format(domain_name))
-        bundle.data['domain'] = domain
+        if isinstance(bundle.obj, Nameserver):
+            # Nameservers don't have a label
+            if 'fqdn' in bundle.data:
+                bundle.errors['domain'] = "Nameservers should have a fqdn"
+            elif 'label' in bundle.data:
+                bundle.errors['domain'] = "Nameservers should have a label"
+            else:
+                domain_name = bundle.data.get('domain', '')
+                try:
+                    domain = Domain.objects.get(name=domain_name)
+                    bundle.data['domain'] = domain
+                except ObjectDoesNotExist, e:
+                    error = "Couldn't find domain {0}".format(domain_name)
+                    bundle.errors['domain'] = error
+        elif ('fqdn' not in bundle.data and 'domain' in bundle.data and 'label'
+                in bundle.data):
+            domain_name = bundle.data.get('domain')
+            try:
+                domain = Domain.objects.get(name=domain_name)
+                bundle.data['domain'] = domain
+            except ObjectDoesNotExist, e:
+                bundle.errors['domain'] = "Couldn't find domain {0}".format(domain_name)
+        elif ('fqdn' in bundle.data and not ('domain' in bundle.data or 'label'
+                in bundle.data)):
+            try:
+                label_domain = ensure_label_domain(bundle.data['fqdn'])
+                bundle.data['label'] , bundle.data['domain'] = label_domain
+            except ValidationError, e:
+                bundle.errors["fqdn"] = e.message
+        else:
+            error = "Couldn't determine a label and domain for this record."
+            bundle.errors['label_and_domain'] = error
+
         return bundle
 
     def obj_update(self, bundle, request=None, skip_errors=False, **kwargs):
         obj = bundle.obj
         views = self.extract_views(bundle)
+        if bundle.errors:
+            self.error_response(bundle.errors, request)
+
         bundle = self.full_hydrate(bundle)
 
         if bundle.errors:
             self.error_response(bundle.errors, request)
         self.apply_commit(obj, bundle.data)  # bundle should only have valid data.
-                                                   # If it doesn't errors will be thrown
+                                             # If it doesn't errors will be thrown
+
         self.apply_custom_hydrate(obj, bundle, action='update')
         return self.save_commit(request, obj, bundle, views)
 
@@ -78,8 +108,9 @@ class CommonDNSResource(Resource):
             try:
                 views.append(View.objects.get(name=view_name))
             except ObjectDoesNotExist, e:
-                raise HydrationError("Couldn't find the view "
-                        "{0}".format(view_name))
+                error = "Couldn't find view {0}".format(view_name)
+                bundle.errors['views'] = error
+                break
         return views
 
     def apply_commit(self, obj, commit_data):
@@ -96,9 +127,11 @@ class CommonDNSResource(Resource):
         creates an object. We then clean it and then save it. Finally we save
         any views that were in bundle.
         """
-
         Klass = self._meta.object_class
         views = self.extract_views(bundle)
+        if bundle.errors:
+            self.error_response(bundle.errors, request)
+
         bundle = self.full_hydrate(bundle)
 
         if bundle.errors:
@@ -108,8 +141,11 @@ class CommonDNSResource(Resource):
         try:
             obj = Klass(**bundle.data)
         except ValueError, e:
-            pdb.set_trace()
+            prune_tree(bundle.data['domain'])
+            bundle.errors['error_messages'] = e.message
+            self.error_response(bundle.errors, request)
         except TypeError, e:
+            prune_tree(bundle.data['domain'])
             bundle.errors['error_messages'] = e.message
             self.error_response(bundle.errors, request)
 
@@ -119,10 +155,13 @@ class CommonDNSResource(Resource):
         try:
             obj.full_clean()
         except ValidationError, e:
+            prune_tree(bundle.data['domain'])
             bundle.errors['error_messages'] = str(e)
             self.error_response(bundle.errors, request)
         except Exception, e:
-            pdb.set_trace()
+            prune_tree(bundle.data['domain'])
+            bundle.errors['error_messages'] = "Very bad error."
+            self.error_response(bundle.errors, request)
         obj.save()
 
         # We remove the views so that deletion works.
@@ -195,6 +234,13 @@ class AddressRecordResource(CommonDNSResource, ModelResource):
 
 v1_dns_api.register(AddressRecordResource())
 
+class NameserverResource(CommonDNSResource, ModelResource):
+    class Meta:
+        queryset = Nameserver.objects.all()
+        fields = Nameserver.get_api_fields() + ['domain', 'views']
+        authorization = Authorization()
+        allowed_methods = allowed_methods
+v1_dns_api.register(NameserverResource())
 """
 class XXXResource(CommonDNSResource, ModelResource):
     class Meta:

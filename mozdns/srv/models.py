@@ -70,7 +70,8 @@ class SRV(models.Model, ObjectUrlMixin):
 
     @classmethod
     def get_api_fields(cls):
-        return ['label', 'port', 'ttl', 'weight', 'priority', 'target']
+        return ['label', 'port', 'ttl', 'weight', 'priority', 'target',
+                'comment']
 
     def delete(self, *args, **kwargs):
         from mozdns.utils import prune_tree

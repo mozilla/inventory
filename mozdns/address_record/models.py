@@ -183,5 +183,5 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
 
     @classmethod
     def get_api_fields(cls):
-        return  ['label', 'ip_str', 'ip_type']
+        return  ['label', 'ip_str', 'ip_type', 'comment', 'ttl']
 
