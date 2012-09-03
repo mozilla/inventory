@@ -54,6 +54,10 @@ class BaseAddressRecord(Ip):
                     ("IP", str(self.ip_str)),
                 )
 
+    @classmethod
+    def get_api_fields(cls):
+        return  ['label', 'ip_str', 'ip_type', 'comment', 'ttl']
+
     def save(self, *args, **kwargs):
         self.full_clean()
         set_fqdn(self)
@@ -180,8 +184,3 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
         db_table = "address_record"
         unique_together = ("label", "domain", "ip_upper", "ip_lower",
                 "ip_type")
-
-    @classmethod
-    def get_api_fields(cls):
-        return  ['label', 'ip_str', 'ip_type', 'comment', 'ttl']
-

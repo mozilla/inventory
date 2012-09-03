@@ -32,6 +32,10 @@ class PTR(Ip, ObjectUrlMixin):
 
     search_fields = ('ip_str', 'name')
 
+    @classmethod
+    def get_api_fields(cls):
+        return ['ip_str', 'ip_type', 'name', 'ttl', 'comment']
+
     def details(self):
         return (
                     ('Ip', str(self.ip_str)),

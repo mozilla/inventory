@@ -111,6 +111,11 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         db_table = "static_interface"
         unique_together = ("ip_upper", "ip_lower", "label", "domain", "mac")
 
+    @classmethod
+    def get_api_fields(cls):
+        return super(StaticInterface, cls).get_api_fields() + ['mac',
+                    'dhcp_enabled', 'dns_enabled']
+
     def get_edit_url(self):
         return "/core/interface/{0}/update/".format(self.pk)
 
