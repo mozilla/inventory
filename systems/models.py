@@ -324,7 +324,9 @@ class System(DirtyFieldsMixin, models.Model):
                 'phx.mozilla.com',
                 'phx1.mozilla.com',
                 'mozilla.net',
-                'org.net',
+                'mozilla.org',
+                'build.mtv1.mozilla.com',
+                'build.mozilla.org',
                 ]
         reverse_fqdn = self.primary_reverse
         if self.primary_ip and reverse_fqdn:
@@ -339,20 +341,26 @@ class System(DirtyFieldsMixin, models.Model):
                 updated = False
                 if not updated:
                     try:
-                        fqdn = socket.gethostbyaddr('%s.%s' % self.hostname, domain)
+                        fqdn = socket.gethostbyaddr('%s.%s' % (self.hostname, domain))
                         if fqdn:
-                            self.update_host_for_migration(fqdn)
+                            self.update_host_for_migration(fqdn[0])
                             updated = True
-                    except:
+                    except Exception, e:
+                        #print e
                         pass
             if not updated:
-                print "Could not update hostname %s" % self.hostname
+                pass
+                #print "Could not update hostname %s" % (self.hostname)
 
     def update_host_for_migration(self, new_hostname):
-        self.hostname = new_hostname
-        self.save()
-        kv = KeyValue(system=self, key='system.hostname.alias.0', value=new_hostname)
+        kv = KeyValue(system=self, key='system.hostname.alias.0', value=self.hostname)
         kv.save()
+        try:
+            self.hostname = new_hostname
+            self.save()
+        except Exception, e:
+            print "ERROR - %s" % (e)
+
 
     objects = models.Manager()
     build_objects = BuildManager()
