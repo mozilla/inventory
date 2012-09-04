@@ -19,6 +19,8 @@ from django.contrib.auth.models import User
 from settings import BUG_URL
 
 import pdb
+import socket
+
 
 class QuerySetManager(models.Manager):
     def get_query_set(self):
@@ -300,8 +302,57 @@ class System(DirtyFieldsMixin, models.Model):
     is_switch = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     #network_adapter = models.ForeignKey('NetworkAdapter', blank=True, null=True)
 
+    @property
+    def primary_ip(self):
+        try:
+            first_ip = self.keyvalue_set.filter(key__contains='ipv4_address').order_by('key')[0].value
+            return first_ip
+        except:
+            return None
 
+    @property
+    def primary_reverse(self):
+        try:
+            return str(socket.gethostbyaddr(self.primary_ip)[0])
+        except:
+            return None
 
+    def get_updated_fqdn(self):
+        allowed_domains = [
+                'mozilla.com',
+                'scl3.mozilla.com',
+                'phx.mozilla.com',
+                'phx1.mozilla.com',
+                'mozilla.net',
+                'org.net',
+                ]
+        reverse_fqdn = self.primary_reverse
+        if self.primary_ip and reverse_fqdn:
+            current_hostname = str(self.hostname)
+
+            if current_hostname and current_hostname != reverse_fqdn:
+                res = reverse_fqdn.replace(current_hostname, '').strip('.')
+                if res in allowed_domains:
+                    self.update_host_for_migration(reverse_fqdn)
+        elif not self.primary_ip or self.primary_reverse:
+            for domain in allowed_domains:
+                updated = False
+                if not updated:
+                    try:
+                        fqdn = socket.gethostbyaddr('%s.%s' % self.hostname, domain)
+                        if fqdn:
+                            self.update_host_for_migration(fqdn)
+                            updated = True
+                    except:
+                        pass
+            if not updated:
+                print "Could not update hostname %s" % self.hostname
+
+    def update_host_for_migration(self, new_hostname):
+        self.hostname = new_hostname
+        self.save()
+        kv = KeyValue(system=self, key='system.hostname.alias.0', value=new_hostname)
+        kv.save()
 
     objects = models.Manager()
     build_objects = BuildManager()

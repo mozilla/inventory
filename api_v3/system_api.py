@@ -41,6 +41,7 @@ class SystemResource(CustomAPIResource):
 
     key_value = fields.ToManyField('api_v3.system_api.KeyValueResource', 'keyvalue_set', full=True, null=True)
     server_model = fields.ForeignKey('api_v3.system_api.ServerModelResource', 'server_model', null=True, full=True)
+    system_status = fields.ForeignKey('api_v3.system_api.SystemStatusResource', 'system_status', null=True, full=True)
     operating_system = fields.ForeignKey('api_v3.system_api.OperatingSystemResource', 'operating_system', null=True, full=True)
     system_rack = fields.ForeignKey('api_v3.system_api.SystemRackResource', 'system_rack', null=True, full=True)
     allocation = fields.ForeignKey('api_v3.system_api.AllocationResource', 'allocation', null=True, full=True)
@@ -54,6 +55,7 @@ class SystemResource(CustomAPIResource):
         filtering = {
                 'hostname': ALL_WITH_RELATIONS,
                 'system_rack': ALL_WITH_RELATIONS,
+                'system_status': ALL_WITH_RELATIONS,
                 'notes': ALL,
                 'asset_tag': ALL,
                 'key_value': ALL_WITH_RELATIONS,
@@ -107,6 +109,9 @@ class SystemStatusResource(CustomAPIResource):
     class Meta(CustomAPIResource.Meta):
         resource_name = 'system_status'
         queryset = system_model.SystemStatus.objects.all()
+        filtering = {
+                'status': ALL_WITH_RELATIONS,
+                }
 
 
 
