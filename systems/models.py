@@ -12,15 +12,12 @@ from django.core.exceptions import ValidationError
 from django.db.models.signals import post_save
 from django.db.models.query import QuerySet
 from django.contrib.auth.models import User
-<<<<<<< HEAD
 from django.db import IntegrityError
 
 from dhcp.models import DHCP
 import mdns
 from settings import MOZ_SITE_PATH
-=======
 from settings import BUG_URL
->>>>>>> master
 
 
 import datetime
