@@ -16,7 +16,11 @@
 <div style="clear:both;"></div>
 
 <dt>Owner:</dt>
-<dd>{{ user_system.owner }}</dd>
+<dd>
+{% if user_system.owner %}
+<a href="{% url owner-show user_system.owner.id %}">{{ user_system.owner }}</a>
+{% endif %}
+</dd>
 <div style="clear:both;"></div>
 
 <dt>Server Model:</dt>
@@ -25,7 +29,7 @@
 
 {% if user_system.bug_number %}
 <dt>Bug #:</dt>
-<dd><a href="{{ BUG_URL }}{{ user_system.bug_number }}">{{ user_system.bug_number }}</a></dd>
+<dd><a href="{{ settings.BUG_URL }}{{ user_system.bug_number }}">{{ user_system.bug_number }}</a></dd>
 <div style="clear:both;"></div>
 {% endif %}
 

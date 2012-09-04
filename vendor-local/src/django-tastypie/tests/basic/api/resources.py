@@ -3,8 +3,9 @@ from django.contrib.auth.models import User
 from tastypie.bundle import Bundle
 from tastypie import fields
 from tastypie.resources import ModelResource
+from tastypie.authentication import SessionAuthentication
 from tastypie.authorization import Authorization
-from basic.models import Note, AnnotatedNote
+from basic.models import Note, AnnotatedNote, SlugBasedNote
 
 
 class UserResource(ModelResource):
@@ -46,6 +47,14 @@ class BustedResource(ModelResource):
 
 class SlugBasedNoteResource(ModelResource):
     class Meta:
-        queryset = Note.objects.all()
+        queryset = SlugBasedNote.objects.all()
         resource_name = 'slugbased'
         detail_uri_name = 'slug'
+
+
+class SessionUserResource(ModelResource):
+    class Meta:
+        resource_name = 'sessionusers'
+        queryset = User.objects.all()
+        authentication = SessionAuthentication()
+        authorization = Authorization()
