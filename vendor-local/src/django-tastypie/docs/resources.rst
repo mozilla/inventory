@@ -646,13 +646,13 @@ The inner ``Meta`` class allows for class-level configuration of how the
   with a body containing all the data in a serialized form.
 
 ``collection_name``
-------------~~~~~~~
+-------------------
 
   Specifies the collection of objects returned in the ``GET`` list will be
   named. Default is ``objects``.
 
 ``detail_uri_name``
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
   Specifies the name for the regex group that matches on detail views. Defaults
   to ``pk``.
@@ -711,6 +711,17 @@ filter the queryset before processing a request::
                 orm_filters["pk__in"] = [i.pk for i in sqs]
 
             return orm_filters
+
+
+Using PUT/DELETE/PATCH In Unsupported Places
+============================================
+
+Some places, like in certain browsers or hosts, don't allow the
+``PUT/DELETE/PATCH`` methods. In these environments, you can simulate those
+kinds of requests by providing an ``X-HTTP-Method-Override`` header. For
+example, to send a ``PATCH`` request over ``POST``, you'd send a request like::
+
+    curl --dump-header - -H "Content-Type: application/json" -H "X-HTTP-Method-Override: PATCH" -X POST --data '{"title": "I Visited Grandma Today"}' http://localhost:8000/api/v1/entry/1/
 
 
 ``Resource`` Methods
@@ -996,6 +1007,16 @@ Allows for the sorting of objects being returned.
 
 ``ModelResource`` includes a full working version specific to Django's
 ``Models``.
+
+``get_bundle_detail_data``
+--------------------------
+
+.. method:: Resource.get_bundle_detail_data(self, bundle)
+
+Convenience method to return the ``detail_uri_name`` attribute off
+``bundle.obj``.
+
+Usually just accesses ``bundle.obj.pk`` by default.
 
 ``get_resource_uri``
 --------------------
