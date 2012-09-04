@@ -363,7 +363,6 @@ class System(DirtyFieldsMixin, models.Model):
         except:
             return None
 
-<<<<<<< HEAD
     def update_adapter(self, **kwargs):
         from api_v3.system_api import SystemResource
         interface = kwargs.pop('interface', None)
@@ -490,7 +489,6 @@ class System(DirtyFieldsMixin, models.Model):
         """
         self.keyvalue_set.filter(key__startswith='nic.%i' % index).delete()
         return True
-=======
     @property
     def primary_reverse(self):
         try:
@@ -541,7 +539,6 @@ class System(DirtyFieldsMixin, models.Model):
             self.save()
         except Exception, e:
             print "ERROR - %s" % (e)
->>>>>>> master
 
 
     objects = models.Manager()
