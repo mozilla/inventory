@@ -205,12 +205,12 @@ class CommonDNSResource(ModelResource):
         return bundle
 
 
-
 allowed_methods = ['get', 'post', 'patch', 'delete']
 v1_dns_api = Api(api_name="v1_dns")
 
 class CNAMEResource(CommonDNSResource, ModelResource):
     class Meta:
+        always_return_data = True
         queryset = CNAME.objects.all()
         fields = CNAME.get_api_fields() + ['domain', 'views']
         authorization = Authorization()
@@ -220,6 +220,7 @@ v1_dns_api.register(CNAMEResource())
 
 class TXTResource(CommonDNSResource, ModelResource):
     class Meta:
+        always_return_data = True
         queryset = TXT.objects.all()
         fields = TXT.get_api_fields() + ['domain', 'views']
         authorization = Authorization()
@@ -229,6 +230,7 @@ v1_dns_api.register(TXTResource())
 
 class SRVResource(CommonDNSResource, ModelResource):
     class Meta:
+        always_return_data = True
         queryset = SRV.objects.all()
         fields = SRV.get_api_fields() + ['domain', 'views']
         authorization = Authorization()
@@ -238,6 +240,7 @@ v1_dns_api.register(SRVResource())
 
 class MXResource(CommonDNSResource, ModelResource):
     class Meta:
+        always_return_data = True
         queryset = MX.objects.all()
         fields = MX.get_api_fields() + ['domain', 'views']
         authorization = Authorization()
@@ -247,6 +250,7 @@ v1_dns_api.register(MXResource())
 
 class SSHFPResource(CommonDNSResource, ModelResource):
     class Meta:
+        always_return_data = True
         queryset = SSHFP.objects.all()
         fields = SSHFP.get_api_fields() + ['domain', 'views']
         authorization = Authorization()
@@ -257,6 +261,7 @@ v1_dns_api.register(SSHFPResource())
 class AddressRecordResource(CommonDNSResource, ModelResource):
 
     class Meta:
+        always_return_data = True
         queryset = AddressRecord.objects.all()
         fields = AddressRecord.get_api_fields() + ['domain', 'views']
         authorization = Authorization()
@@ -281,6 +286,7 @@ class NameserverResource(CommonDNSResource):
                 bundle.errors['domain'] = error
         return bundle
     class Meta:
+        always_return_data = True
         queryset = Nameserver.objects.all()
         fields = Nameserver.get_api_fields() + ['domain', 'views']
         authorization = Authorization()
@@ -296,6 +302,7 @@ class PTRResource(CommonDNSResource, ModelResource):
         return bundle
 
     class Meta:
+        always_return_data = True
         queryset = PTR.objects.all()
         fields = PTR.get_api_fields() + ['views']
         authorization = Authorization()
@@ -369,6 +376,7 @@ class StaticInterfaceResource(CommonDNSResource, ModelResource):
 
 
     class Meta:
+        always_return_data = True
         queryset = StaticInterface.objects.all()
         fields = StaticInterface.get_api_fields() + ['domain', 'views', 'system']
         authorization = Authorization()
@@ -381,6 +389,7 @@ v1_dns_api.register(StaticInterfaceResource())
 """
 class XXXResource(CommonDNSResource, ModelResource):
     class Meta:
+        always_return_data = True
         queryset = XXX.objects.all()
         fields = XXX.get_api_fields() + ['domain', 'views']
         authorization = Authorization()

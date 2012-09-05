@@ -10,10 +10,15 @@
 
 {% block dns_content %}
     <h1>Moz DNS</h1>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.js" type="text/javascript"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.js" type="text/javascript"></script>
+    <script type="text/javascript" src="/static/javascripts/master_form.js"></script>
+    <link rel="stylesheet" href="/static/css/ui-lightness/jquery-ui-1.8.11.custom.css" type="text/css" />
     <style>
         div.inline {
             float:left;
             margin-right:50px;
+            font-family:"courier";
         }
         #dns_form_errors {
             float:left;
@@ -22,6 +27,11 @@
             color: rgb(184,0,0);
             display: block;
 
+        }
+        div.rec_final {
+            float:left;
+            margin-right:50px;
+            display: inline;
         }
         #dns_success {
             float:left;
@@ -36,351 +46,6 @@
             margin-right:50px;
         }
     </style>
-    <script type="text/javascript">
-        function display_disable(element_id){
-            var ele = document.getElementById(element_id);
-            var text = document.getElementById(element_id);
-            ele.style.display = "none";
-        }
-        function display_enable(element_id){
-            var ele = document.getElementById(element_id);
-            var text = document.getElementById(element_id);
-            ele.style.display = "block";
-        }
-        function do_A(e){
-            reset_form();
-            display_enable('A_display');
-        }
-        function do_MX(e){
-            reset_form();
-            display_enable('MX_display');
-        }
-        function do_NS(e){
-            reset_form();
-            display_enable('NS_display');
-            update_fqdn('NS');
-        }
-        function do_PTR(e){
-            reset_form();
-            display_enable('PTR_display');
-        }
-        function do_CNAME(e){
-            reset_form();
-            display_enable('CNAME_display');
-        }
-        function do_SRV(e){
-            reset_form();
-            display_enable('SRV_display');
-        }
-        function do_TXT(e){
-            reset_form();
-            display_enable('TXT_display');
-        }
-
-        /*
-           Either the Label or Domain changed.
-        */
-        function get_fqdn(rec_type){
-            if (rec_type != 'NS'){
-                var label = $('#' + rec_type + '_build_label').val();
-                var domain = $('#' + rec_type + '_build_domain').find(":selected").text();
-                if (label == "") {
-                    var fqdn = "@       " + domain;
-                } else {
-                    var fqdn = label + "." + domain;
-                }
-            } else {
-                var fqdn = $('#' + rec_type + '_build_domain').find(":selected").text();
-            }
-            return fqdn;
-        }
-        function update_text(rec_type){
-            var text = $('#' + rec_type + '_build_text').val();
-            var text_display = $('#' + rec_type + '_display_text');
-            if (text == ""){
-                text = "<i>" + text_display.attr('value') + "</i>";
-            } else {
-                text = '"' + text +'"';
-            }
-            document.getElementById(rec_type + '_display_text').innerHTML = text;
-
-        }
-        function update_view(view_name){
-            // Nothing right now
-            var ip = $('#' + rec_type + '_build_ip').val();
-            if (ip !== undefined && ip.substring(0, "10.".length) === "10.") {
-                // WTF JS? No startsWith in the string prototype?
-                set_view('private', true);
-                set_view('public', false);
-            }
-        }
-        function set_view(rec_type, view_name, enabled){
-            if(enabled === true){
-                document.getElementById(rec_type + '_' + view_name + '_view').checked = true;
-            } else {
-                document.getElementById(rec_type + '_' + view_name + '_view').checked = false;
-            }
-        }
-        function update_target_name(rec_type){
-            var name = $('#' + rec_type + '_build_target_name').val();
-            var target_name = $('#' + rec_type + '_display_target_name');
-            if (name == ""){
-                name = "<i>" + target_name.attr('value') + "</i>";
-            } else {
-                name = name + ".";
-            }
-            document.getElementById(rec_type + '_display_target_name').innerHTML = name;
-        }
-        function update_fqdn(rec_type){
-            var fqdn = get_fqdn(rec_type);
-            var rec_name = $('#' + rec_type + '_display_rec_name');
-            rec_name.empty()
-            // We put a '.' on the end to tell the user there is no ORIGIN being applied. The '.'
-            // isn't actually sent during a POST
-            if (fqdn == ""){
-                fqdn = rec_name.value
-            }
-            document.getElementById(rec_type + '_display_rec_name').innerHTML = fqdn + "."
-        }
-        function update_ip(rec_type){
-            var ip = $('#' + rec_type + '_build_ip').val();
-            display_ip = $('#' + rec_type + '_display_ip');
-            display_ip.empty();
-            if (ip == "") {
-                ip = "<i>IP</i>";
-            } else if (ip.substring(0, "10.".length) === "10.") {
-                // WTF JS? No startsWith in the string prototype?
-                set_view(rec_type, 'private', true);
-                set_view(rec_type, 'public', false);
-            }
-            document.getElementById(rec_type + '_display_ip').innerHTML = ip
-        }
-        function update_number(rec_type, number_name){
-            var num = $('#' + rec_type + '_build_' + number_name).val();
-            var display_num = $('#' + rec_type + '_display_' + number_name);
-            //alert(rec_type + '_display_' + number_name);
-            if (num == "" && display_num.attr('reset') == "true") {
-                num = "<i>" + display_num.attr('value') + "</i>";
-            }
-            //display_num.empty();
-            document.getElementById(rec_type + '_display_' + number_name).innerHTML = num
-        }
-        function update_comment(rec_type){
-            var comment = $('#' + rec_type + '_build_comment').val();
-            $('#' + rec_type + '_display_comment').empty();
-            if (comment == "") {
-                comment = "";
-            } else {
-                comment = "; " + comment
-            }
-            document.getElementById(rec_type + '_display_comment').innerHTML = comment
-        }
-        $(document).ready(function(){
-            // Find the selected option and call it's onclick event
-            // Register a bunch of listeners
-
-            /*
-               Call setup on selected choice and then reset the form
-             */
-            $('#rec_type_select').find(":selected").attr('onclick')();
-            reset_form();
-        });
-        function reset_form(){
-            rec_types = ['A', 'MX', 'NS', 'CNAME', 'SRV', 'TXT', 'PTR'];
-            for (var i = 0; i < rec_types.length; i++){
-                rec_type = rec_types[i];
-                $('#' + rec_type + '_build').attr('pk', "");
-                display_disable(rec_type + '_display');
-            }
-            /*
-            display_disable('MX_display');
-            display_disable('NS_display');
-            display_disable('PTR_display');
-            display_disable('CNAME_display');
-            display_disable('SRV_display');
-            display_disable('TXT_display');
-            */
-            // Clear any notifications
-            $('#error_list').empty();
-            $('#dns_success').empty();
-            type_select = document.getElementById("rec_type_select");
-            type_select_index = type_select.options.selectedIndex;
-            document.getElementById("dns_form").reset();
-            type_select.options[type_select_index].selected = true;
-            var rec_type = type_select.value;
-            display_enable(rec_type+"_display");
-            /* Walk through and reset to default display values */
-            final_display = document.getElementById(rec_type + "_final");
-            arr = final_display.getElementsByClassName("inline");
-            for (var i = 0; i < arr.length; i++){
-                var element = $('#' + arr[i].id);
-                if (element.attr('id') == rec_type + "_display_type" ) {
-                    // Do nothing
-                } else if (element.attr('reset') == 'false') {
-                    element.attr('innerHTML', "<i>" + element.attr('value') + "</i>");
-                } else if (element.attr('value') == "TTL"){
-                    // TTL is stupid
-                    element.attr('innerHTML', '');
-                } else {
-                    element.attr('innerHTML', '');
-                }
-            }
-        }
-        function get_ttl_comment(rec_type){
-            var ttl = $('#' + rec_type + '_build_TTL').val();
-            if (ttl != ""){
-                commit_data['ttl'] = ttl;
-            }
-            var comment = $('#' + rec_type + '_build_comment').val();
-            if (comment != ""){
-                commit_data['comment'] = comment;
-            }
-            return commit_data
-        }
-        function get_views(rec_type){
-            return {
-                'public_view': $('#' + rec_type + '_public_view').attr('checked'),
-                'private_view': $('#' + rec_type + '_private_view').attr('checked'),
-            }
-        }
-        function get_label_domain(rec_type){
-            var label = $('#' + rec_type + '_build_label').val();
-            var domain = $('#' + rec_type + '_build_domain').find(":selected").text();
-            commit_data = {
-                'label': label,
-                'domain': domain,
-            }
-            return commit_data
-        }
-        function submit_record(){
-            type_select = document.getElementById("rec_type_select");
-            type_select_index = type_select.options.selectedIndex;
-            var rec_type = type_select.value;
-            var pk = $('#' + rec_type + '_build').attr('pk')
-            switch (rec_type) {
-                // If pk is "" then this is a create. If it's non-empty this is an update.
-                case 'A':
-                    var ip_str = $('#' + rec_type + '_build_ip').val();
-                    commit_data = {
-                        'pk': pk,
-                        'rtype': rec_type,
-                        'ip_str': ip_str,
-                    }
-                    commit_data = jQuery.extend(commit_data, get_label_domain(rec_type));
-                    commit_data = jQuery.extend(commit_data, get_ttl_comment(rec_type));
-                    // This is where we post our data and handle the return data.
-                    break;
-                case 'PTR':
-                    var target_name = $('#' + rec_type + '_build_target_name').val();
-                    var ip_str = $('#' + rec_type + '_build_ip').val();
-                    commit_data = {
-                        'pk': pk,
-                        'rtype': rec_type,
-                        'name': target_name,
-                        'ip_str': ip_str,
-                    }
-                    commit_data = jQuery.extend(commit_data, get_ttl_comment(rec_type));
-                    break;
-                case 'SRV':
-                    var target_name = $('#' + rec_type + '_build_target_name').val();
-                    var port = $('#' + rec_type + '_build_Port').val();
-                    var weight = $('#' + rec_type + '_build_Weight').val();
-                    var priority = $('#' + rec_type + '_build_Priority').val();
-                    commit_data = {
-                        'pk': pk,
-                        'rtype': rec_type,
-                        'target': target_name,
-                        'port': port,
-                        'weight': weight,
-                        'priority': priority,
-                    }
-                    commit_data = jQuery.extend(commit_data, get_label_domain(rec_type));
-                    commit_data = jQuery.extend(commit_data, get_ttl_comment(rec_type));
-                    break;
-                case 'CNAME':
-                    var target_name = $('#' + rec_type + '_build_target_name').val();
-                    commit_data = {
-                        'pk': pk,
-                        'rtype': rec_type,
-                        'data': target_name,
-                    }
-                    commit_data = jQuery.extend(commit_data, get_label_domain(rec_type));
-                    commit_data = jQuery.extend(commit_data, get_ttl_comment(rec_type));
-                    break;
-                case 'NS':
-                    var target_name = $('#' + rec_type + '_build_target_name').val();
-                    var domain = $('#' + rec_type + '_build_domain').find(":selected").text();
-                    commit_data = {
-                        'pk': pk,
-                        'rtype': rec_type,
-                        'server': target_name,
-                        'domain': domain,
-                    }
-                    commit_data = jQuery.extend(commit_data, get_ttl_comment(rec_type));
-                    break;
-                case 'TXT':
-                    var text = $('#' + rec_type + '_build_text').val();
-                    var domain = $('#' + rec_type + '_build_domain').find(":selected").text();
-                    commit_data = {
-                        'pk': pk,
-                        'rtype': rec_type,
-                        'txt_data': text,
-                    }
-                    commit_data = jQuery.extend(commit_data, get_label_domain(rec_type));
-                    commit_data = jQuery.extend(commit_data, get_ttl_comment(rec_type));
-                    break;
-                case 'MX':
-                    var target_name = $('#' + rec_type + '_build_target_name').val();
-                    var priority = $('#' + rec_type + '_build_Priority').val();
-                    commit_data = {
-                        'pk': pk,
-                        'rtype': rec_type,
-                        'server': target_name,
-                        'priority': priority,
-                    }
-                    commit_data = jQuery.extend(commit_data, get_label_domain(rec_type));
-                    commit_data = jQuery.extend(commit_data, get_ttl_comment(rec_type));
-                    break;
-            }
-            commit_data = jQuery.extend(commit_data, get_views(rec_type));
-            console.log(commit_data);
-            $.post('/mozdns/commit_record/', JSON.stringify(commit_data), function(data) {
-                var data = jQuery.parseJSON(data)
-                $('#error_list').empty();
-                $('#dns_success').empty();
-                if (data.errors){
-                    for(var attr in data.errors) {
-                        if(data.errors.hasOwnProperty(attr))
-                            console.log(attr + ":" + data.errors[attr]);
-                            // If you want to override the name of an Error, do it here.
-                            switch (attr) {
-                                case "__all__":
-                                    error_name = "";
-                                    break
-                                case "ip_str":
-                                    error_name = "IP:";
-                                    break
-                                default:
-                                    error_name = attr + ": ";
-                            }
-                            // Error Output
-                            $('#error_list').append("<li>" + error_name + data.errors[attr] + "</li>");
-                    }
-                } else {
-                    // Success Output
-                    $('#' + rec_type + '_build').attr('pk', data.obj_pk)
-                    if (data.created) {
-                        $('#dns_success').append("<span><a href='" + data.success + "'>Click to see the new "+
-                            rec_type +" record</a>" + "</span>");
-                    } else {
-                        $('#dns_success').append("<span><a href='" + data.success + "'>Click to see the updated "+
-                            rec_type +" record</a>" + "</span>");
-                    }
-                }
-            });// end post
-        }
-    </script>
-    <form id="dns_form">
     <input type='button' onclick='reset_form()' value="Reset">
     <input type='button' onclick='submit_record()' value="Commit">
     <select id="rec_type_select">
@@ -393,19 +58,24 @@
       <option value="TXT" onclick='do_TXT()'>TXT</option>
     </select>
 
-    <!--
-        Input Macros: These make user inputs.
-    -->
-
     {% macro input(id, value='', type='text', size=20) -%}
         <input  id="{{ id }}" type="{{ type }}" value="{{
             value|e }}" size="{{ size }}">
     {%- endmacro %}
-    {% macro draw_build_label(rec_type) -%}
-            Label: {{ input(rec_type + "_build_label") }}<br>
+    {% macro draw_build_name(rec_type, label_title="FQDN:", suffix='name', append=True) -%}
+            <label for='{{ rec_type }}_build_{{ suffix }}'>{{label_title}}</label>
+            <input  id="{{ rec_type }}_build_{{ suffix }}" type="text" value="" size="78">
             <script>
-            $('#{{rec_type}}_build_label').live("keydown", function(){ update_fqdn('{{ rec_type }}'); });
-            $('#{{rec_type}}_build_label').live("keyup", function(){ update_fqdn('{{ rec_type }}'); });
+                var domains = jQuery.parseJSON('{{domains}}');
+                domains.sort(function(a,b) {return (a.length < b.length) ? 0 : 1; })
+                // inefficient. fix this TODO
+                {% if append %}
+                make_smart_name('{{rec_type}}', '{{ rec_type }}_build_{{ suffix }}', domains, true);
+                {% else %}
+                make_smart_name('{{rec_type}}', '{{ rec_type }}_build_{{ suffix }}', domains, false);
+                {% endif %}
+                $('#{{ rec_type }}_build_{{ suffix }}').live("keydown", function(){ update_fqdn('{{ rec_type }}'); });
+                $('#{{ rec_type }}_build_{{ suffix }}').live("keyup", function(){ update_fqdn('{{ rec_type }}'); });
             </script>
     {%- endmacro %}
     {% macro draw_build_ip(rec_type) -%}
@@ -422,21 +92,18 @@
             $('#{{ rec_type }}_build_comment').live("keyup", function(){ update_comment('{{ rec_type }}'); });
             </script>
     {%- endmacro %}
-    {% macro draw_build_domain(rec_type, domains) -%}
-            Domain: <select class="dispaly_inline" id="{{ rec_type }}_build_domain">
-            {%- for domain in domains %}
-                        <option value='{{ domain.pk }}'>{{ domain.name }}</option>
-            {%- endfor %}
-                    </select><br>
-            <script>
-            $('#{{ rec_type }}_build_domain').live("click", function(){ update_fqdn('{{ rec_type }}'); });
-            </script>
-    {%- endmacro %}
     {% macro draw_build_target_name(rec_type, description='Target') -%}
-            {{ description }}: {{ input(rec_type + "_build_target_name") }}<br>
+            <label for='{{ rec_type }}_build_target_name'>Target:</label>
+            <input  id="{{ rec_type }}_build_target_name" type="text" value="" size="78">
             <script>
-            $('#{{rec_type}}_build_target_name').live("keydown", function(){ update_target_name('{{ rec_type }}'); });
-            $('#{{rec_type}}_build_target_name').live("keyup", function(){ update_target_name('{{ rec_type }}'); });
+                var domains = jQuery.parseJSON('{{domains}}');
+                domains.sort(function(a,b) {return (a.length < b.length) ? 0 : 1; })
+                // inefficient. fix this TODO
+                $(function() {
+                    make_smart_name('{{rec_type}}', '{{ rec_type }}_build_target_name', domains, true);
+                    $('#{{ rec_type }}_build_target_name').live("keydown", function(){ update_target_name('{{ rec_type }}'); });
+                    $('#{{ rec_type }}_build_target_name').live("keyup", function(){ update_target_name('{{ rec_type }}'); });
+                });
             </script>
     {%- endmacro %}
     <!-- Number funcitons -->
@@ -509,12 +176,12 @@
     Every rec_build div has a pk attribute. If the pk attribute is set the value is send with the POST and let's
     the view know that this is an UPDATE. If pk is "" then the POST is considered to be a CREATE.
     -->
-    <div id="A_display">
+    <form id='dns_form'>
+    <div id="A_display" style='display:none;'>
         <div class="rec_build" id="A_build" pk="">
             <table>
             <tr>
-                <td>{{ draw_build_label('A') }}</td>
-                <td>{{ draw_build_domain('A', domains) }}</td>
+                <td>{{ draw_build_name('A') }}</td>
             </tr>
             <tr>
                 <td>{{ draw_build_ip('A') }}</td>
@@ -544,12 +211,11 @@
         </div>
     </div>
 
-    <div id="MX_display">
+    <div id="MX_display" style='display:none;'>
         <div class="rec_build" id="MX_build" pk="">
             <table>
             <tr>
-                <td>{{ draw_build_label('MX') }}</td>
-                <td>{{ draw_build_domain('MX', domains) }}</td>
+                <td>{{ draw_build_name('MX') }}</td>
             </tr>
             <tr>
                 <td>{{ draw_build_ttl('MX') }}</td>
@@ -583,11 +249,11 @@
             {{ display_rec_comment('MX') }}
         </div>
     </div>
-    <div id="NS_display">
+    <div id="NS_display" style='display:none;'>
         <div class="rec_build" id="NS_build" pk="">
             <table>
             <tr>
-                <td>{{ draw_build_domain('NS', domains) }}</td>
+                <td>{{ draw_build_name('NS', label_title="Doamin:", append=False) }}</td>
             </tr>
             <tr>
                 <td>{{ draw_build_ttl('NS') }}</td>
@@ -616,7 +282,7 @@
             {{ display_rec_comment('NS') }}
         </div>
     </div>
-    <div id="PTR_display">
+    <div id="PTR_display" style='display:none;'>
         <div class="rec_build" id="PTR_build" pk="">
             <table>
             <tr>
@@ -650,12 +316,11 @@
         </div>
     </div>
 
-    <div id="CNAME_display">
+    <div id="CNAME_display" style='display:none;'>
         <div class="rec_build" id="CNAME_build" pk="">
             <table>
             <tr>
-                <td>{{ draw_build_label('CNAME') }}</td>
-                <td>{{ draw_build_domain('CNAME', domains) }}</td>
+                <td>{{ draw_build_name('CNAME') }}</td>
             </tr>
             <tr>
                 <td>{{ draw_build_ttl('CNAME') }}</td>
@@ -685,12 +350,11 @@
         </div>
     </div>
 
-    <div id="SRV_display">
+    <div id="SRV_display" style='display:none;'>
         <div class="rec_build" id="SRV_build" pk="">
             <table>
             <tr>
-                <td>{{ draw_build_label('SRV') }}</td>
-                <td>{{ draw_build_domain('SRV', domains) }}</td>
+                <td>{{ draw_build_name('SRV') }}</td>
             </tr>
             <tr>
                 <td>{{ draw_build_ttl('SRV') }}</td>
@@ -735,12 +399,11 @@
         </div>
     </div>
 
-    <div id="TXT_display">
+    <div id="TXT_display" style='display:none;'>
         <div class="rec_build" id="TXT_build">
             <table>
             <tr>
-                <td>{{ draw_build_label('TXT') }}</td>
-                <td>{{ draw_build_domain('TXT', domains) }}</td>
+                <td>{{ draw_build_name('TXT') }}</td>
             </tr>
             <tr>
                 <td>{{ draw_build_ttl('TXT') }}</td>
@@ -782,4 +445,6 @@
     </div>
 
     </form>
+
+</body>
 {% endblock %}

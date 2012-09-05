@@ -18,11 +18,11 @@ import simplejson as json
 import pdb
 
 def mozdns_home(request):
-    domains = Domain.objects.filter(is_reverse=False).order_by(
-                'name').order_by('soa__comment')
+    domains = Domain.objects.filter(is_reverse=False)
     return render(request, 'mozdns/mozdns.html', {
-        'domains': domains,
+        'domains': json.dumps([domain.name for domain in domains]),
     })
+
 
 def commit_record(request):
     commit_data = json.loads(request.raw_post_data)

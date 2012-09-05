@@ -50,7 +50,7 @@ class MozdnsAPITests(object):
 
     def test_create(self):
         resp, post_data = self.generic_create(self.post_data())
-        _, _, (_, new_object_url) = resp.items()
+        _, (_, new_object_url) = resp.items()
         new_resp = self.api_client.get(new_object_url, format='json')
         self.assertValidJSONResponse(new_resp)
         new_obj_data = json.loads(new_resp.content)
@@ -80,7 +80,7 @@ class MozdnsAPITests(object):
         #     kwargs['HTTP_AUTHORIZATION'] = authentication
 
         resp, post_data = self.generic_create(self.post_data())
-        _, _, (_, new_object_url) = resp.items()
+        _, (_, new_object_url) = resp.items()
         update_resp, patch_data = self.generic_update(new_object_url,
                 self.post_data())
 
@@ -93,7 +93,7 @@ class MozdnsAPITests(object):
     def test_delete(self):
         obj_count = self.test_type.objects.count()
         resp, post_data = self.generic_create(self.post_data())
-        _, _, (_, new_object_url) = resp.items()
+        _, (_, new_object_url) = resp.items()
         self.assertEqual(self.test_type.objects.count(), obj_count+1)
         resp = self.api_client.delete(new_object_url, format='json')
         self.assertHttpAccepted(resp)
@@ -105,7 +105,7 @@ class MozdnsAPITests(object):
         domain = random_label() + '.' + random_label() + '.' + obj_data.pop('domain')
         obj_data['fqdn'] = label + '.' + domain
         resp, post_data = self.generic_create(obj_data)
-        _, _, (_, new_object_url) = resp.items()
+        _, (_, new_object_url) = resp.items()
         new_resp = self.api_client.get(new_object_url, format='json')
         self.assertValidJSONResponse(new_resp)
         new_obj_data = json.loads(new_resp.content)
@@ -134,7 +134,7 @@ class MozdnsAPITests(object):
 
     def test_changing_only_one_field(self):
         resp, post_data = self.generic_create(self.post_data())
-        _, _, (_, new_object_url) = resp.items()
+        _, (_, new_object_url) = resp.items()
         change_post_data = {}
         change_post_data['comment'] = "==DIFFERENT=="
         post_data['comment'] = "==DIFFERENT=="
@@ -153,7 +153,7 @@ class MozdnsAPITests(object):
         self.assertHttpCreated(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count + 1)
         # Get the object and check it's views
-        _, _, (_, new_object_url) = resp.items()
+        _, (_, new_object_url) = resp.items()
         new_resp = self.api_client.get(new_object_url, format='json')
         self.assertValidJSONResponse(new_resp)
         new_obj_data = json.loads(new_resp.content)
@@ -480,7 +480,7 @@ class StaticIntrV4APITests(MozdnsAPITests, ResourceTestCase):
         del post_data['system']
         post_data['system_hostname'] = self.s.hostname
         resp, post_data = self.generic_create(post_data)
-        _, _, (_, new_object_url) = resp.items()
+        _, (_, new_object_url) = resp.items()
         new_resp = self.api_client.get(new_object_url, format='json')
         self.assertValidJSONResponse(new_resp)
         new_obj_data = json.loads(new_resp.content)
