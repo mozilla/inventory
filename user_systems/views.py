@@ -472,6 +472,14 @@ def user_system_edit(request, id):
 
 def user_system_csv(request):
     systems = models.UnmanagedSystem.objects.all().order_by('owner__name')
+    try:
+        ref_split = request.META['HTTP_REFERER'].split('/')
+        type, id = ref_split[-3:-1]
+        if type == 'model':
+            systems = systems.filter(server_model__id=id)
+    except:
+        pass
+
 
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=user_systems.csv'
