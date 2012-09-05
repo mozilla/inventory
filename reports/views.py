@@ -101,9 +101,6 @@ def report_home(request):
                 return response
             if 'SCREEN' == request.POST['output']:
                 template = 'reports/index.html'
-                for system in systems:
-                    for column in columns:
-                        pass
         else:
             form = ReportForm(request.POST)
             data['form'] = form
