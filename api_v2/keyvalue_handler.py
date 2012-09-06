@@ -422,7 +422,6 @@ class KeyValueHandler(BaseHandler):
                 return final_list
             if 'key_type' in request.GET and request.GET['key_type'] == 'key_by_system':
                 try:
-                    import pdb; pdb.set_trace()
                     hostname = request.GET.get('hostname')
                     key = request.GET.get('key')
                     system = System.objects.get(hostname=hostname)
