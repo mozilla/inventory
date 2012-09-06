@@ -434,7 +434,7 @@ class KeyValueHandler(BaseHandler):
                     resp.write("json = {'data': %s}" % json.dumps(tmp))
                 except:
                     resp = rc.NOT_FOUND
-                    resp.write('json = {"error_message":"Unable to Delete}')
+                    resp.write('json = {"error_message":"Unable to find Key or system"}')
 
                 return resp
             if key_type == 'adapters_by_system_and_scope':
