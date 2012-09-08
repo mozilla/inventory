@@ -11,13 +11,23 @@ $(function() {
         };
     }
     $('#rec_type_select').find(":selected").click();
+    String.prototype.format = function() {
+        var args = arguments;
+        return this.replace(/{(\d+)}/g, function(match, number) {
+            return typeof args[number] != 'undefined'
+            ? args[number]
+            : match
+            ;
+    });
+};
+
 
 });
 function reset_form(){
     rec_types = ['A', 'MX', 'NS', 'CNAME', 'SRV', 'TXT', 'PTR'];
     for (var i = 0; i < rec_types.length; i++){
         rec_type = rec_types[i];
-        $('#' + rec_type + '_build').attr('pk', "");
+        $('#' + rec_type + '_build').attr('resource_uri', "");
         display_disable(rec_type + '_display');
     }
     // Clear any notifications
@@ -32,19 +42,21 @@ function reset_form(){
     $('#'+rec_type+'_build_target_name').attr('value', '');
     display_enable(rec_type+"_display");
     /* Walk through and reset to default display values */
-    final_display = document.getElementById(rec_type + "_final");
-    arr = final_display.getElementsByClassName("inline");
+    var final_display = document.getElementById(rec_type + "_final");
+    var arr = final_display.getElementsByClassName("inline");
+    clear_errors();
+    clear_notices();
     for (var i = 0; i < arr.length; i++){
         var element = $('#' + arr[i].id);
         if (element.attr('id') == rec_type + "_display_type" ) {
             // Do nothing
         } else if (element.attr('reset') == 'false') {
-            element.attr('innerHTML', "<i>" + element.attr('value') + "</i>");
+            element.html("<i>" + element.attr('value') + "</i>");
         } else if (element.attr('value') == "TTL"){
             // TTL is stupid
-            element.attr('innerHTML', '');
+            element.html("")
         } else {
-            element.attr('innerHTML', '');
+            element.html("")
         }
     }
 }
@@ -69,13 +81,15 @@ function make_smart_name(rec_type, element_name, domains, append){
             var name = $('#'+element_name).val(); // The name the user entered
             if(!append) {
                 $('#'+element_name).attr('value', ui.item.label);
-                console.log("In NS");
             } else if (ui.item.value !== ''){
-                console.log("");
                 var foo =  name.substring(0,name.lastIndexOf(ui.item.value));
                 $('#'+element_name).attr('value', foo + ui.item.label);
             } else {
-                $('#'+element_name).attr('value',  name + '.' + ui.item.label);
+                if (name.lastIndexOf('.') == name.length - 1) {
+                    $('#'+element_name).attr('value',  name + ui.item.label);
+                } else {
+                    $('#'+element_name).attr('value',  name + '.' + ui.item.label);
+                }
             }
             return false;
         },
@@ -100,10 +114,9 @@ function make_smart_name(rec_type, element_name, domains, append){
                 if (suggested_domains.length === 0){
                     labels.shift();
                 } else {
-                    return callback(suggested_domains);
+                    return callback(suggested_domains.slice(0, 20)); // The list is too long sometimes
                 }
             }
-
             return callback([]);
         }
     });
@@ -141,11 +154,7 @@ function do_A(e){
    Either the Label or Domain changed.
 */
 function get_fqdn(rec_type){
-    if (rec_type != 'NS'){
-        var fqdn = $('#' + rec_type + '_build_name').val();
-    } else {
-        var fqdn = $('#' + rec_type + '_build_domain').find(":selected").text();
-    }
+    var fqdn = $('#' + rec_type + '_build_name').val();
     return fqdn;
 }
 function update_text(rec_type){
@@ -228,4 +237,321 @@ function update_comment(rec_type){
         comment = "; " + comment
     }
     document.getElementById(rec_type + '_display_comment').innerHTML = comment
+}
+
+function submit_record(){
+    var type_select = document.getElementById("rec_type_select");
+    var type_select_index = type_select.options.selectedIndex;
+    var rec_type = type_select.value;
+    var resource_uri = $('#' + rec_type + '_build').attr('resource_uri')  // If this is not '' we POST, else we PATCH
+    var record_meta = get_record_meta_data(rec_type)
+    var commit_data = get_post_patch_data(record_meta.fields)
+    if (resource_uri === '') {
+        record_meta.pre_send(commit_data)
+        post(rec_type, commit_data, record_meta)
+    } else {
+        patch(rec_type, commit_data, record_meta, resource_uri)
+    }
+}
+
+function clear_errors(){
+    var errors = $('.field_errors');
+    for (var i=0; i< errors.length; i ++){
+        $(errors[i]).empty();
+        $(errors[i]).css('display', 'none');
+    }
+}
+function clear_notices(){
+    var notices = $('.build_notice');
+    for (var i=0; i< notices.length; i ++){
+        $(notices[i]).empty();
+        $(notices[i]).css('display', 'none');
+    }
+}
+function handle_errors(resp, record_meta){
+    var retdata = jQuery.parseJSON(resp)
+    console.log(resp.responseText);
+    var resp = jQuery.parseJSON(resp.responseText);
+    var errors = jQuery.parseJSON(resp.error_messages);
+    clear_notices();
+    clear_errors();
+    for (var error_type in errors) {
+        console.log("Error: "+ error_type + " msg:" + errors[error_type]);
+        var error_message = errors[error_type];
+        if (String(error_type) == "__all__"){
+            console.log("Selector is: dns_errors");
+            var selector = $('#dns_form_errors'); // These are general errors
+        } else {
+            // Map the error_type (like 'fqdn' or 'ip_str' back to it's selector
+            console.log("Selector is: " +'#' + record_meta.fields[error_type]+"_errors");
+            var selector = $('#' + record_meta.fields[error_type]+"_errors"); // These are general errors
+        }
+
+        // Error Output
+        selector.empty();
+        selector.css("display", "inline");
+        //selector.append("<div class='field_error'>"+error_message+"</div>");
+        jQuery('<div/>', {
+            click: function () {$(this).css('display','none');},
+            text: error_message,
+            alt: 'Click to hide.',
+        }).appendTo(selector);
+    }
+};
+function handle_success(resp, rec_type, http_status){
+    clear_notices();
+    clear_errors();
+    // Set the resource_uri attribute in the <rec_type>_build div. This resource_uri will be
+    // used for all PATCH methods.
+    $('#'+rec_type+'_build').attr('resource_uri', resp.resource_uri);
+    switch (http_status) {
+        case 201:
+            jQuery('<p/>', {
+                click: function () {$(this).css('display','none');},
+                text: 'Succusfully created. Make changes and press commit or reset the form to create a new record.',
+                alt: 'Click to hide.',
+            }).appendTo($('#build_status'));
+            $('#build_status').css('display', 'block');
+            break
+        case 202: // Updated
+            // Successfully updated.
+            console.log(resp);
+            jQuery('<p/>', {
+                click: function () {$(this).css('display','none');},
+                text: 'Succusfully updated. Make more changes and press commit or reset the form to create a new record.',
+                alt: 'Click to hide.',
+            }).appendTo($('#build_status'));
+            $('#build_status').css('display', 'block');
+            break
+    }
+};
+function patch(rec_type, commit_data, record_meta, resource_uri) {
+    // This is supposed to be an object that doesn't exist yet.
+    console.log("Patching...");
+    console.log(record_meta.resource_uri);
+    console.log(JSON.stringify(commit_data));
+    $.ajax({
+        url:resource_uri, // Use the resource_uri passed to us that points to an object.
+        type:"PATCH",
+        data:JSON.stringify(commit_data),
+        contentType:"application/json; charset=utf-8",
+        dataType:"json",
+        statusCode: {
+            404:function() { alert("This page is misconfigured. Please tell sommeone. Error: 404"); },
+            200:function(resp) { handle_success(resp, rec_type, 200); },
+            201:function(resp) { handle_success(resp, rec_type, 201); },
+            202:function(resp) { handle_success(resp, rec_type, 202); },
+            500:function(resp) { handle_errors(resp, record_meta); },
+            400:function(resp) { handle_errors(resp, record_meta); },
+        },
+    });
+}
+
+function post(rec_type, commit_data, record_meta) {
+    // This is supposed to be an object that doesn't exist yet.
+    console.log("Posting...");
+    console.log(record_meta.resource_uri);
+    console.log(JSON.stringify(commit_data));
+    $.ajax({
+        url:record_meta.resource_uri,
+        type:"POST",
+        data:JSON.stringify(commit_data),
+        contentType:"application/json; charset=utf-8",
+        dataType:"json",
+
+        statusCode: {
+            404:function() { alert("This page is misconfigured. Please tell sommeone. Error: 404"); },
+            200:function(resp) { handle_success(resp, rec_type, 200); },
+            201:function(resp) { handle_success(resp, rec_type, 201); },
+            202:function(resp) { handle_success(resp, rec_type, 202); },
+            500:function(resp) { handle_errors(resp, record_meta); },
+            400:function(resp) { handle_errors(resp, record_meta); },
+        },
+    });
+}
+
+/*
+
+    //commit_data = jQuery.extend(commit_data, get_views(rec_type));
+    console.log(commit_data);
+    $.post('/mozdns/commit_record/', JSON.stringify(commit_data), function(data) {
+        var data = jQuery.parseJSON(data)
+        $('#error_list').empty();
+        $('#dns_success').empty();
+        if (data.errors){
+            for(var attr in data.errors) {
+                if(data.errors.hasOwnProperty(attr))
+                    console.log(attr + ":" + data.errors[attr]);
+                    // If you want to override the name of an Error, do it here.
+                    switch (attr) {
+                        case "__all__":
+                            error_name = "";
+                            break
+                        case "ip_str":
+                            error_name = "IP:";
+                            break
+                        default:
+                            error_name = attr + ": ";
+                    }
+                    // Error Output
+                    $('#error_list').append("<li>" + error_name + data.errors[attr] + "</li>");
+            }
+        } else {
+            // Success Output
+            $('#' + rec_type + '_build').attr('pk', data.obj_pk)
+            if (data.created) {
+                $('#dns_success').append("<span><a href='" + data.success + "'>Click to see the new "+
+                    rec_type +" record</a>" + "</span>");
+            } else {
+                $('#dns_success').append("<span><a href='" + data.success + "'>Click to see the updated "+
+                    rec_type +" record</a>" + "</span>");
+            }
+        }
+    });// end post
+}
+*/
+
+function get_post_patch_data(fields){
+    var data = {views:[]}
+    for (var field in fields) {
+        if (String(field) == 'private_view') {
+            if ($('#'+fields[field]).attr('checked') === 'checked'){
+                data.views.push('private')
+            }
+        } else if (String(field) == 'public_view') {
+            if ($('#'+fields[field]).attr('checked') === 'checked'){
+                data.views.push('public')
+            }
+        } else {
+            data[field] = $('#'+fields[field]).attr('value');
+        }
+    }
+    return data
+}
+
+function get_record_meta_data(rec_type){
+    /*
+     * New record:
+     *  - get_record_mata(rec_type)
+     *  - suck data from inputs using right side of fields
+     *  - call presend() with fields as argument
+     *  - get data and:
+     *      - if 'resource_uri' is set in the DOM, PATCH to resource_uri in DOM
+     *      - if 'rewource_url' is not set, POST to resource_uri in meta_data
+     * Edit Existing record:
+     *  - take json X for initial data. for every field in X that matches fields, but data into
+     *      right side of fields.
+     *  - fill in 'pk' attribute
+     *
+     */
+    var base_api_url = "/mozdns/api/v1_dns/"
+    switch (rec_type) {
+        case 'A':
+                return {
+                        fields: {
+                            comment: 'A_build_comment',
+                            ttl: 'A_build_ttl',
+                            ip_str: 'A_build_ip',
+                            fqdn: 'A_build_name',
+                            private_view: 'A_private_view',
+                            public_view: 'A_public_view',
+                        },
+                        resource_uri: base_api_url + 'addressrecord/', // Append <pk>/ to get details
+                                          // about an object.
+                        pre_send: function (fields) {
+                            // Add any existing fields or return false and update dns_errors
+                            fields['ip_type'] = '4';
+                        }
+
+                    }
+            break
+        case 'AAAA': // TODO
+                return {
+                        fields: {
+                            comment: 'AAAA_build_comment',
+                            ttl: 'AAAA_build_ttl',
+                            ip_str: 'AAAA_build_ip',
+                            fqdn: 'AAAA_build_name',
+                            private_view: 'AAAA_private_view',
+                            public_view: 'AAAA_public_view',
+                        },
+                        resource_uri: base_api_url + 'addressrecord/',
+                        pre_send: function (fields) {
+                            // Add any existing fields or return false and update dns_errors
+                            fields['ip_type'] = '6';
+                        }
+                    }
+            break
+        case 'PTR':
+                return {
+                        comment: 'PTR_build_comment',
+                        ttl: 'PTR_build_ttl',
+                        ip_str: 'PTR_build_ip',
+                        fqdn: 'PTR_build_name',
+                        private_view: 'PTR_private_view',
+                        public_view: 'PTR_public_view',
+                        resource_uri: base_api_url + 'ptr/'
+                    }
+            break
+        case 'SRV':
+                return {
+                        comment: 'SRV_build_comment',
+                        ttl: 'SRV_build_ttl',
+                        fqdn: 'SRV_build_name',
+                        port: 'SRV_build_Port',
+                        weight: 'SRV_build_Weight',
+                        priority: 'SRV_build_Priority',
+                        target: 'SRV_build_target_name',
+                        private_view: 'SRV_private_view',
+                        public_view: 'SRV_public_view',
+                        resource_uri: base_api_url + 'srv/'
+                    }
+            break
+        case 'CNAME':
+                return {
+                        comment: 'CNAME_build_comment',
+                        ttl: 'CNAME_build_ttl',
+                        fqdn: 'CNAME_build_name',
+                        data: 'CNAME_build_target_name',
+                        private_view: 'CNAME_private_view',
+                        public_view: 'CNAME_public_view',
+                        resource_uri: base_api_url + 'cname/'
+                    }
+            break
+        case 'NS':
+                return {
+                        comment: 'NS_build_comment',
+                        ttl: 'NS_build_ttl',
+                        domain: 'NS_build_name',
+                        server: 'NS_build_target_name',
+                        private_view: 'NS_private_view',
+                        public_view: 'NS_public_view',
+                        resource_uri: base_api_url + 'nameserver/'
+                    }
+            break
+        case 'TXT':
+                return {
+                        comment: 'TXT_build_comment',
+                        ttl: 'TXT_build_ttl',
+                        fqdn: 'TXT_build_name',
+                        txt_data: 'TXT_build_build_text',
+                        private_view: 'TXT_private_view',
+                        public_view: 'TXT_public_view',
+                        resource_uri: base_api_url + 'txt/'
+                    }
+            break
+        case 'MX':
+                return {
+                        comment: 'MX_build_comment',
+                        ttl: 'MX_build_ttl',
+                        fqdn: 'MX_build_name',
+                        priority: 'MX_build_Priority',
+                        server: 'MX_build_target_name',
+                        private_view: 'MX_private_view',
+                        public_view: 'MX_public_view',
+                        resource_uri: base_api_url + 'mx/'
+                    }
+            break
+    }
+    return false  // What is None in javascript?
 }

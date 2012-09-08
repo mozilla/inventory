@@ -1,24 +1,44 @@
-{% extends "mozdns/mozdns_base.html" %}
+{% extends "base.html" %}
 
 {% if messages %}
     <ul class="messages">
         {% for message in messages %}
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            <li{% if message.tags %} class="{{message.tags}}"{% endif %}>{{message}}</li>
         {% endfor %}
     </ul>
 {% endif %}
 
-{% block dns_content %}
-    <h1>Moz DNS</h1>
+{% block content %}
+    <h2>Create and Edit DNS records.</h2>
+    <div id='build_status' class='build_notice'></div>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.js" type="text/javascript"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.js" type="text/javascript"></script>
     <script type="text/javascript" src="/static/javascripts/master_form.js"></script>
     <link rel="stylesheet" href="/static/css/ui-lightness/jquery-ui-1.8.11.custom.css" type="text/css" />
     <style>
+        #commit_record {
+            float:left;
+            position: fixed;
+            color: rgb(184,0,0);
+        }
+        #commit_button {
+            color: rgb(184,0,0);
+        }
+        div.field_errors {
+            display: none;
+        }
+        div.build_notice {
+            display: none;
+        }
         div.inline {
             float:left;
             margin-right:50px;
             font-family:"courier";
+        }
+        label.required_field {
+        }
+        label.optional_field {
+            color:#999999;
         }
         #dns_form_errors {
             float:left;
@@ -47,9 +67,9 @@
         }
     </style>
     <input type='button' onclick='reset_form()' value="Reset">
-    <input type='button' onclick='submit_record()' value="Commit">
     <select id="rec_type_select">
       <option value="A" onclick='do_A()'>A</option>
+      <!-- <option value="AAAA" onclick='do_A()'>AAAA</option>-->
       <option value="MX" onclick='do_MX()'>MX</option>
       <option value="NS" onclick='do_NS()'>NS</option>
       <option value="PTR" onclick='do_PTR()'>PTR</option>
@@ -59,89 +79,113 @@
     </select>
 
     {% macro input(id, value='', type='text', size=20) -%}
-        <input  id="{{ id }}" type="{{ type }}" value="{{
-            value|e }}" size="{{ size }}">
+        <input  id="{{id}}" type="{{type}}" value="{{
+            value|e}}" size="{{size}}">
     {%- endmacro %}
     {% macro draw_build_name(rec_type, label_title="FQDN:", suffix='name', append=True) -%}
-            <label for='{{ rec_type }}_build_{{ suffix }}'>{{label_title}}</label>
-            <input  id="{{ rec_type }}_build_{{ suffix }}" type="text" value="" size="78">
+            <label class='required_field' for='{{rec_type}}_build_{{suffix}}'>{{label_title}}
+                <input  id="{{rec_type}}_build_{{suffix}}" type="text" value="" size="78">
+            </label>
+            <div class='field_errors' id='{{rec_type}}_build_{{suffix}}_errors'>This is an error</div>
             <script>
                 var domains = jQuery.parseJSON('{{domains}}');
                 domains.sort(function(a,b) {return (a.length < b.length) ? 0 : 1; })
                 // inefficient. fix this TODO
                 {% if append %}
-                make_smart_name('{{rec_type}}', '{{ rec_type }}_build_{{ suffix }}', domains, true);
+                make_smart_name('{{rec_type}}', '{{rec_type}}_build_{{suffix}}', domains, true);
                 {% else %}
-                make_smart_name('{{rec_type}}', '{{ rec_type }}_build_{{ suffix }}', domains, false);
+                make_smart_name('{{rec_type}}', '{{rec_type}}_build_{{suffix}}', domains, false);
                 {% endif %}
-                $('#{{ rec_type }}_build_{{ suffix }}').live("keydown", function(){ update_fqdn('{{ rec_type }}'); });
-                $('#{{ rec_type }}_build_{{ suffix }}').live("keyup", function(){ update_fqdn('{{ rec_type }}'); });
+                $("#{{rec_type}}_build_{{suffix}}").keyup(function(){ update_fqdn('{{rec_type}}'); });
             </script>
     {%- endmacro %}
     {% macro draw_build_ip(rec_type) -%}
-            IP: {{ input(rec_type + "_build_ip") }}<br>
+            <label class='required_field' for='{{rec_type}}_build_ip'>IP:
+                {{input(rec_type + "_build_ip")}}
+            </label>
+            <div class='field_errors' id='{{rec_type}}_build_ip_errors'>This is an error</div>
             <script>
-            $('#{{ rec_type }}_build_ip').live("keydown", function(){ update_ip('{{ rec_type }}'); });
-            $('#{{ rec_type }}_build_ip').live("keyup", function(){ update_ip('{{ rec_type }}'); });
+            $("#{{rec_type}}_build_ip").keyup(function(){ update_ip('{{rec_type}}'); });
             </script>
     {%- endmacro %}
     {% macro draw_build_comment(rec_type) -%}
-            Comment: {{ input(rec_type + "_build_comment") }}<br>
+            <label class='optional_field' for='{{rec_type}}_build_comment'>Comment:
+                {{input(rec_type + "_build_comment")}}
+            </label>
+            <div class='field_errors' id='{{rec_type}}_build_comment_errors'>This is an error</div>
             <script>
-            $('#{{ rec_type }}_build_comment').live("keydown", function(){ update_comment('{{ rec_type }}'); });
-            $('#{{ rec_type }}_build_comment').live("keyup", function(){ update_comment('{{ rec_type }}'); });
+            $("#{{rec_type}}_build_comment").keyup(function(){ update_comment('{{rec_type}}'); });
             </script>
     {%- endmacro %}
     {% macro draw_build_target_name(rec_type, description='Target') -%}
-            <label for='{{ rec_type }}_build_target_name'>Target:</label>
-            <input  id="{{ rec_type }}_build_target_name" type="text" value="" size="78">
+            <label class='required_field' for='{{rec_type}}_build_target_name'>Target:
+                <input  id="{{rec_type}}_build_target_name" type="text" value="" size="78">
+            </label>
+            <div class='field_errors' id='{{rec_type}}_build_target_name_errors'>This is an error</div>
             <script>
+                //$(document).on("keypress", "#{{rec_type}}_build_target_name", function(){  });
+                $("#{{rec_type}}_build_target_name").keyup(function() {
+                    update_target_name('{{rec_type}}');
+                });
                 var domains = jQuery.parseJSON('{{domains}}');
                 domains.sort(function(a,b) {return (a.length < b.length) ? 0 : 1; })
-                // inefficient. fix this TODO
                 $(function() {
-                    make_smart_name('{{rec_type}}', '{{ rec_type }}_build_target_name', domains, true);
-                    $('#{{ rec_type }}_build_target_name').live("keydown", function(){ update_target_name('{{ rec_type }}'); });
-                    $('#{{ rec_type }}_build_target_name').live("keyup", function(){ update_target_name('{{ rec_type }}'); });
+                    make_smart_name('{{rec_type}}', '{{rec_type}}_build_target_name', domains, true);
                 });
             </script>
     {%- endmacro %}
     <!-- Number funcitons -->
-    {% macro draw_build_number(rec_type, number_name, default="") -%}
-            {{ number_name }}: {{ input(rec_type + "_build_" + number_name, value=default, size=10) }}<br>
+    {% macro draw_build_number(rec_type, number_name, default="", required=True) -%}
+            {% if required %}
+                <label class='required_field' for='{{rec_type}}_build_{{number_name}}'>{{number_name}}
+            {% else %}
+                <label class='optional_field' for='{{rec_type}}_build_{{number_name}}'>{{number_name}}
+            {% endif %}
+                {{input(rec_type + "_build_" + number_name, value=default, size=10)}}<br>
+            </label>
+            <div class='field_errors' id='{{rec_type}}_build_{{number_name}}'>This is an error</div>
             <script>
             // We are cheeting and using the same validator for all number types.
-            $('#{{ rec_type }}_build_{{ number_name }}').live("keydown", function(){
-                update_number('{{ rec_type }}', '{{ number_name }}');
-            });
-            $('#{{ rec_type }}_build_{{ number_name }}').live("keyup", function(){
-                update_number('{{ rec_type }}', '{{ number_name }}');
-            });
+            $("#{{rec_type}}_build_{{number_name}}").keyup(
+                            function(){
+                                update_number('{{rec_type}}', '{{number_name}}');
+                            });
             </script>
     {%- endmacro %}
     {% macro draw_build_ttl(rec_type) -%}
-            {{ draw_build_number(rec_type, 'TTL') }}
+            {{draw_build_number(rec_type, 'TTL', required=False)}}
     {%- endmacro %}
     {% macro draw_build_views(rec_type) -%}
         <p><label>Views:</label>
         <ul>
-            <li><label for="private_view"><input type="checkbox" name="views" value="1" id="{{ rec_type }}_private_view" /> private</label></li>
-            <li><label for="public_view"><input type="checkbox" name="views" value="2" id="{{ rec_type }}_public_view" /> public</label></li>
+            <li>
+                <label class='required_field' for="private_view">private
+                    <input type="checkbox" name="views" value="1" id="{{rec_type}}_private_view" />
+                </label>
+            </li>
+            <li>
+                <label class='required_field' for="public_view">public
+                    <input type="checkbox" name="views" value="2" id="{{rec_type}}_public_view" />
+                </label>
+            </li>
         </ul>
-            <script>
-            $('#private_view').live("keydown", function(){ update_view('private'); });
-            $('#public_view').live("keyup", function(){ update_view('public'); });
-            </script>
+        <div class='field_errors' id='{{rec_type}}_public_view_errors'>This is an error</div>
+        <div class='field_errors' id='{{rec_type}}_private_view_errors'>This is an error</div>
+        <script>
+        $("#private_view").keyup(function(){ update_view('private'); });
+        $("#public_view").keyup(function(){ update_view('public'); });
+        </script>
     {%- endmacro %}
     {% macro draw_build_prio(rec_type) -%}
-            {{ draw_build_number(rec_type, 'Priority') }}
+            {{draw_build_number(rec_type, 'Priority')}}
     {%- endmacro %}
     <!-- End Number funcitons -->
     {% macro draw_build_text(rec_type, description='Text') -%}
-            {{ description }}: {{ input(rec_type + "_build_text") }}<br>
+            <label class='optional_field' for='{{rec_type}}_build_text'>{{description}}:
+                {{input(rec_type + "_build_text")}}
+            </label>
             <script>
-            $('#{{rec_type}}_build_text').live("keydown", function(){ update_text('{{ rec_type }}'); });
-            $('#{{rec_type}}_build_text').live("keyup", function(){ update_text('{{ rec_type }}'); });
+                $("#{{rec_type}}_build_text").keyup(function(){ update_text('{{rec_type}}'); });
             </script>
     {%- endmacro %}
 
@@ -149,28 +193,28 @@
         Display Macros: These make the display spans.
     -->
     {% macro display_rec_name(rec_type) -%}
-            <div class="inline" reset='false' value="Name" id="{{ rec_type }}_display_rec_name"><i>Name</i></div>
+            <div class="inline" reset='false' value="Name" id="{{rec_type}}_display_rec_name"><i>Name</i></div>
     {%- endmacro %}
     {% macro display_rec_type(rec_type) -%}
-            <div class="inline" reset='false' value="{{ rec_type }}" id="{{ rec_type }}_display_type"><b>{{ rec_type }}</b></div>
+            <div class="inline" reset='false' value="{{rec_type}}" id="{{rec_type}}_display_type"><b>{{rec_type}}</b></div>
     {%- endmacro %}
     {% macro display_rec_ip(rec_type) -%}
-            <div class="inline" reset='false' value="IP" id="{{ rec_type }}_display_ip"><i>IP</i></div>
+            <div class="inline" reset='false' value="IP" id="{{rec_type}}_display_ip"><i>IP</i></div>
     {%- endmacro %}
     {% macro display_rec_ttl(rec_type) -%}
-            <div class="inline" reset='false' value="" id="{{ rec_type }}_display_TTL"></div>
+            <div class="inline" reset='false' value="" id="{{rec_type}}_display_TTL"></div>
     {%- endmacro %}
     {% macro display_rec_attr(rec_type, attr, default="", reset="false") -%}
-            <div class="inline" reset='{{ reset }}' value="{{ attr }}" id="{{ rec_type }}_display_{{ attr }}"><i>{{ default }}</i></div>
+            <div class="inline" reset='{{reset}}' value="{{attr}}" id="{{rec_type}}_display_{{attr}}"><i>{{default}}</i></div>
     {%- endmacro %}
     {% macro display_rec_comment(rec_type) -%}
-            <div class="inline" reset='true' id="{{ rec_type }}_display_comment"></div>
+            <div class="inline" reset='true' id="{{rec_type}}_display_comment"></div>
     {%- endmacro %}
     {% macro display_rec_text(rec_type) -%}
-            <div class="inline" reset='false' id="{{ rec_type }}_display_text" value='Text'><i>Text</i></div>
+            <div class="inline" reset='false' id="{{rec_type}}_display_text" value='Text'><i>Text</i></div>
     {%- endmacro %}
     {% macro display_target_name(rec_type) -%}
-            <div class="inline" reset='false' value="Target" id="{{ rec_type }}_display_target_name"><i>Target</i></div>
+            <div class="inline" reset='false' value="Target" id="{{rec_type}}_display_target_name"><i>Target</i></div>
     {%- endmacro %}
     <!--
     Every rec_build div has a pk attribute. If the pk attribute is set the value is send with the POST and let's
@@ -178,224 +222,224 @@
     -->
     <form id='dns_form'>
     <div id="A_display" style='display:none;'>
-        <div class="rec_build" id="A_build" pk="">
+        <div class="rec_build" id="A_build" resource_uri="">
             <table>
             <tr>
-                <td>{{ draw_build_name('A') }}</td>
+                <td>{{draw_build_name('A')}}</td>
             </tr>
             <tr>
-                <td>{{ draw_build_ip('A') }}</td>
+                <td>{{draw_build_ip('A')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_ttl('A') }}</td>
+                <td>{{draw_build_ttl('A')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_comment('A') }}</td>
+                <td>{{draw_build_comment('A')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_views('A') }}</td>
+                <td>{{draw_build_views('A')}}</td>
                 <td></td>
             </tr>
             </table>
         </div>
 
         <div class="rec_final" id="A_final">
-            {{ display_rec_name('A') }}
-            {{ display_rec_type('A') }}
-            {{ display_rec_ttl('A') }}
-            {{ display_rec_ip('A') }}
-            {{ display_rec_comment('A') }}
+            {{display_rec_name('A')}}
+            {{display_rec_type('A')}}
+            {{display_rec_ttl('A')}}
+            {{display_rec_ip('A')}}
+            {{display_rec_comment('A')}}
         </div>
     </div>
 
     <div id="MX_display" style='display:none;'>
-        <div class="rec_build" id="MX_build" pk="">
+        <div class="rec_build" id="MX_build" resource_uri="">
             <table>
             <tr>
-                <td>{{ draw_build_name('MX') }}</td>
+                <td>{{draw_build_name('MX')}}</td>
             </tr>
             <tr>
-                <td>{{ draw_build_ttl('MX') }}</td>
+                <td>{{draw_build_ttl('MX')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_prio('MX') }}</td>
+                <td>{{draw_build_prio('MX')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_target_name('MX') }}</td>
+                <td>{{draw_build_target_name('MX')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_comment('MX') }}</td>
+                <td>{{draw_build_comment('MX')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_views('MX') }}</td>
+                <td>{{draw_build_views('MX')}}</td>
                 <td></td>
             </tr>
             </table>
         </div>
 
         <div class="rec_final" id="MX_final">
-            {{ display_rec_name('MX') }}
-            {{ display_rec_type('MX') }}
-            {{ display_rec_ttl('MX') }}
-            {{ display_rec_attr('MX', 'Priority', 'Priority', reset='true') }}
-            {{ display_target_name('MX') }}
-            {{ display_rec_comment('MX') }}
+            {{display_rec_name('MX')}}
+            {{display_rec_type('MX')}}
+            {{display_rec_ttl('MX')}}
+            {{display_rec_attr('MX', 'Priority', 'Priority', reset='true')}}
+            {{display_target_name('MX')}}
+            {{display_rec_comment('MX')}}
         </div>
     </div>
     <div id="NS_display" style='display:none;'>
-        <div class="rec_build" id="NS_build" pk="">
+        <div class="rec_build" id="NS_build" resource_uri="">
             <table>
             <tr>
-                <td>{{ draw_build_name('NS', label_title="Doamin:", append=False) }}</td>
+                <td>{{draw_build_name('NS', label_title="Doamin:", append=False)}}</td>
             </tr>
             <tr>
-                <td>{{ draw_build_ttl('NS') }}</td>
+                <td>{{draw_build_ttl('NS')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_target_name('NS') }}</td>
+                <td>{{draw_build_target_name('NS')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_comment('NS') }}</td>
+                <td>{{draw_build_comment('NS')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_views('NS') }}</td>
+                <td>{{draw_build_views('NS')}}</td>
                 <td></td>
             </tr>
             </table>
         </div>
 
         <div class="rec_final" id="NS_final">
-            {{ display_rec_name('NS') }}
-            {{ display_rec_type('NS') }}
-            {{ display_rec_ttl('NS') }}
-            {{ display_target_name('NS') }}
-            {{ display_rec_comment('NS') }}
+            {{display_rec_name('NS')}}
+            {{display_rec_type('NS')}}
+            {{display_rec_ttl('NS')}}
+            {{display_target_name('NS')}}
+            {{display_rec_comment('NS')}}
         </div>
     </div>
     <div id="PTR_display" style='display:none;'>
-        <div class="rec_build" id="PTR_build" pk="">
+        <div class="rec_build" id="PTR_build" resource_uri="">
             <table>
             <tr>
-                <td>{{ draw_build_ip('PTR') }}</td>
+                <td>{{draw_build_ip('PTR')}}</td>
             </tr>
             <tr>
-                <td>{{ draw_build_ttl('PTR') }}</td>
+                <td>{{draw_build_ttl('PTR')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_target_name('PTR') }}</td>
+                <td>{{draw_build_target_name('PTR')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_comment('PTR') }}</td>
+                <td>{{draw_build_comment('PTR')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_views('PTR') }}</td>
+                <td>{{draw_build_views('PTR')}}</td>
                 <td></td>
             </tr>
             </table>
         </div>
 
         <div class="rec_final" id="PTR_final">
-            {{ display_rec_ip('PTR') }}
-            {{ display_rec_type('PTR') }}
-            {{ display_rec_ttl('PTR') }}
-            {{ display_target_name('PTR') }}
-            {{ display_rec_comment('PTR') }}
+            {{display_rec_ip('PTR')}}
+            {{display_rec_type('PTR')}}
+            {{display_rec_ttl('PTR')}}
+            {{display_target_name('PTR')}}
+            {{display_rec_comment('PTR')}}
         </div>
     </div>
 
     <div id="CNAME_display" style='display:none;'>
-        <div class="rec_build" id="CNAME_build" pk="">
+        <div class="rec_build" id="CNAME_build" resource_uri="">
             <table>
             <tr>
-                <td>{{ draw_build_name('CNAME') }}</td>
+                <td>{{draw_build_name('CNAME')}}</td>
             </tr>
             <tr>
-                <td>{{ draw_build_ttl('CNAME') }}</td>
+                <td>{{draw_build_ttl('CNAME')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_target_name('CNAME') }}</td>
+                <td>{{draw_build_target_name('CNAME')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_comment('CNAME') }}</td>
+                <td>{{draw_build_comment('CNAME')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_views('CNAME') }}</td>
+                <td>{{draw_build_views('CNAME')}}</td>
                 <td></td>
             </tr>
             </table>
         </div>
 
         <div class="rec_final" id="CNAME_final">
-            {{ display_rec_name('CNAME') }}
-            {{ display_rec_type('CNAME') }}
-            {{ display_rec_ttl('CNAME') }}
-            {{ display_target_name('CNAME') }}
-            {{ display_rec_comment('CNAME') }}
+            {{display_rec_name('CNAME')}}
+            {{display_rec_type('CNAME')}}
+            {{display_rec_ttl('CNAME')}}
+            {{display_target_name('CNAME')}}
+            {{display_rec_comment('CNAME')}}
         </div>
     </div>
 
     <div id="SRV_display" style='display:none;'>
-        <div class="rec_build" id="SRV_build" pk="">
+        <div class="rec_build" id="SRV_build" resource_uri="">
             <table>
             <tr>
-                <td>{{ draw_build_name('SRV') }}</td>
+                <td>{{draw_build_name('SRV')}}</td>
             </tr>
             <tr>
-                <td>{{ draw_build_ttl('SRV') }}</td>
+                <td>{{draw_build_ttl('SRV')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_number('SRV', 'Port') }}</td>
+                <td>{{draw_build_number('SRV', 'Port')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_number('SRV', 'Weight') }}</td>
+                <td>{{draw_build_number('SRV', 'Weight')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_prio('SRV') }}</td>
+                <td>{{draw_build_prio('SRV')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_target_name('SRV') }}</td>
+                <td>{{draw_build_target_name('SRV')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_comment('SRV') }}</td>
+                <td>{{draw_build_comment('SRV')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_views('SRV') }}</td>
+                <td>{{draw_build_views('SRV')}}</td>
                 <td></td>
             </tr>
             </table>
         </div>
 
         <div class="rec_final" id="SRV_final">
-            {{ display_rec_name('SRV') }}
-            {{ display_rec_type('SRV') }}
-            {{ display_rec_ttl('SRV') }}
-            {{ display_rec_attr('SRV', 'Port', 'Port', reset='false') }}
-            {{ display_rec_attr('SRV', 'Weight', 'Weight', reset='false') }}
-            {{ display_rec_attr('SRV', 'Priority', 'Priority', reset='false') }}
-            {{ display_target_name('SRV') }}
-            {{ display_rec_comment('SRV') }}
+            {{display_rec_name('SRV')}}
+            {{display_rec_type('SRV')}}
+            {{display_rec_ttl('SRV')}}
+            {{display_rec_attr('SRV', 'Port', 'Port', reset='false')}}
+            {{display_rec_attr('SRV', 'Weight', 'Weight', reset='false')}}
+            {{display_rec_attr('SRV', 'Priority', 'Priority', reset='false')}}
+            {{display_target_name('SRV')}}
+            {{display_rec_comment('SRV')}}
         </div>
     </div>
 
@@ -403,47 +447,48 @@
         <div class="rec_build" id="TXT_build">
             <table>
             <tr>
-                <td>{{ draw_build_name('TXT') }}</td>
+                <td>{{draw_build_name('TXT')}}</td>
             </tr>
             <tr>
-                <td>{{ draw_build_ttl('TXT') }}</td>
+                <td>{{draw_build_ttl('TXT')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_text('TXT') }}</td>
+                <td>{{draw_build_text('TXT')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_comment('TXT') }}</td>
+                <td>{{draw_build_comment('TXT')}}</td>
                 <td></td>
             </tr>
             <tr>
-                <td>{{ draw_build_views('TXT') }}</td>
+                <td>{{draw_build_views('TXT')}}</td>
                 <td></td>
             </tr>
             </table>
         </div>
 
         <div class="rec_final" id="TXT_final">
-            {{ display_rec_name('TXT') }}
-            {{ display_rec_type('TXT') }}
-            {{ display_rec_ttl('TXT') }}
-            {{ display_rec_text('TXT') }}
-            {{ display_rec_comment('TXT') }}
+            {{display_rec_name('TXT')}}
+            {{display_rec_type('TXT')}}
+            {{display_rec_ttl('TXT')}}
+            {{display_rec_text('TXT')}}
+            {{display_rec_comment('TXT')}}
         </div>
     </div>
     <br>
     <div id="dns_return">
-        <div id="dns_form_errors">
-            <ul id="error_list">
-            </ul>
-        </div>
         <div id="dns_success">
             <ul id="success_list">
             </ul>
         </div>
     </div>
 
+    <div id='commit_record'>
+        <input id='commit_button' type='button' onclick='submit_record()' value="Commit">
+    </div>
+    <div id="dns_form_errors">
+    </div>
     </form>
 
 </body>

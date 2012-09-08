@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.forms.util import ErrorList, ErrorDict
 from django.db import IntegrityError
 from tastypie import fields, utils
 from tastypie.exceptions import HydrationError
@@ -32,7 +33,9 @@ import pdb
 import sys
 import re
 import traceback
+import simplejson as json
 from gettext import gettext as _, ngettext
+
 
 class CommonDNSResource(ModelResource):
     domain = fields.CharField()
@@ -70,21 +73,36 @@ class CommonDNSResource(ModelResource):
                 domain = Domain.objects.get(name=domain_name)
                 bundle.data['domain'] = domain
             except ObjectDoesNotExist, e:
-                bundle.errors['domain'] = "Couldn't find domain {0}".format(domain_name)
+                errors = {}
+                errors['domain'] = "Couldn't find domain {0}".format(domain_name)
+                bundle.errors['error_messages'] = json.dumps(errors)
         elif ('fqdn' in bundle.data and not ('domain' in bundle.data or 'label'
                 in bundle.data)):
             try:
                 label_domain = ensure_label_domain(bundle.data['fqdn'])
                 bundle.data['label'] , bundle.data['domain'] = label_domain
             except ValidationError, e:
-                bundle.errors["fqdn"] = e.message
+                errors = {}
+                errors['fqdn'] = e.messages
+                bundle.errors['error_messages'] = json.dumps(errors)
+                # We should use an Error(Dict|List) to maintain consistency
+                # with the errors that are thrown by full_clean.
         else:
-            error = "Couldn't determine a label and domain for this record."
-            bundle.errors['label_and_domain'] = error
+            errors = {}
+            errors['label_and_domain'] = "Couldn't determine a label and domain for this record."
+            bundle.errors['error_messages'] = json.dumps(errors)
 
         return bundle
 
     def obj_update(self, bundle, request=None, skip_errors=False, **kwargs):
+        """When an object is being updated it is possible to update the label
+        and domain of a resource with the 'fqdn' keyword.  During hydrate, the
+        correct label and domain will be chosen so the object ends up with a
+        matching fqdn. By default, tastypie will populate bundle.data with an
+        object's current state, which causes label, domain, and fqdn to all be
+        in bundle.data. If the 'fqdn' keyword exists the keys 'label' and
+        'domain' will be removed from the bundle before hydrate is called.
+        """
         obj = bundle.obj
         kv = self.extract_kv(bundle)
         # KV pairs should be saved after the object has been created
@@ -94,7 +112,11 @@ class CommonDNSResource(ModelResource):
         views = self.extract_views(bundle)
         if bundle.errors:
             self.error_response(bundle.errors, request)
-
+        if ('label' in bundle.data and 'domain' in bundle.data and 'fqdn' in
+            bundle.data):
+            # See top comment. fqdn takes precidence.
+            del bundle.data['label']
+            del bundle.data['domain']
         bundle = self.full_hydrate(bundle)
 
         if bundle.errors:
@@ -112,8 +134,9 @@ class CommonDNSResource(ModelResource):
             try:
                 views.append(View.objects.get(name=view_name))
             except ObjectDoesNotExist, e:
-                error = "Couldn't find view {0}".format(view_name)
-                bundle.errors['views'] = error
+                errors = {}
+                errors['views'] = "Couldn't find view {0}".format(view_name)
+                bundle.errors['error_messages'] = json.dumps(errors)
                 break
         return views
 
@@ -178,7 +201,7 @@ class CommonDNSResource(ModelResource):
         except ValidationError, e:
             if 'domain' in bundle.data:
                 prune_tree(bundle.data['domain'])
-            bundle.errors['error_messages'] = str(e)
+            bundle.errors['error_messages'] = json.dumps(e.message_dict)
             self.error_response(bundle.errors, request)
         except Exception, e:
             if 'domain' in bundle.data:
