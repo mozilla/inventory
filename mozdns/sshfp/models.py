@@ -27,7 +27,7 @@ class SSHFP(MozdnsRecord):
             validators=[validate_fingerprint], help_text="Fingerprint type "
             "must be 1 (SHA-1)")
 
-    search_feilds = ("fqdn", "key")
+    search_fields = ("fqdn", "key")
 
     def details(self):
         return (
