@@ -1,0 +1,85 @@
+{% extends "core/core_base.html" %}
+
+{% block title %}
+    {{ form_title }}
+{% endblock %}
+
+{% block header %}
+    {{ form_title }}
+{% endblock %}
+
+{% block core_content %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.js" type="text/javascript"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.js" type="text/javascript"></script>
+    <script type="text/javascript" src="/static/javascripts/master_form_utils.js"></script>
+
+    <link rel="stylesheet" href="/static/css/ui-lightness/jquery-ui-1.8.11.custom.css" type="text/css" />
+
+    <script>
+        $(document).ready(function(){
+            $.each($('.do-select'), function (index, select){
+                $(select).click(function (){
+                                $.get('/mozdns/record/ajax_form/',
+                                    {'record_type': $(select).attr('value')},
+                                    function (data) {
+                                        $('#current_form_data').empty();
+                                        $('#current_form_data').append(data);
+                                        bind_smart_names();
+                                    } // end get() handler
+                                ); // end get()
+                            }); // end click()
+            });
+            $('#rec_type_select option:selected').click()  // Click the selected record
+            $('#current_form').submit(function (){
+                    $.post('/mozdns/record/',
+                            $('#current_form').serialize(),
+                            function (data) {
+                                $('#current_form_data').replaceWith(data);
+                                bind_smart_names();
+                            })
+                    return false;
+            }); // end submit()
+
+            // Look for inputs that have id = 'id_fqdn' | 'id_target' . Make these smart names.
+            function bind_smart_names(){
+                var inputs = $('input');
+                inputs.length;
+                for (var x = 0; x < inputs.length; x++){
+                    if(inputs[x].id === 'id_fqdn' || inputs[x].id === 'id_target' ){
+                        make_smart_name(inputs[x], {{domains}}, true)
+                        $(inputs[x]).css('width', '400px');
+                    }
+                }
+            }
+
+        });
+    </script>
+    <style>
+    .record_form {
+        display: none;
+    }
+    </style>
+    <select id="rec_type_select">
+        {% if record_type == 'A' or record_type == 'AAAA' %}
+        <option class='do-select' value="A" selected="selected">A</option>
+        {% else %}
+        <option class='do-select' value="A">A</option>
+        {% endif %}
+        <!-- <option value="AAAA" onclick='do_A()'>AAAA</option>
+        <option class='do-select' value="MX">MX</option>
+        <option class='do-select' value="NS">NS</option>
+        <option class='do-select' value="SRV">SRV</option>
+        <option class='do-select' value="TXT">TXT</option>
+        <option class='do-select' value="PTR">PTR</option>-->
+        {% if record_type == 'CNAME' %}
+        <option class='do-select' value="CNAME" selected="selected">CNAME</option>
+        {% else %}
+        <option class='do-select' value="CNAME">CNAME</option>
+        {% endif %}
+    </select>
+
+    <form id='current_form'>
+        <div id='current_form_data'>
+        <div>
+    </form>
+{% endblock %}

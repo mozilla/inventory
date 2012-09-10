@@ -57,7 +57,6 @@ class AddressRecordCreateView(AddressRecordView, MozdnsCreateView):
                         'ip_type': ip_type}
             else:
                 initial['initial'] = {'ip_str': ip_str, 'ip_type': ip_type}
-
         return AddressRecordForm(**initial)
 
 

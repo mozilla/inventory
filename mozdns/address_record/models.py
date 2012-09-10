@@ -83,8 +83,11 @@ class BaseAddressRecord(Ip):
             self.check_glue_status()
         set_fqdn(self)
         check_TLD_condition(self)
-        if self.domain.delegated:
-            self.validate_delegation_conditions()
+        try:
+            if self.domain and self.domain.delegated:
+                self.validate_delegation_conditions()
+        except ObjectDoesNotExist:
+            pass
         check_for_cname(self)
 
 

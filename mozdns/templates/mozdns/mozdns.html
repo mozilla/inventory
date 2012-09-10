@@ -9,12 +9,22 @@
 {% endif %}
 
 {% block content %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.js" type="text/javascript"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js" type="text/javascript"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="/static/css/ui-lightness/jquery-ui-1.8.11.custom.css" type="text/css" />
+    <form id='myform'>
+  <label>FQDN:</label>
+  <input id='foo' type="button" value="Request Reservation" /> 
+</form>
+
+<script>
+</script>
+
+
+    <script type="text/javascript" src="/static/javascripts/master_form.js"></script>
     <h2>Create and Edit DNS records.</h2>
     <div id='build_status' class='build_notice'></div>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.js" type="text/javascript"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.js" type="text/javascript"></script>
-    <script type="text/javascript" src="/static/javascripts/master_form.js"></script>
-    <link rel="stylesheet" href="/static/css/ui-lightness/jquery-ui-1.8.11.custom.css" type="text/css" />
     <style>
         #commit_record {
             float:left;
@@ -66,16 +76,20 @@
             margin-right:50px;
         }
     </style>
+    <form id='my-form'>
+    <input type='text' id='foobar' value="">
+    </form>
+    <form id='dns_form'>
     <input type='button' onclick='reset_form()' value="Reset">
     <select id="rec_type_select">
-      <option value="A" onclick='do_A()'>A</option>
+      <option id='fire_A' class='do-select' value="A">A</option>
       <!-- <option value="AAAA" onclick='do_A()'>AAAA</option>-->
-      <option value="MX" onclick='do_MX()'>MX</option>
-      <option value="NS" onclick='do_NS()'>NS</option>
-      <option value="PTR" onclick='do_PTR()'>PTR</option>
-      <option value="CNAME" onclick='do_CNAME()'>CNAME</option>
-      <option value="SRV" onclick='do_SRV()'>SRV</option>
-      <option value="TXT" onclick='do_TXT()'>TXT</option>
+      <option class='do-select' value="MX">MX</option>
+      <option class='do-select' value="NS">NS</option>
+      <option class='do-select' value="PTR">PTR</option>
+      <option class='do-select' value="CNAME">CNAME</option>
+      <option class='do-select' value="SRV">SRV</option>
+      <option class='do-select' value="TXT">TXT</option>
     </select>
 
     {% macro input(id, value='', type='text', size=20) -%}
@@ -92,9 +106,9 @@
                 domains.sort(function(a,b) {return (a.length < b.length) ? 0 : 1; })
                 // inefficient. fix this TODO
                 {% if append %}
-                make_smart_name('{{rec_type}}', '{{rec_type}}_build_{{suffix}}', domains, true);
+                //make_smart_name('{{rec_type}}', '{{rec_type}}_build_{{suffix}}', domains, true);
                 {% else %}
-                make_smart_name('{{rec_type}}', '{{rec_type}}_build_{{suffix}}', domains, false);
+                //make_smart_name('{{rec_type}}', '{{rec_type}}_build_{{suffix}}', domains, false);
                 {% endif %}
                 $("#{{rec_type}}_build_{{suffix}}").keyup(function(){ update_fqdn('{{rec_type}}'); });
             </script>
@@ -130,7 +144,7 @@
                 var domains = jQuery.parseJSON('{{domains}}');
                 domains.sort(function(a,b) {return (a.length < b.length) ? 0 : 1; })
                 $(function() {
-                    make_smart_name('{{rec_type}}', '{{rec_type}}_build_target_name', domains, true);
+                    //make_smart_name('{{rec_type}}', '{{rec_type}}_build_target_name', domains, true);
                 });
             </script>
     {%- endmacro %}
@@ -220,7 +234,7 @@
     Every rec_build div has a pk attribute. If the pk attribute is set the value is send with the POST and let's
     the view know that this is an UPDATE. If pk is "" then the POST is considered to be a CREATE.
     -->
-    <form id='dns_form'>
+    <input type="text" id="nights" name="nights" required>
     <div id="A_display" style='display:none;'>
         <div class="rec_build" id="A_build" resource_uri="">
             <table>
