@@ -38,6 +38,7 @@ from jinja2 import Environment, PackageLoader
 env = Environment(loader=PackageLoader('core.search', 'templates'))
 
 def search_ajax(request):
+    pdb.set_trace()
     search = request.GET.get("search", None)
     if not search:
         return HttpResponse("What do you want?!?")
