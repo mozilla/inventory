@@ -75,7 +75,9 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
     domain = models.ForeignKey(Domain, null=False, help_text="FQDN of the "
                 "domain after the short hostname. "
                 "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
-    label = models.CharField(max_length=100, blank=True, null=True,
+    # "The length of any one label is limited to between 1 and 63 octets."
+    # RFC218
+    label = models.CharField(max_length=63, blank=True, null=True,
                 validators=[validate_first_label],
                 help_text="Short name of the fqdn")
     fqdn = models.CharField(max_length=255, blank=True, null=True,

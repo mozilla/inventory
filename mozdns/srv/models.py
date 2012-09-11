@@ -24,7 +24,7 @@ class SRV(models.Model, ObjectUrlMixin):
     ... priority=priority, weight=weight, ttl=ttl)
     """
     id = models.AutoField(primary_key=True)
-    label = models.CharField(max_length=100, blank=True, null=True,
+    label = models.CharField(max_length=63, blank=True, null=True,
             validators=[validate_srv_label], help_text="Short name of the "
             "fqdn")
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,

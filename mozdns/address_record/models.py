@@ -27,7 +27,7 @@ class BaseAddressRecord(Ip):
     # See Ip for all ip fields #
     ############################
 
-    label = models.CharField(max_length=100, blank=True, null=True,
+    label = models.CharField(max_length=63, blank=True, null=True,
                 validators=[validate_first_label],
                 help_text="The short hostname goes here. If this is a record "
                 "for the selected domain, leave this field blank")
