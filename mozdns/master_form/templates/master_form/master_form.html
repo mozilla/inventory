@@ -14,13 +14,24 @@
     <script type="text/javascript" src="/static/javascripts/master_form_utils.js"></script>
 
     <link rel="stylesheet" href="/static/css/ui-lightness/jquery-ui-1.8.11.custom.css" type="text/css" />
-
+    <style>
+        div.form-message {
+            text-align: center;
+            display: block;
+            height: 20px;
+            vertical-align: top;
+            border:100px, 100px, 100px, 100px;
+        }
+    </style>
     <script>
         $(document).ready(function(){
             $.each($('.do-select'), function (index, select){
                 $(select).click(function (){
                                 $.get('/mozdns/record/ajax_form/',
-                                    {'record_type': $(select).attr('value')},
+                                    {
+                                        'record_type': $(select).attr('value'),
+                                        'record_pk': ''
+                                    },
                                     function (data) {
                                         $('#current_form_data').empty();
                                         $('#current_form_data').append(data);
@@ -31,17 +42,40 @@
             });
             $('#rec_type_select option:selected').click()  // Click the selected record
             $('#current_form').submit(function (){
+                    $('#form-message').html("<p>Sending data...</p>");
                     $.post('/mozdns/record/',
                             $('#current_form').serialize(),
                             function (data) {
-                                $('#current_form_data').replaceWith(data);
+                                console.log(data);
+                                $('#current_form_data').empty();
+                                $('#current_form_data').append(data);
                                 bind_smart_names();
                             })
                     return false;
             }); // end submit()
 
-            // Look for inputs that have id = 'id_fqdn' | 'id_target' . Make these smart names.
             function bind_smart_names(){
+                // Look for inputs that have id = 'id_fqdn' | 'id_target' . Make these smart names.
+                var inputs = $('input');
+                inputs.length;
+                for (var x = 0; x < inputs.length; x++){
+                    if(inputs[x].id === 'id_fqdn' || inputs[x].id === 'id_target' ){
+                        make_smart_name(inputs[x], {{domains}}, true)
+                        $(inputs[x]).css('width', '400px');
+                    }
+                }
+                // We also need bind an auto complete to the search field for this specifc record type.
+                $( "#record_search" ).autocomplete({
+                    minLength: 2,
+                    source:'/mozdns/record/ajax_search/?record_type='+$('#rec_type_select option:selected').attr('value'),
+                    select: function( event, ui ) {
+                        // Save the selected pk so we can use it if the user decides to edit the record.
+                        $('#search-dialog').attr('stage_pk', ui.item.pk);
+                    }
+                });
+            }
+            function fix_css(){
+                // Look for inputs that have id = 'id_fqdn' | 'id_target' . Fix their width.
                 var inputs = $('input');
                 inputs.length;
                 for (var x = 0; x < inputs.length; x++){
@@ -51,6 +85,54 @@
                     }
                 }
             }
+            // Setup search
+            $('#launch-search').click(function(){
+            var s_dialog = $( "#search-dialog" ).dialog({
+                        title: 'Search '+$('#rec_type_select option:selected').attr('value')+' records',  // Click the selected record
+                        autoShow: false,
+                        minWidth: 520,
+                        buttons: {
+                            "Edit Record": function() {
+                                //$( this ).dialog( "close" );
+                                // Ok, they want to edit the record. Get the saved pk (happened when the user 'selected' from the
+                                // drop down, and request that objects form and replace the current form.
+                                $.get('/mozdns/record/ajax_form/',
+                                    {
+                                        'record_type':$('#rec_type_select option:selected').attr('value'),
+                                        'record_pk': $('#search-dialog').attr('stage_pk'),
+                                    },
+                                    function (data) {
+                                        $('#current_form_data').empty();
+                                        $('#current_form_data').append(data);
+                                        $('#record_search').attr('value',''); // Clear the users selection.
+                                        fix_css();
+                                        // Notice how we don't call bind_smart_names here. We don't want the autocomplete to get in the way
+                                        // It's likely that they are just making a small change.
+                                    });
+                                $(this).dialog("close");
+                            },
+                            cancel: function() {
+                                $('#search-dialog').attr('stage_pk', ''), // we don't want this anymore.
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+                s_dialog.show();
+            });
+            $('#reset').click(function(){
+                $.get('/mozdns/record/ajax_form/',
+                    {
+                        'record_type':$('#rec_type_select option:selected').attr('value'),
+                        'record_pk': '',
+                    },
+                    function (data) {
+                        $('#current_form_data').empty();
+                        $('#current_form_data').append(data);
+                        $('#record_search').attr('value',''); // Clear the users selection.
+                        bind_smart_names();
+                    });
+
+            });
 
         });
     </script>
@@ -61,22 +143,51 @@
     </style>
     <select id="rec_type_select">
         {% if record_type == 'A' or record_type == 'AAAA' %}
-        <option class='do-select' value="A" selected="selected">A</option>
+        <option class='do-select' value="A" selected="selected">A/AAAA</option>
         {% else %}
-        <option class='do-select' value="A">A</option>
+        <option class='do-select' value="A">A/AAAA</option>
         {% endif %}
-        <!-- <option value="AAAA" onclick='do_A()'>AAAA</option>
+        {% if record_type == 'MX' %}
+        <option class='do-select' value="MX" selected="selected">MX</option>
+        {% else %}
         <option class='do-select' value="MX">MX</option>
-        <option class='do-select' value="NS">NS</option>
+        {% endif %}
+        {% if record_type == 'SRV' %}
+        <option class='do-select' value="SRV" selected="selected">SRV</option>
+        {% else %}
         <option class='do-select' value="SRV">SRV</option>
+        {% endif %}
+        {% if record_type == 'TXT' %}
+        <option class='do-select' value="TXT" selected="selected">TXT</option>
+        {% else %}
         <option class='do-select' value="TXT">TXT</option>
-        <option class='do-select' value="PTR">PTR</option>-->
+        {% endif %}
+        {% if record_type == 'PTR' %}
+        <option class='do-select' value="PTR" selected="selected">PTR</option>
+        {% else %}
+        <option class='do-select' value="PTR">PTR</option>
+        {% endif %}
         {% if record_type == 'CNAME' %}
         <option class='do-select' value="CNAME" selected="selected">CNAME</option>
         {% else %}
         <option class='do-select' value="CNAME">CNAME</option>
         {% endif %}
+        {% if record_type == 'SSHFP' %}
+        <option class='do-select' value="SSHFP" selected="selected">CNAME</option>
+        {% else %}
+        <option class='do-select' value="SSHFP">CNAME</option>
+        {% endif %}
     </select>
+
+    <input type='button' id='launch-search' value='Edit an existing record' style='display:inline;'/>
+    <input type='button' id='reset' value='Reset' style='display:inline;'/>
+    <div id="search-dialog" title="Search For Record" style='display: none;'>
+        <div>
+            <label for='record_search'>Search:
+                <input type='text' name='record_search' id='record_search' style='width: 400px;' value=''/>
+            </label>
+        </div>
+    </div>
 
     <form id='current_form'>
         <div id='current_form_data'>

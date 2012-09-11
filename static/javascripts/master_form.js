@@ -18,11 +18,26 @@ $(function() {
             ? args[number]
             : match
             ;
-    });
-};
-
+        });
+    };
 
 });
+$(document).ready(function (){
+    var do_selects = document.getElementsByClassName('do-select');
+    console.log('Selects: ' + do_selects);
+    for (var select_i in do_selects){
+        var select = do_selects[select_i];
+        select.onclick = do_functions['A'];
+    }
+    $('#foo').click(function foo(){
+        //$("#full_name").setCustomValidity("The username you entered is already in use.");
+        var validator = $("#dns_form").validate();
+        validator.showErrors({'nights': 'Foo bar baz'});
+    });
+
+});
+
+
 function reset_form(){
     rec_types = ['A', 'MX', 'NS', 'CNAME', 'SRV', 'TXT', 'PTR'];
     for (var i = 0; i < rec_types.length; i++){
@@ -122,34 +137,36 @@ function make_smart_name(rec_type, element_name, domains, append){
     });
 
 }
-function do_MX(e){
-    reset_form();
-    display_enable('MX_display');
-}
-function do_NS(e){
-    reset_form();
-    display_enable('NS_display');
-}
-function do_PTR(e){
-    reset_form();
-    display_enable('PTR_display');
-}
-function do_CNAME(e){
-    reset_form();
-    display_enable('CNAME_display');
-}
-function do_SRV(e){
-    reset_form();
-    display_enable('SRV_display');
-}
-function do_TXT(e){
-    reset_form();
-    display_enable('TXT_display');
-}
-function do_A(e){
-    reset_form();
-    display_enable('A_display');
-}
+do_functions = {
+    MX: function (){
+            reset_form();
+            display_enable('MX_display');
+        },
+    NS: function (){
+            reset_form();
+            display_enable('NS_display');
+        },
+    PTR: function (){
+            reset_form();
+            display_enable('PTR_display');
+        },
+    CNAME: function (){
+            reset_form();
+            display_enable('CNAME_display');
+        },
+    SRV: function (){
+            reset_form();
+            display_enable('SRV_display');
+        },
+    TXT: function (){
+            reset_form();
+            display_enable('TXT_display');
+        },
+    A: function (){
+            reset_form();
+            display_enable('A_display');
+        }
+};
 /*
    Either the Label or Domain changed.
 */

@@ -7,3 +7,9 @@ class TXTForm(ModelForm):
     class Meta:
         model = TXT
         exclude = ('fqdn',)
+
+
+class FQDNTXTForm(ModelForm):
+    class Meta:
+        model = TXT
+        exclude = ('label', 'domain')

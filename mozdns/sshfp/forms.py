@@ -7,3 +7,9 @@ class SSHFPForm(ModelForm):
     class Meta:
         model = SSHFP
         exclude = ('fqdn',)
+
+
+class FQDNSSHFPForm(ModelForm):
+    class Meta:
+        model = SSHFP
+        exclude = ('label', 'domain')
