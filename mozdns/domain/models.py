@@ -84,7 +84,7 @@ class Domain(models.Model, ObjectUrlMixin):
     """
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100, unique=True,
+    name = models.CharField(max_length=255, unique=True,
                             validators=[validate_domain_name])
     master_domain = models.ForeignKey("self", null=True,
                                       default=None, blank=True)
