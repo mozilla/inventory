@@ -56,6 +56,8 @@ def get_klasses(record_type):
         Klass = MX
         FormKlass = MXForm
         FQDNFormKlass = FQDNMXForm
+    else:
+        Klass, FormKlass, FQDNFormKlass = None, None, None
 
     return Klass, FormKlass, FQDNFormKlass
 
@@ -85,6 +87,7 @@ def mozdns_record_form_ajax(request):
     if record_pk:
         try:
             object_ = Klass.objects.get(pk=record_pk)
+            # ACLs should be appplied here
             form = FQDNFormKlass(instance=object_)
         except ObjectDoesNotExist:
             form = FQDNFormKlass()
@@ -107,12 +110,12 @@ def mozdns_record_form_ajax(request):
 
 def mozdns_record(request):
     if request.method == 'GET':
-        record_type = request.GET.get('record_type', '')
-        record_pk = request.GET.get('record_pk', '')
+        record_type = str(request.GET.get('record_type', 'A'))
+        record_pk = str(request.GET.get('record_pk', ''))
         domains = Domain.objects.filter(is_reverse=False)
         return render(request, 'master_form/master_form.html', {
             'record_type': record_type,
-            'record_pk': '',
+            'record_pk': record_pk,
             'domains': json.dumps([domain.name for domain in domains]),
         })
 
@@ -155,6 +158,8 @@ def mozdns_record(request):
 
     if record_pk:
         object_ = get_object_or_404(Klass, pk=record_pk)
+        # ACLs should be appplied here. Maybe move this up a bit so we don't
+        # create new domains for unauthorized users.
         form = FormKlass(qd, instance=object_)
     else:
         form = FormKlass(qd)
