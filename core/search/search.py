@@ -86,6 +86,7 @@ def ipf(start, end, root=True):
 
 def build_filter(f, fields, filter_type = "icontains"):
     # rtucker++
+    print f
     final_filter = Q()
     filters = []
     for filter_ in f:
@@ -200,22 +201,22 @@ def compile_search(args):
         misc = misc.union(n_misc)
 
     for vlan_str in vlan_fs:
-        try:
-            vlan = Vlan.objects.get(name=vlan_str)
-        except ObjectDoesNotExist, e:
-            try:
-                vlan = Vlan.objects.get(name=vlan_str)
-            except ObjectDoesNotExist, e:
-                continue
-        queries, v_misc = vif(vlan)
-        range_queries += queries
-        misc = misc.union(v_misc)
-
-    def str_upper(str_):  # LOL php
-        return str_.upper()
+        # TODO there is a bug here... I think.
+        # If more than one vlan is returned the ranges returned by those vlans
+        # will not overlap. No record will be in more than one vlan and so
+        # results are always emptry. The problems is with the ANDing of the
+        # returned ranges. These ranges should be ORed together in this case.
+        if vlan_str.isdigit():
+            vlans = Vlan.objects.filter(number=vlan_str)
+        else:
+            vlans = Vlan.objects.filter(name=vlan_str)
+        for vlan in vlans:
+            queries, v_misc = vif(vlan)
+            range_queries += queries
+            misc = misc.union(v_misc)
 
     if type_fs:
-        type_fs = map(str_upper, type_fs)
+        type_fs = map(lambda s: s.upper(), type_fs)
         # If we have a type filter, only make query set's it it's type is in
         # the filter.
         if range_queries:
