@@ -1,4 +1,4 @@
-        {% for system in user_system_list.object_list %}
+        {% for system in systems %}
         <tr>
             <td><a href="{{ system.owner.get_absolute_url }}">{{ system.owner }}</a></td>
             <td>{{ system.asset_tag }}</td>

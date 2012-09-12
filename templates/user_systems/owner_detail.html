@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block content %}
 <dl class="show">
     <dt>Name:</dt>
@@ -19,9 +19,9 @@
 <hr />
 <h2>Systems</h2>
 <ul>
-        {% for system in owner.unmanagedsystem_set.all %}     
+        {% for system in owner.unmanagedsystem_set.all() %}     
         <li>
-            <a href="{{system.get_absolute_url}}">{{ system.server_model}} - {{ system.asset_tag }} - {{ system.serial }}</a>
+            <a href="{{system.get_absolute_url() }}">{{ system.server_model}} - {{ system.asset_tag }} - {{ system.serial }}</a>
         </li>
         {% endfor %}
 </ul>
@@ -31,7 +31,7 @@
 <hr />
 <h2>Licenses</h2>
 <ul>
-        {% for l in owner.userlicense_set.all %} 
+        {% for l in owner.userlicense_set.all() %} 
         <li>
             <a href="{{l.get_absolute_url}}">{{ l.license_type }} - {{ l.license_key }}</a>
         </li>
@@ -40,6 +40,6 @@
 
 
 <div style="clear:both;"></div>
-<a href="{% url owner-edit owner.id %}">Edit</a>
-<a href="{% url owner-list %}">Back</a>
+<a href="{{ 'owner-edit'|url(owner.id) }}">Edit</a>
+<a href="{{ 'owner-list'|url() }}">Back</a>
 {% endblock %}
