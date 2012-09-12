@@ -9,6 +9,8 @@ import models
 from datetime import datetime, timedelta
 
 from django.contrib.auth.models import User
+import re
+
 
 class OncallForm(forms.Form):
     desktop_support_choices = [(m, m.get_profile().irc_nick) for m in User.objects.select_related().filter(userprofile__is_desktop_oncall=1)]
@@ -91,6 +93,18 @@ class SystemForm(forms.ModelForm):
     #    required=False,
     #    widget = forms.widgets.Textarea(attrs={'style': 'width: 922px; height: 240px;'})
     #)
+
+    def clean_hostname(self):
+        """
+            We're now starting to enforce fqdn for inventory hostnames. The following
+            will check if we're editing or inserting. If inserting enforce fqdn
+            ending in mozilla.(com|net|org) otherwise leave it be.
+            Later on we can enforce fqdn by removing the self.instance.pk negate below
+        """
+        data = self.cleaned_data['hostname']
+        if not re.search('\.mozilla\.(com|net|org)$', data) and not self.instance.pk:
+            raise forms.ValidationError('Hostname requires FQDN')
+        return data
 
     @return_data_if_true
     def clean_operating_system(self):
