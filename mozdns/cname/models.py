@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 import mozdns
 from mozdns.domain.models import Domain, _name_to_domain
@@ -80,6 +80,10 @@ class CNAME(MozdnsRecord):
         master domain will have no soa (or it will have a a different
         soa).
         """
+        try:
+            self.domain
+        except ObjectDoesNotExist:
+            return # Validation will fail eventually
         root_domain = find_root_domain(self.domain.soa)
         if root_domain is None:
             return

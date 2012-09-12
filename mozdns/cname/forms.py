@@ -10,3 +10,10 @@ class CNAMEForm(ModelForm):
         fields = ('label', 'domain', 'target', 'views', 'ttl', 'comment')
         widgets = {'views': forms.CheckboxSelectMultiple}
         # https://code.djangoproject.com/ticket/9321
+
+class CNAMEFQDNForm(ModelForm):
+    class Meta:
+        model = CNAME
+        fields = ('fqdn', 'target', 'views', 'ttl', 'comment')
+        widgets = {'views': forms.CheckboxSelectMultiple}
+        # https://code.djangoproject.com/ticket/9321

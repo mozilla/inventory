@@ -1,144 +1,195 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db.models import Q
+from django.http import QueryDict
+from django.forms.util import ErrorList, ErrorDict
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.http import Http404
 
 from mozdns.address_record.models import AddressRecord
+from mozdns.address_record.forms import AddressRecordFQDNForm
+from mozdns.address_record.forms import AddressRecordForm
 from mozdns.ptr.models import PTR
+from mozdns.ptr.forms import PTRForm
 from mozdns.srv.models import SRV
+from mozdns.srv.forms import SRVForm, FQDNSRVForm
 from mozdns.txt.models import TXT
+from mozdns.txt.forms import TXTForm, FQDNTXTForm
 from mozdns.mx.models import MX
+from mozdns.mx.forms import MXForm, FQDNMXForm
 from mozdns.cname.models import CNAME
+from mozdns.cname.forms import CNAMEFQDNForm, CNAMEForm
 from mozdns.domain.models import Domain
-from mozdns.nameserver.models import Nameserver
 from mozdns.view.models import View
+from mozdns.utils import ensure_label_domain
+from mozdns.utils import prune_tree
+import operator
 
+from gettext import gettext as _, ngettext
 import simplejson as json
 import pdb
 
-def mozdns_home(request):
-    domains = Domain.objects.filter(is_reverse=False).order_by(
-                'name').order_by('soa__comment')
-    return render(request, 'mozdns/mozdns.html', {
-        'domains': domains,
-    })
 
-def commit_record(request):
-    commit_data = json.loads(request.raw_post_data)
-    record_type = commit_data.pop("rtype", None)
+def get_klasses(record_type):
+    if record_type == "A":
+        Klass = AddressRecord
+        FormKlass = AddressRecordForm
+        FQDNFormKlass = AddressRecordFQDNForm
+    elif record_type == "PTR":
+        Klass = PTR
+        FormKlass = PTRForm
+        FQDNFormKlass = PTRForm
+    elif record_type == "SRV":
+        Klass = SRV
+        FormKlass = SRVForm
+        FQDNFormKlass = FQDNSRVForm
+    elif record_type == "CNAME":
+        Klass = CNAME
+        FormKlass = CNAMEForm
+        FQDNFormKlass = CNAMEFQDNForm
+    elif record_type == "TXT":
+        Klass = TXT
+        FormKlass = TXTForm
+        FQDNFormKlass = FQDNTXTForm
+    elif record_type == "MX":
+        Klass = MX
+        FormKlass = MXForm
+        FQDNFormKlass = FQDNMXForm
+
+    return Klass, FormKlass, FQDNFormKlass
+
+def mozdns_record_search_ajax(request):
+    """This function will return a list of records matching the 'query' of type
+    'record_type'. It's used for ajaxy stuff."""
+    query = request.GET.get('term', '')
+    record_type = request.GET.get('record_type', '')
+    if not query or not record_type:
+        raise Http404
+    Klass, _, _ = get_klasses(record_type)
+    mega_filter = [Q(**{"{0}__icontains".format(field): query}) for field in
+            Klass.search_fields]
+    mega_filter = reduce(operator.or_, mega_filter)
+    records = Klass.objects.filter(mega_filter)[:15]
+    records = [{'label': str(record), 'pk': record.pk} for record in records]
+    return HttpResponse(json.dumps(records))
+
+
+def mozdns_record_form_ajax(request):
+    record_type = request.GET.get('record_type')
+    record_pk = request.GET.get('record_pk', '')
+    Klass, FormKlass, FQDNFormKlass = get_klasses(record_type)
+
     if not record_type:
         raise Http404
-    if record_type == "A":
-        commit_data = add_ip_type_to_commit(commit_data)
-        commit_data = add_domain_to_commit(commit_data)
-        Klass = AddressRecord
-    elif record_type == "PTR":
-        commit_data = add_ip_type_to_commit(commit_data)
-        Klass = PTR
-    elif record_type == "SRV":
-        commit_data = add_domain_to_commit(commit_data)
-        Klass = SRV
-    elif record_type == "CNAME":
-        commit_data = add_domain_to_commit(commit_data)
-        Klass = CNAME
-    elif record_type == "NS":
-        commit_data = add_domain_to_commit(commit_data)
-        Klass = Nameserver
-    elif record_type == "TXT":
-        commit_data = add_domain_to_commit(commit_data)
-        Klass = TXT
-    elif record_type == "MX":
-        commit_data = add_domain_to_commit(commit_data)
-        Klass = MX
-    views = extract_views(commit_data)
-    existing_obj = get_object_to_update(commit_data, Klass)
-    if not existing_obj:
+    if record_pk:
         try:
-            obj = Klass(**commit_data)
-        except ValueError, e:
-            commit_data["errors"] = e.message_dict
-            return return_without_domain(commit_data)
-        created = True
+            object_ = Klass.objects.get(pk=record_pk)
+            form = FQDNFormKlass(instance=object_)
+        except ObjectDoesNotExist:
+            form = FQDNFormKlass()
+            record_pk = ''
     else:
-        created = False
-        obj = apply_commit(existing_obj, commit_data)
+        form = FQDNFormKlass()
 
-    try:
-        obj.full_clean()
-    except ValidationError, e:
-        commit_data["errors"] = e.message_dict
-        print commit_data
-        return return_without_domain(commit_data)
-    try:
-        obj.save()
-    except ValidationError, e:
-        commit_data["errors"] = e.message_dict
-        return return_without_domain(commit_data)
-
-    orig_views = [view for view in obj.views.all()]
-    for view in orig_views:
-        obj.views.remove(view)
-    # First kill all the views because are just going to replace them.
-    for view in views:
-        obj.views.add(view)
-
-    commit_data['success'] = obj.get_absolute_url()
-    commit_data['obj_pk'] = obj.pk
-    commit_data['obj_class'] = obj.__class__.__name__
-    if created:
-        commit_data['created'] = True
+    if record_pk:
+        message = _("Change some data and press 'Commit' to update the "
+                    "{0}".format(record_type))
     else:
-        commit_data['created'] = False
-    return return_without_domain(commit_data)
+        message = _("Enter some data and press 'Commit' to create a new "
+                    "{0}".format(record_type))
+    return render(request, 'master_form/ajax_form.html', {
+        'record_type': record_type,
+        'record_pk': record_pk,
+        'form': form,
+        'message': message
+    })
 
+def mozdns_record(request):
+    if request.method == 'GET':
+        record_type = request.GET.get('record_type', '')
+        record_pk = request.GET.get('record_pk', '')
+        domains = Domain.objects.filter(is_reverse=False)
+        return render(request, 'master_form/master_form.html', {
+            'record_type': record_type,
+            'record_pk': '',
+            'domains': json.dumps([domain.name for domain in domains]),
+        })
 
-def return_without_domain(commit_data):
-    if "domain" in commit_data:
-        commit_data["domain"] = commit_data["domain"].name
-    return_data = json.dumps(commit_data)
-    return HttpResponse(return_data)
+    if request.method != 'POST':
+        raise Http404
 
-
-def extract_views(commit_data):
-    """This function nukes the views from commit_data"""
-    views = []
-    is_public = commit_data.pop("public_view", False)
-    if is_public:
-        public, _ = View.objects.get_or_create(name="public")
-        views.append(public)
-    is_private = commit_data.pop("private_view", False)
-    if is_private:
-        private, _ = View.objects.get_or_create(name="private")
-        views.append(private)
-    return views
-
-
-def get_object_to_update(commit_data, Klass):
-    pk = commit_data.pop("pk", None)
-    if not pk:
-        return None
-    obj = Klass.objects.get(pk=pk)
-    return obj
-
-def apply_commit(obj, commit_data):
-    # this is a test... never do this at home
-    for k, v in commit_data.iteritems():
-        setattr(obj, k, v)
-    return obj
-
-
-def add_ip_type_to_commit(commit_data):
-    # Let's guess the IP type. ':' means IPv6
-    ip_str = commit_data.get("ip_str", "")
-    if ip_str.find(':') > -1:
-        commit_data["ip_type"] = '6'
+    qd = request.POST.copy()  # make qd mutable
+    orig_qd = request.POST.copy()  # If there are ever errors, we use this qd
+        # to populate the form we send to the user
+    record_type = qd.pop('record_type', '')
+    if record_type:
+        record_type = record_type[0]
+    record_pk = qd.pop('record_pk', '')
+    if record_pk:
+        record_pk = record_pk[0]
+    if not record_type:
+        raise Http404
+    Klass, FormKlass, FQDNFormKlass = get_klasses(record_type)
+    fqdn = qd.pop('fqdn')
+    if fqdn:
+        fqdn = fqdn[0]
+    domain = None
+    if record_type == 'PTR':
+        pass
     else:
-        commit_data["ip_type"] = '4'
-    return commit_data
+        try:
+            label, domain = ensure_label_domain(fqdn)
+            # If something goes bad latter on you must call prune_tree on
+            # domain.  If you don't do this there will be a domain leak.
+        except ValidationError, e:
+            form = FQDNFormKlass(orig_qd)
+            form._errors = ErrorDict()
+            form._errors['__all__'] = ErrorList(e.messages)
+            return render(request, 'master_form/ajax_form.html', {
+                'form': form,
+                'record_type': record_type,
+                'record_pk': record_pk,
+            })
+        qd['label'], qd['domain'] = label, str(domain.pk)
 
+    if record_pk:
+        object_ = get_object_or_404(Klass, pk=record_pk)
+        form = FormKlass(qd, instance=object_)
+    else:
+        form = FormKlass(qd)
 
-def add_domain_to_commit(commit_data):
-    commit_data["domain"] = get_object_or_404(Domain,
-            name=commit_data["domain"])
-    return commit_data
+    if form.is_valid():
+        try:
+            object_ = form.save()
+        except ValidationError, e:
+            prune_tree(domain)
+            error_form = FQDNFormKlass(orig_qd)
+            error_form._errors = ErrorDict()
+            error_form._errors['__all__'] = ErrorList(e.messages)
+            return render(request, 'master_form/ajax_form.html', {
+                'form': error_form,
+                'record_type': record_type,
+                'record_pk': record_pk,
+            })
+
+        fqdn_form = FQDNFormKlass(instance=object_)
+        if record_pk:
+            message = 'Record Updated!'
+        else:
+            message = 'Record Created!'
+        return render(request, 'master_form/ajax_form.html', {
+            'form': fqdn_form,
+            'record_type': record_type,
+            'record_pk': object_.pk,
+            'message': message
+        })
+    else:
+        prune_tree(domain)
+        error_form = FQDNFormKlass(orig_qd)
+        error_form._errors = form._errors
+        return render(request, 'master_form/ajax_form.html', {
+            'form': error_form,
+            'record_type': record_type,
+            'record_pk': record_pk,
+        })

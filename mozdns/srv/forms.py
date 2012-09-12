@@ -6,3 +6,9 @@ class SRVForm(ModelForm):
     class Meta:
         model = SRV
         exclude = ('fqdn',)
+
+
+class FQDNSRVForm(ModelForm):
+    class Meta:
+        model = SRV
+        exclude = ('label', 'domain')

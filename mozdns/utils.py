@@ -121,12 +121,16 @@ def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
                 continue
 
         if not leaf_domain:
-            raise ValidationError("You cannot autocreate TLD.")
+            raise ValidationError("Creating this record would cause the "
+                    "creation of a new TLD. Please contact "
+                    "http://www.icann.org/ for more information.")
         if leaf_domain.delegated:
-            raise ValidationError("You cannot autocreate domain's that would "
-                    "live under a delegated domain.")
+            raise ValidationError("Creating this record would cause the "
+                    "creation of a domain that would "
+                    "be a child of a delegated domain.")
         if not leaf_domain.soa:
-            raise ValidationError("You cannot autocreate a domain that would "
+            raise ValidationError("Creating this record would cause the "
+                    "creation of a domain that would "
                     "not be in an existing DNS zone.")
 
     domain_name = ''
@@ -162,6 +166,8 @@ def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
 
 def ensure_label_domain(fqdn):
     """Returns a label and domain object."""
+    if fqdn == '':
+        raise ValidationError("FQDN cannot be the emptry string.")
     if Domain.objects.filter(name=fqdn).exists():
         return '', Domain.objects.get(name=fqdn)
     fqdn_partition = fqdn.split('.')

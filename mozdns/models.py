@@ -75,7 +75,9 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
     domain = models.ForeignKey(Domain, null=False, help_text="FQDN of the "
                 "domain after the short hostname. "
                 "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
-    label = models.CharField(max_length=100, blank=True, null=True,
+    # "The length of any one label is limited to between 1 and 63 octets."
+    # RFC218
+    label = models.CharField(max_length=63, blank=True, null=True,
                 validators=[validate_first_label],
                 help_text="Short name of the fqdn")
     fqdn = models.CharField(max_length=255, blank=True, null=True,
@@ -177,7 +179,10 @@ def check_for_delegation(record):
     be changed.  Delegated domains cannot have objects created in
     them.
     """
-    if not record.domain.delegated:
+    try:
+        if not record.domain.delegated:
+            return
+    except ObjectDoesNotExist:
         return
     if not record.pk:  # We don't exist yet.
         raise ValidationError("No objects can be created in the {0}"
