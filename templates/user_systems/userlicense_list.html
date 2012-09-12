@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block content %}
 
     <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
@@ -8,7 +8,7 @@
     </form>
 </div>
 <h2>Listing Licenses</h2>
-<a href="{% url license-new %}">Create New</a>
+<a href="{{ 'license-new'|url() }}">Create New</a>
 
 <br />
 <div id="search_hits"></div>
@@ -34,9 +34,9 @@
             <td>{{ license.version }}</td>
             <td><a href="{{ license.owner.get_absolute_url }}">{{ license.owner }}</a></td>
 	
-            <td><a href="{% url license-show license.id %}">Show</a></td>
-            <td><a href="{% url license-edit license.id %}">Edit</a></td>
-            <td><a href="{% url license-delete license.id %}">Delete</a></td>
+            <td><a href="{{ 'license-show'|url(license.id) }}">Show</a></td>
+            <td><a href="{{ 'license-edit'|url(license.id) }}">Edit</a></td>
+            <td><a href="{{ 'license-delete'|url(license.id) }}">Delete</a></td>
         </tr>
         {% endfor %}
     <tr><td colspan="9">
@@ -59,7 +59,7 @@
 <script>
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{% url license-quicksearch %}");
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{{ 'license-quicksearch'|url() }}");
 	});
 </script>
 {% endblock %}
