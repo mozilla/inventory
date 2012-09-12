@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block content %}
 
     <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
@@ -10,9 +10,9 @@
 
 <h2>Listing User Systems</h2>
 
-<a href="{% url user-system-new %}">Create New</a> | 
-<a href="{% url user-system-csv %}">Create CSV</a> |
-<a href="{% url user-system-list %}">List All</a>
+<a href="{{ 'user-system-new'|url() }}">Create New</a> | 
+<a href="{{ 'user-system-csv'|url() }}">Create CSV</a> |
+<a href="{{ 'user-system-list'|url() }}">List All</a>
 <br />
 
 <div id="search_hits"></div>
@@ -29,9 +29,7 @@
         </tr>
 	</thead>
     <tbody>
-        {% with user_system_list.object_list as systems %}
         {% include "user_systems/unmanagedsystem_table_snippet.html" %}
-        {% endwith %}
         <tr><td colspan="9">
         </td></tr>
     </tbody>
@@ -55,7 +53,7 @@
 <script type="text/javascript">
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{% url user-system-quicksearch %}");
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{{ 'user-system-quicksearch'|url() }}");
 	});
 </script>
 {% endblock %}

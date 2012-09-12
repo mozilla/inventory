@@ -18,7 +18,8 @@ from libs import ldap_lib
 import settings
 from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import render_to_response, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
+from libs.jinja import render_to_response as render_to_response
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from MozInvAuthorization.UnmanagedSystemACL import UnmanagedSystemACL
