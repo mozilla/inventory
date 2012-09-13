@@ -32,7 +32,7 @@
             <td>{{ license.user_operating_system }}</td>
             <td>{{ license.username }}</td>
             <td>{{ license.version }}</td>
-            <td><a href="{{ license.owner.get_absolute_url }}">{{ license.owner }}</a></td>
+            <td><a href="{{ license.owner.get_absolute_url() }}">{{ license.owner }}</a></td>
 	
             <td><a href="{{ 'license-show'|url(license.id) }}">Show</a></td>
             <td><a href="{{ 'license-edit'|url(license.id) }}">Edit</a></td>

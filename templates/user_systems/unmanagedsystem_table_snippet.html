@@ -1,11 +1,21 @@
         {% for system in systems %}
         <tr>
-            <td><a href="{{ system.owner.get_absolute_url }}">{{ system.owner }}</a></td>
+            {% if system.owner %}
+                <td><a href="{{ system.owner.get_absolute_url() }}">{{ system.owner }}</a></td>
+            {% else %}
+                <td>&nbsp;</td>
+            {% endif %}
             <td>{{ system.asset_tag }}</td>
             <td>{% if system.server_model %}<a href="{{ 'user-system-list-by-model'|url(system.server_model.id) }}">{{ system.server_model }}</a>{% endif %}</td>
             <td>{{ system.serial }}</td>
             <td>{{ system.notes }}</td>
-            <td><a href="{{ BUG_URL }}{{ system.bug_number }}">{{ system.bug_number }}</a></td>
+            <td>
+            {% if system.bug_number %}
+                <a href="{{ BUG_URL }}{{ system.bug_number }}">{{ system.bug_number }}</a>
+            {% else %}
+                &nbsp;
+            {% endif %}
+            </td>
             <td><a href="{{ 'user-system-show'|url(system.id) }}">Show</a></td>
             <td><a href="{{ 'user-system-edit'|url(system.id) }}">Edit</a></td>
             <td><a href="{{ 'user-system-delete'|url(system.id) }}">Delete</a></td>

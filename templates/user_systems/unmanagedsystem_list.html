@@ -11,7 +11,13 @@
 <h2>Listing User Systems</h2>
 
 <a href="{{ 'user-system-new'|url() }}">Create New</a> | 
-<a href="{{ 'user-system-csv'|url() }}">Create CSV</a> |
+{# 
+    For now we just want to display the generate csv link
+    inside of the model list only
+#}
+{% if 'user_systems/model' in request.request.META.PATH_INFO %}
+    <a href="{{ 'user-system-csv'|url() }}">Create CSV</a> |
+{% endif %}
 <a href="{{ 'user-system-list'|url() }}">List All</a>
 <br />
 
