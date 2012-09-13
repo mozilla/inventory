@@ -44,7 +44,8 @@
 #zeusglb
 #zones
 
-REL_PATH=/var/www/playdoh-env
+REL_PATH=/home/juber # Where the inventory project is located.
+
 export REL_PATH
 SYSADMINS=$HOME
 export SYSADMINS
