@@ -532,7 +532,7 @@ class StaticIntrV6APITests(MozdnsAPITests, ResourceTestCase):
             'mac': '11:22:33:44:55:00',
             'system': '/tasty/v3/system/{0}/'.format(self.s.pk),
             'domain': self.domain.name,
-            'ip_str': "2000:{0}:{1}:{2}::".format(random_byte(), random_byte(),
+            'ip_str': "2000:a{0}:a{1}:a{2}::".format(random_byte(), random_byte(),
                 random_byte()),
             'ip_type': '6'
         }

@@ -184,7 +184,7 @@ class AddressRecordTests(TestCase):
         rec2 = AddressRecord(label = 'bar',domain= self.m_o_e ,  ip_str = "128.193.0.1", ip_type='4')
         rec2.save()
 
-        rec3 = AddressRecord(label ='bazisgoingtobelasdfhklashflashfllk-324-123n2319rjn2ddasfdasfd-sa', domain= self.m_o_e ,  ip_str = "128.193.0.1", ip_type='4')
+        rec3 = AddressRecord(label ='0123456780123456780123456780123456780123456789999901234567891', domain= self.m_o_e ,  ip_str = "128.193.0.1", ip_type='4')
         rec3.save()
 
         self.do_update_A_record(rec0, "whooooop1", "128.193.23.1")
