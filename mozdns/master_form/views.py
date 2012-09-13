@@ -134,8 +134,8 @@ def mozdns_record(request):
     if not record_type:
         raise Http404
     Klass, FormKlass, FQDNFormKlass = get_klasses(record_type)
-    fqdn = qd.pop('fqdn')
-    if fqdn:
+    if 'fqdn' in qd:
+        fqdn = qd.pop('fqdn')
         fqdn = fqdn[0]
     domain = None
     if record_type == 'PTR':

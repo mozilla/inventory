@@ -30,7 +30,7 @@
                                 $.get('/mozdns/record/ajax_form/',
                                     {
                                         'record_type': $(select).attr('value'),
-                                        'record_pk': ''
+                                        'record_pk': '',
                                     },
                                     function (data) {
                                         $('#current_form_data').empty();
@@ -40,7 +40,28 @@
                                 ); // end get()
                             }); // end click()
             });
-            $('#rec_type_select option:selected').click()  // Click the selected record
+
+            var initial_record_type = $('#record_type').attr('value');
+            var initial_record_pk = $('#record_pk').attr('value');
+            // Do initial form load
+            $.get('/mozdns/record/ajax_form/',
+                {
+                    'record_type': initial_record_type,
+                    'record_pk': initial_record_pk,
+                },
+                function (data) {
+                    $('#current_form_data').empty();
+                    $('#current_form_data').append(data);
+                    if (initial_record_type === '' && initial_record_pk === ''){
+                        // Only bind smart names if the user isn't editing a
+                        //existing record.
+                        bind_smart_names();
+                    } else {
+                        fix_css();
+                    }
+                } // end get() handler
+            ); // end get()
+
             $('#current_form').submit(function (){
                     $('#form-message').html("<p>Sending data...</p>");
                     $.post('/mozdns/record/',
@@ -191,6 +212,10 @@
 
     <form id='current_form'>
         <div id='current_form_data'>
+            <!-- This is here so the form can be populated with initial values
+            via GET parameters -->
+            <input type="hidden" id="record_type" name="record_type" value="{{record_type}}"/>
+            <input type="hidden" id="record_pk" name="record_pk" value="{{record_pk}}"/>
         <div>
     </form>
 {% endblock %}
