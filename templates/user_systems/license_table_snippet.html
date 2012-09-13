@@ -1,13 +1,15 @@
-        {% for license in licenses %}
-        <tr>
-            <td>{{ license.license_type}} </td>
-            <td>{{ license.license_key }}</td>
-            <td>{{ license.user_operating_system.name }}</td>
-            <td>{{ license.username }}</td>
-            <td>{{ license.version }}</td>
-            <td>{{ license.owner }}</td>
-            <td><a href="{% url license-show license.id %}">Show</a></td>
-            <td><a href="{% url license-edit license.id %}">Edit</a></td>
-            <td><a href="{% url license-delete license.id %}">Delete</a></td>
-        </tr>
-        {% endfor %}
+        {% if licenses %}
+            {% for license in licenses %}
+            <tr>
+                <td>{{ license.license_type}} </td>
+                <td>{{ license.license_key }}</td>
+                <td>{{ license.user_operating_system.name }}</td>
+                <td>{{ license.username }}</td>
+                <td>{{ license.version }}</td>
+                <td>{{ license.owner }}</td>
+                <td><a href="{{ 'license-show'|url(license.id) }}">Show</a></td>
+                <td><a href="{{ 'license-edit'|url(license.id) }}">Edit</a></td>
+                <td><a href="{{ 'license-delete'|url(license.id) }}">Delete</a></td>
+            </tr>
+            {% endfor %}
+        {% endif %}

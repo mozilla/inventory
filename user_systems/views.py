@@ -144,12 +144,22 @@ def license_new(request):
 @csrf_exempt
 def license_quicksearch_ajax(request):
     """Returns systems sort table"""
-    search = request.POST['quicksearch']
-    filters = [Q(**{"%s__icontains" % t: search})
-                    for t in models.UserLicense.search_fields]
+    """
+        Try to get quicksearch from post
+        If fail, try to get from GET
+        return None otherwise
+    """
+    search = request.POST.get('quicksearch', None)
+    if not search:
+        search = request.POST.get('quicksearch', None)
+    if search:
+        filters = [Q(**{"%s__icontains" % t: search})
+                        for t in models.UserLicense.search_fields]
 
-    licenses = models.UserLicense.objects.filter(
-                reduce(operator.or_, filters))
+        licenses = models.UserLicense.objects.filter(
+                    reduce(operator.or_, filters))
+    else:
+        licenses = None
 
     return render_to_response('user_systems/license_quicksearch.html', {
             'licenses': licenses,
