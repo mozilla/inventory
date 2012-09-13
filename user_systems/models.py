@@ -162,6 +162,10 @@ class UserLicense(models.Model):
     def __unicode__(self):
         return "%s - %s" % (self.license_type, self.license_key)
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('license-show', [self.id])
+
     class Meta:
         db_table = u'user_licenses'
         ordering = ['license_type']

@@ -33,7 +33,11 @@
 <ul>
         {% for l in owner.userlicense_set.all() %} 
         <li>
-            <a href="{{ l.get_absolute_url() }}">{{ l.license_type }} - {{ l.license_key }}</a>
+            {% if l.get_absolute_url %}
+                <a href="{{ l.get_absolute_url() }}">{{ l.license_type }} - {{ l.license_key }}</a>
+            {% else %}
+                {{ l.license_type }} - {{ l.license_key }}
+            {% endif %}
         </li>
         {% endfor %}
 </ul>
