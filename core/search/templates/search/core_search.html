@@ -1,5 +1,8 @@
 {% extends "core/core_base.html" %}
 {% block core_content %}
+<script src="{{ MEDIA_URL }}javascripts/jquery-1.6.1.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="/static/js/jquery-ui-1.8.11.custom.min.js"></script>
+<link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
 
 <style type="text/css">
 .center{
@@ -9,28 +12,34 @@
 <script type="text/javascript">
     function get_and_display_search(){
         search = document.getElementById('id_search').value;
+        $('#results').html('<p>Please wait while we retrieve your results...<p>');
+        var start = new Date().getTime();
+
         $.get('/core/search/search_ajax?search='+escape(search),
         function update_results(data){
+            $('#results').html('');
             results = document.getElementById('results');
             results.innerHTML = data;
+
+            var end = new Date().getTime();
+            var time = end - start;
+            $('#search-time').html('('+time/1000+' seconds)');
         });
     }
-    /*
-    $(document).ready(function () {
-        setInterval(get_and_display_search,1000);
-        return;
-    });
-    */
 </script>
 <div class="center">
 <h1>Inventory</h1>
-    <input id="id_search" type="text" size="50" name="search" onChange='get_and_display_search()' value={{ search }}>
+    <input id="id_search" type="text" size="50" name="search" value="{{ search }}" autofocus="autofocus">
     <br>
     <br>
     <br>
     <input value="Search" title="Search" type="button" id="btn_s" onclick="get_and_display_search()">
     <input value="I'm Feeling Lucky" title="I'm Feeling Lucky" name="lucky" type="submit" id="btn_i" onclick='get_and_display_search()'>
+    <input value="Help" title="Help" type="button" id="help_button">
+</div>
+<div id='status'>
 </div>
 <div id="results">
 </div>
+{% include 'search/core_search_help.html' %}
 {% endblock %}

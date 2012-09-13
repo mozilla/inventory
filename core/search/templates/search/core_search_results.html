@@ -1,9 +1,50 @@
 <div id="ajax_results">
+<div id="meta">
+    <h3>Results:</h3>
+    <div id='search-time'>
+    </div>
+    {% if meta.counts.addr %}
+        {{ meta.counts.addr }} <a href="#Address">A/AAAA</a> records |
+    {% else %}
+        zero A/AAAA records |
+    {% endif %}
+    {% if meta.counts.cname %}
+        {{ meta.counts.cname }} <a href="#CNAME">CNAME</a> records |
+    {% else %}
+        zero CNAME records |
+    {% endif %}
+    {% if meta.counts.domain %}
+        {{ meta.counts.domain }} <a href="#Domain">Domains</a> |
+    {% else %}
+        zero Domains |
+    {% endif %}
+    {% if meta.counts.intr %}
+        {{ meta.counts.intr }} <a href="#Interface">INTR</a> records |
+    {% else %}
+        zero INTR records |
+    {% endif %}
+    {% if meta.counts.mx %}
+        {{ meta.counts.mx }} <a href="#MX">MX</a> records |
+    {% else %}
+        zero MX records |
+    {% endif %}
+    {% if meta.counts.ptr %}
+        {{ meta.counts.ptr }} <a href="#PTR">PTR</a> records |
+    {% else %}
+        zero PTR records |
+    {% endif %}
+    {% if meta.counts.txt %}
+        {{ meta.counts.txt }} <a href="#TXT">TXT</a> records
+    {% else %}
+        zero TXT records
+    {% endif %}
+</div>
+<br/>
 {% if misc %}
     <table>
         <thead>
         <tr>
-            <th>Results</th>
+            <th>Networks, Sites, and Vlans</th>
         </tr>
         </thead>
         <tbody>
@@ -16,7 +57,7 @@
     </table>
 {% endif %}
 {% if domains %}
-    <h3>Domains</h3>
+    <h3><a name="Domains">Domains</a></h3>
     <table>
         <thead>
         <tr>
@@ -40,7 +81,7 @@
 {% endif %}
 
 {% if nss %}
-    <h3>Nameserver</h3>
+    <h3><a name="Nameserver">Nameserver</a></h3>
     <table>
         <thead>
         <tr>
@@ -62,7 +103,7 @@
 {% endif %}
 
 {% if mxs %}
-    <h3>MX Record</h3>
+    <h3><a name="MX">MX</a> Records</h3>
     <table>
         <thead>
         <tr>
@@ -84,7 +125,7 @@
 {% endif %}
 
 {% if srvs %}
-    <h3>SRV Record</h3>
+    <h3><a name="SRV">SRV</a> Records</h3>
     <table>
         <thead>
         <tr>
@@ -106,7 +147,7 @@
 {% endif %}
 
 {% if txts %}
-    <h3>TXT Record</h3>
+    <h3><a name="TXT">TXT</a> Records</h3>
     <table>
         <thead>
         <tr>
@@ -128,7 +169,7 @@
 {% endif %}
 
 {% if cnames %}
-    <h3>CNAME Record</h3>
+    <h3><a name="CNAME">CNAME</a> Records</h3>
     <table>
         <thead>
         <tr>
@@ -142,7 +183,7 @@
         <tr>
             <td><a href="{{ cname.get_absolute_url() }}">{{ cname.fqdn }}</a></td>
             <td><b>CNAME</b></td>
-            <td>{{ cname.data }}</td>
+            <td>{{ cname.target }}</td>
         </tr>
         {% endfor %}
         </tbody>
@@ -150,7 +191,7 @@
 {% endif %}
 
 {% if intrs %}
-    <h3>Interface Record</h3>
+    <h3><a name="Interface">Interface</a> Records</h3>
     <table>
         <thead>
         <tr>
@@ -172,7 +213,7 @@
 {% endif %}
 
 {% if addrs %}
-    <h3>Address Record</h3>
+    <h3><a name="Address">Address</a> Records</h3>
     <table>
         <thead>
         <tr>
@@ -184,7 +225,7 @@
         <tbody>
         {% for addr in addrs %}
         <tr>
-            <td><a href="{{ addr.get_absolute_url() }}">{{ addr.fqdn }}</a></td>
+            <td><a href="{{ addr.get_edit_url() }}">{{ addr.fqdn }}</a></td>
             <td><b>{{ addr.record_type() }}</b></td>
             <td>{{ addr.ip_str }}</td>
         </tr>
@@ -194,7 +235,7 @@
 {% endif %}
 
 {% if ptrs %}
-    <h3>PTR Record</h3>
+    <h3><a name="PTR">PTR</a> Records</h3>
     <table>
         <thead>
         <tr>

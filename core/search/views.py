@@ -38,7 +38,6 @@ from jinja2 import Environment, PackageLoader
 env = Environment(loader=PackageLoader('core.search', 'templates'))
 
 def search_ajax(request):
-    pdb.set_trace()
     search = request.GET.get("search", None)
     if not search:
         return HttpResponse("What do you want?!?")
@@ -54,6 +53,18 @@ def search_ajax(request):
 
     x = compile_search(query)
     addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc = x
+    meta = {
+            'counts':{
+                'addr': addrs.count() if addrs else 0,
+                'cname': cnames.count() if cnames else 0,
+                'domain': domains.count() if domains else 0,
+                'intr': intrs.count() if intrs else 0,
+                'mx': mxs.count() if mxs else 0,
+                'ns': nss.count() if nss else 0,
+                'ptr': ptrs.count() if ptrs else 0,
+                'txt': txts.count() if txts else 0,
+                }
+            }
     template = env.get_template('search/core_search_results.html')
     return HttpResponse(template.render(
                                     **{
@@ -67,7 +78,8 @@ def search_ajax(request):
                                         "nss": nss,
                                         "ptrs": ptrs,
                                         "srvs": srvs,
-                                        "txts": txts
+                                        "txts": txts,
+                                        "meta": meta
                                     }
                         ))
 def search(request):

@@ -1,0 +1,164 @@
+<script>
+    $(document).ready(function (){
+        $('#help_button').click(function (){
+            var s_dialog = $( "#help-text" ).dialog({
+                        title: 'How to use this search.',  // Click the selected record
+                        autoShow: false,
+                        minWidth: 520,
+                        buttons: {
+                            OK: function() {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+            s_dialog.show();
+        });
+    });
+
+</script>
+<div id='help-text' style="display: none;">
+<table border="1">
+    <caption>Search Patterns</caption>
+    <tr>
+        <td>
+            a-zA-Z0-9.
+        </td>
+        <td>
+            <p>
+            Bare words are used to match text in objects. Objects that match <b>all</b> bare words
+            are returned. For example: <code>foo bar scl3</code> will match objects that contain the
+            words <code>foo</code> <b>AND</b> <code>bar</code> <b>AND</b> <code>scl3</code>
+            ('<code>foo.bar.scl3.mozilla.com</code>' would match but
+            <code>foo.baz.scl3.mozilla.com</code> would not).
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            '/'
+        </td>
+        <td>
+            <p>
+            Words that start with the forward slash are assumed to be regex patterns. For
+            example: <code>/^puppet\d+</code>
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            '..'
+        </td>
+        <td>
+            <p>
+            When you surround '..' with numbers, inventory will expand your query into multiple
+            queires. For example: A search for <code>web1..3</code> is understood to be a search for
+            <code>web1</code> <b>OR</b> <code>web2</code> <b>OR</b> <code>web3</code>.
+            </p>
+        </td>
+    </tr>
+</table>
+<table border="1">
+    <caption>Operators</caption>
+    <tr>
+        <td>
+            '-'
+        </td>
+        <td>
+            <p>
+            The dash character '-' can be used to negate any search pattern. It can also negate the
+            <code>type</code> directive.
+            </p>
+        </td>
+    </tr>
+</table>
+<table border="1">
+    <caption>Directives</caption>
+    <tr>
+        <td>
+            type:
+        </td>
+        <td>
+            <p>
+            The 'type' directive can be used to target a type of DNS record. For example: to see all
+            CNAME records that contained the word 'web' you could search <code>type:CNAME web</code>.
+            To search for StaticInterface records or domains use <code>type:INTR</code> and
+            <code>type:Domain</code>. Type is case insensitive.
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            site:
+        </td>
+        <td>
+            <p>
+            The 'site' directive can be used to search for objects that have IP addresses that fall
+            into one of the networks associated with a site (datacenter or buisness unit). For
+            example: To see all A records in scl2, search <code>type:A site:scl2</code>.
+            <a href=/core/site/>A list of all Sites</a>
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            vlan:
+        </td>
+        <td>
+            <p>
+            The 'vlan' directive can be used to search for objects that have IP addresses
+            within one of the networks associated with a specif vlan. For example: To see all
+            objects that fall into the db vlan, search <code>vlan:db</code>. <i>Note that vlans can
+            exist in multiple data centers</i>. <a href=/core/vlan/>A list of all Vlans</a>
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            network:
+        </td>
+        <td>
+            <p>
+            The 'network' directive can be used to search for objects that have IP addresses within
+            a network. For example: To see all objects that fall into the 10.22.3.0/24 network,
+            search <code>network:10.22.3.0/23</code>.
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            range:
+        </td>
+        <td>
+            <p>
+            The 'range' directive can be used to search for objects that have IP addresses within
+            a specific range. For example: To see all objects have an IP greater than 10.8.2.0 and
+            less than 10.8.2.30, search <code>range:10.8.2.0,10.8.2.30</code>.
+            </p>
+        </td>
+    </tr>
+</table>
+<table border="1">
+    <caption>Examples</caption>
+    <tr>
+        <td>
+            <p>
+            <code>puppet site:scl3 type:A</code>
+            </p>
+            <p>
+            Find all A records in scl3 that have the string 'puppet' in their name.
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>
+            <code>/^node[1-9]\.seamicro type:A type:PTR network:10.8.32.0/24</code>
+            </p>
+            <p>
+            Find all A and PTR records who's name match the regex '^node[1-9]\.seamicro' that are also in
+            the network 10.8.0.0/16.
+            </p>
+        </td>
+    </tr>
+</table>
+</div>

@@ -89,6 +89,9 @@ def build_filter(f, fields, filter_type = "icontains"):
     final_filter = Q()
     filters = []
     for filter_ in f:
+        if filter_.startswith('/'):
+            filter_type = "regex"
+            filter_ = filter_[1:]
         for t in fields:
             final_filter = final_filter | Q(**{"{0}__{1}".format(t,
                 filter_type): filter_})

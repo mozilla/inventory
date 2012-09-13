@@ -313,8 +313,8 @@ import sys
 ss = '"fooo"'
 print ss
 print parse(ss)
-
-"""
 ss = "foo: bar: baz"
 print ss
 print parse(ss)
+
+"""
