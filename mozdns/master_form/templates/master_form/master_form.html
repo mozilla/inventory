@@ -64,13 +64,17 @@
 
             $('#current_form').submit(function (){
                     $('#form-message').html("<p>Sending data...</p>");
+                    var start = new Date().getTime();
                     $.post('/mozdns/record/',
                             $('#current_form').serialize(),
                             function (data) {
-                                console.log(data);
                                 $('#current_form_data').empty();
                                 $('#current_form_data').append(data);
                                 bind_smart_names();
+                                var end = new Date().getTime();
+                                var time = end - start;
+                                $('#action-time').html('('+time/1000+' seconds)');
+
                             })
                     return false;
             }); // end submit()

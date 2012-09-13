@@ -1,6 +1,6 @@
 <div id='form-message' class='form-message'>
 {% if message %}
-    {{message}}
+    {{message}} <div style='display: inline;' id='action-time'></div>
 {% endif %}
 </div>
 <input type="hidden" id="record_type" name="record_type" value="{{record_type}}"/>
