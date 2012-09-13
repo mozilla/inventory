@@ -71,7 +71,7 @@ def render_cname(cname_set):
     """
     BUILD_STR = ''
 
-    template = Template("{name:$name_just} {ttl} {rclass:$class_just} {rtype:$type_just} {data:$data_just}.\n")
+    template = Template("{name:$name_just} {ttl} {rclass:$class_just} {rtype:$type_just} {target:$data_just}.\n")
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
     for cname in cname_set:
@@ -82,7 +82,7 @@ def render_cname(cname_set):
 
         name = cname.fqdn + '.'
         BUILD_STR += template.format(name=name, ttl=ttl, rclass='IN',
-                rtype='CNAME', data=cname.data)
+                rtype='CNAME', target=cname.target)
     return BUILD_STR
 
 def render_srv(srv_set):

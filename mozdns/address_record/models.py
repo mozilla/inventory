@@ -47,6 +47,12 @@ class BaseAddressRecord(Ip):
     class Meta:
         abstract = True
 
+    @property
+    def rdtype(self):
+        if self.ip_type == '6':
+            return 'AAAA'
+        return 'A'
+
     def details(self):
         return  (
                     ("FQDN", self.fqdn),

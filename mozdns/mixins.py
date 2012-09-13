@@ -1,4 +1,5 @@
 from settings import MOZDNS_BASE_URL
+from gettext import gettext as _
 
 
 class ObjectUrlMixin(object):
@@ -29,6 +30,10 @@ class ObjectUrlMixin(object):
         return MOZDNS_BASE_URL + "/{0}/{1}/update/".format(
             self._meta.db_table, self.pk
         )
+
+    def get_fancy_edit_url(self):
+        return MOZDNS_BASE_URL + _("/record/"
+            "?record_type={0}&record_pk={1}").format(self.rdtype, self.pk)
 
     def get_delete_url(self):
         """
