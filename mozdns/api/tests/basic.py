@@ -127,10 +127,7 @@ class MozdnsAPITests(object):
         create_url = self.object_list_url.format(API_VERSION,
                         str(self.test_type.__name__).lower())
         resp = self.api_client.post(create_url, format='json', data=post_data)
-        try:
-            self.assertHttpCreated(resp)
-        except:
-            pdb.set_trace()
+        self.assertHttpCreated(resp)
         # Verify a new one has been added.
         self.assertEqual(self.test_type.objects.count(), obj_count + 1)
         return resp, post_data
