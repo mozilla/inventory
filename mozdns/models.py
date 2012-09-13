@@ -85,7 +85,7 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
             validators=[validate_ttl],
             help_text="Time to Live of this record")
-    views = models.ManyToManyField(View)
+    views = models.ManyToManyField(View, blank=True)
     comment = models.CharField(max_length=1000, blank=True, null=True,
                 help_text="Comments about this record.")
     # fqdn = label + domain.name <--- see set_fqdn

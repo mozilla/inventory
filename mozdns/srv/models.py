@@ -37,7 +37,7 @@ class SRV(models.Model, ObjectUrlMixin):
                             validators=[validate_srv_name])
     # fqdn = label + domain.name <--- see set_fqdn
 
-    views = models.ManyToManyField(View)
+    views = models.ManyToManyField(View, blank=True)
 
     target = models.CharField(max_length=100,
                 validators=[validate_srv_target])

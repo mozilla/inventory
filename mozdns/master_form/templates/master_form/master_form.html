@@ -44,23 +44,27 @@
             var initial_record_type = $('#record_type').attr('value');
             var initial_record_pk = $('#record_pk').attr('value');
             // Do initial form load
-            $.get('/mozdns/record/ajax_form/',
-                {
-                    'record_type': initial_record_type,
-                    'record_pk': initial_record_pk,
-                },
-                function (data) {
-                    $('#current_form_data').empty();
-                    $('#current_form_data').append(data);
-                    if (initial_record_type === '' && initial_record_pk === ''){
-                        // Only bind smart names if the user isn't editing a
-                        //existing record.
-                        bind_smart_names();
-                    } else {
-                        fix_css();
-                    }
-                } // end get() handler
-            ); // end get()
+            if (initial_record_type !== '' && initial_record_pk !== '') {
+                $.get('/mozdns/record/ajax_form/',
+                    {
+                        'record_type': initial_record_type,
+                        'record_pk': initial_record_pk,
+                    },
+                    function (data) {
+                        $('#current_form_data').empty();
+                        $('#current_form_data').append(data);
+                        if (initial_record_type === '' && initial_record_pk === ''){
+                            // Only bind smart names if the user isn't editing a
+                            //existing record.
+                            bind_smart_names();
+                        } else {
+                            fix_css();
+                        }
+                    } // end get() handler
+                ); // end get()
+            } else {
+                $("#rec_type_select option:selected").click();
+            }
 
             $('#current_form').submit(function (){
                     $('#form-message').html("<p>Sending data...</p>");
@@ -80,11 +84,11 @@
             }); // end submit()
 
             function bind_smart_names(){
-                // Look for inputs that have id = 'id_fqdn' | 'id_target' . Make these smart names.
+                // Look for inputs that have id = 'id_fqdn' | 'id_target' | server . Make these smart names.
                 var inputs = $('input');
                 inputs.length;
                 for (var x = 0; x < inputs.length; x++){
-                    if(inputs[x].id === 'id_fqdn' || inputs[x].id === 'id_target' ){
+                    if(inputs[x].id === 'id_fqdn' || inputs[x].id === 'id_target' || inputs[x].id === 'id_server'){
                         make_smart_name(inputs[x], {{domains}}, true)
                         $(inputs[x]).css('width', '400px');
                     }
@@ -196,11 +200,6 @@
         <option class='do-select' value="CNAME" selected="selected">CNAME</option>
         {% else %}
         <option class='do-select' value="CNAME">CNAME</option>
-        {% endif %}
-        {% if record_type == 'SSHFP' %}
-        <option class='do-select' value="SSHFP" selected="selected">CNAME</option>
-        {% else %}
-        <option class='do-select' value="SSHFP">CNAME</option>
         {% endif %}
     </select>
 

@@ -27,7 +27,7 @@ class PTR(Ip, ObjectUrlMixin):
     reverse_domain = models.ForeignKey(Domain, null=False, blank=True)
     data_domain = models.ForeignKey(Domain, null=True, blank=True,
             related_name='ptrs', on_delete=models.SET_NULL)
-    views = models.ManyToManyField(View)
+    views = models.ManyToManyField(View, blank=True)
     comment = models.CharField(max_length=1000, null=True, blank=True)
 
     search_fields = ('ip_str', 'name')

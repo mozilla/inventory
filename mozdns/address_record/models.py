@@ -40,7 +40,7 @@ class BaseAddressRecord(Ip):
             validators=[validate_ttl], help_text="Time to Live of the record")
     comment = models.CharField(max_length=1000, blank=True, null=True,
                 help_text="Comments about this record.")
-    views = models.ManyToManyField(View)
+    views = models.ManyToManyField(View, blank=True)
 
     search_fields = ("fqdn", "ip_str")
 

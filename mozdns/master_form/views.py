@@ -110,7 +110,7 @@ def mozdns_record_form_ajax(request):
 
 def mozdns_record(request):
     if request.method == 'GET':
-        record_type = str(request.GET.get('record_type', 'A'))
+        record_type = str(request.GET.get('record_type', ''))
         record_pk = str(request.GET.get('record_pk', ''))
         domains = Domain.objects.filter(is_reverse=False)
         return render(request, 'master_form/master_form.html', {
