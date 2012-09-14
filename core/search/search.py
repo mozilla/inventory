@@ -10,6 +10,7 @@ from core.site.models import Site
 from core.vlan.models import Vlan
 
 import pdb
+import ipaddr
 
 
 def sif(site):

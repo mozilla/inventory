@@ -79,7 +79,8 @@ def search_ajax(request):
                                         "ptrs": ptrs,
                                         "srvs": srvs,
                                         "txts": txts,
-                                        "meta": meta
+                                        "meta": meta,
+                                        "search": search
                                     }
                         ))
 def search(request):

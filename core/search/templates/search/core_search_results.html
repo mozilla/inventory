@@ -1,8 +1,5 @@
 <div id="ajax_results">
 <div id="meta">
-    <h3>Results:</h3>
-    <div id='search-time'>
-    </div>
     {% if meta.counts.addr %}
         {{ meta.counts.addr }} <a href="#Address">A/AAAA</a> records |
     {% else %}
@@ -38,6 +35,8 @@
     {% else %}
         zero TXT records
     {% endif %}
+</div>
+<div id='search-time' style='margin-top: 2px;' >
 </div>
 <br/>
 {% if misc %}

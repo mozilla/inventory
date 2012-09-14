@@ -78,7 +78,8 @@ def mozdns_record_search_ajax(request):
 
 
 def mozdns_record_form_ajax(request):
-    record_type = request.GET.get('record_type')
+    pdb.set_trace()
+    record_type = request.GET.get('record_type', 'A')
     record_pk = request.GET.get('record_pk', '')
     Klass, FormKlass, FQDNFormKlass = get_klasses(record_type)
 

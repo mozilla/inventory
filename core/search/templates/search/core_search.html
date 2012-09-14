@@ -10,34 +10,60 @@
 }
 </style>
 <script type="text/javascript">
-    function get_and_display_search(){
-        search = document.getElementById('id_search').value;
-        $('#results').html('<p>Please wait while we retrieve your results...<p>');
-        var start = new Date().getTime();
+    $(document).ready(function() {
+        function get_and_display_search(){
+            search = document.getElementById('id_search').value;
+            window.location.hash = '#q='+search;
+            $('#results').html('<p>Please wait while we retrieve your results...<p>');
+            var start = new Date().getTime();
 
-        $.get('/core/search/search_ajax?search='+escape(search),
-        function update_results(data){
-            $('#results').html('');
-            results = document.getElementById('results');
-            results.innerHTML = data;
+            $.get('/core/search/search_ajax?search='+escape(search),
+            function update_results(data){
+                // First make the banner go away. Then push everthing to the left... just like google.
+                $('#banner_text').empty();
+                $('#results').html('');
+                $('#banner_area').css('text-align', 'left');
+                $('.banner').css('margin-bottom', '10px');
+                $('#btn_i').remove();
+                results = document.getElementById('results');
+                results.innerHTML = data;
 
-            var end = new Date().getTime();
-            var time = end - start;
-            $('#search-time').html('('+time/1000+' seconds)');
+                var end = new Date().getTime();
+                var time = end - start;
+                $('#search-time').html('In ('+time/1000+' seconds)');
+            });
+        }
+
+        $('#btn_s').click(function (){
+                get_and_display_search();
         });
-    }
+        $('#btn_i').click(function (){
+                get_and_display_search();
+        });
+        // hash, we use that data as the initial data.
+        var prmarr = window.location.hash.split('&');
+        var params = {};
+        if (prmarr != ""){
+            console.log("Auto searching");
+            for ( var i = 0; i < prmarr.length; i++) {
+                var tmparr = prmarr[i].split("=");
+                if (tmparr[0][0] === '#'){
+                    tmparr[0] = tmparr[0].substring(1,tmparr[0].length);
+                }
+                params[tmparr[0]] = tmparr[1];
+            }
+            $('#id_search').attr('value', params.q);
+            get_and_display_search();
+        }
+    });
 </script>
-<div class="center">
-<h1>Inventory</h1>
-    <input id="id_search" type="text" size="50" name="search" value="{{ search }}" autofocus="autofocus">
-    <br>
-    <br>
-    <br>
-    <input value="Search" title="Search" type="button" id="btn_s" onclick="get_and_display_search()">
-    <input value="I'm Feeling Lucky" title="I'm Feeling Lucky" name="lucky" type="submit" id="btn_i" onclick='get_and_display_search()'>
-    <input value="Help" title="Help" type="button" id="help_button">
-</div>
-<div id='status'>
+<div id="banner_area" class="banner center">
+    <div id='banner_text'><h1>Inventory</h1></div>
+    <input class='search_tools' id="id_search" type="text" size="50" name="search" value="{{ search }}" autofocus="autofocus" style='margin-bottom; 20px'>
+    <div style='display:block;'></div>
+    <input class='search_tools' value="Search" title="Search" type="button" id="btn_s">
+    <input value="I'm Feeling Lucky" title="I'm Feeling Lucky" name="lucky" type="submit" id="btn_i">
+    <input class='search_tools' value="Help" title="Help" type="button" id="help_button">
 </div>
 <div id="results">
 </div>

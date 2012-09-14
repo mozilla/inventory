@@ -12,6 +12,7 @@ from mozdns.validation import validate_first_label, validate_name
 from mozdns.validation import validate_ttl, validate_views
 from mozdns.domain.models import Domain
 from mozdns.mixins import ObjectUrlMixin
+from mozdns.soa.utils import update_soa
 
 import pdb
 
@@ -68,8 +69,7 @@ class BaseAddressRecord(Ip):
         self.full_clean()
         set_fqdn(self)
         check_TLD_condition(self)
-        self.domain.dirty = True
-        self.domain.save()
+        update_soa(self)
         if self.pk:
             # We need to get the domain from the db. If it's not our current
             # domain, call prune_tree on the domain in the db later.

@@ -164,6 +164,9 @@ def build_moz_zone(soa, domain_type, NOWRITE=True, request=None):
 def build_zone(ztype, soa, root_domain):
     """This is where the magic happens.
     """
+    soa.serial += 1
+    # We are updating the local version of the soa. If this function succeeds
+    # we will then save the SOA to the db.
     domains = soa.domain_set.all().order_by('name')
     zone_path = choose_zone_path(soa, root_domain)
 
@@ -234,6 +237,10 @@ def build_zone(ztype, soa, root_domain):
         master_public_zones = ""
         slave_public_zones = ""
         DEBUG_STRING += "; NO PUBLIC ZONE DATA\n"
+
+    # We made it. Let's save the SOA to the db now.
+    soa.dirty = False
+    soa.save()
 
     return ((master_public_zones, master_private_zones),
             (master_private_zones, slave_private_zones),
