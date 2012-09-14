@@ -36,6 +36,7 @@
                                         $('#current_form_data').empty();
                                         $('#current_form_data').append(data);
                                         bind_smart_names();
+                                        bind_record_search_box();
                                     } // end get() handler
                                 ); // end get()
                             }); // end click()
@@ -57,13 +58,51 @@
                             // Only bind smart names if the user isn't editing a
                             //existing record.
                             bind_smart_names();
+                            bind_record_search_box();
                         } else {
                             fix_css();
+                            bind_record_search_box();
                         }
                     } // end get() handler
                 ); // end get()
             } else {
-                $("#rec_type_select option:selected").click();
+            // We have the url inventory.mozilla.com/#record_type=A&record_pk=22
+            // This is used to pass around serches on the web. If we detect these paramters in the
+            // hash, we use that data as the initial data.
+                var prmarr = window.location.hash.split('&');
+                var params = {};
+                for ( var i = 0; i < prmarr.length; i++) {
+                    var tmparr = prmarr[i].split("=");
+                    if (tmparr[0][0] === '#'){
+                        tmparr[0] = tmparr[0].substring(1,tmparr[0].length);
+                    }
+                    params[tmparr[0]] = tmparr[1];
+                }
+                if (params.record_type !== '' && params.record_pk !== ''){
+                    $('#select_'+params.record_type).attr('selected', 'selected');
+                    console.log('#select_'+params.record_type);
+                    $.get('/mozdns/record/ajax_form/',
+                        {
+                            'record_type': params.record_type,
+                            'record_pk': params.record_pk,
+                        },
+                        function (data) {
+                            $('#current_form_data').empty();
+                            $('#current_form_data').append(data);
+                            if (initial_record_type === '' && initial_record_pk === ''){
+                                // Only bind smart names if the user isn't editing a
+                                //existing record.
+                                bind_smart_names();
+                                bind_record_search_box();
+                            } else {
+                                fix_css();
+                                bind_record_search_box();
+                            }
+                        } // end get() handler
+                    ); // end get()
+                } else {
+                    $("#rec_type_select option:selected").click();
+                }
             }
 
             $('#current_form').submit(function (){
@@ -75,6 +114,7 @@
                                 $('#current_form_data').empty();
                                 $('#current_form_data').append(data);
                                 bind_smart_names();
+                                bind_record_search_box();
                                 var end = new Date().getTime();
                                 var time = end - start;
                                 $('#action-time').html('('+time/1000+' seconds)');
@@ -93,6 +133,8 @@
                         $(inputs[x]).css('width', '400px');
                     }
                 }
+            }
+            function bind_record_search_box(){
                 // We also need bind an auto complete to the search field for this specifc record type.
                 $( "#record_search" ).autocomplete({
                     minLength: 2,
@@ -159,6 +201,7 @@
                         $('#current_form_data').append(data);
                         $('#record_search').attr('value',''); // Clear the users selection.
                         bind_smart_names();
+                        bind_record_search_box();
                     });
 
             });
@@ -172,34 +215,34 @@
     </style>
     <select id="rec_type_select">
         {% if record_type == 'A' or record_type == 'AAAA' %}
-        <option class='do-select' value="A" selected="selected">A/AAAA</option>
+        <option class='do-select' value="A" id="select_A"selected="selected">A/AAAA</option>
         {% else %}
         <option class='do-select' value="A">A/AAAA</option>
         {% endif %}
         {% if record_type == 'MX' %}
-        <option class='do-select' value="MX" selected="selected">MX</option>
+        <option class='do-select' value="MX" id="select_MX" selected="selected">MX</option>
         {% else %}
-        <option class='do-select' value="MX">MX</option>
+        <option class='do-select' id="select_MX" value="MX">MX</option>
         {% endif %}
         {% if record_type == 'SRV' %}
-        <option class='do-select' value="SRV" selected="selected">SRV</option>
+        <option class='do-select' value="SRV" id="select_SRV" selected="selected">SRV</option>
         {% else %}
-        <option class='do-select' value="SRV">SRV</option>
+        <option class='do-select' value="SRV" id="select_SRV">SRV</option>
         {% endif %}
         {% if record_type == 'TXT' %}
-        <option class='do-select' value="TXT" selected="selected">TXT</option>
+        <option class='do-select' value="TXT" id="select_TXT" selected="selected">TXT</option>
         {% else %}
-        <option class='do-select' value="TXT">TXT</option>
+        <option class='do-select' value="TXT" id="select_TXT">TXT</option>
         {% endif %}
         {% if record_type == 'PTR' %}
-        <option class='do-select' value="PTR" selected="selected">PTR</option>
+        <option class='do-select' value="PTR" id="select_PTR" selected="selected">PTR</option>
         {% else %}
-        <option class='do-select' value="PTR">PTR</option>
+        <option class='do-select' value="PTR" id="select_PTR">PTR</option>
         {% endif %}
         {% if record_type == 'CNAME' %}
-        <option class='do-select' value="CNAME" selected="selected">CNAME</option>
+        <option class='do-select' value="CNAME" id="select_CNAME" selected="selected">CNAME</option>
         {% else %}
-        <option class='do-select' value="CNAME">CNAME</option>
+        <option class='do-select' value="CNAME" id="select_CNAME">CNAME</option>
         {% endif %}
     </select>
 

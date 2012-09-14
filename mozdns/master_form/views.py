@@ -90,9 +90,11 @@ def mozdns_record_form_ajax(request):
             # ACLs should be appplied here
             form = FQDNFormKlass(instance=object_)
         except ObjectDoesNotExist:
+            object_ = None
             form = FQDNFormKlass()
             record_pk = ''
     else:
+        object_ = None
         form = FQDNFormKlass()
 
     if record_pk:
@@ -105,10 +107,12 @@ def mozdns_record_form_ajax(request):
         'record_type': record_type,
         'record_pk': record_pk,
         'form': form,
-        'message': message
+        'message': message,
+        'obj': object_
     })
 
-def mozdns_record(request):
+
+def mozdns_record(request, record_type='', record_pk=''):
     if request.method == 'GET':
         record_type = str(request.GET.get('record_type', ''))
         record_pk = str(request.GET.get('record_pk', ''))
@@ -126,6 +130,7 @@ def mozdns_record(request):
     orig_qd = request.POST.copy()  # If there are ever errors, we use this qd
         # to populate the form we send to the user
     record_type = qd.pop('record_type', '')
+    object_ = None
     if record_type:
         record_type = record_type[0]
     record_pk = qd.pop('record_pk', '')
@@ -153,6 +158,7 @@ def mozdns_record(request):
                 'form': form,
                 'record_type': record_type,
                 'record_pk': record_pk,
+                'obj': object_
             })
         qd['label'], qd['domain'] = label, str(domain.pk)
 
@@ -176,6 +182,7 @@ def mozdns_record(request):
                 'form': error_form,
                 'record_type': record_type,
                 'record_pk': record_pk,
+                'obj': object_
             })
 
         fqdn_form = FQDNFormKlass(instance=object_)
@@ -187,7 +194,8 @@ def mozdns_record(request):
             'form': fqdn_form,
             'record_type': record_type,
             'record_pk': object_.pk,
-            'message': message
+            'message': message,
+            'obj': object_
         })
     else:
         prune_tree(domain)
@@ -197,4 +205,5 @@ def mozdns_record(request):
             'form': error_form,
             'record_type': record_type,
             'record_pk': record_pk,
+            'obj': object_
         })

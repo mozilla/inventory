@@ -1,8 +1,66 @@
+<script>
+    // So if people paste links around.
+    $(document).ready(function (){
+        window.location.hash = '#record_type={{record_type}}&record_pk={{record_pk}}';
+    });
+</script>
 <div id='form-message' class='form-message'>
 {% if message %}
     {{message}} <div style='display: inline;' id='action-time'></div>
 {% endif %}
 </div>
+<style>
+    div.soa_status_dirty {
+        color: red;
+        display: inline;
+    }
+    div.soa_status_clean {
+        color: green;
+        display: inline;
+    }
+    div.object_meta {
+        float:right;
+        border:2px solid gray;
+        padding:10px;
+        border-radius: 10px;
+        background: white;
+        min-height:100px;
+        max-width:200px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px rgba(255,255,255,0.3), inset 0 10px rgba(255,255,255,0.2), inset 0 10px 20px rgba(255,255,255,0.25), inset 0 -15px 30px rgba(0,0,0,0.3);
+    }
+</style>
+{% if obj %}
+<div class='object_meta'>
+    {% if obj.domain.soa %}
+    <table>
+        <tr>
+            <td>
+                ZONE:
+                <a href='{{ obj.domain.soa.get_absolute_url() }}'>
+                    {{ obj.domain.soa }}
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Zone Status:
+                {% if obj.domain.soa.dirty %}
+                <div class='soa_status_dirty'>REBUILD NEEDED</div>
+                {% else %}
+                <div class='soa_status_clean'>UP TO DATE</div>
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Debug BIND File:
+                <a href='{{ obj.domain.soa.get_debug_build_url() }}'> click </a>
+            </td>
+        </tr>
+    </table>
+    {% endif %}
+</div>
+{% endif %}
 <input type="hidden" id="record_type" name="record_type" value="{{record_type}}"/>
 {{ form.as_p() }}
 <input type="hidden" id="record_pk" name="record_pk" value="{{record_pk}}"/>
