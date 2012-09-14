@@ -151,7 +151,7 @@ def license_quicksearch_ajax(request):
     """
     search = request.POST.get('quicksearch', None)
     if not search:
-        search = request.POST.get('quicksearch', None)
+        search = request.GET.get('quicksearch', None)
     if search:
         filters = [Q(**{"%s__icontains" % t: search})
                         for t in models.UserLicense.search_fields]
