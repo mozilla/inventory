@@ -448,6 +448,7 @@ def user_system_show(request, object_id):
     #system = get_object_or_404(models.UnmanagedSystem
     return render_to_response('user_systems/unmanagedsystem_detail.html', {
             'user_system': system,
+            'settings': settings,
            },
            RequestContext(request))
 def user_system_show_by_asset_tag(request, id):

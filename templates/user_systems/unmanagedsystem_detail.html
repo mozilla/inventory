@@ -29,7 +29,7 @@
 
 {% if user_system.bug_number %}
 <dt>Bug #:</dt>
-<dd><a href="{{ settings.BUG_URL }}{{ user_system.bug_number }}">{{ user_system.bug_number }}</a></dd>
+<dd><a href="{{ user_system.get_bug_url() }}">{{ user_system.bug_number }}</a></dd>
 <div style="clear:both;"></div>
 {% endif %}
 

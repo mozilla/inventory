@@ -11,7 +11,7 @@
             <td>{{ system.notes }}</td>
             <td>
             {% if system.bug_number %}
-                <a href="{{ BUG_URL }}{{ system.bug_number }}">{{ system.bug_number }}</a>
+                <a href="{{ system.get_bug_url() }}">{{ system.bug_number }}</a>
             {% else %}
                 &nbsp;
             {% endif %}
