@@ -17,7 +17,7 @@ def render_mx(mx_set):
     template = template.substitute(name_just=name_just, class_just=class_just,
                 type_just=type_just, prio_just=prio_just, data_just=data_just)
     for mx in mx_set:
-        if mx.ttl == 3600:
+        if mx.ttl == 3600 or mx.ttl is None:
             ttl = ''
         else:
             ttl = str(mx.ttl)
@@ -36,7 +36,7 @@ def render_ns(nameserver_set):
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
     for ns in nameserver_set:
-        if ns.ttl == 3600:
+        if ns.ttl == 3600 or ns.ttl is None:
             ttl = ''
         else:
             ttl = str(ns.ttl)
@@ -56,7 +56,7 @@ def render_address_record(addressrecord_set):
             rec_type = 'A'
         else:
             rec_type = 'AAAA'
-        if rec.ttl == 3600:
+        if rec.ttl == 3600 or rec.ttl is None:
             ttl = ''
         else:
             ttl = str(rec.ttl)
@@ -75,7 +75,7 @@ def render_cname(cname_set):
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
     for cname in cname_set:
-        if cname.ttl == 3600:
+        if cname.ttl == 3600 or cname.ttl is None:
             ttl = ''
         else:
             ttl = str(cname.ttl)
@@ -94,7 +94,7 @@ def render_srv(srv_set):
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, prio_just=prio_just, extra_just=extra_just)
     for srv in srv_set:
-        if srv.ttl == 3600:
+        if srv.ttl == 3600 or srv.ttl is None:
             ttl = ''
         else:
             ttl = str(srv.ttl)
@@ -118,7 +118,7 @@ def render_txt(txt_set):
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
     for txt in txt_set:
-        if txt.ttl == 3600:
+        if txt.ttl == 3600 or txt.ttl is None:
             ttl = ''
         else:
             ttl = str(txt.ttl)
@@ -134,7 +134,7 @@ def render_sshfp(sshfp_set):
     template = template.substitute(name_just=name_just, class_just=class_just,
                         type_just=type_just, data_just=data_just)
     for sshfp in sshfp_set:
-        if sshfp.ttl == 3600:
+        if sshfp.ttl == 3600 or sshfp.ttl is None:
             ttl = ''
         else:
             ttl = str(sshfp.ttl)
