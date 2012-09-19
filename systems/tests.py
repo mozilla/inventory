@@ -18,6 +18,7 @@ from django.test.client import Client
 from models import KeyValue, System
 from core.range.models import Range
 from mozdns.domain.models import Domain
+from mozdns.soa.models import SOA
 from core.network.models import Network
 from mozdns.view.models import View
 from core.vlan.models import Vlan
@@ -29,6 +30,7 @@ except:
 
 from inventory.systems import models
 from test_utils import setup_test_environment, TestCase
+import pdb
 setup_test_environment()
 
 
@@ -269,8 +271,8 @@ class SystemAdapterTest(TestCase):
         post_dict = {
             'interface': 'eth0.0',
             'system_id': '1',
-            'hostname': 'fake-hostname',
             'is_ajax': '1',
+            'fqdn': 'fake-hostname.mozilla.com',
             'range': Range.objects.all()[0].id,
             'mac_address': '00:00:00:00:00:00',
             'ip_address': '10.99.99.99',
@@ -309,28 +311,19 @@ class SystemAdapterTest(TestCase):
         resp = self.client.get(
             reverse(
                 "system-adapter-next-ip",
-                kwargs={'range_id': range_id}),
+                kwargs={'range_id': range_id,
+                        }),
             follow=True)
         self.assertEqual(resp.status_code, 200)
         obj = json.loads(resp.content)
         self.assertEqual(obj['ip_address'], '10.99.99.1')
         self.assertEqual(obj['success'], True)
 
-    def test6_system_adapter_ajax_get_invalid_domain(self):
-        resp = self.client.get(
-            reverse(
-                "system-network-adapter-create",
-                kwargs={'system_id': '1'}),
-            follow=True)
-        self.assertEqual(resp.status_code, 200)
-        obj = json.loads(resp.content)
-        self.assertEqual(obj['success'], False)
-        self.assertTrue(obj['error_message'].find("was not not found") != -1)
-
     def test7_system_adapter_add_adapter_test_ajax_all_enabled(self):
         post_dict = {
             'system_id': '1',
-            'hostname': 'fake-hostname',
+            'interface': 'eth2.4',
+            'fqdn': 'fake-hostname.mozilla.com',
             'is_ajax': '1',
             'range': Range.objects.all()[0].id,
             'ip_address': '66.66.66.66',
@@ -356,7 +349,7 @@ class SystemAdapterTest(TestCase):
         public = View.objects.get(name='public')
         self.assertEqual(
             private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.vlan.dc.mozilla.com')
+            u'fake-hostname.mozilla.com')
         self.assertEqual(
             private.staticinterface_set.all()[0].mac, u'00:00:00:00:00:00')
         self.assertEqual(
@@ -369,7 +362,8 @@ class SystemAdapterTest(TestCase):
     def test8_system_adapter_add_adapter_test_ajax_dhcp_disabled(self):
         post_dict = {
             'system_id': '1',
-            'hostname': 'fake-hostname',
+            'interface': "eth1.2",
+            'fqdn': 'fake-hostname.mozilla.com',
             'range': Range.objects.all()[0].id,
             'is_ajax': '1',
             'ip_address': '66.66.66.66',
@@ -395,7 +389,7 @@ class SystemAdapterTest(TestCase):
         public = View.objects.get(name='public')
         self.assertEqual(
             private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.vlan.dc.mozilla.com')
+            u'fake-hostname.mozilla.com')
         self.assertEqual(
             private.staticinterface_set.all()[0].mac,
             u'00:00:00:00:00:00')
@@ -415,14 +409,15 @@ class SystemAdapterTest(TestCase):
         post_dict = {
             'system_id': '1',
             'range': Range.objects.all()[0].id,
-            'hostname': 'fake-hostname',
+            'fqdn': 'fake-hostname.mozilla.com',
             'is_ajax': '1',
+            'interface': 'eth0.0',
             'ip_address': '66.66.66.66',
             'mac_address': '00:00:00:00:00:00',
-            'enable_dhcp': 'True',
+            'enable_dhcp': 'true',
             'enable_dns': 'true',
-            'enable_public': 'true',
-            'enable_private': 'false', }
+            'enable_public': 'false',
+            'enable_private': 'true', }
         sys = System.objects.get(id=1)
         sys.hostname = sys.hostname + '.vlan.dc'
         sys.save()
@@ -438,9 +433,8 @@ class SystemAdapterTest(TestCase):
         eth0 = sys.staticinterface_set.all()[0]
         private = View.objects.get(name='private')
         public = View.objects.get(name='public')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.vlan.dc.mozilla.com')
+        self.assertEqual(private.staticinterface_set.all()[0].fqdn,
+            u'fake-hostname.mozilla.com')
         self.assertEqual(
             private.staticinterface_set.all()[0].mac, u'00:00:00:00:00:00')
         self.assertEqual(
@@ -449,13 +443,14 @@ class SystemAdapterTest(TestCase):
             private.staticinterface_set.all()[0].dns_enabled, True)
         self.assertEqual(
             private.staticinterface_set.all()[0].dhcp_enabled, True)
-        self.assertEqual(public.staticinterface_set.all()[0].dns_enabled, True)
+        self.assertEqual(private.staticinterface_set.all()[0].dns_enabled, True)
 
     def test10_test_ajax_dhcp_enabled_priv_enabled_pub_disabled(self):
         post_dict = {
+            'interface': 'eth0.0',
             'system_id': '1',
             'range': Range.objects.all()[0].id,
-            'hostname': 'fake-hostname',
+            'fqdn': 'fake-hostname.mozilla.com',
             'is_ajax': '1',
             'ip_address': '10.99.99.10',
             'mac_address': '00:00:00:00:00:00',
@@ -480,7 +475,7 @@ class SystemAdapterTest(TestCase):
         public = View.objects.get(name='public')
         self.assertEqual(
             private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.vlan.dc.mozilla.com')
+            u'fake-hostname.mozilla.com')
         self.assertEqual(
             private.staticinterface_set.all()[0].mac, u'00:00:00:00:00:00')
         self.assertEqual(
@@ -493,9 +488,10 @@ class SystemAdapterTest(TestCase):
 
     def test11_adapter_test_ajax_dhcp_enabled_all_dns_disabled(self):
         post_dict = {
+            'interface': 'eth0.0',
             'system_id': '1',
             'range': Range.objects.all()[0].id,
-            'hostname': 'fake-hostname',
+            'fqdn': 'fake-hostname.mozilla.com',
             'is_ajax': '1',
             'ip_address': '10.99.99.10',
             'mac_address': '00:00:00:00:00:00',
@@ -524,9 +520,10 @@ class SystemAdapterTest(TestCase):
 
     def test12_test_proper_interface(self):
         post_dict = {
+            'interface': 'eth0.0',
             'system_id': '1',
             'range': Range.objects.all()[0].id,
-            'hostname': 'fake-hostname',
+            'fqdn': 'fake-hostname.mozilla.com',
             'is_ajax': '1',
             'ip_address': '10.99.99.10',
             'mac_address': '00:00:00:00:00:00',
@@ -564,10 +561,11 @@ class SystemAdapterTest(TestCase):
 
     def test13_bad_interface_name(self):
         post_dict = {
+            'interface': 'eth0.0',
             'system_id': '1',
             'interface': 'asdfasfdasfdasdfasdf',
             'range': Range.objects.all()[0].id,
-            'hostname': 'fake-hostname',
+            'fqdn': 'fake-hostname.mozilla.com',
             'is_ajax': '1',
             'ip_address': '10.99.99.10',
             'mac_address': '00:00:00:00:00:00',
@@ -611,7 +609,11 @@ class SystemAdapterTest(TestCase):
         public.save()
         Domain(name='com').save()
         Domain(name='mozilla.com').save()
-        Domain(name='dc.mozilla.com').save()
+        s = SOA(primary="foo", comment="bar", contact="asdf")
+        s.save()
+        d = Domain(name='dc.mozilla.com')
+        d.soa = s
+        d.save()
         Domain(name='vlan.dc.mozilla.com').save()
         Domain(name='arpa').save()
         Domain(name='in-addr.arpa').save()
