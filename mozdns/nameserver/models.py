@@ -7,6 +7,7 @@ from mozdns.validation import validate_label, validate_name
 from mozdns.mixins import ObjectUrlMixin
 from mozdns.view.models import View
 from mozdns.validation import validate_ttl
+from mozdns.models import check_for_cname
 
 from core.interface.static_intr.models import StaticInterface
 
@@ -122,6 +123,7 @@ class Nameserver(models.Model, ObjectUrlMixin):
 
     def clean(self):
         self.check_NS_TLD_condition()
+        check_for_cname(self)
 
         if not self._needs_glue():
             self.glue = None

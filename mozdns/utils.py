@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 
 from mozdns.domain.models import Domain
 from mozdns.mx.models import MX
+from mozdns.sshfp.models import SSHFP
 from mozdns.txt.models import TXT
 from mozdns.srv.models import SRV
 from mozdns.address_record.models import AddressRecord
@@ -74,7 +75,7 @@ def slim_form(domain_pk=None, form=None):
     return form
 
 def get_clobbered(domain_name):
-    classes = [MX, AddressRecord, CNAME, TXT, SRV, StaticInterface]
+    classes = [MX, AddressRecord, CNAME, TXT, SRV, StaticInterface, SSHFP]
     clobber_objects = []  # Objects that have the same name as a domain
     for Klass in classes:
         objs = Klass.objects.filter(fqdn=domain_name)

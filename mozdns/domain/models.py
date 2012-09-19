@@ -6,7 +6,7 @@ from mozdns.soa.models import SOA
 from mozdns.mixins import ObjectUrlMixin
 from mozdns.validation import validate_domain_name, _name_type_check
 from mozdns.validation import do_zone_validation
-from mozdns.search_utils import fqdn_exists
+from mozdns.search_utils import smart_fqdn_exists
 from mozdns.ip.utils import ip_to_domain_name, nibbilize
 from mozdns.validation import validate_reverse_name
 from mozdns.domain.utils import name_to_domain
@@ -149,8 +149,11 @@ class Domain(models.Model, ObjectUrlMixin):
         # TODO, can we remove this?
         if self.pk is None:
             # The object doesn't exist in the db yet. Make sure we don't
-            # conflict with existing objects.
-            qset = fqdn_exists(self.name, pt=False)
+            # conflict with existing objects. We may want to move to a more
+            # automatic solution where the creation of a new domain will
+            # automatically move objects around (see the ensure_domain
+            # function).
+            qset = smart_fqdn_exists(self.name)
             if qset:
                 objects = qset.all()
                 raise ValidationError("Objects with this name already "

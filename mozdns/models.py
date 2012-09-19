@@ -81,7 +81,7 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
                 validators=[validate_first_label],
                 help_text="Short name of the fqdn")
     fqdn = models.CharField(max_length=255, blank=True, null=True,
-                validators=[validate_name])
+                validators=[validate_name], db_index=True)
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
             validators=[validate_ttl],
             help_text="Time to Live of this record")
@@ -171,9 +171,13 @@ def check_for_cname(record):
     CNAME.
     """
     CNAME = mozdns.cname.models.CNAME
-    if CNAME.objects.filter(fqdn=record.fqdn).exists():
-        raise ValidationError("A CNAME with this name already exists.")
-
+    if hasattr(record, 'label'):
+        if CNAME.objects.filter(domain=record.domain,
+                label=record.label).exists():
+            raise ValidationError("A CNAME with this name already exists.")
+    else:
+        if CNAME.objects.filter(label='', domain=record.domain).exists():
+            raise ValidationError("A CNAME with this name already exists.")
 
 def check_for_delegation(record):
     """If an object's domain is delegated it should not be able to

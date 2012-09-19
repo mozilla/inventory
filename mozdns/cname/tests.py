@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 
 from mozdns.soa.models import SOA
 from mozdns.domain.models import Domain
+from mozdns.nameserver.models import Nameserver
 from mozdns.mx.models import MX
 from mozdns.srv.models import SRV
 from mozdns.txt.models import TXT
@@ -268,6 +269,32 @@ class CNAMETests(TestCase):
 
         self.assertRaises(ValidationError, rec.save)
 
+    def test_ns_exists(self):
+        # Duplicate test?
+        label = "testyfoo"
+        data = "wat"
+        dom,_ = Domain.objects.get_or_create(name="cd")
+        dom,_ = Domain.objects.get_or_create(name="what.cd")
+
+        rec = Nameserver(domain=dom, server="asdf1")
+        rec.save()
+        cn = CNAME(label = '', domain = dom, target = data)
+        self.assertRaises(ValidationError, cn.clean)
+
+    def test_ns_cname_exists(self):
+        # Duplicate test?
+        label = "testyfoo"
+        data = "wat"
+        dom,_ = Domain.objects.get_or_create(name="cd")
+        dom,_ = Domain.objects.get_or_create(name="what.cd")
+
+        cn,_ = CNAME.objects.get_or_create(label = '', domain = dom, target = data)
+        cn.full_clean()
+        cn.save()
+
+        rec = Nameserver(domain=dom, server="asdf1")
+        self.assertRaises(ValidationError, rec.save)
+
     def test_intr_exists(self):
         label = "tdfestyfoo"
         data = "waasdft"
@@ -293,7 +320,12 @@ class CNAMETests(TestCase):
         cn.full_clean()
         cn.save()
 
+
         intr = StaticInterface(label=label, domain=dom, ip_str = "10.0.0.2",
-                ip_type='4')
+                ip_type='4', system=self.s, mac="00:11:22:33:44:55")
 
         self.assertRaises(ValidationError, intr.clean)
+        cn.label = "differentlabel"
+        cn.save()
+        intr.clean()
+        intr.save()

@@ -5,7 +5,7 @@ import mozdns
 from mozdns.domain.models import Domain, _name_to_domain
 from mozdns.models import MozdnsRecord
 from mozdns.validation import validate_name, find_root_domain
-from mozdns.search_utils import fqdn_exists
+from mozdns.search_utils import smart_fqdn_exists
 
 import pdb
 
@@ -59,14 +59,6 @@ class CNAME(MozdnsRecord):
     def clean(self, *args, **kwargs):
         super(CNAME, self).clean(*args, **kwargs)
         super(CNAME, self).check_for_delegation()
-        """The RFC for DNS requires that a CName never be at the same
-        level as an SOA, A, or MX record. Bind enforces this
-        restriction. When creating a Cname, the UI needs to make sure
-        that there are no records of those types that will clash.
-        Likewise, when creating an SOA, A or MX, the UI needs to verify
-        that there are no MX records at that level.
-        """
-        # TODO ^
         self.check_SOA_condition()
         self.target_domain = _name_to_domain(self.target)
         self.existing_node_check()
@@ -121,7 +113,7 @@ class CNAME(MozdnsRecord):
                 * :class:`TXT`
                 * :class:`MX`
         """
-        qset = fqdn_exists(self.fqdn, cn=False, dn=False, pt=False)
+        qset = smart_fqdn_exists(self.fqdn, cn=False)
         if qset:
             objects = qset.all()
             raise ValidationError("Objects with this name already exist: {0}".

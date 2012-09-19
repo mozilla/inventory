@@ -429,8 +429,8 @@ class PTRV6APITests(MozdnsAPITests, ResourceTestCase):
         return {
             'comment': 'k' + random_label(),
             'ttl': random_byte(),
-            'ip_str': "1000:{0}:{1}:{2}::".format(random_byte(), random_byte(),
-                random_byte()),
+            'ip_str': "1000:{0}:{1}:{2}:{3}:{4}::".format(random_byte(), random_byte(),
+                random_byte(),random_byte(),random_byte()),
             'ip_type': '6',
             'name': random_label()
         }

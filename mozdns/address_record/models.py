@@ -191,5 +191,5 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
 
     class Meta:
         db_table = "address_record"
-        unique_together = ("label", "domain", "ip_upper", "ip_lower",
+        unique_together = ("label", "domain", "fqdn", "ip_upper", "ip_lower",
                 "ip_type")
