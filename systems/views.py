@@ -1,6 +1,6 @@
-import csv
-
-from django.core.exceptions import ValidationError
+from django.test.client import Client
+from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from django.db.models import Q
@@ -8,27 +8,33 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import  redirect, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
+from django.utils import translation
+
+import _mysql_exceptions
+
+
+from jingo import render
+from jinja2.filters import contextfilter
+
+import models
+from libs.jinja import render_to_response as render_to_response
+from Rack import Rack
+from mozilla_inventory.middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
+from core.interface.static_intr.models import StaticInterface
+from core.range.models import Range
+from mozdns.utils import ensure_label_domain, prune_tree
+
+from MozInvAuthorization.KeyValueACL import KeyValueACL
+
+import pdb
+import csv
+import re
 try:
     import json
 except:
     from django.utils import simplejson as json
-import _mysql_exceptions
 
-import models
-from mozilla_inventory.middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 
-import re
-from django.test.client import Client
-from jinja2.filters import contextfilter
-from django.utils import translation
-from libs.jinja import render_to_response as render_to_response
-from jingo import render
-from django.views.decorators.csrf import csrf_exempt
-from Rack import Rack
-from core.interface.static_intr.models import StaticInterface
-from core.range.models import Range
-
-from MozInvAuthorization.KeyValueACL import KeyValueACL 
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
 def tryint(s):
@@ -47,6 +53,7 @@ def sort_nicely(l):
     """ Sort the given list in the way that humans expect.
     """
     l.sort(key=alphanum_key)
+
 def parse_title_num(title):
    val = 0
    try:
@@ -62,6 +69,7 @@ def check_dupe_nic(request,system_id, adapter_number):
     except:
         pass
     return HttpResponse(found)
+
 def check_dupe_nic_name(requessdft,system_id,adapter_name):
     try:
         system = models.System.objects.get(id=system_id)
@@ -69,6 +77,7 @@ def check_dupe_nic_name(requessdft,system_id,adapter_name):
     except:
         pass
     return HttpResponse(found)
+
 @allow_anyone
 def system_rack_elevation(request, rack_id):
     r = Rack(rack_id)
@@ -87,7 +96,19 @@ def system_rack_elevation(request, rack_id):
 def get_all_ranges_ajax(request):
     ret_list = []
     for r in Range.objects.all().order_by('network__site'):
-        ret_list.append({'id': r.id, 'display': r.choice_display()})
+        if r.network.site:
+            site_name = r.network.site.name
+        else:
+            site_name = ''
+        if r.network.vlan:
+            vlan_name = r.network.vlan.name
+        else:
+            vlan_name = ''
+        ret_list.append({'id': r.pk,
+                         'display': r.choice_display(),
+                         'vlan': vlan_name,
+                         'site': site_name
+                         })
     return HttpResponse(json.dumps(ret_list))
 
 
@@ -100,93 +121,105 @@ def get_next_available_ip_by_range(request, range_id):
     ret['ip_address'] = display_ip
     return HttpResponse(json.dumps(ret))
 
+def get_next_intr_name(request, system_pk):
+    system = get_object_or_404(models.System, pk=system_pk)
+    interface_type, primary, alias = system.get_next_adapter()
+    return HttpResponse(json.dumps({'success': True,
+        'intr_name': "{0}{1}.{2}".format(interface_type, primary, alias)}))
 
 @csrf_exempt
 def create_adapter(request, system_id):
+    if not request.POST.get('is_ajax', False):
+        return HttpResponse("Ajax only homie.")
+
     from api_v3.system_api import SystemResource
     from mozdns.domain.models import Domain
     from mozdns.view.models import View
     system = get_object_or_404(models.System, id=system_id)
-    ip_address = request.POST.get('ip_address')
-    mac_address = request.POST.get('mac_address')
-    interface = request.POST.get('interface')
-    enable_dhcp = True
-    enable_dns = True
-    enable_public = True
-    enable_private = True
+    ip_address = request.POST.get('ip_address', '')
+    mac_address = request.POST.get('mac_address', '')
+    intr_name = request.POST.get('interface', '')
 
-    if request.POST.get('is_ajax'):
-        label = request.POST.get('hostname')
-        the_range = Range.objects.get(id=request.POST.get('range'))
-        domain_parsed = "%s.%s.mozilla.com" % (the_range.network.vlan.name, the_range.network.site.name)
-        if request.POST.get('enable_dhcp') == 'false':
-            enable_dhcp = False
-        if request.POST.get('enable_dns') == 'false':
-            enable_dns = False
-        else:
-            enable_public = False if request.POST.get('enable_public') == 'false' else True
-            enable_private = False if request.POST.get('enable_private') == 'false' else True
-            #Do something here
+    # Determine whether to enable or disable DNS and DHCP
+    if request.POST.get('enable_dhcp', '') == 'false':
+        enable_dhcp = False
     else:
-        label = system.hostname.split('.')[0]
-        domain_parsed = ".".join(system.hostname.split('.')[1:]) + '.mozilla.com'
+        enable_dhcp = True
+    if request.POST.get('enable_dns', '') == 'false':
+        enable_dns = False
+    else:
+        enable_dns = True
 
+    # Determine which DNS views to to enable. (Won't matter if DNS is not
+    # enabled)
+    if request.POST.get('enable_public', '') == 'false':
+        enable_public = False
+    else:
+        enable_public = True
+
+    if request.POST.get('enable_private', '') == 'false':
+        enable_private = False
+    else:
+        enable_private = True
+
+    if not intr_name:
+        return HttpResponse(json.dumps({'success': False, 'error_message':
+            "Please specify a interface name or select to have the name "
+            "automatically generated."}))
+
+    # Figure out label and domain
+    fqdn = request.POST.get('fqdn', '')
     try:
-        domain = Domain.objects.filter(name=domain_parsed)[0]
-    except IndexError, e:
+        label, domain = ensure_label_domain(fqdn)
+        # If we hit we need to back out of creating this interface,
+        # make sure to call prune_tree on this domain.
+    except ValidationError, e:
         return HttpResponse(json.dumps({'success': False,
-                    'error_message': "The Domain {0} was not not "
-                    "found".format(domain_parsed)}))
+            'error_message': "Error creating label and domain: "
+            "{0}".format(" ".join(e.messages))}))
 
-    if interface:
-        try:
-            interface_type, primary, alias = SystemResource.extract_nic_attrs(interface)
-        except ValidationError, e:
-            return HttpResponse(json.dumps({'success': False, 'error_message': " ".join(e.messages)}))
-    else:
-        interface_type, primary, alias = system.get_next_adapter()
-    s = StaticInterface(label=label, mac=mac_address, domain=domain, ip_str=ip_address, ip_type='4', system=system)
-    s.dhcp_enabled = enable_dhcp
-    s.dns_enabled = enable_dns
+    # Determine the keys to store later when nameing the interface.
+    try:
+        x = SystemResource.extract_nic_attrs(intr_name)
+        interface_type, primary, alias = x
+    except ValidationError, e:
+        prune_tree(domain)
+        return HttpResponse(json.dumps({'success': False, 'error_message':
+            " ".join(e.messages)}))
 
-
+    # Create the Interface
+    s = StaticInterface(label=label, mac=mac_address, domain=domain,
+        ip_str=ip_address, ip_type='4', system=system,
+        dhcp_enabled=enable_dhcp, dns_enabled=enable_dns)
     try:
         s.clean()
         s.save()
-        if enable_dns and enable_public:
-            public = View.objects.get(name='public')
-            private = View.objects.get(name='private')
-            s.views.add(public)
-            s.views.add(private)
-            s.save()
-
-        elif enable_dns and enable_private and not enable_public:
-            private = View.objects.get(name='private')
-            s.views.add(private)
-            s.save()
-
     except ValidationError, e:
-        return HttpResponse(json.dumps({'success': False, 'error_message': " ".join(e.messages)}))
- 
+        prune_tree(domain)
+        return HttpResponse(json.dumps({'success': False, 'error_message':
+            "Failed to create an interface: {0}".format(" ".join(e.messages))}))
+
+    # Configure views
+    if enable_dns:
+        if enable_public:
+            public = View.objects.get(name='public')
+            s.views.add(public)
+        if enable_private:
+            private = View.objects.get(name='private')
+            s.views.add(private)
+        s.save()
+
+
+    # Add key value pairs
     s.update_attrs()
     try:
         s.attrs.primary = primary
         s.attrs.interface_type = interface_type
         s.attrs.alias = alias
     except AttributeError, e:
-        return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))
-    """try:
-        s = StaticInterface(label=label, mac=mac_address, domain=domain, ip_str=ip_address, ip_type='4', system=system)
-        s.clean()
-        s.save()
-        s.update_attrs()
-        s.attrs.primary = primary
-        s.attrs.interface_type = interface_type
-        s.attrs.alias = alias
-    except ValidationError, e:
-        return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))
-    except Exception, e:
-        return HttpResponse(json.dumps({'success': True, 'error_message': " ".join(e.messages)}))"""
+        return HttpResponse(json.dumps({'success': True, 'error_message':
+            "The Interface was created but there were other errors: ".join(
+                e.messages)}))
 
     return HttpResponse(json.dumps({'success': True}))
 

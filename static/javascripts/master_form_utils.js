@@ -25,19 +25,13 @@ $(function() {
 $(document).ready(function (){
 });
 
-
-
-function display_disable(element_id){
-    var ele = document.getElementById(element_id);
-    var text = document.getElementById(element_id);
-    ele.style.display = "none";
+function make_smart_name_get_domains(element, append){
+    $.get('/mozdns/domain/get_all_domains/', function(domains) {
+        console.log(domains.sort);
+        make_smart_name(element, $.parseJSON(domains), append);
+    });
 }
 
-function display_enable(element_id){
-    var ele = document.getElementById(element_id);
-    var text = document.getElementById(element_id);
-    ele.style.display = "block";
-}
 
 function make_smart_name(element, domains, append){
     $(element).autocomplete({

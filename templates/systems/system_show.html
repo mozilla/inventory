@@ -1,6 +1,9 @@
 {% extends "jinja_base.html" %}
 {% block subtitle %} - {{ system.hostname }} - show{% endblock %}
 {% block content %}
+<script type="text/javascript" src="/static/javascripts/master_form_utils.js"></script>
+<!-- ^ Contains the make smart name function -->
+
 <div>
 <dl class="show">
 <dt>Host name:</dt>
@@ -218,186 +221,243 @@
         });
 
         $(".system_add_interface_combined").click(function(){
-                var d = $( "#add-dialog" ).dialog({
-                        title: 'Associate to System',
-                        autoShow: false,
-                        buttons: {
-                            "Save": function() {
-                            $.post('/core/interface/combine_a_ptr_to_interface/' + addr_pk + '/' + ptr_pk + '/',
-                                { 'is_ajax': '1', 'system_hostname': $("#system_search").val() },
-                                function(data){
-                                    var obj = jQuery.parseJSON(data);
-                                    if(obj.success == true){
-                                        update_link($("a[rel=" + the_rel + "]"), obj.id, obj.hostname);
-                                    } else {
-
-                                        alert(obj.error);
-
-                                    }
-                                });
-
-                                $( this ).dialog( "close" );
-                            },
-                            Cancel: function() {
-                                $( this ).dialog( "close" );
-                            }
-                        }
-
-                        });
-                d.show();
-                return false;
-            // end of .system_quick_add_interface.click()
-        });
-        $(".system_add_interface_combined").click(function(){
-                $("#add_adapter_hostname").val($("#hostname_dd").html().split('.')[0]);
-                $.ajax({
-                        type: "GET",
-                        url: "/en-US/systems/get_all_ranges_ajax/",
-                        data: "{}",
-                        contentType: "application/json; charset=utf-8",
-                        dataType: "json",
-                        beforeSend: function(){
-                                $("#add_adapter_range").get(0).options[0] = new Option("Loading...", "");
-                        },
-                        success: function(msg) {
-                                $("#add_adapter_range").get(0).options.length = 0;
-                                $("#add_adapter_range").get(0).options[0] = new Option("Select Range", "");
-                                $.each(msg, function(index, item) {
-                                    $("#add_adapter_range").get(0).options[$("#add_adapter_range").get(0).options.length] = new Option(item.display, item.id);
-                                });
-                        },
-                        error: function() {
-                            alert("Failed to load racks");
-                        }
-                    });
-                                var d = $( "#add-dialog" ).dialog({
-                                        title: 'Add Adapter to System',
-                                        autoShow: true,
-                                        width: 700,
-                                        buttons: {
-                                            "Save": function() {
-                                                if(!$("#add_adapter_range").val()){
-                                                    alert("Range Required");
-                                                    return;
-                                                }
-                                                if(!$("#add_adapter_ip_address").val()){
-                                                    alert("IP Address Required");
-                                                    return;
-                                                }
-                                                if(!$("#add_adapter_mac_address").val()){
-                                                    alert("Mac Address Required");
-                                                    return;
-                                                }
-                                            $.post('/en-US/systems/create_adapter/' + system_id + '/',
-                                                {
-                                                    'is_ajax': '1',
-                                                    'ip_address': $("#add_adapter_ip_address").val(),
-                                                    'interface': $("#add_adapter_interface").val(),
-                                                    'mac_address': $("#add_adapter_mac_address").val(),
-                                                    'enable_dhcp': $("#add_adapter_dhcp").is(":checked"),
-                                                    'enable_dns': $("#add_adapter_dns").is(":checked"),
-                                                    'enable_public': $("#add_adapter_public").is(":checked"),
-                                                    'enable_private': $("#add_adapter_private").is(":checked"),
-                                                    'hostname': $("#add_adapter_hostname").val(),
-                                                    'range': $("#add_adapter_range").val(),
-                                                    'system_hostname': $("#system_search").val()
-                                                },
-                                                function(data){
-                                                    var obj = jQuery.parseJSON(data);
-                                                    if(obj.success == true){
-                                                        self.location.reload();
-                                                    } else {
-
-                                                        alert(obj.error_message);
-
-                                                    }
-                                                });
-                                            },
-                                            Cancel: function() {
-                                                $("#add_adapter_range").get(0).options.length = 0;
-                                                $( this ).dialog( "close" );
-                                            }
-                                        },
-                                        open: function(event, ui){
-                                            $("#add_adapter_ip_address").val('');
-                                            $("#add_adapter_mac_address").val('');
-                                            $("#add_adapter_ip_address").attr("disabled", "");
-                                            $("#auto_assign_ip").attr("checked", "");
-                                            $("#add_adapter_dns").attr("checked", "checked");
-                                            $("#add_adapter_dhcp").attr("checked", "checked");
-                                            $("#add_adapter_private").attr("checked", "checked");
-                                            $("#add_adapter_public").attr("", "");
-                                        },
-                                        close: function(event, ui){
-                                            $("#add_adapter_range").get(0).options.length = 0;
-
-                                        }
-
+            $("#add_adapter_fqdn").val($("#hostname_dd").html().split('.')[0]);
+            $("#add_adapter_fqdn").val($("#hostname_dd").html().split('.')[0]);
+            make_smart_name_get_domains($("#add_adapter_fqdn"), true);
+            $.ajax({
+                    type: "GET",
+                    url: "/en-US/systems/get_all_ranges_ajax/",
+                    data: "{}",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    beforeSend: function(){
+                            $("#add_adapter_range").get(0).options[0] = new Option("Loading...", "");
+                    },
+                    success: function(msg) {
+                            $("#add_adapter_range").get(0).options.length = 0;
+                            $("#add_adapter_range").get(0).options[0] = new Option("Select Range", "");
+                            $.each(msg, function(index, item) {
+                                var tld = $("#hostname_dd").html().split('.').pop();
+                                // Build a suggested FQDN and store it on the range option
+                                if (tld === 'com' || tld === 'net' || tld === 'org'){
+                                    suggested_fqdn = "mozilla." + tld;
+                                } else {
+                                    suggested_fqdn = "mozilla.com";
+                                }
+                                if (item.site !== ''){
+                                    suggested_fqdn = item.site + '.' + suggested_fqdn;
+                                }
+                                if (item.vlan !== ''){
+                                    suggested_fqdn = item.vlan + '.' + suggested_fqdn;
+                                }
+                                suggested_fqdn = $("#hostname_dd").html().split('.')[0] + '.' + suggested_fqdn
+                                var option = new Option(item.display, item.id);
+                                $(option).attr('suggested_fqdn', suggested_fqdn);
+                                $("#add_adapter_range").get(0).options[$("#add_adapter_range").get(0).options.length] = option
                             });
-                            d.show();
-                return false;
-            // end of .system_quick_add_interface.click()
-            });
-            $("#add_adapter_range").change(function(){
-                if($("#auto_assign_ip").attr("checked")){
-                        $("#add_adapter_ip_address").attr("disabled", "disabled");
-                        $("#add_adapter_ip_address").val('');
-                        auto_assign_ip($(this).val());
-                }
-            });
-            $("#add_adapter_dns").click(function(){
-                if($(this).attr("checked")){
-                    $("#add_adapter_private").attr("disabled", "");
-                    $("#add_adapter_public").attr("disabled", "");
-                } else {
-                    $("#add_adapter_private").attr("disabled", "disabled");
-                    $("#add_adapter_public").attr("disabled", "disabled");
-                }
-
-            });
-            function auto_assign_ip(the_range){
-                if (the_range){
-                    $.get('/en-US/systems/get_next_available_ip_by_range/' + the_range + '/',
-                        function(data){
-                            var obj = jQuery.parseJSON(data);
-                            if(obj.success == true){
-                                $("#add_adapter_ip_address").attr("disabled", "disabled");
-                                $("#add_adapter_ip_address").val(obj.ip_address);
-                            } else {
-
-                                alert(obj.error);
-
+                    },
+                    error: function() {
+                        alert("Failed to load Ranges");
+                    }
+                }); // End Ajax
+            var d = $( "#add-dialog" ).dialog({
+                    title: 'Add Adapter to System',
+                    autoShow: true,
+                    width: 700,
+                    buttons: {
+                        "Save": function() {
+                            if(!$("#add_adapter_range").val() && $('#auto_assign_ip').is(':checked')){
+                                alert("Range Required");
+                                return;
                             }
-                    });
-                } else {
-                    $(this).attr("checked", "");
-                    $("#add_adapter_ip_address").val('');
-                    alert("Must select a range");
+                            if(!$("#add_adapter_ip_address").val()){
+                                alert("IP Address Required");
+                                return;
+                            }
+                            if(!$("#add_adapter_mac_address").val()){
+                                alert("Mac Address Required");
+                                return;
+                            }
+                        $.post('/en-US/systems/create_adapter/' + system_id + '/',
+                            {
+                                'is_ajax': '1',
+                                'ip_address': $("#add_adapter_ip_address").val(),
+                                'interface': $("#add_adapter_interface").val(),
+                                'mac_address': $("#add_adapter_mac_address").val(),
+                                'enable_dhcp': $("#add_adapter_dhcp").is(":checked"),
+                                'enable_dns': $("#add_adapter_dns").is(":checked"),
+                                'enable_public': $("#add_adapter_public").is(":checked"),
+                                'enable_private': $("#add_adapter_private").is(":checked"),
+                                'fqdn': $("#add_adapter_fqdn").val(),
+                                'range': $("#add_adapter_range").val(),
+                                'system_hostname': $("#system_search").val()
+                            },
+                            function(data){
+                                var obj = jQuery.parseJSON(data);
+                                if(obj.success == true){
+                                    $("#add_adapter_mac_address").val('');
+                                    self.location.reload();
+                                } else {
 
-                }
+                                    alert(obj.error_message);
 
-
-            }
-            $("#auto_assign_ip").click(function(){
-                    var the_range = $("#add_adapter_range").val();
-                    if($(this).attr("checked")){
-                        auto_assign_ip(the_range);
-                    } else {
-                        $("#add_adapter_ip_address").attr("disabled", "");
-                        $("#add_adapter_ip_address").val('');
+                                }
+                            });
+                        },
+                        Cancel: function() {
+                            $("#add_adapter_range").get(0).options.length = 0;
+                            $( this ).dialog( "close" );
+                        }
+                    },
+                    close: function(event, ui){
+                        $("#add_adapter_range").get(0).options.length = 0;
                     }
 
-            });
+            }); // End dialog
+            d.show();
+            return false;
+        // end of .system_quick_add_interface.click()
         });
+
+        $("#add_adapter_dns").click(function(){
+            if($(this).attr("checked")){
+                $("#add_adapter_private").attr("disabled", "");
+                $("#add_adapter_public").attr("disabled", "");
+            } else {
+                $("#add_adapter_private").attr("disabled", "disabled");
+                $("#add_adapter_public").attr("disabled", "disabled");
+            }
+
+        });
+
+        // Use fqdn or auto creation options.
+        $("#override_fqdn").click(function(){
+            if($(this).attr("checked")){
+                $("#add_adapter_fqdn").attr("disabled", "");
+            } else {
+                $("#add_adapter_fqdn").attr("disabled", "disabled");
+            }
+
+        });
+        // Defaults
+        $("#add_adapter_fqdn").attr("disabled", "disabled");
+        $("#override_fqdn").attr("checked", "");
+
+        // Automatically assign interface name options.
+        $("#auto_name").click(function(){
+            console.log($("#auto_name").attr("checked"));
+            if($("#auto_name").attr("checked") === true){
+                // Set the interface name to the next available interface name.
+                $.get('/systems/get_next_intr_name/' + {{system.pk}} + '/',
+                    function(data){
+                        var obj = jQuery.parseJSON(data);
+                        if(obj.success == true){
+                            $('#add_adapter_interface').val(obj.intr_name);
+                            $("#add_adapter_interface").attr("disabled", "disabled");
+                        } else {
+                            alert(obj.error);
+                        }
+                    }
+                );
+            } else {
+                $("#add_adapter_interface").attr("disabled", "");
+            }
+        });
+        // Defaults
+        $("#auto_name").attr('checked', 'checked');
+        $('#add_adapter_interface').val(''); // Clear it
+        $.get('/systems/get_next_intr_name/' + {{system.pk}} + '/',
+            function(data){
+                var obj = jQuery.parseJSON(data);
+                if(obj.success == true){
+                    $('#add_adapter_interface').val(obj.intr_name);
+                    $("#add_adapter_interface").attr("disabled", "disabled");
+                } else {
+                    alert(obj.error);
+                }
+            }
+        );
+
+        $("#override_fqdn").attr("checked", "");
+        function auto_assign_ip(the_range){
+            if (the_range){
+                $.get('/en-US/systems/get_next_available_ip_by_range/' + the_range + '/',
+                    function(data){
+                        var obj = jQuery.parseJSON(data);
+                        if(obj.success == true){
+                            //$("#add_adapter_ip_address").attr("disabled", "disabled");
+                            $("#add_adapter_ip_address").val(obj.ip_address);
+                        } else {
+
+                            alert(obj.error);
+
+                        }
+                });
+            } else {
+                alert("Please select a range.");
+                $("#add_adapter_ip_address").val('Auto Assign');
+            }
+        }
+        $("#auto_assign_ip").click(function(){
+                if($(this).attr("checked")){
+                    var the_range = $("#add_adapter_range").val();
+                    auto_assign_ip(the_range);
+                    $("#add_adapter_ip_address").attr("disabled", "disabled");
+                } else {
+                    $("#add_adapter_ip_address").attr("disabled", "");
+                    if ($("#add_adapter_ip_address").val() === 'Auto Assign'){
+                        $("#add_adapter_ip_address").val('');
+                    }
+                    // Reset the range select but don't clear the IP
+                    $("#add_adapter_range").attr('selectedIndex',0);
+                }
+
+        });
+
+        $("#add_adapter_range").change(function(){
+            if ($("#auto_assign_ip").attr("checked")){
+                auto_assign_ip($(this).val());
+            }
+            if ($('#override_fqdn').attr('checked') === false) {
+                var suggested_fqdn = $("#add_adapter_range option:selected").attr('suggested_fqdn');
+                console.log("Suggesting: "+ suggested_fqdn);
+                $('#add_adapter_fqdn').val(suggested_fqdn);
+            }
+        });
+        // Default IP
+        $("#auto_assign_ip").attr("checked", "checked"); // Set it to auto assign
+        $("#add_adapter_ip_address").val('Auto Assign');
+        $("#add_adapter_ip_address").attr('disabled', 'disabled');
+    });
 </script>
+<style>
+    span.helptext {
+        margin-left: 5px;
+    }
+</style>
 <div id="add-dialog" title="Add System to Rack" style='display: none; width: 700px;'>
     <table>
-        <tr><td colspan="2">Hostname: <input type='text' name='add_adapter_hostname' id='add_adapter_hostname' style='width: 159px;' value=''><span class='helptext'>Short hostname</span></td></tr>
-        <tr><td colspan="2">Interface: <input type='text' name='add_adapter_interface' id='add_adapter_interface' style='width: 159px;' value=''><span class='helptext'>Interface eg eth0.0 mgmt1.0</span></td></tr>
+        <caption>Step 1. Pick Interface IP</caption>
         <tr><td colspan="2">Range: <select id='add_adapter_range' name='add_adapter_range'></select><span class='helptext'>Range to auto assign ip address from</span></td></tr>
-        <tr><td>Auto Assign IP:</td><td><input type='checkbox' name='auto_assign_ip' id='auto_assign_ip' style='width: 159px;' value='1'></td></tr>
-        <tr><td colspan="2">IP Address: <input type='text' name='add_adapter_ip_address' id='add_adapter_ip_address' style='width: 159px;' value=''><span class='helptext'>IP Address of Interface</span></td></tr>
+        <tr><td>Auto Assign IP:</td><td><input type='checkbox' name='auto_assign_ip' id='auto_assign_ip' style='width: 159px;' checked='checked'></td></tr>
+        <tr><td colspan="2">IP Address: <input type='text' name='add_adapter_ip_address' id='add_adapter_ip_address' style='width: 159px;' value='Auto Assign'></input><span class='helptext'>IP Address of Interface</span></td></tr>
+    </table>
+    <table>
+        <caption>Step 2. Pick Interface DNS Name</caption>
+        <tr><td>Specify FQDN:</td><td><input type='checkbox' name='override_fqdn' id='override_fqdn' checked=""></td></tr>
+        <tr><td colspan="2">FQDN: <input type='text' name='add_adapter_fqdn' id='add_adapter_fqdn' style='width: 400px;' value='' disabled='disabled'><span class='helptext'>FQDN</span></td></tr>
+    </table>
+    <table>
+        <caption>Step 3. Pick Interface Name</caption>
+        <tr><td>Automatically name the new Interface (Recommended):</td><td><input type='checkbox' name='auto_name' id='auto_name'></td></tr>
+        <tr><td colspan="2">Interface Name: <input type='text' name='add_adapter_interface' id='add_adapter_interface' style='width: 159px;' value='ethx.y'><span class='helptext'>Interface eg eth0.0 mgmt1.0</span></td></tr>
+    </table>
+    <table>
+        <caption>Step 4. Pick Interface Hardware Address</caption>
         <tr><td colspan="2">Mac Address: <input type='text' name='add_adapter_mac_address' id='add_adapter_mac_address' style='width: 159px;' value=''><span class='helptext'>Mac address in format 00:00:00:00:00:00</span></td></tr>
+    </table>
+    <table>
+        <caption>Step 5. Options</caption>
         <tr><td>Enable DHCP:</td><td><input type='checkbox' name='add_adapter_dhcp' id='add_adapter_dhcp' style='width: 159px;' value='1' checked="checked"></td></tr>
         <tr><td>Enable DNS:</td><td><input type='checkbox' name='add_adapter_dns' id='add_adapter_dns' style='width: 159px;' value='1' checked="checked"></td></tr>
         <tr><td>Public DNS:</td><td><input type='checkbox' name='add_adapter_public' id='add_adapter_public' style='width: 159px;'></td></tr>
