@@ -184,8 +184,17 @@ class Range(models.Model, ObjectUrlMixin):
                 self.start_str, self.end_str)
 
     def choice_display(self):
+        if not self.network.site:
+            site_name = "No Site"
+        else:
+            site_name = self.network.site.name.upper()
+
+        if not self.network.vlan:
+            vlan_name = "No Vlan"
+        else:
+            vlan_name = str(self.network.vlan)
         return "{0} - {1} - ({2}) {3} to {4}".format(
-                str(self.network.site).upper(), self.network.vlan,
+                site_name, vlan_name,
                 self.network, self.start_str, self.end_str)
 
     def __repr__(self):

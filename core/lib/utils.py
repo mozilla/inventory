@@ -154,9 +154,7 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
 
     site = None
     for s in Site.objects.all():
-        # get_site_path returns the path backwards, work around this.
-        # TODO fix this.
-        if '.'.join(list(reversed(s.get_site_path().split('.')))) == site_str:
+        if '.'.join(s.get_site_path().split('.')) == site_str:
             site = s
             break
     if not site:
@@ -170,7 +168,7 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
             vlan_str)])
         return None, errors
 
-    tmp_site_str = '.'.join(list(reversed(s.get_site_path().split('.'))))
+    tmp_site_str = '.'.join(s.get_site_path().split('.'))
     domain_name = vlan.name + "." + tmp_site_str + "." + domain_suffix
     try:
         domain = Domain.objects.get(name=domain_name)

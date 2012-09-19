@@ -33,7 +33,7 @@ class Site(models.Model, ObjectUrlMixin):
             if target.parent is None:
                 break
             else:
-                full_name = target.parent.name + "." + target.name
+                full_name = target.name + '.' + target.parent.name
                 target = target.parent
         return full_name
 
