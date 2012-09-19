@@ -94,20 +94,39 @@ def system_rack_elevation(request, rack_id):
         RequestContext(request))
 
 def get_all_ranges_ajax(request):
+    system_pk = request.GET.get('system_pk', '0')
+    location = None
+    system = None
     ret_list = []
+    try:
+        system = models.System.objects.get(pk=system_pk)
+    except ObjectDoesNotExist:
+        pass
+    if system:
+        try:
+            location = system.system_rack.location.name.title()
+        except AttributeError:
+            pass
+
     for r in Range.objects.all().order_by('network__site'):
+        relevant = False
         if r.network.site:
-            site_name = r.network.site.name
+            site_name = r.network.site.get_site_path()
+            if location and location == r.network.site.name.title():
+                relevant = True
         else:
             site_name = ''
+
         if r.network.vlan:
             vlan_name = r.network.vlan.name
         else:
             vlan_name = ''
+
         ret_list.append({'id': r.pk,
                          'display': r.choice_display(),
                          'vlan': vlan_name,
-                         'site': site_name
+                         'site': site_name,
+                         'relevant': relevant
                          })
     return HttpResponse(json.dumps(ret_list))
 

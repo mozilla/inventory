@@ -220,6 +220,21 @@
             $.get('/core/range/find_range/?ip_str='+ip_str+'&ip_type=' + ip_type, do_redirect);
         });
 
+        $('#show_all_ranges').click(function(){
+            if($(this).attr("checked")){
+                $("#add_adapter_range option").each(function(){
+                    $(this).css("display","");
+                });
+            } else {
+                $("#add_adapter_range option").each(function(){
+                    if ($(this).attr('relevant') === 'false'){
+                        $(this).css("display","none");
+                    }
+                });
+            }
+        });
+        $('#show_all_ranges').attr("checked", ""); // Default
+
         $(".system_add_interface_combined").click(function(){
             $("#add_adapter_fqdn").val($("#hostname_dd").html().split('.')[0]);
             $("#add_adapter_fqdn").val($("#hostname_dd").html().split('.')[0]);
@@ -227,7 +242,7 @@
             $.ajax({
                     type: "GET",
                     url: "/en-US/systems/get_all_ranges_ajax/",
-                    data: "{}",
+                    data: {'system_pk':'{{system.pk}}'},
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
                     beforeSend: function(){
@@ -253,8 +268,23 @@
                                 suggested_fqdn = $("#hostname_dd").html().split('.')[0] + '.' + suggested_fqdn
                                 var option = new Option(item.display, item.id);
                                 $(option).attr('suggested_fqdn', suggested_fqdn);
+                                $(option).attr('relevant', item.relevant);
+                                if (!item.relevant) {
+                                    $(option).css("display", "none");
+                                }
                                 $("#add_adapter_range").get(0).options[$("#add_adapter_range").get(0).options.length] = option
                             });
+                            if($('#show_all_ranges').attr("checked")){
+                                $("#add_adapter_range option").each(function(){
+                                    $(this).css("display","");
+                                });
+                            } else {
+                                $("#add_adapter_range option").each(function(){
+                                    if ($(this).attr('relevant') === 'false'){
+                                        $(this).css("display","none");
+                                    }
+                                });
+                            }
                     },
                     error: function() {
                         alert("Failed to load Ranges");
@@ -438,18 +468,19 @@
 <div id="add-dialog" title="Add System to Rack" style='display: none; width: 700px;'>
     <table>
         <caption>Step 1. Pick Interface IP</caption>
-        <tr><td colspan="2">Range: <select id='add_adapter_range' name='add_adapter_range'></select><span class='helptext'>Range to auto assign ip address from</span></td></tr>
-        <tr><td>Auto Assign IP:</td><td><input type='checkbox' name='auto_assign_ip' id='auto_assign_ip' style='width: 159px;' checked='checked'></td></tr>
+        <tr><td colspan="2">Range: <select id='add_adapter_range' name='add_adapter_range'></select></td></tr>
+        <tr><td>Show all ranges <input type='checkbox' name='show_all_ranges' id='show_all_ranges' style='width: 159px;'></td>
+        <td>Auto Assign IP <input type='checkbox' name='auto_assign_ip' id='auto_assign_ip' style='width: 159px;' checked='checked'></td></tr>
         <tr><td colspan="2">IP Address: <input type='text' name='add_adapter_ip_address' id='add_adapter_ip_address' style='width: 159px;' value='Auto Assign'></input><span class='helptext'>IP Address of Interface</span></td></tr>
     </table>
     <table>
         <caption>Step 2. Pick Interface DNS Name</caption>
-        <tr><td>Specify FQDN:</td><td><input type='checkbox' name='override_fqdn' id='override_fqdn' checked=""></td></tr>
+        <tr><td>Specify FQDN: <input type='checkbox' name='override_fqdn' id='override_fqdn' checked=""></td></tr>
         <tr><td colspan="2">FQDN: <input type='text' name='add_adapter_fqdn' id='add_adapter_fqdn' style='width: 400px;' value='' disabled='disabled'><span class='helptext'>FQDN</span></td></tr>
     </table>
     <table>
         <caption>Step 3. Pick Interface Name</caption>
-        <tr><td>Automatically name the new Interface (Recommended):</td><td><input type='checkbox' name='auto_name' id='auto_name'></td></tr>
+        <tr><td>Automatically name the new Interface (Recommended): <input type='checkbox' name='auto_name' id='auto_name'></td></tr>
         <tr><td colspan="2">Interface Name: <input type='text' name='add_adapter_interface' id='add_adapter_interface' style='width: 159px;' value='ethx.y'><span class='helptext'>Interface eg eth0.0 mgmt1.0</span></td></tr>
     </table>
     <table>
