@@ -128,9 +128,10 @@ class MozdnsRecord(models.Model, ObjectUrlMixin):
         if no_build:
             pass
         else:
-            # Mark the domain as dirty so it can be rebuilt.
-            self.domain.dirty = True
-            self.domain.save()
+            # Mark the soa
+            if self.domain.soa:
+                self.domain.soa.dirty = True
+                self.domain.soa.save()
         if db_domain:
             from mozdns.utils import prune_tree
             prune_tree(db_domain)
