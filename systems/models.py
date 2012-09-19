@@ -17,11 +17,14 @@ from django.db import IntegrityError
 from dhcp.models import DHCP
 import mdns
 from settings import MOZ_SITE_PATH
+from settings import BUG_URL
 
 
 import datetime
 import re
 import pdb
+import socket
+
 
 class QuerySetManager(models.Manager):
     def get_query_set(self):
@@ -349,6 +352,13 @@ class System(DirtyFieldsMixin, models.Model):
     is_switch = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     #network_adapter = models.ForeignKey('NetworkAdapter', blank=True, null=True)
 
+    @property
+    def primary_ip(self):
+        try:
+            first_ip = self.keyvalue_set.filter(key__contains='ipv4_address').order_by('key')[0].value
+            return first_ip
+        except:
+            return None
 
     def update_adapter(self, **kwargs):
         from api_v3.system_api import SystemResource
@@ -476,6 +486,56 @@ class System(DirtyFieldsMixin, models.Model):
         """
         self.keyvalue_set.filter(key__startswith='nic.%i' % index).delete()
         return True
+    @property
+    def primary_reverse(self):
+        try:
+            return str(socket.gethostbyaddr(self.primary_ip)[0])
+        except:
+            return None
+
+    def get_updated_fqdn(self):
+        allowed_domains = [
+                'mozilla.com',
+                'scl3.mozilla.com',
+                'phx.mozilla.com',
+                'phx1.mozilla.com',
+                'mozilla.net',
+                'mozilla.org',
+                'build.mtv1.mozilla.com',
+                'build.mozilla.org',
+                ]
+        reverse_fqdn = self.primary_reverse
+        if self.primary_ip and reverse_fqdn:
+            current_hostname = str(self.hostname)
+
+            if current_hostname and current_hostname != reverse_fqdn:
+                res = reverse_fqdn.replace(current_hostname, '').strip('.')
+                if res in allowed_domains:
+                    self.update_host_for_migration(reverse_fqdn)
+        elif not self.primary_ip or self.primary_reverse:
+            for domain in allowed_domains:
+                updated = False
+                if not updated:
+                    try:
+                        fqdn = socket.gethostbyaddr('%s.%s' % (self.hostname, domain))
+                        if fqdn:
+                            self.update_host_for_migration(fqdn[0])
+                            updated = True
+                    except Exception, e:
+                        #print e
+                        pass
+            if not updated:
+                pass
+                #print "Could not update hostname %s" % (self.hostname)
+
+    def update_host_for_migration(self, new_hostname):
+        kv = KeyValue(system=self, key='system.hostname.alias.0', value=self.hostname)
+        kv.save()
+        try:
+            self.hostname = new_hostname
+            self.save()
+        except Exception, e:
+            print "ERROR - %s" % (e)
 
 
     objects = models.Manager()
@@ -558,6 +618,19 @@ class System(DirtyFieldsMixin, models.Model):
                     nic_numbers.append(match)
         return nic_numbers
 
+    @property
+    def notes_with_link(self):
+        if self.notes:
+            patterns = [
+                '[bB]ug#?\D#?(\d+)',
+                    ]
+            for pattern in patterns:
+                m = re.search(pattern, self.notes)
+                if m:
+                    self.notes = re.sub(pattern, '<a href="%s%s">Bug %s</a>' % (BUG_URL, m.group(1), m.group(1)), self.notes)
+            return self.notes
+        else:
+            return ''
     def get_next_adapter_number(self):
         nic_numbers = self.get_adapter_numbers()
         if len(nic_numbers) > 0:
