@@ -129,7 +129,7 @@
                 inputs.length;
                 for (var x = 0; x < inputs.length; x++){
                     if(inputs[x].id === 'id_fqdn' || inputs[x].id === 'id_target' || inputs[x].id === 'id_server'){
-                        make_smart_name(inputs[x], {{domains}}, true)
+                        make_smart_name_get_domains(inputs[x], true)
                         $(inputs[x]).css('width', '400px');
                     }
                 }
