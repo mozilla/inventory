@@ -24,7 +24,7 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     """The StaticInterface Class.
 
         >>> s = StaticInterface(label=label, domain=domain, ip_str=ip_str,
-        ... ip_type=ip_type)
+        ... ip_type=ip_type, dhcp_enabled=True, dns_enabled=True)
         >>> s.full_clean()
         >>> s.save()
 

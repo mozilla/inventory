@@ -24,10 +24,10 @@ from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
 
+import pdb
 from core.search.parser import parse
 from core.search.search import compile_search
 
-import pdb
 import re
 import ipaddr
 import operator

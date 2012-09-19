@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.forms import ValidationError
 from django.shortcuts import render
 from django.shortcuts import render_to_response
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.views.generic import UpdateView
@@ -27,6 +28,7 @@ from mozdns.txt.models import TXT
 from mozdns.view.models import View
 
 import pdb
+import simplejson as json
 
 
 def domain_sort(domains):
@@ -49,6 +51,11 @@ def build_tree(root, domains):
     for child in children:
         ordered += build_tree(child, domains)
     return ordered
+
+def get_all_domains(request):
+    domains = [domain.name for domain in Domain.objects.all()]
+    return HttpResponse(json.dumps(domains))
+
 
 
 class DomainView(object):

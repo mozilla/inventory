@@ -172,10 +172,8 @@ def ensure_label_domain(fqdn):
         return '', Domain.objects.get(name=fqdn)
     fqdn_partition = fqdn.split('.')
     if len(fqdn_partition) == 1:
-        domain = Domain(name=fqdn)
-        domain.full_clean()
-        domain.save()
-        return '', domain
+        raise ValidationError("Creating this record would force the creation "
+                "of a new TLD '{0}'!".format(fqdn))
     else:
         label, domain_name = fqdn_partition[0], '.'.join(fqdn_partition[1:])
         domain = ensure_domain(domain_name, purgeable=True, inherit_soa=True)

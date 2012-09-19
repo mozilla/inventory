@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 from core.network.models import Network
+from core.utils import IPFilter
 from core.mixins import ObjectUrlMixin
 from core.keyvalue.base_option import CommonOption
 from core.interface.static_intr.models import StaticInterface
@@ -170,6 +171,12 @@ class Range(models.Model, ObjectUrlMixin):
         x = "Site: {0} Vlan: {1} Network: {2} Range: Start - {3} End -  {4}"
         return x.format(self.network.site, self.network.vlan, self.network,
             self.start_str, self.end_str)
+
+    def update_ipf(self):
+        """Update the IP filter. Used for compiling search queries and firewall
+        rules."""
+        self.ipf = IPFilter(self.start_upper, self.start_lower,
+                            self.end_upper, self.end_lower)
 
     def display(self):
         return "Range: {3} to {4}  {0} -- {2} -- {1}  ".format(

@@ -20,6 +20,8 @@ from mozdns.mx.models import MX
 from mozdns.mx.forms import MXForm, FQDNMXForm
 from mozdns.cname.models import CNAME
 from mozdns.cname.forms import CNAMEFQDNForm, CNAMEForm
+from mozdns.soa.models import SOA
+from mozdns.soa.forms import SOAForm
 from mozdns.domain.models import Domain
 from mozdns.view.models import View
 from mozdns.utils import ensure_label_domain
@@ -56,6 +58,10 @@ def get_klasses(record_type):
         Klass = MX
         FormKlass = MXForm
         FQDNFormKlass = FQDNMXForm
+    elif record_type == "SOA":
+        Klass = SOA
+        FormKlass = SOAForm
+        FQDNFormKlass = SOAForm
     else:
         Klass, FormKlass, FQDNFormKlass = None, None, None
 
@@ -78,7 +84,6 @@ def mozdns_record_search_ajax(request):
 
 
 def mozdns_record_form_ajax(request):
-    pdb.set_trace()
     record_type = request.GET.get('record_type', 'A')
     record_pk = request.GET.get('record_pk', '')
     Klass, FormKlass, FQDNFormKlass = get_klasses(record_type)

@@ -35,10 +35,8 @@
     <table>
         <tr>
             <td>
-                ZONE:
-                <a href='{{ obj.domain.soa.get_absolute_url() }}'>
-                    {{ obj.domain.soa }}
-                </a>
+                ZONE: 
+                <a href='{{ obj.domain.soa.get_absolute_url() }}'>{{ obj.domain.soa }}</a>
             </td>
         </tr>
         <tr>
@@ -55,6 +53,12 @@
             <td>
                 Debug BIND File:
                 <a href='{{ obj.domain.soa.get_debug_build_url() }}'> click </a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                View Record:
+                <a href='{{ obj.get_absolute_url() }}'> click </a>
             </td>
         </tr>
     </table>

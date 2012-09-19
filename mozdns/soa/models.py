@@ -49,7 +49,7 @@ class SOA(models.Model, ObjectUrlMixin):
     id = models.AutoField(primary_key=True)
     primary = models.CharField(max_length=100, validators=[validate_name])
     contact = models.CharField(max_length=100, validators=[validate_name])
-    serial = models.PositiveIntegerField(null=False)
+    serial = models.PositiveIntegerField(null=False, default=int(time.time()))
     # Indicates when the zone data is no longer authoritative. Used by slave.
     expire = models.PositiveIntegerField(null=False, default=DEFAULT_EXPIRE)
     # The time between retries if a slave fails to contact the master

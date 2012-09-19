@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 from mozdns.validation import validate_ip_type
 from mozdns.ip.models import ipv6_to_longs
+from core.utils import IPFilter, two_to_four
 from core.vlan.models import Vlan
 from core.site.models import Site
 from core.mixins import ObjectUrlMixin
@@ -112,6 +113,12 @@ class Network(models.Model, ObjectUrlMixin):
                 raise ValidationError("Resizing this subnet to the requested "
                         "network prefix would orphan existing ranges.")
 
+    def update_ipf(self):
+        """Update the IP filter. Used for compiling search queries and firewall
+        rules."""
+        self.update_network()
+        ip_info = two_to_four(int(self.network.network), int(self.network.broadcast))
+        self.ipf = IPFilter(self, self.ip_type, *ip_info)
 
     def update_network(self):
         """This function will look at the value of network_str to update other
