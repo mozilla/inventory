@@ -27,9 +27,6 @@ class SRV(models.Model, ObjectUrlMixin):
     label = models.CharField(max_length=63, blank=True, null=True,
             validators=[validate_srv_label], help_text="Short name of the "
             "fqdn")
-    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-            validators=[validate_ttl],
-            help_text="Time to Live of this record")
     domain = models.ForeignKey(Domain, null=False, help_text="FQDN of the "
                 "domain after the short hostname. "
                 "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
@@ -50,6 +47,9 @@ class SRV(models.Model, ObjectUrlMixin):
 
     weight = models.PositiveIntegerField(null=False,
                                          validators=[validate_srv_weight])
+    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
+            validators=[validate_ttl],
+            help_text="Time to Live of this record")
     comment = models.CharField(max_length=1000, blank=True, null=True)
 
     search_fields = ("fqdn", "target")
