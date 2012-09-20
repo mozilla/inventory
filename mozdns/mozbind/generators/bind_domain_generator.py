@@ -5,7 +5,7 @@ name_just = 40
 type_just = 15
 class_just = 10
 prio_just = 3
-data_just = 7
+data_just = 1
 extra_just = 3
 
 def render_mx(mx_set):
