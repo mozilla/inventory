@@ -80,8 +80,8 @@ class CNAME(MozdnsRecord):
         if root_domain is None:
             return
         if self.fqdn == root_domain.name:
-            raise ValidationError("You cannot create a CNAME that points to a "
-                                  "domain at the root of a zone.")
+            raise ValidationError("You cannot create a CNAME that points to "
+                                  "the root of a zone.")
         return
 
     def existing_node_check(self):
