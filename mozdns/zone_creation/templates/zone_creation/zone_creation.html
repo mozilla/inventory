@@ -1,0 +1,110 @@
+{% extends "core/core_base.html" %}
+
+{% block title %}
+    {{ form_title }}
+{% endblock %}
+
+{% block header %}
+    {{ form_title }}
+{% endblock %}
+
+{% block core_content %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.js" type="text/javascript"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.js" type="text/javascript"></script>
+    <script type="text/javascript" src="/static/javascripts/master_form_utils.js"></script>
+
+    <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
+    <script>
+        $(document).ready(function(){
+            // Add dynamic NS and MX addition buttons
+            $('#add-mx-entry').click(function (){
+                var mx_num = $('#mx-entries').attr('mx_num');
+                mx_num = parseInt(mx_num) + 1;
+                console.log(mx_num);
+                $('#mx-entries').attr('mx_num', mx_num);
+                var mx_entry = $('<label for="mx'+mx_num+'">Priority: ' +
+                                '<input type="number" size="3" min="1" name="mx'+mx_num+'-prio" value="10" required>' +
+                                '</label>' + ' ' +
+                                '<label for="mx'+mx_num+'">Mail Server: ' +
+                                '<input type="text" size="20" name="mx'+mx_num+'" required>' +
+                                '</label>'
+                                );
+                var delete_button = $('<div><input type="button" value="Remove"></div>').click(
+                function(){
+                    $(mx_entry).remove();
+                    $(this).remove();
+                    var mx_num = $('#mx-entries').attr('mx_num');
+                    mx_num = parseInt(mx_num) - 1;
+                    console.log(mx_num);
+                    $('#mx-entries').attr('mx_num', mx_num);
+                }).css('margin', '10px').css('display', 'inline');
+                $('#mx-entries').append('<p></p>').append(mx_entry).append(delete_button);
+            });
+            $('#add-ns-entry').click(function (){
+                var ns_num = $('#ns-entries').attr('ns_num');
+                ns_num = parseInt(ns_num) + 1;
+                console.log(ns_num);
+                $('#ns-entries').attr('ns_num', ns_num);
+                var ns_entry = $('</label> <label for="ns'+ns_num+'">Name Server: '+
+                                '<input type="text" size="20" name="ns'+ns_num+'" required>' +
+                                '</label>')
+                var delete_button = $('<div><input type="button" value="Remove"></div>').click(
+                function(){
+                    $(ns_entry).remove();
+                    $(this).remove();
+                    var ns_num = $('#ns-entries').attr('ns_num');
+                    ns_num = parseInt(ns_num) - 1;
+                    console.log(ns_num);
+                    $('#ns-entries').attr('ns_num', ns_num);
+                }).css('margin', '10px').css('display', 'inline');
+                $('#ns-entries').append('<p></p>').append(ns_entry).append(delete_button);
+            });
+            // End button magic.
+        });
+    </script>
+    <style>
+    </style>
+    <form id="soa-form">
+    <p>
+    <label for="template-select" >Zone template:
+        <select id="template-select">
+            <option class='zone-template' value="no-template" selected="selected">Manual Creation</option>
+            <option class='zone-template' value="scl3.mozilla.com">scl3.mozilla.com</option>
+            <option class='zone-template' value="scl2.mozilla.com">scl2.mozilla.com</option>
+            <option class='zone-template' value="scl1.mozilla.com">scl1.mozilla.com</option>
+            <option class='zone-template' value="phx1.mozilla.com">phx1.mozilla.com</option>
+        </select>
+    </p>
+    </label>
+
+    <p>
+    <label for="contact">Contact: <input type="email" size="20" name="contact" required></label>
+    </p>
+    <p>
+    <label for="primary">Primary Server: <input type="text" size="20" name="primary" required></label>
+    </p>
+    <p>
+    <label for="refresh">Refresh: <input type="number" size="6" name="refresh" min="1" max="4294967295" value="172800" required></label>
+    <label for="retry">Retry: <input type="number" size="6" name="retry" min="1" max="4294967295" value="900" required></label>
+    <label for="expire">Expire: <input type="number" size="6" name="expire" min="1" max="4294967295" value="1209600" required></label>
+    <label for="minimum">Minimum: <input type="number" size="6" name="minimum" min="1" max="4294967295" value="3600" required></label>
+    </p>
+
+    <div id="ns-entries" ns_num="1">
+    <!-- We will be dynamically adding NS entries here -->
+        <input type="button" id="add-ns-entry" value="Add Another NS"/>
+        <p>
+        <label for="refresh">Nameserver: <input type="text" size="20" name="ns1" required></label>
+        </p>
+    </div>
+    <div id="mx-entries" mx_num='1'>
+    <!-- We will be dynamically adding NS entries here -->
+        <input type="button" id="add-mx-entry" value="Add Another MX"/>
+        <p>
+        <label for="mx1-prio">Priority: <input type="number" size="3" min="1" name="mx1-prio" value="10" required></label>
+        <label for="mx1">Mail Server: <input type="text" size="20" name="mx1" required></label>
+        </p>
+    </div>
+
+    </form>
+{% endblock %}

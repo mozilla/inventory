@@ -47,35 +47,58 @@ class BuildTests(TestCase):
 
     def test_dirty_a(self):
         self.soa.dirty = False
-        self.dom.dirty = False
+        self.soa.save()
         a, _ = AddressRecord.objects.get_or_create(label="asfd",
                 domain=self.dom, ip_str = "128.1.1.1", ip_type='4')
         a.save()
-        self.assertTrue(self.dom.dirty)
+        self.soa = SOA.objects.get(pk=self.soa.pk)
+        self.assertTrue(self.soa.dirty)
+
+        # Now try updating
+        self.soa.dirty = False
+        self.soa.save()
+        self.soa = SOA.objects.get(pk=self.soa.pk)
         self.assertFalse(self.soa.dirty)
+        a.ip_str = "128.193.2.2"
+        a.save()
+        self.assertTrue(self.soa.dirty)
 
     def test_dirty_intr(self):
         self.soa.dirty = False
-        self.dom.dirty = False
+        self.soa.save()
         a, _ = StaticInterface.objects.get_or_create(mac="11:22:33:44:55:66",
                 label="asfd", domain=self.dom, ip_str = "123.1.1.1",
                 ip_type='4', system=self.s)
         a.save()
-        self.assertTrue(self.dom.dirty)
+        self.assertTrue(self.soa.dirty)
+        self.soa.dirty = False
+        self.soa.save()
+        self.soa = SOA.objects.get(pk=self.soa.pk)
         self.assertFalse(self.soa.dirty)
+        # Now try updating
+        a.ip_str = "128.193.2.2"
+        a.save()
+        self.assertTrue(self.soa.dirty)
 
     def test_dirty_cname(self):
         self.soa.dirty = False
-        self.dom.dirty = False
+        self.soa.save()
         c = CNAME(label="asfd", domain=self.dom, target="nerp")
         c.full_clean()
         c.save()
-        self.assertTrue(self.dom.dirty)
+        self.assertTrue(self.soa.dirty)
+        self.soa.dirty = False
+        self.soa.save()
+        self.soa = SOA.objects.get(pk=self.soa.pk)
         self.assertFalse(self.soa.dirty)
+        # Now try updating
+        c.label = "asdfasfd"
+        c.save()
+        self.assertTrue(self.soa.dirty)
 
     def test_dirty_ptr(self):
         self.rsoa.dirty = False
-        self.rdom.dirty = False
+        self.rsoa.save()
         c = PTR(name="asfd", ip_str="123.123.123.123", ip_type="4")
         c.full_clean()
         c.save()
