@@ -8,11 +8,11 @@
 <tbody>
 	{% for owner in owner_list %}
 	<tr>
-		<td><a href="{{ owner.get_absolute_url }}">{{ owner.name }}</a></td>
+		<td><a href="{{ owner.get_absolute_url() }}">{{ owner.name }}</a></td>
 		<td>
 		<ul>
 		{% for um in owner.upgradeable_systems %}
-			<li>{{ um.date_purchased }}  - <a href="{{ um.get_absolute_url }}">{{ um }}</a>: {{ um.date_purchased|timesince }}</li>
+			<li>{{ um.date_purchased }}  - <a href="{{ um.get_absolute_url() }}">{{ um }}</a>: {{ um.date_purchased|timesince }}</li>
 		{% endfor %}
 		</ul>
 		</td>

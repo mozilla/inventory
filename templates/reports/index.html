@@ -10,6 +10,28 @@
     li label { font-weight: normal; margin-top: 15px;}
 
 </style>
+{% if systems %}
+<table>
+    <tr>
+        <th>Hostname</th>
+        <th>Status</th>
+        <th>Server Model</th>
+        <th>Location</th>
+        <th>Allocation</th>
+        <th>Operating System</th>
+    </tr>
+    {% for system in systems %}
+    <tr>
+        <td>{{ system }}</td>
+        <td>{{ system.system_status }}</td>
+        <td>{{ system.server_model }}</td>
+        <td>{{ system.system_rack.location }}</td>
+        <td>{{ system.allocation }}</td>
+        <td>{{ system.operating_system }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
 <form class='editform' method="post">
 {{ form.errors }}
 <table style="width: 550px;">
@@ -21,4 +43,32 @@
 </table>
 </form>
 {{ content }}
+<script type="text/javascript">
+    $(".system_status").change(function(){
+        var cur = $(this);
+        var val=cur.val();
+        if(val > 0){
+            $("#id_system_status_0").attr("checked", '');
+        } else {
+            $(".system_status").each(function(){
+                $(this).attr("checked", '');
+            });
+            $("#id_system_status_0").attr("checked", 'checked');
+
+        }
+    });
+    $(".system_location").change(function(){
+        var cur = $(this);
+        var val=cur.val();
+        if(val > 0){
+            $("#id_location_0").attr("checked", '');
+        } else {
+            $(".system_location").each(function(){
+                $(this).attr("checked", '');
+            });
+            $("#id_location_0").attr("checked", 'checked');
+
+        }
+    });
+</script>
 {% endblock %}

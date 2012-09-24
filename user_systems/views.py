@@ -18,7 +18,8 @@ from libs import ldap_lib
 import settings
 from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import render_to_response, redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
+from libs.jinja import render_to_response as render_to_response
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from MozInvAuthorization.UnmanagedSystemACL import UnmanagedSystemACL
@@ -143,12 +144,22 @@ def license_new(request):
 @csrf_exempt
 def license_quicksearch_ajax(request):
     """Returns systems sort table"""
-    search = request.POST['quicksearch']
-    filters = [Q(**{"%s__icontains" % t: search})
-                    for t in models.UserLicense.search_fields]
+    """
+        Try to get quicksearch from post
+        If fail, try to get from GET
+        return None otherwise
+    """
+    search = request.POST.get('quicksearch', None)
+    if not search:
+        search = request.GET.get('quicksearch', None)
+    if search:
+        filters = [Q(**{"%s__icontains" % t: search})
+                        for t in models.UserLicense.search_fields]
 
-    licenses = models.UserLicense.objects.filter(
-                reduce(operator.or_, filters))
+        licenses = models.UserLicense.objects.filter(
+                    reduce(operator.or_, filters))
+    else:
+        licenses = None
 
     return render_to_response('user_systems/license_quicksearch.html', {
             'licenses': licenses,
@@ -437,6 +448,7 @@ def user_system_show(request, object_id):
     #system = get_object_or_404(models.UnmanagedSystem
     return render_to_response('user_systems/unmanagedsystem_detail.html', {
             'user_system': system,
+            'settings': settings,
            },
            RequestContext(request))
 def user_system_show_by_asset_tag(request, id):
@@ -472,6 +484,14 @@ def user_system_edit(request, id):
 
 def user_system_csv(request):
     systems = models.UnmanagedSystem.objects.all().order_by('owner__name')
+    try:
+        ref_split = request.META['HTTP_REFERER'].split('/')
+        type, id = ref_split[-3:-1]
+        if type == 'model':
+            systems = systems.filter(server_model__id=id)
+    except:
+        pass
+
 
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=user_systems.csv'

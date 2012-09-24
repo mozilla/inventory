@@ -2,7 +2,7 @@ from django.db import models
 from systems.models import OperatingSystem, ServerModel
 from datetime import datetime, timedelta, date
 from django.db.models.query import QuerySet
-from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS
+from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, BUG_URL
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 
@@ -88,6 +88,12 @@ class UnmanagedSystem(models.Model):
             return_date = date.today()
             return self.filter(loaner_return_date__lte=return_date)
 
+    def get_bug_url(self):
+        bug_id = ''
+        if self.bug_number:
+            bug_id = self.bug_number
+        return "%s%s" % (BUG_URL, bug_id)
+
     @models.permalink
     def get_absolute_url(self):
         return ('user-system-show', [self.id])
@@ -161,6 +167,10 @@ class UserLicense(models.Model):
 
     def __unicode__(self):
         return "%s - %s" % (self.license_type, self.license_key)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('license-show', [self.id])
 
     class Meta:
         db_table = u'user_licenses'

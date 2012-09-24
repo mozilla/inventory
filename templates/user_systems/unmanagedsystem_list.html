@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block content %}
 
     <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
@@ -10,9 +10,15 @@
 
 <h2>Listing User Systems</h2>
 
-<a href="{% url user-system-new %}">Create New</a> | 
-<a href="{% url user-system-csv %}">Create CSV</a> |
-<a href="{% url user-system-list %}">List All</a>
+<a href="{{ 'user-system-new'|url() }}">Create New</a> | 
+{# 
+    For now we just want to display the generate csv link
+    inside of the model list only
+#}
+{% if 'user_systems/model' in request.request.META.PATH_INFO %}
+    <a href="{{ 'user-system-csv'|url() }}">Create CSV</a> |
+{% endif %}
+<a href="{{ 'user-system-list'|url() }}">List All</a>
 <br />
 
 <div id="search_hits"></div>
@@ -29,33 +35,36 @@
         </tr>
 	</thead>
     <tbody>
-        {% with user_system_list.object_list as systems %}
+        {% set systems = user_system_list.object_list %}
         {% include "user_systems/unmanagedsystem_table_snippet.html" %}
-        {% endwith %}
         <tr><td colspan="9">
         </td></tr>
     </tbody>
+    <tfoot>
+        <tr><td>
+            <span class="step-links">
+                {% if user_system_list.has_previous() %}
+                    <a href="?page={{ user_system_list.previous_page_number() }}">Previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ user_system_list.number }} of {{ user_system_list.paginator.num_pages }}.
+                </span>
+
+                {% if user_system_list.has_next() %}
+                    <a href="?page={{ user_system_list.next_page_number() }}">Next</a>
+                    {% if show_all %}
+                        <a id="show_all_link" href="{{ request.get_full_path}}?show_all=true">Show All</a>
+                    {% endif %}
+                {% endif %}
+            </span>
+        </td></tr>
+    </tfoot>
 </table>
-<span class="step-links">
-    {% if user_system_list.has_previous %}
-        <a href="?page={{ user_system_list.previous_page_number }}">Previous</a>
-    {% endif %}
-
-    <span class="current">
-        Page {{ user_system_list.number }} of {{ user_system_list.paginator.num_pages }}.
-    </span>
-
-    {% if user_system_list.has_next %}
-        <a href="?page={{ user_system_list.next_page_number }}">Next</a>
-        {% if show_all %}
-            <a id="show_all_link" href="{{ request.get_full_path}}?show_all=true">Show All</a>
-        {% endif %}
-    {% endif %}
-</span>
 <script type="text/javascript">
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{% url user-system-quicksearch %}");
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{{ 'user-system-quicksearch'|url() }}");
 	});
 </script>
 {% endblock %}

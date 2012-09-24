@@ -529,13 +529,14 @@ class System(DirtyFieldsMixin, models.Model):
                 #print "Could not update hostname %s" % (self.hostname)
 
     def update_host_for_migration(self, new_hostname):
-        kv = KeyValue(system=self, key='system.hostname.alias.0', value=self.hostname)
-        kv.save()
-        try:
-            self.hostname = new_hostname
-            self.save()
-        except Exception, e:
-            print "ERROR - %s" % (e)
+        if new_hostname.startswith(self.hostname):
+            kv = KeyValue(system=self, key='system.hostname.alias.0', value=self.hostname)
+            kv.save()
+            try:
+                self.hostname = new_hostname
+                self.save()
+            except Exception, e:
+                print "ERROR - %s" % (e)
 
 
     objects = models.Manager()

@@ -420,6 +420,22 @@ class KeyValueHandler(BaseHandler):
                     final_list.append({'system_hostname':system.hostname, 'ipv4_address':ipv4_address})
                 #tmp_list.append(tmp_dict)
                 return final_list
+            if 'key_type' in request.GET and request.GET['key_type'] == 'key_by_system':
+                try:
+                    hostname = request.GET.get('hostname')
+                    key = request.GET.get('key')
+                    system = System.objects.get(hostname=hostname)
+                    objects = KeyValue.objects.filter(key=key, system=system)
+                    tmp = []
+                    for obj in objects:
+                        tmp.append({'key': obj.key, 'value': obj.value})
+                    resp = rc.ALL_OK
+                    resp.write("json = {'data': %s}" % json.dumps(tmp))
+                except:
+                    resp = rc.NOT_FOUND
+                    resp.write('json = {"error_message":"Unable to find Key or system"}')
+
+                return resp
             if key_type == 'adapters_by_system_and_scope':
                 #Get keystores from truth that have dhcp.is_scope = True
                 dhcp_scope = request.GET['dhcp_scope']
