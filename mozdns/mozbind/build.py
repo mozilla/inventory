@@ -25,7 +25,7 @@ import pdb
 import os
 import time
 
-from settings.local import BUILD_PATH
+from settings import BUILD_PATH
 DEFAULT_TTL = 999
 
 # DEBUG OPTIONS

@@ -94,7 +94,16 @@ class SOA(models.Model, ObjectUrlMixin):
         super(SOA, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
+        # Look a the value of this object in the db. Did anything change? If
+        # yes, mark yourself as 'dirty'.
         self.full_clean()
+        if self.pk:
+            db_self = SOA.objects.get(pk=self.pk)
+            fields = ['primary', 'contact', 'serial', 'expire', 'retry',
+                    'refresh', 'comment']
+            for field in fields:
+                if getattr(db_self, field) != getattr(self, field):
+                    self.dirty = True
         super(SOA, self).save(*args, **kwargs)
 
     def __str__(self):

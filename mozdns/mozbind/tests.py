@@ -17,13 +17,20 @@ from core.interface.static_intr.models import StaticInterface
 from mozdns.mozbind.build import *
 
 from systems.models import System
+import pdb
 
-class BuildTests(TestCase):
+class DirtySOATests(TestCase):
     def setUp(self):
         Domain.objects.get_or_create(name="arpa")
         Domain.objects.get_or_create(name="in-addr.arpa")
+        self.r1, _ = Domain.objects.get_or_create(name="10.in-addr.arpa")
+        self.sr, sr_c = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact =
+                "hostmaster.foo", comment="123foo.gazsdi2")
+        self.r1.soa = self.sr
+        self.r1.save()
+
         s1, s1_c = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact =
-                "hostmaster.foo", comment="123foo.gaz2")
+                "hostmaster.dfdfoo", comment="123fooasdfsdfasdfsa.gaz2")
         self.soa = s1
         d, _ = Domain.objects.get_or_create(name="bgaz")
         d.soa = s1
@@ -45,105 +52,125 @@ class BuildTests(TestCase):
         self.s = System()
         self.s.save()
 
-    def test_dirty_a(self):
-        self.soa.dirty = False
-        self.soa.save()
-        a, _ = AddressRecord.objects.get_or_create(label="asfd",
-                domain=self.dom, ip_str = "128.1.1.1", ip_type='4')
-        a.save()
-        self.soa = SOA.objects.get(pk=self.soa.pk)
-        self.assertTrue(self.soa.dirty)
+    def generic_dirty(self, Klass, create_data, update_data, local_soa):
+        local_soa.dirty = False
+        local_soa.save()
+        rec = Klass(**create_data)
+        rec.full_clean()
+        rec.save()
+        local_soa = SOA.objects.get(pk=local_soa.pk)
+        self.assertTrue(local_soa.dirty)
 
         # Now try updating
-        self.soa.dirty = False
-        self.soa.save()
-        self.soa = SOA.objects.get(pk=self.soa.pk)
-        self.assertFalse(self.soa.dirty)
-        a.ip_str = "128.193.2.2"
-        a.save()
-        self.assertTrue(self.soa.dirty)
+        local_soa.dirty = False
+        local_soa.save()
+        local_soa = SOA.objects.get(pk=local_soa.pk)
+        self.assertFalse(local_soa.dirty)
+        for k, v in update_data.iteritems():
+            setattr(rec, k, v)
+        rec.save()
+        local_soa = SOA.objects.get(pk=local_soa.pk)
+        self.assertTrue(local_soa.dirty)
+
+
+
+    def test_dirty_a(self):
+        create_data = {
+                        'label': 'asdf',
+                        'domain': self.dom,
+                        'ip_str': '10.2.3.1',
+                        'ip_type': '4'
+                    }
+        update_data = {
+                        'label': 'asdfx',
+                    }
+        self.generic_dirty(AddressRecord, create_data, update_data, self.soa)
 
     def test_dirty_intr(self):
-        self.soa.dirty = False
-        self.soa.save()
-        a, _ = StaticInterface.objects.get_or_create(mac="11:22:33:44:55:66",
-                label="asfd", domain=self.dom, ip_str = "123.1.1.1",
-                ip_type='4', system=self.s)
-        a.save()
-        self.assertTrue(self.soa.dirty)
-        self.soa.dirty = False
-        self.soa.save()
-        self.soa = SOA.objects.get(pk=self.soa.pk)
-        self.assertFalse(self.soa.dirty)
-        # Now try updating
-        a.ip_str = "128.193.2.2"
-        a.save()
-        self.assertTrue(self.soa.dirty)
+        create_data = {
+                        'label': 'asdf1',
+                        'domain': self.dom,
+                        'ip_str': '10.2.3.1',
+                        'ip_type': '4',
+                        'system': self.s,
+                        'mac': '11:22:33:44:55:66'
+                    }
+        update_data = {
+                        'label': 'asdfx1',
+                    }
+        self.generic_dirty(StaticInterface, create_data, update_data, self.soa)
 
     def test_dirty_cname(self):
-        self.soa.dirty = False
-        self.soa.save()
-        c = CNAME(label="asfd", domain=self.dom, target="nerp")
-        c.full_clean()
-        c.save()
-        self.assertTrue(self.soa.dirty)
-        self.soa.dirty = False
-        self.soa.save()
-        self.soa = SOA.objects.get(pk=self.soa.pk)
-        self.assertFalse(self.soa.dirty)
-        # Now try updating
-        c.label = "asdfasfd"
-        c.save()
-        self.assertTrue(self.soa.dirty)
+        create_data = {
+                        'label': 'asdf2',
+                        'domain': self.dom,
+                        'target': 'foo.bar.com',
+                    }
+        update_data = {
+                        'label': 'asdfx2',
+                    }
+        self.generic_dirty(CNAME, create_data, update_data, self.soa)
 
     def test_dirty_ptr(self):
-        self.rsoa.dirty = False
-        self.rsoa.save()
-        c = PTR(name="asfd", ip_str="123.123.123.123", ip_type="4")
-        c.full_clean()
-        c.save()
-        self.rdom = Domain.objects.get(pk=self.rdom.pk)
-        self.assertTrue(self.rdom.dirty)
-        self.assertFalse(self.rsoa.dirty)
+        create_data = {
+                        'ip_str': '10.2.3.4',
+                        'ip_type': '4',
+                        'name': 'foo.bar.com',
+                    }
+        update_data = {
+                        'label': 'asdfx2',
+                    }
+        self.generic_dirty(PTR, create_data, update_data, local_soa=self.sr)
 
     def test_dirty_mx(self):
-        self.soa.dirty = False
-        self.dom.dirty = False
-        a, _ = MX.objects.get_or_create(label="asfd",
-                domain=self.dom, server = "asdf", priority=123, ttl=44)
-        a.save()
-        self.assertTrue(self.dom.dirty)
-        self.assertFalse(self.soa.dirty)
+        create_data = {
+                        'label': '',
+                        'domain': self.dom,
+                        'priority': 10,
+                        'server': 'foo.bar.com',
+                    }
+        update_data = {
+                        'label': 'asdfx3',
+                    }
+        self.generic_dirty(MX, create_data, update_data, self.soa)
 
     def test_dirty_ns(self):
-        self.soa.dirty = False
-        self.dom.dirty = False
-        a, _ = Nameserver.objects.get_or_create(domain=self.dom, server = "asdf")
-        a.save()
-        self.assertTrue(self.dom.dirty)
-        self.assertFalse(self.soa.dirty)
+        create_data = {
+                        'domain': self.dom,
+                        'server': 'foo.bar.com',
+                    }
+        update_data = {
+                        'label': 'asdfx4',
+                    }
+        self.generic_dirty(Nameserver, create_data, update_data, self.soa)
 
     def test_dirty_soa(self):
         self.soa.dirty = False
-        self.dom.dirty = False
         self.soa.refresh = 123
         self.soa.save()
         self.assertTrue(self.soa.dirty)
 
     def test_dirty_srv(self):
-        self.soa.dirty = False
-        self.dom.dirty = False
-        a, _ = SRV.objects.get_or_create(label="_asf", port=22, domain=self.dom,
-                target= "asdf", priority=123, weight=22)
-        a.save()
-        self.assertTrue(self.dom.dirty)
-        self.assertFalse(self.soa.dirty)
+        create_data = {
+                        'label': '_asdf7',
+                        'domain': self.dom,
+                        'priority': 10,
+                        'port': 10,
+                        'weight': 10,
+                        'target': 'foo.bar.com',
+                    }
+        update_data = {
+                        'label': '_asdfx4',
+                    }
+        self.generic_dirty(SRV, create_data, update_data, self.soa)
 
     def test_dirty_txt(self):
-        self.soa.dirty = False
-        self.dom.dirty = False
-        a, _ = TXT.objects.get_or_create(label="asf", txt_data="test",
-                domain=self.dom)
-        a.save()
-        self.assertTrue(self.dom.dirty)
-        self.assertFalse(self.soa.dirty)
+        create_data = {
+                        'label': 'asdf8',
+                        'domain': self.dom,
+                        'txt_data': 'some shit',
+                    }
+        update_data = {
+                        'label': 'asdfx5',
+                    }
+        self.generic_dirty(TXT, create_data, update_data, self.soa)

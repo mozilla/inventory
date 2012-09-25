@@ -8,6 +8,7 @@ from mozdns.mixins import ObjectUrlMixin
 from mozdns.view.models import View
 from mozdns.validation import validate_ttl
 from mozdns.models import check_for_cname
+from mozdns.soa.utils import update_soa
 
 from core.interface.static_intr.models import StaticInterface
 
@@ -73,8 +74,7 @@ class Nameserver(models.Model, ObjectUrlMixin):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        self.domain.dirty = True
-        self.domain.save()
+        update_soa(self)
         if self.pk:
             # We need to get the domain from the db. If it's not our current
             # domain, call prune_tree on the domain in the db later.

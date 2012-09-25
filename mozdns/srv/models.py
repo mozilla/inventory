@@ -6,6 +6,7 @@ from mozdns.models import MozdnsRecord
 from mozdns.validation import validate_name
 from mozdns.mixins import ObjectUrlMixin
 from mozdns.view.models import View
+from mozdns.soa.utils import update_soa
 
 from mozdns.validation import validate_srv_label, validate_srv_port
 from mozdns.validation import validate_srv_priority, validate_srv_weight
@@ -81,8 +82,7 @@ class SRV(models.Model, ObjectUrlMixin):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        self.domain.dirty = True
-        self.domain.clean()
+        update_soa(self)
         if self.pk:
             # We need to get the domain from the db. If it's not our current
             # domain, call prune_tree on the domain in the db later.

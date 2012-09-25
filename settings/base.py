@@ -169,3 +169,4 @@ DEBUG_TOOLBAR_CONFIG = {
 MOZDNS_BASE_URL = "/mozdns"
 CORE_BASE_URL = "/core"
 ROOT_URLCONF = 'inventory.urls'
+BUILD_PATH = '/home/juber/dnsbuilds/'

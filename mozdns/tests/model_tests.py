@@ -14,4 +14,4 @@ from mozdns.cname.tests import *
 from mozdns.ip.tests import *
 from mozdns.txt.tests import *
 from mozdns.sshfp.tests import *
-#from mozdns.mozbind.tests import *
+from mozdns.mozbind.tests import *
