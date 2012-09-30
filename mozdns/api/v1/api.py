@@ -55,6 +55,8 @@ class CommonDNSResource(ModelResource):
         bundle.data['views'] = [view.name for view in bundle.obj.views.all()]
         if 'domain' in bundle.data:
             bundle.data['domain'] = bundle.obj.domain.name
+        if bundle.obj.pk:
+            bundle.data['pk'] = bundle.obj.pk
         return bundle
 
     def hydrate(self, bundle):
