@@ -63,19 +63,29 @@ class Lexer(object):
                 token = token + c
         return token
 
-    def _peek_token(self):
+
+    def peek_token(self):
         token = ''
-        i = 0
+        if self.peek() == ')':
+            return ')'
+        if self.peek() == '-':
+            return '-'
+        i = -1
         while True:
             # Read in name
-            c = self.peekn(i)
             i += 1
+            c = self.peekn(i)
             if c is None:
                 if token:
                     return token
                 else:
                     return None
             if re.match('\s', c):
+                break
+            if c == ')':
+                break
+            if c == '(':
+                token = token + c
                 break
             else:
                 token = token + c

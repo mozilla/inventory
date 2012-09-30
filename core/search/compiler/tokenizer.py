@@ -1,17 +1,3 @@
-from django.db.models import Q
-
-import mozdns
-import core
-from mozdns.address_record.models import AddressRecord
-from mozdns.cname.models import CNAME
-from mozdns.domain.models import Domain
-from mozdns.mx.models import MX
-from mozdns.nameserver.models import Nameserver
-from mozdns.ptr.models import PTR
-from mozdns.srv.models import SRV
-from mozdns.sshfp.models import SSHFP
-from core.interface.static_intr.models import StaticInterface
-from mozdns.txt.models import TXT
 
 from lexer import Lexer
 import re
@@ -58,7 +44,8 @@ class Token(object):
         self.precedence = precedence
         self.col = col
         self.types = [
-                ('directive', re.compile("^(.*):(.*)$")) # type, vlan, etc
+                ('directive', re.compile("^(.*)=:(.*?)$")), # type, vlan, etc
+                # It can't be ':' because ipv6 addresses use it
                 ('text', re.compile("^(.*)$")), # Default to term
             ]
 
@@ -71,6 +58,15 @@ class Token(object):
     def compile_q(self):
         # Depending on the matched type, build the correct q set
         return build_text_qsets(self.value)
+
+class DirectiveToken(Token):
+    def __init__(self, type_, directive, value, precedence, col):
+        self.directive = directive
+        super(DirectiveToken, self).__init__(type_,
+                "{0}=:{1}".format(directive, value), precedence, col)
+
+    def compile_q(self):
+        pass
 
 
 class Tokenizer(object):
@@ -110,6 +106,7 @@ class Tokenizer(object):
         ('rparen', re.compile("^(\))$"), PR_RPAREN), # Right paren
         ('bop', re.compile("(and)$", re.IGNORECASE), PR_AND), # AND Binary Operator
         ('bop', re.compile("(or)$", re.IGNORECASE), PR_OR), # OR Binary Operator
+        ('directive', re.compile("^(.*)=:(.*?)$"), PR_TERM),
         ('term', re.compile("^(.*)$"), PR_TERM) # Everything else is a term
     ]
 
@@ -120,16 +117,36 @@ class Tokenizer(object):
             return None
         for type_, pattern, precedence in self.patterns:
             match = pattern.match(term)
-            if match:
-                if type_ == 'uop' or type_ == 'bop':
-                    opr = match.groups(1)[0]
-                    return Token(type_, opr.upper(), precedence, col)
-                if type_ in ('lparen','rparen'):
-                    paren = match.groups(1)[0]
-                    return Token(type_, paren, precedence, col)
-                if type_ == 'term':
-                    term = match.groups(1)[0]
-                    return Token(type_, term, precedence, col)
+            if not match:
+                continue
+            if type_ == 'directive':
+                # we need to make sure a trailing space doesn't through
+                # us off.
+                directive = match.groups(1)[0]
+                self.ll._lex_ws()
+                nxt_token = self.ll.peek_token()
+                value = ''
+                for itype_, pattern, precedence in self.patterns:
+                    match = pattern.match(nxt_token)
+                    if not match:
+                        continue
+                    if itype_ == 'term':
+                        value = self.ll.lex()  # we are eating this term
+                        break
+                    else:
+                        break
+
+                return DirectiveToken(type_, directive, value, precedence,
+                                      col)
+            if type_ == 'uop' or type_ == 'bop':
+                opr = match.groups(1)[0]
+                return Token(type_, opr.upper(), precedence, col)
+            if type_ in ('lparen','rparen'):
+                paren = match.groups(1)[0]
+                return Token(type_, paren, precedence, col)
+            if type_ == 'term':
+                term = match.groups(1)[0]
+                return Token(type_, term, precedence, col)
 
     def _get_tokens(self):
         first = True
@@ -154,8 +171,11 @@ class Tokenizer(object):
                     break
 
                 if ((cur.type_ == 'Term' and nxt.type_ == 'Term')
-                    or (cur.type_ == 'Term' and nxt.type_ == 'Lparen')
-                    or (cur.type_ == 'Rparen' and nxt.type_ == 'Term')):
+                    or (cur.type_ == 'Term' and nxt.type_ == 'Directive')
+                    or (cur.type_ == 'Directive' and nxt.type_ == 'Term')
+                    or (cur.type_ == 'Directive' and nxt.type_ == 'Directive')
+                    or (cur.type_ in ('Term', 'Directive') and nxt.type_ == 'Lparen')
+                    or (cur.type_ == 'Rparen' and nxt.type_ in ('Term', 'Directive'))):
                     new_tokens.append(cur)
                     new_tokens.append(Token('Bop', 'AND', PR_AND, None))
                     i += 1
@@ -272,7 +292,6 @@ if __name__ == "__main__":
     print print_tokens(ss)
     print
     print '---'
-    """
     ss = "()"
     print print_tokens(ss)
     print
@@ -280,5 +299,8 @@ if __name__ == "__main__":
 
     ss = "(foo)"
     print print_tokens(ss)
-    ss = "(webnode vlan:db,dmz site:scl4)"
+    ss = "(webnode vlan=:db vlan=: foo site:scl4)"
+    print print_tokens(ss)
+    """
+    ss = "(site=: vlan=: db)"
     print print_tokens(ss)

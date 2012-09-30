@@ -30,8 +30,6 @@ class Compiler(object):
     def compile_q(self):
         """Compile a q set:
             The idea here is to use a stack to calcuate the desired query set.
-            When you put a term onto the stack, instead of putting the item
-            onto the stack
         """
         while True:
             try:
