@@ -27,17 +27,17 @@ class Compiler(object):
         self.stack = list(reversed(make_stack(self.root_node)))
         self.q_stack = []
 
-    def compile_q(self):
+    def compile_Q(self):
         """Compile a q set:
-            The idea here is to use a stack to calcuate the desired query set.
+            The idea here is to use two stacks to calcuate the desired query set.
         """
         while True:
             try:
                 top = self.stack.pop()
             except IndexError:
                 break
-            if istype(top, 'term'):
-                self.q_stack.append(top.compile_q())
+            if istype(top, 'term') or istype(top, 'directive'):
+                self.q_stack.append(top.compile_Q())
                 # TODO ask top to compile it's own q set
             elif istype(top, 'bop'):
                 t1 = self.q_stack.pop()
@@ -45,7 +45,6 @@ class Compiler(object):
                 if top.value == 'AND':
                     q_result = []
                     for qi, qj in izip(t1, t2):
-                        qij = Q()
                         if qi and qj:
                             q_result.append(qi & qj)
                         else:  # Something AND nothing is nothing
@@ -53,7 +52,6 @@ class Compiler(object):
                 if top.value == 'OR':
                     q_result = []
                     for qi, qj in izip(t1, t2):
-                        qij = Q()
                         if qi and qj:
                             q_result.append(qi | qj)
                         elif qi:
@@ -68,22 +66,27 @@ class Compiler(object):
     def get_managers(self):
         # Alphabetical order
         managers = []
-        managers.append(AddressRecord.objects)
-        managers.append(CNAME.objects)
-        managers.append(Domain.objects)
-        managers.append(MX.objects)
-        managers.append(Nameserver.objects)
-        managers.append(PTR.objects)
-        managers.append(SRV.objects)
-        managers.append(SSHFP.objects)
-        managers.append(StaticInterface.objects)
-        managers.append(TXT.objects)
+        managers.append(AddressRecord.objects.all())
+        managers.append(CNAME.objects.all())
+        managers.append(Domain.objects.all())
+        managers.append(MX.objects.all())
+        managers.append(Nameserver.objects.all())
+        managers.append(PTR.objects.all())
+        managers.append(SRV.objects.all())
+        managers.append(SSHFP.objects.all())
+        managers.append(StaticInterface.objects.all())
+        managers.append(TXT.objects.all())
         return managers
 
     def compile_search(self):
-        self.compile_q()
+        search_result = []
+        self.q_stack = []
+        self.compile_Q()
         for manager, mega_filter in izip(self.get_managers(), self.q_stack[0]):
-            print manager.filter(mega_filter)
+            if not mega_filter:
+                search_result.append([])
+            else:
+                search_result.append(manager.filter(mega_filter))
+        search_result.append([]) # This last list is for misc objects
+        return search_result
 
-t = Compiler("node106 AND phx")
-t.compile_search()

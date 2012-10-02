@@ -1,7 +1,25 @@
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.db.models import Q
+
+from mozdns.address_record.models import AddressRecord
+from mozdns.cname.models import CNAME
+from mozdns.domain.models import Domain
+from mozdns.mx.models import MX
+from mozdns.nameserver.models import Nameserver
+from mozdns.ptr.models import PTR
+from mozdns.srv.models import SRV
+from mozdns.sshfp.models import SSHFP
+from mozdns.txt.models import TXT
+
+from core.interface.static_intr.models import StaticInterface
+from core.site.models import Site
+from core.vlan.models import Vlan
+from core.utils import two_to_four, IPFilter
 
 from lexer import Lexer
 import re
 import pdb
+import ipaddr
 
 PR_UOP = 1
 PR_LPAREN = 2
@@ -22,6 +40,7 @@ def build_filter(filter_, fields, filter_type = "icontains"):
 
     return final_filter
 
+
 def build_text_qsets(f):
     q_sets = []
     # Alphabetical order
@@ -37,9 +56,26 @@ def build_text_qsets(f):
     q_sets.append(build_filter(f, TXT.search_fields))
     return q_sets
 
+
+def build_ipf_qsets(qset):
+    q_sets = []
+    # Alphabetical order
+    q_sets.append(qset)  # AddressRecord
+    q_sets.append(None)
+    q_sets.append(None)
+    q_sets.append(None)
+    q_sets.append(None)
+    q_sets.append(qset)  # PTR
+    q_sets.append(None)
+    q_sets.append(None)
+    q_sets.append(qset)  # StaticInterface
+    q_sets.append(None)
+    return q_sets
+
+
 class Token(object):
     def __init__(self, type_, value, precedence, col):
-        self.value = value
+        self.value = value.strip()
         self.type_ = type_.title()
         self.precedence = precedence
         self.col = col
@@ -55,18 +91,62 @@ class Token(object):
     def __repr__(self):
         return str(self)
 
-    def compile_q(self):
+    def compile_Q(self):
         # Depending on the matched type, build the correct q set
         return build_text_qsets(self.value)
+
+class BadDirective(Exception):
+    pass
 
 class DirectiveToken(Token):
     def __init__(self, type_, directive, value, precedence, col):
         self.directive = directive
         super(DirectiveToken, self).__init__(type_,
-                "{0}=:{1}".format(directive, value), precedence, col)
+                value, precedence, col)
 
-    def compile_q(self):
-        pass
+    def __str__(self):
+        return "{0} {1}=:{2}".format(self.type_, self.directive, self.value)
+
+    def compile_Q(self):
+        if self.directive == 'network':
+            if self.value.find(':') > -1:
+                Klass = ipaddr.IPv6Network
+                ip_type = '6'
+            if self.value.find('.') > -1:
+                Klass = ipaddr.IPv4Network
+                ip_type = '4'
+            try:
+                network = Klass(self.value)
+                ip_info = two_to_four(int(network.network),
+                                      int(network.broadcast))
+                ipf = IPFilter(None, ip_type, *ip_info)
+            except ipaddr.AddressValueError, e:
+                raise BadDirective("{0} isn't a valid "
+                        "network.".format(self.value))
+            return build_ipf_qsets(ipf.compile_Q())
+        elif self.directive == 'site':
+            try:
+                site = Site.objects.get(name=self.value)
+            except ObjectDoesNotExist, e:
+                raise BadDirective("{0} isn't a valid "
+                        "site.".format(self.value))
+            return build_ipf_qsets(site.compile_Q('4'))
+        elif self.directive == 'vlan':
+            try:
+                if self.value.isdigit():
+                    vlan = Vlan.objects.get(number=self.value)
+                else:
+                    vlan = Vlan.objects.get(name=self.value)
+            except ObjectDoesNotExist, e:
+                raise BadDirective("{0} isn't a valid "
+                        "vlan identifier.".format(self.value))
+            except MultipleObjectsReturned, e:
+                raise BadDirective("{0} doesn't uniquely identify"
+                        "a vlan.".format(self.value))
+            return build_ipf_qsets(vlan.compile_Q('4'))
+        else:
+            raise BadDirective("Unknown directive "
+                "'{0}'".format(self.directive))
 
 
 class Tokenizer(object):
@@ -123,11 +203,14 @@ class Tokenizer(object):
                 # we need to make sure a trailing space doesn't through
                 # us off.
                 directive = match.groups(1)[0]
+                value = match.groups(1)[1]
+                if value:
+                    return DirectiveToken(type_, directive, value, precedence,
+                                          col)
                 self.ll._lex_ws()
                 nxt_token = self.ll.peek_token()
-                value = ''
-                for itype_, pattern, precedence in self.patterns:
-                    match = pattern.match(nxt_token)
+                for itype_, ipattern, iprecedence in self.patterns:
+                    match = ipattern.match(nxt_token)
                     if not match:
                         continue
                     if itype_ == 'term':
@@ -217,8 +300,6 @@ class Tokenizer(object):
         self.tokens = add_parens(self.tokens)
 
 
-
-
 def print_tokens(ss):
     tokenizer = Tokenizer(ss)
     print ss
@@ -301,6 +382,12 @@ if __name__ == "__main__":
     print print_tokens(ss)
     ss = "(webnode vlan=:db vlan=: foo site:scl4)"
     print print_tokens(ss)
-    """
     ss = "(site=: vlan=: db)"
     print print_tokens(ss)
+
+    ss = "(site=:db)"
+    print print_tokens(ss)
+
+    ss = "(site=: db)"
+    print print_tokens(ss)
+    """

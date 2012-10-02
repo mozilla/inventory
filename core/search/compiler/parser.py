@@ -104,12 +104,12 @@ class Parser(object):
                 return bopr
             else:
                 return n
-        if istype(self.top(), 'Term'):
+        if istype(self.top(), 'Term') or istype(self.top(), 'Directive'):
             if istype(self.peek(), 'Bop'):
                 t1 = Node(self.pop(), indent)
                 bopr = Node(self.pop(), indent)
                 bopr.l_child = t1
-                if istype(self.top(), 'Term'):
+                if istype(self.top(), 'Term') or istype(self.top(), 'Directive'):
                     bopr.r_child = self.parse(indent)
                 elif istype(self.top(), 'Lparen'):
                     bopr.r_child = self.parse(indent)
@@ -119,7 +119,7 @@ class Parser(object):
             elif istype(self.peek(), 'Rparen'):
                 t1 = Node(self.pop(), indent)
                 return t1
-            elif istype(self.peek(), 'Term'):
+            elif istype(self.peek(), 'Term') or istype(self.top(), 'Directive'):
                 t1 = Node(self.pop(), indent)
                 return t1
             else:

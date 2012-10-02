@@ -117,7 +117,8 @@ class Network(models.Model, ObjectUrlMixin):
         """Update the IP filter. Used for compiling search queries and firewall
         rules."""
         self.update_network()
-        ip_info = two_to_four(int(self.network.network), int(self.network.broadcast))
+        ip_info = two_to_four(int(self.network.network),
+                              int(self.network.broadcast))
         self.ipf = IPFilter(self, self.ip_type, *ip_info)
 
     def update_network(self):

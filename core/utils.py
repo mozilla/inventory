@@ -8,10 +8,14 @@ def get_interfaces_range(start, stop):
             ip_lower__lte=end)
 
 class IPFilterSet(object):
-    ipfs = set()
+    """The IPFilterSet expects that all IPFilters added to it are of the same
+    type.
+    """
+    def __init__(self):
+        self.ipfs = []
 
     def add(self, ipf):
-        self.ipfs.add(ipf)
+        self.ipfs.append(ipf)
 
     def pprint(self):
         for ipf in self.ipfs:
@@ -28,26 +32,35 @@ class IPFilterSet(object):
         new list of IPFilter objects that represent this range.
         """
 
-    def compile_OR(self):
+    def compile_OR_Q(self):
         mega_filter = Q()
         for ipf in self.ipfs:
-            mega_filter = mega_filter | ipf.compile_q()
+            mega_filter = mega_filter | ipf.compile_Q()
+        return mega_filter
 
     def compile_AND(self):
+        """Returns an IPF object containing the intersections of all ipfs."""
+        if not self.ipfs:
+            return None
+        ip_type = self.ipfs[0].ip_type
+        return self.trim(self.ipfs[0], self.ipfs[1:], ip_type)
+
+    def compile_AND_Q(self):
         """Returns a Q object containing the intersections of all ipfs."""
         if not self.ipfs:
             return Q()
-        rx = trim(self.ipfs[0], self.ipfs[1:])
-        return rx.compile_q()
+        ip_type = self.ipfs[0].ip_type
+        rx = self.trim(self.ipfs[0], self.ipfs[1:], ip_type)
+        return rx.compile_Q()
 
-    def trim(r, rs, ip_type):
+    def trim(self, r, rs, ip_type):
         if not (rs and r):
             return r
         r1 = rs[0]
-        rx = intersect(r, r1, ip_type)
-        return trim(rx, rs[1:], ip_type)
+        rx = self.intersect(r, r1, ip_type)
+        return self.trim(rx, rs[1:], ip_type)
 
-    def intersect(r1, r2, ip_type):
+    def intersect(self, r1, r2, ip_type):
         """Cases:
             * Subset or equal
             * Left intersect
@@ -89,7 +102,8 @@ class IPFilterSet(object):
 
 class IPFilter(object):
     def __init__(self, object_, ip_type, start_upper, start_lower, end_upper, end_lower):
-        self.object_ = object_  # The composite object
+        self.object_ = object_  # The composite object (if it exists, it can be
+                                # None)
         self.ip_type = ip_type
         if ip_type == '6':
             self.IPKlass = ipaddr.IPv6Address
@@ -109,8 +123,8 @@ class IPFilter(object):
         return str(self)
 
     def compile_Q(self):
-        q_filter = Q(ip_upper=start_upper, ip_lower__gte=start_lower,
-                ip_lower__lte=end_lower)
+        q_filter = Q(ip_upper=self.start_upper, ip_lower__gte=self.start_lower,
+                ip_lower__lte=self.end_lower)
         return q_filter
 
 
@@ -121,8 +135,10 @@ def two_to_four(start, end):
     end_lower = end & (1 << 64) - 1
     return start_upper, start_lower, end_upper, end_lower
 
+
 def two_to_one(upper, lower):
     return long(upper << 64) + long(lower)
+
 
 def four_to_two(start_upper, start_lower, end_upper, end_lower):
     start = start_upper << 64 + start_lower

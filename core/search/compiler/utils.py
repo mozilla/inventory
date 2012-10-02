@@ -1,5 +1,7 @@
 def make_stack(node):
     def _make_stack(stack, node):
+        if not node:
+            return stack
         if not (node.l_child or node.r_child):
             if node.token.value:
                 stack.append(node.token)
