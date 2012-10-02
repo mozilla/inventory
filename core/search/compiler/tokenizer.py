@@ -21,7 +21,7 @@ import re
 import pdb
 import ipaddr
 
-PR_UOP = 1
+PR_UOP = 0
 PR_LPAREN = 2
 PR_RPAREN = 2
 PR_AND = 1
@@ -42,35 +42,61 @@ def build_filter(filter_, fields, filter_type = "icontains"):
 
 
 def build_text_qsets(f):
-    q_sets = []
     # Alphabetical order
-    q_sets.append(build_filter(f, AddressRecord.search_fields))
-    q_sets.append(build_filter(f, CNAME.search_fields))
-    q_sets.append(build_filter(f, Domain.search_fields))
-    q_sets.append(build_filter(f, MX.search_fields))
-    q_sets.append(build_filter(f, Nameserver.search_fields))
-    q_sets.append(build_filter(f, PTR.search_fields))
-    q_sets.append(build_filter(f, SRV.search_fields))
-    q_sets.append(build_filter(f, SSHFP.search_fields))
-    q_sets.append(build_filter(f, StaticInterface.search_fields))
-    q_sets.append(build_filter(f, TXT.search_fields))
+    q_sets = [
+        build_filter(f, AddressRecord.search_fields),
+        build_filter(f, CNAME.search_fields),
+        build_filter(f, Domain.search_fields),
+        build_filter(f, MX.search_fields),
+        build_filter(f, Nameserver.search_fields),
+        build_filter(f, PTR.search_fields),
+        build_filter(f, SRV.search_fields),
+        build_filter(f, SSHFP.search_fields),
+        build_filter(f, StaticInterface.search_fields),
+        build_filter(f, TXT.search_fields)
+        ]
     return q_sets
 
 
 def build_ipf_qsets(qset):
-    q_sets = []
     # Alphabetical order
-    q_sets.append(qset)  # AddressRecord
-    q_sets.append(None)
-    q_sets.append(None)
-    q_sets.append(None)
-    q_sets.append(None)
-    q_sets.append(qset)  # PTR
-    q_sets.append(None)
-    q_sets.append(None)
-    q_sets.append(qset)  # StaticInterface
-    q_sets.append(None)
+    q_sets = [
+        qset,  # AddressRecord
+        None,
+        None,
+        None,
+        None,
+        qset,  # PTR
+        None,
+        None,
+        qset,  # StaticInterface
+        None
+        ]
     return q_sets
+
+def build_rdtype_qsets(rdtype):
+    """This function needs to filter out all records of a certain rdtype (like
+    A or CNAME). Any filter produced here has to be able to be negated. We use
+    the fact that every object has a pk > -1. When a qset is negated the query
+    becomes pk <= -1.
+    """
+    rdtype = rdtype.upper()  # Let's get consistent
+    select = Q(pk__gt=-1)
+    no_select = Q(pk__lte=-1)
+    q_sets = [
+        select if rdtype == 'A' else no_select,
+        select if rdtype == 'CNAME' else no_select,
+        select if rdtype == 'DOMAIN' else no_select,
+        select if rdtype == 'MX' else no_select,
+        select if rdtype == 'NS' else no_select,
+        select if rdtype == 'PTR' else no_select,
+        select if rdtype == 'SRV' else no_select,
+        select if rdtype == 'SSHFP' else no_select,
+        select if rdtype == 'INTR' else no_select,
+        select if rdtype == 'TXT' else no_select
+        ]
+    return q_sets
+
 
 
 class Token(object):
@@ -124,6 +150,8 @@ class DirectiveToken(Token):
                 raise BadDirective("{0} isn't a valid "
                         "network.".format(self.value))
             return build_ipf_qsets(ipf.compile_Q())
+        elif self.directive == 'type':
+            return build_rdtype_qsets(self.value)
         elif self.directive == 'site':
             try:
                 site = Site.objects.get(name=self.value)
@@ -257,8 +285,12 @@ class Tokenizer(object):
                     or (cur.type_ == 'Term' and nxt.type_ == 'Directive')
                     or (cur.type_ == 'Directive' and nxt.type_ == 'Term')
                     or (cur.type_ == 'Directive' and nxt.type_ == 'Directive')
-                    or (cur.type_ in ('Term', 'Directive') and nxt.type_ == 'Lparen')
-                    or (cur.type_ == 'Rparen' and nxt.type_ in ('Term', 'Directive'))):
+                    or (cur.type_ in ('Term', 'Directive')
+                        and nxt.type_ == 'Uop')
+                    or (cur.type_ in ('Term', 'Directive')
+                        and nxt.type_ == 'Lparen')
+                    or (nxt.type_ in ('Term', 'Directive')
+                        and cur.type_ == 'Rparen')):
                     new_tokens.append(cur)
                     new_tokens.append(Token('Bop', 'AND', PR_AND, None))
                     i += 1
@@ -388,6 +420,6 @@ if __name__ == "__main__":
     ss = "(site=:db)"
     print print_tokens(ss)
 
-    ss = "(site=: db)"
-    print print_tokens(ss)
     """
+    ss = "(!site=: db)"
+    print print_tokens(ss)

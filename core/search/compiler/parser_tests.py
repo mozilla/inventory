@@ -81,6 +81,31 @@ class TestParser(unittest.TestCase):
         exp = 'a b OR c AND'
         self.compare(ss, exp)
 
+    def test15(self):
+        ss = "(!c)"
+        exp = 'c !'
+        self.compare(ss, exp)
+
+    def test16(self):
+        ss = "(!a c)"
+        exp = 'a ! c AND'
+        self.compare(ss, exp)
+
+    def test17(self):
+        ss = "(!(a c))"
+        exp = 'a c AND !'
+        self.compare(ss, exp)
+
+    def test18(self):
+        ss = "a !c"
+        exp = 'a c ! AND'
+        self.compare(ss, exp)
+
+    def test19(self):
+        ss = "a !(c OR b)"
+        exp = 'a c b OR ! AND'
+        self.compare(ss, exp)
+
 
 if __name__ == "__main__":
     unittest.main()

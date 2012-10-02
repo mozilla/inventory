@@ -104,7 +104,15 @@ class Parser(object):
                 return bopr
             else:
                 return n
-        if istype(self.top(), 'Term') or istype(self.top(), 'Directive'):
+        elif istype(self.top(), 'Uop'):
+            uop = Node(self.pop(), indent) # get the uop
+            n = self.parse(indent)
+            if not n:
+                raise SyntaxError("Expecting right operand for "
+                                  "{0}".format(uop.token.value))
+            uop.l_child = n
+            return uop
+        elif istype(self.top(), 'Term') or istype(self.top(), 'Directive'):
             if istype(self.peek(), 'Bop'):
                 t1 = Node(self.pop(), indent)
                 bopr = Node(self.pop(), indent)
@@ -127,6 +135,7 @@ class Parser(object):
 
 
 if __name__ == "__main__":
+    """
     ss = "(foo)"
     print do_parse(ss)
     ss = "webnode vlan:db,dmz site:scl4"
@@ -179,3 +188,6 @@ if __name__ == "__main__":
     print do_parse(ss)
     print
     print '---'
+    """
+    ss = "(!foo)"
+    print do_parse(ss)

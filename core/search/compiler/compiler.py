@@ -38,7 +38,14 @@ class Compiler(object):
                 break
             if istype(top, 'term') or istype(top, 'directive'):
                 self.q_stack.append(top.compile_Q())
-                # TODO ask top to compile it's own q set
+                continue
+            elif istype(top, 'uop'):
+                t1 = self.q_stack.pop()
+                q_negate = []
+                for qset in t1:
+                    q_negate.append(~qset)
+                self.q_stack.append(q_negate)
+                continue
             elif istype(top, 'bop'):
                 t1 = self.q_stack.pop()
                 t2 = self.q_stack.pop()
@@ -60,8 +67,8 @@ class Compiler(object):
                             q_result.append(qj)
                         else:
                             q_result.append(None)
-
                 self.q_stack.append(q_result)
+                continue
 
     def get_managers(self):
         # Alphabetical order
