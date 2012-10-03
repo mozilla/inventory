@@ -74,7 +74,7 @@ def report_home(request):
             data['content'] = str(total_count)
             if 'CSV' == request.POST['output']:
                 response = HttpResponse(mimetype='text/csv')
-                response['Content-Disposition'] = 'attachment; inventory_report.csv'
+                response['Content-Disposition'] = 'attachment; filename=inventory_report.csv'
                 writer = csv.writer(response)
                 columns = [
                         'Hostname',
