@@ -85,6 +85,20 @@ class Compiler(object):
         managers.append(TXT.objects.all())
         return managers
 
+    def compile_json(self):
+        """Return a JSON result of a search."""
+        search_result = []
+        self.q_stack = []
+        self.compile_Q()
+        for manager, mega_filter in izip(self.get_managers(), self.q_stack[0]):
+            if not mega_filter:
+                search_result.append(None)
+            else:
+                search_result.append(mega_filter)
+        search_result.append(None)
+        # TODO We need to write resources for all misc types
+        return search_result
+
     def compile_search(self):
         search_result = []
         self.q_stack = []

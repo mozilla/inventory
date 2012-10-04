@@ -24,8 +24,8 @@ from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
 
-from core.search.parser import parse
-from core.search.search import compile_search
+#from core.search.parser import parse
+#from core.search.search import compile_search
 
 import pdb
 import re
@@ -41,7 +41,7 @@ def bulk_change_ajax(request):
     search = request.GET.get("search", None)
     if not search:
         return HttpResponse("What do you want?!?")
-    query = parse(search)
+    #query = parse(search)
     print "----------------------"
     print query
     print "----------------------"

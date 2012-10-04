@@ -1,10 +1,12 @@
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.util import ErrorList, ErrorDict
 from django.db import IntegrityError
+
 from tastypie import fields, utils
 from tastypie.exceptions import HydrationError
 from tastypie.resources import Resource, DeclarativeMetaclass
 from tastypie.resources import ModelResource
+from tastypie.bundle import Bundle
 
 from systems.models import System
 from api_v3.system_api import SystemResource
@@ -233,7 +235,17 @@ class CommonDNSResource(ModelResource):
 allowed_methods = ['get', 'post', 'patch', 'delete']
 v1_dns_api = Api(api_name="v1_dns")
 
-class CNAMEResource(CommonDNSResource, ModelResource):
+class ObjectListMixin(ModelResource):
+    """We need a way to take a django Q, make a query with it, and then lower
+    the objects returned by the query into tastypie resources.
+    """
+
+    def model_to_data(self, model, request=None):
+        # joshbohde++
+        bundle = self.build_bundle(obj=model, request=request)
+        return self.full_dehydrate(bundle).data
+
+class CNAMEResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = CNAME.objects.all()
@@ -243,7 +255,7 @@ class CNAMEResource(CommonDNSResource, ModelResource):
 
 v1_dns_api.register(CNAMEResource())
 
-class TXTResource(CommonDNSResource, ModelResource):
+class TXTResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = TXT.objects.all()
@@ -253,7 +265,7 @@ class TXTResource(CommonDNSResource, ModelResource):
 
 v1_dns_api.register(TXTResource())
 
-class SRVResource(CommonDNSResource, ModelResource):
+class SRVResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = SRV.objects.all()
@@ -263,7 +275,7 @@ class SRVResource(CommonDNSResource, ModelResource):
 
 v1_dns_api.register(SRVResource())
 
-class MXResource(CommonDNSResource, ModelResource):
+class MXResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = MX.objects.all()
@@ -273,7 +285,7 @@ class MXResource(CommonDNSResource, ModelResource):
 
 v1_dns_api.register(MXResource())
 
-class SSHFPResource(CommonDNSResource, ModelResource):
+class SSHFPResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = SSHFP.objects.all()
@@ -283,7 +295,7 @@ class SSHFPResource(CommonDNSResource, ModelResource):
 
 v1_dns_api.register(SSHFPResource())
 
-class AddressRecordResource(CommonDNSResource, ModelResource):
+class AddressRecordResource(CommonDNSResource, ObjectListMixin, ModelResource):
 
     class Meta:
         always_return_data = True
@@ -294,7 +306,7 @@ class AddressRecordResource(CommonDNSResource, ModelResource):
 
 v1_dns_api.register(AddressRecordResource())
 
-class NameserverResource(CommonDNSResource):
+class NameserverResource(CommonDNSResource, ObjectListMixin):
     def hydrate(self, bundle):
         # Nameservers don't have a label
         if 'fqdn' in bundle.data:
@@ -319,7 +331,7 @@ class NameserverResource(CommonDNSResource):
 
 v1_dns_api.register(NameserverResource())
 
-class PTRResource(CommonDNSResource, ModelResource):
+class PTRResource(CommonDNSResource, ObjectListMixin, ModelResource):
     views = fields.ListField(null=True, blank=True)  # User passes list of view names, in hydrate we
                                                     # make these the actual views
     def hydrate(self, bundle):
@@ -335,7 +347,7 @@ class PTRResource(CommonDNSResource, ModelResource):
 
 v1_dns_api.register(PTRResource())
 
-class StaticInterfaceResource(CommonDNSResource, ModelResource):
+class StaticInterfaceResource(CommonDNSResource, ObjectListMixin, ModelResource):
     system = fields.ToOneField(SystemResource, 'system', null=False, full=True)
 
     def hydrate(self, bundle):
@@ -412,7 +424,7 @@ v1_dns_api.register(StaticInterfaceResource())
 
 
 """
-class XXXResource(CommonDNSResource, ModelResource):
+class XXXResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = XXX.objects.all()
