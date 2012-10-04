@@ -28,9 +28,9 @@ def search_json(request):
     addrf, cnamef, domainf, mxf, nsf, ptrf, srvf, sshfpf, intrf, txtf, misc = x
     meta = {
         # If the user wants object counts, let them use wc.
+        "search": search,
         'objects': {
-            "misc": misc,
-            "search": search,
+            "misc": misc,  # TODO, write a resource for misc objects
             "addrs": resource_for_request('addressrecord', addrf, request)  if addrf else [],
             "cnames": resource_for_request('cname', cnamef, request) if cnamef else [],
             "domains": [],  # Not sure if this will ever have a resource
@@ -41,10 +41,8 @@ def search_json(request):
             "sshfps": resource_for_request('sshfp', sshfpf, request) if srvf else [],
             "intrs": resource_for_request('staticinterface', intrf, request) if intrf else [],
             "txts": resource_for_request('txt', txtf, request) if txtf else [],
-            "meta": [],  # TODO, write a resource for meta objects
-            "search": search
         },
-        }
+    }
     return HttpResponse(json.dumps(meta))
 
 
