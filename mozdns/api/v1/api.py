@@ -53,12 +53,17 @@ class CommonDNSResource(ModelResource):
 
 
     def dehydrate(self, bundle):
-        # Every DNS Resource should have a domain
+        # Most DNS Resources should have a domain and a fqdn
         bundle.data['views'] = [view.name for view in bundle.obj.views.all()]
         if 'domain' in bundle.data:
             bundle.data['domain'] = bundle.obj.domain.name
         if bundle.obj.pk:
             bundle.data['pk'] = bundle.obj.pk
+        bundle.data['meta'] = {}
+        if bundle.obj.domain and bundle.obj.domain.soa:
+            bundle.data['meta']['soa'] = str(bundle.obj.domain.soa)
+        if hasattr(bundle.obj, 'fqdn'):
+            bundle.data['meta']['fqdn'] = bundle.obj.fqdn
         return bundle
 
     def hydrate(self, bundle):
@@ -336,6 +341,20 @@ class PTRResource(CommonDNSResource, ObjectListMixin, ModelResource):
                                                     # make these the actual views
     def hydrate(self, bundle):
         # Nothing to do here.
+        return bundle
+
+    def dehydrate(self, bundle):
+        bundle.data['views'] = [view.name for view in bundle.obj.views.all()]
+        # Don't clobber the actual reverse_domain field
+        # If this 'ptr_reverse_domain' is called 'reverse_domain', tastypie will
+        # try to serialize this field to a reverse_domain object (we don't want
+        # that).
+        bundle.data['meta'] = {}
+        bundle.data['meta']['reverse_domain'] = bundle.obj.reverse_domain.name
+        if bundle.obj.reverse_domain.soa:
+            bundle.data['meta']['soa'] = str(bundle.obj.reverse_domain.soa)
+        if bundle.obj.pk:
+            bundle.data['pk'] = bundle.obj.pk
         return bundle
 
     class Meta:
