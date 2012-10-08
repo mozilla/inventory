@@ -48,12 +48,12 @@ class CommonDNSResource(ModelResource):
     # make these the actual view objects
 
     def obj_delete_list(self, request=None, **kwargs):
-        # We dont' want this method being used
+        # We don't want this method being used
         raise NotImplemented
 
 
     def dehydrate(self, bundle):
-        # Most DNS Resources should have a domain and a fqdn
+        # Most DNS Resources should have a domain and a fqdn and some views
         bundle.data['views'] = [view.name for view in bundle.obj.views.all()]
         if 'domain' in bundle.data:
             bundle.data['domain'] = bundle.obj.domain.name
@@ -118,7 +118,7 @@ class CommonDNSResource(ModelResource):
         if bundle.errors:
             self.error_response(bundle.errors, request)
 
-        views = self.extract_views(bundle)
+        views = bundle.data.pop('views', [])
         if bundle.errors:
             self.error_response(bundle.errors, request)
         if ('label' in bundle.data and 'domain' in bundle.data and 'fqdn' in
@@ -132,22 +132,22 @@ class CommonDNSResource(ModelResource):
             self.error_response(bundle.errors, request)
         self.apply_commit(obj, bundle.data)  # bundle should only have valid data.
                                              # If it doesn't errors will be thrown
-
         return self.save_commit(request, bundle, views, kv)
 
-    def extract_views(self, bundle):
-        views = []
+    def update_views(self, obj, views):
         # We have to remove views from data because those need to be added
         # later in a seperate step
-        for view_name in bundle.data.pop('views',[]):
-            try:
-                views.append(View.objects.get(name=view_name))
-            except ObjectDoesNotExist, e:
-                errors = {}
-                errors['views'] = "Couldn't find view {0}".format(view_name)
-                bundle.errors['error_messages'] = json.dumps(errors)
-                break
-        return views
+        public_view = View.objects.get(name='public')
+        private_view = View.objects.get(name='private')
+        for view_name in views:
+            if view_name == 'no-public':
+                obj.views.remove(public_view)
+            elif view_name == 'public':
+                obj.views.add(public_view)
+            if view_name == 'no-private':
+                obj.views.remove(private_view)
+            elif view_name == 'private':
+                obj.views.add(private_view)
 
     def extract_kv(self, bundle):
         return []
@@ -176,7 +176,7 @@ class CommonDNSResource(ModelResource):
         if bundle.errors:
             self.error_response(bundle.errors, request)
 
-        views = self.extract_views(bundle)
+        views = bundle.data.pop('views', [])
         # views should be saved after the object has been created
         if bundle.errors:
             self.error_response(bundle.errors, request)
@@ -215,18 +215,10 @@ class CommonDNSResource(ModelResource):
         except Exception, e:
             if 'domain' in bundle.data:
                 prune_tree(bundle.data['domain'])
-            pdb.set_trace()
             bundle.errors['error_messages'] = "Very bad error."
             self.error_response(bundle.errors, request)
 
-        # We remove the views so that deletion works.
-        orig_views = [view for view in bundle.obj.views.all()]
-        for view in orig_views:
-            bundle.obj.views.remove(view)
-
-        # Now save those views we saved
-        for view in views:
-            bundle.obj.views.add(view)
+        self.update_views(bundle.obj, views)
 
         # Now do the kv magic
         if kv:

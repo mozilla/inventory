@@ -173,7 +173,7 @@ class MozdnsAPITests(object):
 
         # Now try deleteing a view.
         views = ['private']
-        post_data = {'views': views}
+        post_data = {'views': ['no-public']}  # This should delete public
         obj_count = self.test_type.objects.count()
         resp, patch_data = self.generic_update(new_object_url, post_data)
         self.assertEqual(self.test_type.objects.count(), obj_count)
@@ -246,16 +246,6 @@ class MangleTests(ResourceTestCase):
         post_data.pop('label')
         post_data.pop('domain')
         post_data['fqdn'] = 'secondbar.x.y.' + fqdn
-        obj_count = self.test_type.objects.count()
-        create_url = self.object_list_url.format(API_VERSION,
-                        str(self.test_type.__name__).lower())
-        resp = self.api_client.post(create_url, format='json', data=post_data)
-        self.assertHttpBadRequest(resp)
-        self.assertEqual(self.test_type.objects.count(), obj_count)
-
-    def test_bad_view(self):
-        post_data = self.post_data()
-        post_data['views'] = ['foobar']
         obj_count = self.test_type.objects.count()
         create_url = self.object_list_url.format(API_VERSION,
                         str(self.test_type.__name__).lower())
