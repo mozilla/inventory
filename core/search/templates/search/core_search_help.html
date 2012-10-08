@@ -75,39 +75,39 @@
     <caption>Directives</caption>
     <tr>
         <td>
-            type:
+            type=:
         </td>
         <td>
             <p>
             The 'type' directive can be used to target a type of DNS record. For example: to see all
-            CNAME records that contained the word 'web' you could search <code>type:CNAME web</code>.
+            CNAME records that contained the word 'web' you could search <code>type=:CNAME web</code>.
             To search for StaticInterface records or domains use <code>type:INTR</code> and
-            <code>type:Domain</code>. Type is case insensitive.
+            <code>type=:Domain</code>. Type is case insensitive.
             </p>
         </td>
     </tr>
     <tr>
         <td>
-            site:
+            site=:
         </td>
         <td>
             <p>
             The 'site' directive can be used to search for objects that have IP addresses that fall
             into one of the networks associated with a site (datacenter or buisness unit). For
-            example: To see all A records in scl2, search <code>type:A site:scl2</code>.
+            example=: To see all A records in scl2, search <code>type=:A site=:scl2</code>.
             <a href=/core/site/>A list of all Sites</a>
             </p>
         </td>
     </tr>
     <tr>
         <td>
-            vlan:
+            vlan=:
         </td>
         <td>
             <p>
             The 'vlan' directive can be used to search for objects that have IP addresses
             within one of the networks associated with a specif vlan. For example: To see all
-            objects that fall into the db vlan, search <code>vlan:db</code>. <i>Note that vlans can
+            objects that fall into the db vlan, search <code>vlan=:db</code>. <i>Note that vlans can
             exist in multiple data centers</i>. <a href=/core/vlan/>A list of all Vlans</a>
             </p>
         </td>
@@ -120,7 +120,7 @@
             <p>
             The 'network' directive can be used to search for objects that have IP addresses within
             a network. For example: To see all objects that fall into the 10.22.3.0/24 network,
-            search <code>network:10.22.3.0/23</code>.
+            search <code>network=:10.22.3.0/23</code>.
             </p>
         </td>
     </tr>
@@ -132,7 +132,7 @@
             <p>
             The 'range' directive can be used to search for objects that have IP addresses within
             a specific range. For example: To see all objects have an IP greater than 10.8.2.0 and
-            less than 10.8.2.30, search <code>range:10.8.2.0,10.8.2.30</code>.
+            less than 10.8.2.30, search <code>range=:10.8.2.0,10.8.2.30</code>.
             </p>
         </td>
     </tr>
@@ -142,7 +142,7 @@
     <tr>
         <td>
             <p>
-            <code>puppet site:scl3 type:A</code>
+            <code>puppet site=:scl3 type=:A</code>
             </p>
             <p>
             Find all A records in scl3 that have the string 'puppet' in their name.
@@ -152,7 +152,7 @@
     <tr>
         <td>
             <p>
-            <code>/^node[1-9]\.seamicro type:A type:PTR network:10.8.32.0/24</code>
+            <code>/^node[1-9]\.seamicro (type=:A OR type=:PTR) network=:10.8.32.0/24</code>
             </p>
             <p>
             Find all A and PTR records who's name match the regex '^node[1-9]\.seamicro' that are also in
