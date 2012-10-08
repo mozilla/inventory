@@ -146,7 +146,7 @@ class DirectiveToken(Token):
                 ip_info = two_to_four(int(network.network),
                                       int(network.broadcast))
                 ipf = IPFilter(None, ip_type, *ip_info)
-            except ipaddr.AddressValueError, e:
+            except (ipaddr.AddressValueError, ipaddr.NetmaskValueError), e:
                 raise BadDirective("{0} isn't a valid "
                         "network.".format(self.value))
             return build_ipf_qsets(ipf.compile_Q())
@@ -209,7 +209,7 @@ class Tokenizer(object):
     # List of types
     # Operators And precedence rules
     patterns = [
-        ('uop', re.compile("^(!)$"), PR_UOP), # NOT Unary Operator
+        ('uop', re.compile("^(-)$"), PR_UOP), # NOT Unary Operator
         ('lparen', re.compile("^(\()$"), PR_LPAREN),  # Left paren
         ('rparen', re.compile("^(\))$"), PR_RPAREN), # Right paren
         ('bop', re.compile("(and)$", re.IGNORECASE), PR_AND), # AND Binary Operator
@@ -292,7 +292,7 @@ class Tokenizer(object):
                     or (nxt.type_ in ('Term', 'Directive')
                         and cur.type_ == 'Rparen')):
                     new_tokens.append(cur)
-                    new_tokens.append(Token('Bop', 'AND', PR_AND, None))
+                    new_tokens.append(Token('Bop', 'AND', PR_AND, cur.col))
                     i += 1
                 else:
                     new_tokens.append(cur)
@@ -421,5 +421,5 @@ if __name__ == "__main__":
     print print_tokens(ss)
 
     """
-    ss = "(!site=: db)"
+    ss = "(-site=: db)"
     print print_tokens(ss)

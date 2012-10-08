@@ -29,26 +29,52 @@ class Compiler(object):
 
     def compile_Q(self):
         """Compile a q set:
-            The idea here is to use two stacks to calcuate the desired query set.
+            The idea here is to use two stacks to calcuate the desired query
+            set.
         """
+        def error_out(token=None):
+            if token is None:
+                problem = len(self.stmt)
+            else:
+                problem = token.col
+
+            raise SyntaxError("Expecting Term or Directive at col "
+                    "{0}\n{1}\n{2}^".format(problem, self.stmt, problem * ' '))
+        first = True
         while True:
             try:
                 top = self.stack.pop()
             except IndexError:
-                break
+                if first:
+                    error_out()
+                else:
+                    break
+            first = False
+
             if istype(top, 'term') or istype(top, 'directive'):
                 self.q_stack.append(top.compile_Q())
-                continue
             elif istype(top, 'uop'):
-                t1 = self.q_stack.pop()
+                try:
+                    t1 = self.q_stack.pop()
+                except IndexError:
+                    error_out()
+
                 q_negate = []
                 for qset in t1:
                     q_negate.append(~qset)
                 self.q_stack.append(q_negate)
                 continue
             elif istype(top, 'bop'):
-                t1 = self.q_stack.pop()
-                t2 = self.q_stack.pop()
+                try:
+                    t1 = self.q_stack.pop()
+                except IndexError:
+                    error_out(top)
+
+                try:
+                    t2 = self.q_stack.pop()
+                except IndexError:
+                    error_out(top)
+
                 if top.value == 'AND':
                     q_result = []
                     for qi, qj in izip(t1, t2):

@@ -39,9 +39,9 @@ class Lexer(object):
         if self.peek() == ')':
             self.pop()
             return ')'
-        if self.peek() == '!':
+        if self.peek() == '-':
             self.pop()
-            return '!'
+            return '-'
         while True:
             # Read in name
             c = self.pop()
@@ -68,8 +68,8 @@ class Lexer(object):
         token = ''
         if self.peek() == ')':
             return ')'
-        if self.peek() == '!':
-            return '!'
+        if self.peek() == '-':
+            return '-'
         i = -1
         while True:
             # Read in name

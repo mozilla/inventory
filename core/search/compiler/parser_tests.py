@@ -8,7 +8,7 @@ class TestParser(unittest.TestCase):
         root_node = p.parse()
         stack = make_stack(root_node)
         actual =  ' '.join([token.value for token in stack])
-        self.assertEqual(actual, expected_stack_str, msg="Actual: {0} != "
+        self.assertEqual(actual, expected_stack_str, msg="Actual: {0} -= "
                 "Excpected:{1} Parsing: {2}".format(actual, expected_stack_str,
                     ss))
     def test1(self):
@@ -82,28 +82,28 @@ class TestParser(unittest.TestCase):
         self.compare(ss, exp)
 
     def test15(self):
-        ss = "(!c)"
-        exp = 'c !'
+        ss = "(-c)"
+        exp = 'c -'
         self.compare(ss, exp)
 
     def test16(self):
-        ss = "(!a c)"
-        exp = 'a ! c AND'
+        ss = "(-a c)"
+        exp = 'a - c AND'
         self.compare(ss, exp)
 
     def test17(self):
-        ss = "(!(a c))"
-        exp = 'a c AND !'
+        ss = "(-(a c))"
+        exp = 'a c AND -'
         self.compare(ss, exp)
 
     def test18(self):
-        ss = "a !c"
-        exp = 'a c ! AND'
+        ss = "a -c"
+        exp = 'a c - AND'
         self.compare(ss, exp)
 
     def test19(self):
-        ss = "a !(c OR b)"
-        exp = 'a c b OR ! AND'
+        ss = "a -(c OR b)"
+        exp = 'a c b OR - AND'
         self.compare(ss, exp)
 
 

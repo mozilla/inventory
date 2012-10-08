@@ -182,5 +182,5 @@ if __name__ == "__main__":
     print
     print '---'
     """
-    ss = "(!foo)"
+    ss = "(-foo)"
     print do_parse(ss)
