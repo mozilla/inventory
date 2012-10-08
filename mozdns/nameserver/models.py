@@ -48,7 +48,7 @@ class Nameserver(models.Model, ObjectUrlMixin):
     comment = models.CharField(max_length=1000, null=True, blank=True,
                 help_text="Comments about this record.")
 
-    search_fields = ("server",)
+    search_fields = ("server","domain__name")
 
     class Meta:
         db_table = "nameserver"
