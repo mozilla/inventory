@@ -6,6 +6,7 @@ from mozdns.api.v1.api import v1_dns_api
 
 import pdb
 from core.search.compiler.compiler import Compiler
+from core.search.compiler.tokenizer import BadDirective
 import simplejson as json
 
 from jinja2 import Environment, PackageLoader
@@ -16,14 +17,30 @@ def resource_for_request(resource_name, filters, request):
     objects = resource.get_object_list(request).filter(filters)
     return [resource.model_to_data(model, request) for model in objects]
 
+def compile_for_request(search, rformat):
+    stmt = Compiler(search)
+    try:
+        if rformat == 'json':
+            x = stmt.compile_json()
+        elif rformat == 'raw':
+            x = stmt.compile_search()
+    except BadDirective, e:
+        return None, str(e)
+    except SyntaxError, e:
+        return None, str(e)
+    return x, None
+
 def search_json(request):
     """This view just returns the raw JSON objects instead of rendering the
     objects with the HTML"""
     search = request.GET.get("search", None)
     if not search:
         return HttpResponse("{}")
-    t = Compiler(search)
-    x = t.compile_json()
+    print search
+    x, error_resp = compile_for_request(search, 'json')
+    if not x:
+        return HttpResponse(json.dumps({'error_messages': error_resp}))
+
     #addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc = x
     addrf, cnamef, domainf, mxf, nsf, ptrf, srvf, sshfpf, intrf, txtf, misc = x
     meta = {
@@ -56,9 +73,9 @@ def search_ajax(request):
         return HttpResponse("Denial of Service attack prevented. The search "
                 "term '{0}' is to general".format(search))
 
-    t = Compiler(search)
-    x = t.compile_search()
-    #addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc = x
+    x, error_resp = compile_for_request(search, 'raw')
+    if not x:
+        return HttpResponse(json.dumps({'error_messages': error_resp}))
     addrs, cnames, domains, mxs, nss, ptrs, srvs, sshfps, intrs, txts, misc = x
     meta = {
             'counts':{
