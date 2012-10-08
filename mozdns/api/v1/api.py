@@ -7,6 +7,8 @@ from tastypie.exceptions import HydrationError
 from tastypie.resources import Resource, DeclarativeMetaclass
 from tastypie.resources import ModelResource
 from tastypie.bundle import Bundle
+from tastypie.authorization import Authorization
+from tastypie.api import Api
 
 from systems.models import System
 from api_v3.system_api import SystemResource
@@ -27,10 +29,6 @@ from mozdns.domain.forms import DomainForm
 from mozdns.view.models import View
 from tastypie.validation import FormValidation
 
-from tastypie.authorization import Authorization
-
-from tastypie.api import Api
-
 import pdb
 import sys
 import re
@@ -50,7 +48,6 @@ class CommonDNSResource(ModelResource):
     def obj_delete_list(self, request=None, **kwargs):
         # We don't want this method being used
         raise NotImplemented
-
 
     def dehydrate(self, bundle):
         # Most DNS Resources should have a domain and a fqdn and some views
@@ -83,13 +80,14 @@ class CommonDNSResource(ModelResource):
                 bundle.data['domain'] = domain
             except ObjectDoesNotExist, e:
                 errors = {}
-                errors['domain'] = "Couldn't find domain {0}".format(domain_name)
+                errors['domain'] = "Couldn't find domain {0}".format(
+                                                                domain_name)
                 bundle.errors['error_messages'] = json.dumps(errors)
         elif ('fqdn' in bundle.data and not ('domain' in bundle.data or 'label'
                 in bundle.data)):
             try:
                 label_domain = ensure_label_domain(bundle.data['fqdn'])
-                bundle.data['label'] , bundle.data['domain'] = label_domain
+                bundle.data['label'], bundle.data['domain'] = label_domain
             except ValidationError, e:
                 errors = {}
                 errors['fqdn'] = e.messages
@@ -98,7 +96,8 @@ class CommonDNSResource(ModelResource):
                 # with the errors that are thrown by full_clean.
         else:
             errors = {}
-            errors['label_and_domain'] = "Couldn't determine a label and domain for this record."
+            errors['label_and_domain'] = _("Couldn't determine a label and
+                    domain for this record.")
             bundle.errors['error_messages'] = json.dumps(errors)
 
         return bundle
@@ -130,8 +129,9 @@ class CommonDNSResource(ModelResource):
 
         if bundle.errors:
             self.error_response(bundle.errors, request)
-        self.apply_commit(obj, bundle.data)  # bundle should only have valid data.
-                                             # If it doesn't errors will be thrown
+        # bundle should only have valid data.
+        # If it doesn't errors will be thrown
+        self.apply_commit(obj, bundle.data)
         return self.save_commit(request, bundle, views, kv)
 
     def update_views(self, obj, views):
@@ -185,8 +185,6 @@ class CommonDNSResource(ModelResource):
         if bundle.errors:
             self.error_response(bundle.errors, request)
 
-
-
         # Create the Object
         try:
             self.apply_commit(bundle.obj, bundle.data)
@@ -232,6 +230,7 @@ class CommonDNSResource(ModelResource):
 allowed_methods = ['get', 'post', 'patch', 'delete']
 v1_dns_api = Api(api_name="v1_dns")
 
+
 class ObjectListMixin(ModelResource):
     """We need a way to take a django Q, make a query with it, and then lower
     the objects returned by the query into tastypie resources.
@@ -242,6 +241,7 @@ class ObjectListMixin(ModelResource):
         bundle = self.build_bundle(obj=model, request=request)
         return self.full_dehydrate(bundle).data
 
+
 class CNAMEResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
@@ -250,7 +250,9 @@ class CNAMEResource(CommonDNSResource, ObjectListMixin, ModelResource):
         authorization = Authorization()
         allowed_methods = allowed_methods
 
+
 v1_dns_api.register(CNAMEResource())
+
 
 class TXTResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
@@ -260,7 +262,9 @@ class TXTResource(CommonDNSResource, ObjectListMixin, ModelResource):
         authorization = Authorization()
         allowed_methods = allowed_methods
 
+
 v1_dns_api.register(TXTResource())
+
 
 class SRVResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
@@ -270,7 +274,9 @@ class SRVResource(CommonDNSResource, ObjectListMixin, ModelResource):
         authorization = Authorization()
         allowed_methods = allowed_methods
 
+
 v1_dns_api.register(SRVResource())
+
 
 class MXResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
@@ -280,7 +286,9 @@ class MXResource(CommonDNSResource, ObjectListMixin, ModelResource):
         authorization = Authorization()
         allowed_methods = allowed_methods
 
+
 v1_dns_api.register(MXResource())
+
 
 class SSHFPResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
@@ -290,10 +298,11 @@ class SSHFPResource(CommonDNSResource, ObjectListMixin, ModelResource):
         authorization = Authorization()
         allowed_methods = allowed_methods
 
+
 v1_dns_api.register(SSHFPResource())
 
-class AddressRecordResource(CommonDNSResource, ObjectListMixin, ModelResource):
 
+class AddressRecordResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = AddressRecord.objects.all()
@@ -301,7 +310,9 @@ class AddressRecordResource(CommonDNSResource, ObjectListMixin, ModelResource):
         authorization = Authorization()
         allowed_methods = allowed_methods
 
+
 v1_dns_api.register(AddressRecordResource())
+
 
 class NameserverResource(CommonDNSResource, ObjectListMixin):
     def hydrate(self, bundle):
@@ -319,6 +330,7 @@ class NameserverResource(CommonDNSResource, ObjectListMixin):
                 error = "Couldn't find domain {0}".format(domain_name)
                 bundle.errors['domain'] = error
         return bundle
+
     class Meta:
         always_return_data = True
         queryset = Nameserver.objects.all()
@@ -326,11 +338,15 @@ class NameserverResource(CommonDNSResource, ObjectListMixin):
         authorization = Authorization()
         allowed_methods = allowed_methods
 
+
 v1_dns_api.register(NameserverResource())
 
+
 class PTRResource(CommonDNSResource, ObjectListMixin, ModelResource):
-    views = fields.ListField(null=True, blank=True)  # User passes list of view names, in hydrate we
-                                                    # make these the actual views
+    views = fields.ListField(null=True, blank=True)
+    # User passes list of view names, in hydrate we
+    # make these the actual views
+
     def hydrate(self, bundle):
         # Nothing to do here.
         return bundle
@@ -338,9 +354,9 @@ class PTRResource(CommonDNSResource, ObjectListMixin, ModelResource):
     def dehydrate(self, bundle):
         bundle.data['views'] = [view.name for view in bundle.obj.views.all()]
         # Don't clobber the actual reverse_domain field
-        # If this 'ptr_reverse_domain' is called 'reverse_domain', tastypie will
-        # try to serialize this field to a reverse_domain object (we don't want
-        # that).
+        # If this 'ptr_reverse_domain' is called 'reverse_domain', tastypie
+        # will try to serialize this field to a reverse_domain object (we don't
+        # want that).
         bundle.data['meta'] = {}
         bundle.data['meta']['reverse_domain'] = bundle.obj.reverse_domain.name
         if bundle.obj.reverse_domain.soa:
@@ -356,9 +372,12 @@ class PTRResource(CommonDNSResource, ObjectListMixin, ModelResource):
         authorization = Authorization()
         allowed_methods = allowed_methods
 
+
 v1_dns_api.register(PTRResource())
 
-class StaticInterfaceResource(CommonDNSResource, ObjectListMixin, ModelResource):
+
+class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
+                                ModelResource):
     system = fields.ToOneField(SystemResource, 'system', null=False, full=True)
 
     def hydrate(self, bundle):
@@ -390,20 +409,20 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin, ModelResource)
         if 'key' in bundle.data and 'value' in bundle.data:
             # It's key and value. Nothing else is allowed in the bundle.
             if set('key', 'value') != set(bundle.data):
-                error = _("key and value must be the only keys in your request "
-                    "when you are updating KV pairs.")
+                error = _("key and value must be the only keys in your "
+                    "request when you are updating KV pairs.")
                 bundle.errors['keyvalue'] = error
                 return []
             else:
                 kv.append((bundle.data['key'], bundle.data['value']))
         elif 'key' in bundle.data and 'value' not in bundle.data:
-            error = _("When specifying a key you must also specify a value for "
-                    "that key")
+            error = _("When specifying a key you must also specify a value "
+                    "for that key")
             bundle.errors['keyvalue'] = error
             return []
         elif 'value' in bundle.data and 'key' not in bundle.data:
-            error = _("When specifying a value you must also specify a key for "
-                    "that value")
+            error = _("When specifying a value you must also specify a key "
+                    "for that value")
             bundle.errors['keyvalue'] = error
             return []
         elif 'iname' in bundle.data:
@@ -411,7 +430,8 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin, ModelResource)
             del bundle.data['iname']
             if not iname:
                 error = _("Could not parse iname {0} into interface_type and "
-                    "primary (or possible not an alias).".format(bundle.data['iname']))
+                        "primary (or possible not an "
+                        "alias).".format(bundle.data['iname']))
                 bundle.errors['iname'] = error
                 return []
             kv.append(('interface_type', iname.group(1)))
@@ -426,13 +446,13 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin, ModelResource)
     class Meta:
         always_return_data = True
         queryset = StaticInterface.objects.all()
-        fields = StaticInterface.get_api_fields() + ['domain', 'views', 'system']
+        fields = StaticInterface.get_api_fields() + ['domain', 'views',
+                'system']
         authorization = Authorization()
         allowed_methods = allowed_methods
         resource_name = 'staticinterface'
 
 v1_dns_api.register(StaticInterfaceResource())
-
 
 """
 class XXXResource(CommonDNSResource, ObjectListMixin, ModelResource):
