@@ -32,15 +32,19 @@ class Compiler(object):
             The idea here is to use two stacks to calcuate the desired query
             set.
         """
-        def error_out(token=None):
+        def error_out(token=None, point=0):
             if token is None:
                 problem = len(self.stmt)
             else:
-                problem = token.col
+                if point == 'left':
+                    problem = token.col - len(token.value) - 1
+                else:
+                    problem = token.col
 
             raise SyntaxError("Expecting Term or Directive at col "
                     "{0}\n{1}\n{2}^".format(problem, self.stmt, problem * ' '))
         first = True
+        pdb.set_trace()
         while True:
             try:
                 top = self.stack.pop()
@@ -73,7 +77,7 @@ class Compiler(object):
                 try:
                     t2 = self.q_stack.pop()
                 except IndexError:
-                    error_out(top)
+                    error_out(top, point='left')
 
                 if top.value == 'AND':
                     q_result = []

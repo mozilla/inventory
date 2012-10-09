@@ -1,17 +1,19 @@
+import pdb
+
+
 def make_stack(node):
+    pdb.set_trace()
     def _make_stack(stack, node):
         if not node:
             return stack
         if not (node.l_child or node.r_child):
-            if node.token.value:
-                stack.append(node.token)
+            stack.append(node.token)
         else:
             if node.l_child:
                 _make_stack(stack, node.l_child)
             if node.r_child:
                 _make_stack(stack, node.r_child)
-            if node.token.value:
-                stack.append(node.token)
+            stack.append(node.token)
     stack = []
     _make_stack(stack, node)
     return stack
