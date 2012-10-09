@@ -96,8 +96,8 @@ class CommonDNSResource(ModelResource):
                 # with the errors that are thrown by full_clean.
         else:
             errors = {}
-            errors['label_and_domain'] = _("Couldn't determine a label and
-                    domain for this record.")
+            errors['label_and_domain'] = _("Couldn't determine a label and "
+                    "domain for this record.")
             bundle.errors['error_messages'] = json.dumps(errors)
 
         return bundle
