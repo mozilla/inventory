@@ -13,31 +13,6 @@ from settings import MOZDNS_BASE_URL
 
 import pdb
 
-@receiver(m2m_changed)
-def views_handler(sender, **kwargs):
-    """ This function catches any changes to a manymany relationship and just nukes
-    the relationship to the "private" view if one exists.
-
-    One awesome side affect of this hack is there is NO way for this function
-    to relay that there was an error to the user. If we want to tell the user
-    that we nuked the record's relationship to the public view we will need to
-    do that in a form.
-    """
-    if kwargs["action"] != "post_add":
-        return
-    instance = kwargs.pop("instance", None)
-    if (not instance or not hasattr(instance, "ip_str") or
-            not hasattr(instance, "ip_type")):
-        return
-    model = kwargs.pop("model", None)
-    if not View == model:
-        return
-    if instance.views.filter(name="public").exists():
-        if instance.ip_type == '4' and is_rfc1918(instance.ip_str):
-            instance.views.remove(View.objects.get(name="public"))
-        elif instance.ip_type == '6' and is_rfc4193(instance.ip_str):
-            instance.views.remove(View.objects.get(name="public"))
-
 class MozdnsRecord(models.Model, ObjectUrlMixin):
     """
     This class provides common functionality that many DNS record
