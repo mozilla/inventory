@@ -246,43 +246,48 @@
     .record_form {
         display: none;
     }
+    #master_form_controls {
+        display:-moz-groupbox;
+    }
     </style>
-    <select id="rec_type_select">
-        {% if record_type == 'A' or record_type == 'AAAA' %}
-        <option class='do-select' value="A" id="select_A"selected="selected">A/AAAA</option>
-        {% else %}
-        <option class='do-select' value="A">A/AAAA</option>
-        {% endif %}
-        {% if record_type == 'MX' %}
-        <option class='do-select' value="MX" id="select_MX" selected="selected">MX</option>
-        {% else %}
-        <option class='do-select' id="select_MX" value="MX">MX</option>
-        {% endif %}
-        {% if record_type == 'SRV' %}
-        <option class='do-select' value="SRV" id="select_SRV" selected="selected">SRV</option>
-        {% else %}
-        <option class='do-select' value="SRV" id="select_SRV">SRV</option>
-        {% endif %}
-        {% if record_type == 'TXT' %}
-        <option class='do-select' value="TXT" id="select_TXT" selected="selected">TXT</option>
-        {% else %}
-        <option class='do-select' value="TXT" id="select_TXT">TXT</option>
-        {% endif %}
-        {% if record_type == 'PTR' %}
-        <option class='do-select' value="PTR" id="select_PTR" selected="selected">PTR</option>
-        {% else %}
-        <option class='do-select' value="PTR" id="select_PTR">PTR</option>
-        {% endif %}
-        {% if record_type == 'CNAME' %}
-        <option class='do-select' value="CNAME" id="select_CNAME" selected="selected">CNAME</option>
-        {% else %}
-        <option class='do-select' value="CNAME" id="select_CNAME">CNAME</option>
-        {% endif %}
-    </select>
+    <div id="master_form_controls">
+        <select id="rec_type_select">
+            {% if record_type == 'A' or record_type == 'AAAA' %}
+            <option class='do-select' value="A" id="select_A"selected="selected">A/AAAA</option>
+            {% else %}
+            <option class='do-select' value="A">A/AAAA</option>
+            {% endif %}
+            {% if record_type == 'MX' %}
+            <option class='do-select' value="MX" id="select_MX" selected="selected">MX</option>
+            {% else %}
+            <option class='do-select' id="select_MX" value="MX">MX</option>
+            {% endif %}
+            {% if record_type == 'SRV' %}
+            <option class='do-select' value="SRV" id="select_SRV" selected="selected">SRV</option>
+            {% else %}
+            <option class='do-select' value="SRV" id="select_SRV">SRV</option>
+            {% endif %}
+            {% if record_type == 'TXT' %}
+            <option class='do-select' value="TXT" id="select_TXT" selected="selected">TXT</option>
+            {% else %}
+            <option class='do-select' value="TXT" id="select_TXT">TXT</option>
+            {% endif %}
+            {% if record_type == 'PTR' %}
+            <option class='do-select' value="PTR" id="select_PTR" selected="selected">PTR</option>
+            {% else %}
+            <option class='do-select' value="PTR" id="select_PTR">PTR</option>
+            {% endif %}
+            {% if record_type == 'CNAME' %}
+            <option class='do-select' value="CNAME" id="select_CNAME" selected="selected">CNAME</option>
+            {% else %}
+            <option class='do-select' value="CNAME" id="select_CNAME">CNAME</option>
+            {% endif %}
+        </select>
 
-    <input type='button' id='launch-search' value='Edit an existing record' style='display:inline;'/>
-    <input type='button' id='launch-soa-search' value='View BIND file' style='display:inline;'/>
-    <input type='button' id='reset' value='Reset' style='display:inline;'/>
+        <input type='button' id='launch-search' value='Edit an existing record' style='display:inline;'/>
+        <input type='button' id='launch-soa-search' value='View BIND file' style='display:inline;'/>
+        <input type='button' id='reset' value='Reset' style='display:inline;'/>
+    </div>
     <div id="search-dialog" title="Search For Record" style='display: none;'>
         <div>
             <label for='record_search'>Search:
