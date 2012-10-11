@@ -16,29 +16,50 @@ div#header {
   -webkit-box-shadow: 0 0 1em black; }
 
 ul#app-buttons {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  overflow: hidden;
-  display: inline-block;
-  border-bottom: 1px solid #778;
-  padding-top: 4px; }
-  ul#app-buttons {
-    display: block; }
-  ul#app-buttons li {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    overflow: hidden;
+    display: inline-block;
+    border-bottom: 1px solid #778;
+    padding-top: 4px; }
+
+#app-buttons li ul {
+    display: block;
+    visibility: hidden;
+    padding-left:0;
+    position:fixed;
+    z-index: 200;
+    margin-top:2px;
+}
+#app-buttons li ul li{
+    display: block;
+    float: none;
+    z-index: 200;
+}
+#app-buttons li ul li a{
+    display: block;
+    float: none;
+    z-index: 200;
+    background: -moz-linear-gradient( top, #ADACAB, #A5A4A3 );
+    color: black;
+    border: 0px solid #778;
+}
+
+
+ul#app-buttons li {
     list-style-type: none;
     margin-left: 0px;
     white-space: nowrap;
-    display: inline;
     float: left;
     padding-left: 2px;
     padding-right: 2px; }
-    ul#app-buttons li.first {
-      padding-left: 0px; }
-    ul#app-buttons li.last {
-      padding-right: 0px; }
-  ul#app-buttons a {
+ul#app-buttons li.first {
+    padding-left: 0px; }
+ul#app-buttons li.last {
+    padding-right: 0px; }
+ul#app-buttons a:hover {
     padding: 3px 0.5em;
     margin-left: 3px;
     -moz-border-radius-topleft: 5px;
@@ -50,7 +71,27 @@ ul#app-buttons {
     -webkit-border-bottom-left-radius: 0px;
     -webkit-border-bottom-right-radius: 0px;
     border: 0px solid #778;
-      border-bottom: none;
+    border-bottom: none;
+    background-color: #608925;
+    background: -moz-linear-gradient( top, #608925, #43762A );
+    -moz-box-shadow: 0 0 4px black;
+    -webkit-box-shadow: 0 0 4px black;
+    text-decoration: none;
+    color: white;
+    font-weight: bold; }
+ul#app-buttons a {
+    padding: 3px 0.5em;
+    margin-left: 3px;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
+    -moz-border-radius-bottomleft: 0px;
+    -moz-border-radius-bottomright: 0px;
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -webkit-border-bottom-left-radius: 0px;
+    -webkit-border-bottom-right-radius: 0px;
+    border: 0px solid #778;
+    border-bottom: none;
     background-color: #608925;
     background: -moz-linear-gradient( top, #608925, #98ba40 );
     -moz-box-shadow: 0 0 4px black;

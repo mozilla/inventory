@@ -21,7 +21,6 @@
 
 </head>
 <body>
-    
 <div id="header">
     <div class="container">
         <h1 id="inventory"><a href="/">Inventory</a></h1>
@@ -40,8 +39,36 @@
                 <li><a href="/user_systems/licenses/">User Licenses</a></li>
                 <li><a href="/build/">Release</a></li>
                 <li><a href="/misc/">Misc</a></li>
-                <li><a href="/core/">IPAM</a></li>
-                <li><a href="/mozdns/">DNS</a></li>
+                <li><a href="/core/">IPAM</a>
+                    <div style="position:relative;">
+                        <ul class='header-drop-down'>
+                            <li><a class="nav-link" href="/core/search/">Search</a></li>
+                            <li><a class="nav-link" href="/core/site/">Site</a></li>
+                            <li><a class="nav-link" href="/core/network/">Network</a></li>
+                            <li><a class="nav-link" href="/core/vlan/">Vlan</a></li>
+                            <li><a class="nav-link" href="/core/range/">Range</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li><a href="/mozdns/">DNS</a>
+                    <div style="position:relative;">
+                        <ul class='header-drop-down'>
+                            <li><a class='drop-down-item' href="/mozdns/">Edit Records</a></li>
+                            <li><a class="nav-link" href="/mozdns/address_record/">A/AAAA</a></li>
+                            <li><a class='drop-down-item' href="/mozdns/cname/">CNAME</a></li>
+                            <li><a class='drop-down-item' href="/mozdns/domain/">Domain</a></li>
+                            <li><a class="nav-link" href="/mozdns/mx/">MX</a></li>
+                            <li><a class="nav-link" href="/mozdns/nameserver/">NS</a></li>
+                            <li><a class="nav-link" href="/mozdns/srv/">SRV</a></li>
+                            <li><a class="nav-link" href="/mozdns/soa/">SOA</a></li>
+                            <li><a class="nav-link" href="/mozdns/sshfp/">SSHFP</a></li>
+                            <li><a class="nav-link" href="/mozdns/ptr/">PTR</a></li>
+                            <li><a class="nav-link" href="/mozdns/txt/">TXT</a></li>
+                            <li><a class="nav-link" href="/mozdns/domain/reverse_domains">Reverse Domains</a></li>
+                        </ul>
+
+                    </div>
+                </li>
                 <li><a href="/truth/">Truth Database</a></li>
                 <li><a href="/reports/">Reporting</a></li>
                 <li><a href="/systems/oncall/">On Call</a></li>

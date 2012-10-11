@@ -61,3 +61,32 @@
             $(this).next('span.helptext').css('display','none');
         });
     });
+
+    $(document).ready(function(){
+        var closetimer = 0;
+        var ddmenuitem = 0;
+        var timeout = 500;
+
+        function app_tab_open() {
+            app_tab_canceltimer();
+            app_tab_close();
+            ddmenuitem = $(this).find('ul').css('visibility', 'visible');
+        }
+        function app_tab_close() {
+            if(ddmenuitem) ddmenuitem.css('visibility', 'hidden');
+        }
+
+        function app_tab_timer() {
+            closetimer = window.setTimeout(app_tab_close, timeout);
+        }
+        function app_tab_canceltimer(){
+            if(closetimer) {
+                window.clearTimeout(closetimer);
+                closetimer = null;
+            }
+        }
+        $(document).ready(function() {
+            $('#app-buttons > li').bind('mouseover', app_tab_open)
+            $('#app-buttons > li').bind('mouseout',  app_tab_timer)
+        });
+    });
