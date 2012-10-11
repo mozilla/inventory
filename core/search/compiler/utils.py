@@ -2,7 +2,6 @@ import pdb
 
 
 def make_stack(node):
-    pdb.set_trace()
     def _make_stack(stack, node):
         if not node:
             return stack

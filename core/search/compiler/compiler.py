@@ -44,7 +44,6 @@ class Compiler(object):
             raise SyntaxError("Expecting Term or Directive at col "
                     "{0}\n{1}\n{2}^".format(problem, self.stmt, problem * ' '))
         first = True
-        pdb.set_trace()
         while True:
             try:
                 top = self.stack.pop()
