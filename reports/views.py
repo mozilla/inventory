@@ -74,7 +74,7 @@ def report_home(request):
             data['content'] = str(total_count)
             if 'CSV' == request.POST['output']:
                 response = HttpResponse(mimetype='text/csv')
-                response['Content-Disposition'] = 'attachment; inventory_report.csv'
+                response['Content-Disposition'] = 'attachment; filename=inventory_report.csv'
                 writer = csv.writer(response)
                 columns = [
                         'Hostname',
@@ -82,6 +82,7 @@ def report_home(request):
                         'Purchase Date',
                         'Server Model',
                         'Serial',
+                        'Status',
                         'Purchase Price',
                         'Operating System',
                         'Location',
@@ -94,6 +95,7 @@ def report_home(request):
                     system.purchase_date,
                     system.server_model,
                     system.serial,
+                    system.system_status,
                     system.purchase_price,
                     system.operating_system if system.operating_system else '',
                     system.system_rack.location if system.system_rack else '',
