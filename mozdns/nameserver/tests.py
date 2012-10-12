@@ -62,10 +62,6 @@ class NSTestsModels(TestCase):
         self.assertEqual(len(ret), 1)
         return ns
 
-    def test_add_TLD(self):
-        data = {'domain':self.r , 'server':'bar.foo.ru'}
-        self.assertRaises(ValidationError, self.do_add, **data)
-
     def test_add_ns(self):
         data = {'domain':self.r , 'server':'ns2.moot.ru'}
         self.do_add(**data)
