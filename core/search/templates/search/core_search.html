@@ -27,8 +27,32 @@
                 $('#btn_i').remove();
                 results = document.getElementById('results');
                 results.innerHTML = data;
-                //$("#addr_table").dataTable();
-                $(".tablesorter").tablesorter(); 
+                // Every table needs to have it's feilds configured.
+                $(".record-table").tablesorter({
+                    headers: {
+                        1: { sorter:false },
+                    }
+                });
+                $(".intr-table").tablesorter({
+                    headers: {
+                        1: { sorter:false },
+                        2: { sorter:'ipAddress' },
+                    }
+                });
+                $(".ptr-table").tablesorter({
+                    headers: {
+                        1: { sorter:false },
+                        2: {
+                            sorter:'ipAddress'
+                        },
+                    }
+                });
+                $(".addr-table").tablesorter({
+                    headers: {
+                        1: { sorter:false },
+                        2: { sorter:'ipAddress' },
+                    }
+                });
 
                 var end = new Date().getTime();
                 var time = end - start;

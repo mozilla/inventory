@@ -91,7 +91,7 @@
 
 {% if nss %}
     <h3><a name="Nameserver">Nameserver</a></h3>
-    <table class="tablesorter">
+    <table class="tablesorter record-table">
         <thead>
         <tr>
             <th>Domain</th>
@@ -113,7 +113,7 @@
 
 {% if mxs %}
     <h3><a name="MX">MX</a> Records</h3>
-    <table class="tablesorter">
+    <table class="tablesorter record-table">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -135,7 +135,7 @@
 
 {% if srvs %}
     <h3><a name="SRV">SRV</a> Records</h3>
-    <table class="tablesorter">
+    <table class="tablesorter record-table">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -157,7 +157,7 @@
 
 {% if txts %}
     <h3><a name="TXT">TXT</a> Records</h3>
-    <table class="tablesorter">
+    <table class="tablesorter record-table">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -179,7 +179,7 @@
 
 {% if cnames %}
     <h3><a name="CNAME">CNAME</a> Records</h3>
-    <table class="tablesorter">
+    <table class="tablesorter record-table">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -201,7 +201,7 @@
 
 {% if intrs %}
     <h3><a name="Interface">Interface</a> Records</h3>
-    <table class="tablesorter">
+    <table class="tablesorter intr-table">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -223,7 +223,7 @@
 
 {% if addrs %}
     <h3><a name="Address">Address</a> Records</h3>
-    <table class="tablesorter">
+    <table class="tablesorter addr-table">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -245,7 +245,7 @@
 
 {% if ptrs %}
     <h3><a name="PTR">PTR</a> Records</h3>
-    <table class="tablesorter">
+    <table class="tablesorter ptr-table">
         <thead>
         <tr>
             <th>IP</th>
@@ -256,9 +256,9 @@
         <tbody>
         {% for ptr in ptrs %}
         <tr>
-            <td><a href="{{ ptr.get_absolute_url() }}">{{ ptr.name }}</a></td>
-            <td><b>PTR</b></td>
             <td>{{ ptr.ip_str }}</td>
+            <td><b>PTR</b></td>
+            <td><a href="{{ ptr.get_absolute_url() }}">{{ ptr.name }}</a></td>
         </tr>
         {% endfor %}
         <tbody>
