@@ -362,6 +362,12 @@ class System(DirtyFieldsMixin, models.Model):
         except:
             return None
 
+    def get_edit_url(self):
+        return "/systems/edit/{0}/".format(self.pk)
+
+    def get_absolute_url(self):
+        return "/systems/show/{0}/".format(self.pk)
+
     def update_adapter(self, **kwargs):
         from api_v3.system_api import SystemResource
         interface = kwargs.pop('interface', None)
