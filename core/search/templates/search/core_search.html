@@ -1,5 +1,7 @@
 {% extends "core/core_base.html" %}
 {% block head %}
+    <script src="{{ MEDIA_URL }}js/jquery-ui-1.8.11.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
     <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
 {% endblock %}
 {% block core_content %}
@@ -27,48 +29,54 @@ div advanced-search-knobs input{
             $('#results').html("<img id='loading' style='margin-top:5%;margin-bottom:2%;display:block;' src='{{MEDIA_URL}}images/loading.gif'>");
             var start = new Date().getTime();
 
-            $.get('/core/search/search_ajax?search='+escape(search),
-            function update_results(data){
-                results = document.getElementById('results');
-                results.innerHTML = data;
-                // Every table needs to have it's feilds configured.
-                $(".system-table").tablesorter({
-                    headers: {
-                        0: { sorter:'hostname' },
-                        1: { sorter:'ipAddress' },
-                    }
-                });
-                $(".record-table").tablesorter({
-                    headers: {
-                        0: { sorter:'hostname' },
-                        1: { sorter:false },
-                        2: { sorter:'hostname' },
-                    }
-                });
-                $(".intr-table").tablesorter({
-                    headers: {
-                        0: { sorter:'hostname' },
-                        1: { sorter:false },
-                        2: { sorter:'ipAddress' },
-                    }
-                });
-                $(".ptr-table").tablesorter({
-                    headers: {
-                        0: { sorter:'ipAddress' },
-                        1: { sorter:false },
-                        2: { sorter:'hostname' },
-                    }
-                });
-                $(".addr-table").tablesorter({
-                    headers: {
-                        1: { sorter:false },
-                        2: { sorter:'ipAddress' },
-                    }
-                });
+            // We might want to abort this.
+            $('#stop_search').css('display', 'inline');
+            var search_request = $.get('/core/search/search_ajax?search='+escape(search),
+                function update_results(data){
+                    $('#stop_search').css('display', 'none');
+                    results = document.getElementById('results');
+                    results.innerHTML = data;
+                    // Every table needs to have it's feilds configured.
+                    $(".system-table").tablesorter({
+                        headers: {
+                            0: { sorter:'hostname' },
+                            1: { sorter:'ipAddress' },
+                        }
+                    });
+                    $(".record-table").tablesorter({
+                        headers: {
+                            0: { sorter:'hostname' },
+                            1: { sorter:false },
+                            2: { sorter:'hostname' },
+                        }
+                    });
+                    $(".intr-table").tablesorter({
+                        headers: {
+                            0: { sorter:'hostname' },
+                            1: { sorter:false },
+                            2: { sorter:'ipAddress' },
+                        }
+                    });
+                    $(".ptr-table").tablesorter({
+                        headers: {
+                            0: { sorter:'ipAddress' },
+                            1: { sorter:false },
+                            2: { sorter:'hostname' },
+                        }
+                    });
+                    $(".addr-table").tablesorter({
+                        headers: {
+                            1: { sorter:false },
+                            2: { sorter:'ipAddress' },
+                        }
+                    });
 
-                var end = new Date().getTime();
-                var time = end - start;
-                $('#search-time').html('In ('+time/1000+' seconds)');
+                    var end = new Date().getTime();
+                    var time = end - start;
+                    $('#search-time').html('In ('+time/1000+' seconds)');
+            });
+            $('#stop_search').click(function (){
+                search_request.abort();
             });
         }
 
@@ -122,5 +130,6 @@ div advanced-search-knobs input{
 </div>
 <div id="results" width="100%">
 </div>
+<input class='search_tools' value="Stop Search" title="Stop Search" type="button" id="stop_search">
 {% include 'search/core_search_help.html' %}
 {% endblock %}
