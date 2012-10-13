@@ -637,44 +637,15 @@
                 var a = "a[" + index + "]",
                     b = "b[" + index + "]";
                 if (type == 'text' && direction == 'asc') {
-                    return "(" + a + " == " + b + " ? 0 : (" + a + " === null ? Number.POSITIVE_INFINITY : (" + b + " === null ? Number.NEGATIVE_INFINITY : compareText(" + a + ", " + b + ") ? -1 : 1 )));";
+                    return "(" + a + " == " + b + " ? 0 : (" + a + " === null ? Number.POSITIVE_INFINITY : (" + b + " === null ? Number.NEGATIVE_INFINITY : (" + a + " > " + b + ") ? -1 : 1 )));";
                 } else if (type == 'text' && direction == 'desc') {
-                    return "(" + a + " == " + b + " ? 0 : (" + a + " === null ? Number.POSITIVE_INFINITY : (" + b + " === null ? Number.NEGATIVE_INFINITY : compareText(" + b + ", " + a + ") ? -1 : 1 )));";
+                    return "(" + a + " == " + b + " ? 0 : (" + a + " === null ? Number.POSITIVE_INFINITY : (" + b + " === null ? Number.NEGATIVE_INFINITY : (" + b + " > " + a + ") ? -1 : 1 )));";
                 } else if (type == 'numeric' && direction == 'asc') {
                     return "(" + a + " === null && " + b + " === null) ? 0 :(" + a + " === null ? Number.POSITIVE_INFINITY : (" + b + " === null ? Number.NEGATIVE_INFINITY : " + a + " - " + b + "));";
                 } else if (type == 'numeric' && direction == 'desc') {
                     return "(" + a + " === null && " + b + " === null) ? 0 :(" + a + " === null ? Number.POSITIVE_INFINITY : (" + b + " === null ? Number.NEGATIVE_INFINITY : " + b + " - " + a + "));";
                 }
             };
-
-            function repeat(str, times) {
-                // Because JS doesn't have a stdlib
-                return new Array(times + 1).join(str);
-            }
-            function padNumber(str){
-                patt = /\d+/g;
-                nums = str.match(patt)
-                X_string = str.replace(patt, 'X');
-                X_string
-                var length;
-                var comparison_str = X_string;
-                var max_length = 6;
-
-                for(var i=0; i < nums.length; i++){
-                    var tmp_str = nums[i];
-                    var length = tmp_str.length;
-                    comparison_str = comparison_str.replace('X', repeat("0", max_length - length) + tmp_str);
-                }
-                return comparison_str
-            }
-
-            function compareText(a, b){
-                if (padNumber(a) < padNumber(b)) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
 
             function makeSortNumeric(i) {
                 return "a[" + i + "]-b[" + i + "];";
@@ -928,6 +899,35 @@
         }, format: function (s) {
             return $.tablesorter.formatFloat(s.replace(new RegExp(/[£$€]/g), ""));
         }, type: "numeric"
+    });
+
+    ts.addParser({
+        id: "hostname",
+        is: function (s) {
+            return true;
+        }, format: function (s) {
+            function repeat(str, times) {
+                // Because JS doesn't have a stdlib
+                return new Array(times + 1).join(str);
+            }
+            patt = /\d+/g;
+            nums = s.match(patt)
+            if (!nums) {
+                return s;
+            }
+            X_string = s.replace(patt, 'X');
+            X_string
+            var length;
+            var comparison_str = X_string;
+            var max_length = 8;
+
+            for(var i=0; i < nums.length; i++){
+                var tmp_str = nums[i];
+                var length = tmp_str.length;
+                comparison_str = comparison_str.replace('X', repeat("0", Math.abs(max_length - length)) + tmp_str);
+            }
+            return comparison_str
+        }, type: "text"
     });
 
     ts.addParser({
