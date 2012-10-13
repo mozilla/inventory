@@ -13,6 +13,8 @@ from mozdns.sshfp.models import SSHFP
 from core.interface.static_intr.models import StaticInterface
 from mozdns.txt.models import TXT
 
+from systems.models import System
+
 from parser import Parser
 from utils import *
 from itertools import izip
@@ -111,6 +113,7 @@ class Compiler(object):
         managers.append(SRV.objects.all())
         managers.append(SSHFP.objects.all())
         managers.append(StaticInterface.objects.all())
+        managers.append(System.objects.all())
         managers.append(TXT.objects.all())
         return managers
 

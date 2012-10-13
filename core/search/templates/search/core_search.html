@@ -1,8 +1,8 @@
 {% extends "core/core_base.html" %}
+{% block head %}
+    <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+{% endblock %}
 {% block core_content %}
-<script src="{{ MEDIA_URL }}javascripts/jquery-1.6.1.min.js" type="text/javascript"></script>
-<script type="text/javascript" src="/static/js/jquery-ui-1.8.11.custom.min.js"></script>
-<link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
 
 <style type="text/css">
 .center{
@@ -27,6 +27,8 @@
                 $('#btn_i').remove();
                 results = document.getElementById('results');
                 results.innerHTML = data;
+                //$("#addr_table").dataTable();
+                $(".tablesorter").tablesorter(); 
 
                 var end = new Date().getTime();
                 var time = end - start;

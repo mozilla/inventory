@@ -241,6 +241,8 @@ class ObjectListMixin(ModelResource):
         bundle = self.build_bundle(obj=model, request=request)
         return self.full_dehydrate(bundle).data
 
+from api_v3.system_api import SystemResource
+v1_dns_api.register(SystemResource())
 
 class CNAMEResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:

@@ -16,6 +16,8 @@ from core.site.models import Site
 from core.vlan.models import Vlan
 from core.utils import two_to_four, IPFilter
 
+from systems.models import System
+
 from lexer import Lexer
 import re
 import pdb
@@ -53,6 +55,7 @@ def build_text_qsets(f):
         build_filter(f, SRV.search_fields),
         build_filter(f, SSHFP.search_fields),
         build_filter(f, StaticInterface.search_fields),
+        build_filter(f, System.search_fields),
         build_filter(f, TXT.search_fields)
         ]
     return q_sets
@@ -70,6 +73,7 @@ def build_ipf_qsets(qset):
         None,
         None,
         qset,  # StaticInterface
+        None,
         None
         ]
     return q_sets
@@ -93,6 +97,7 @@ def build_rdtype_qsets(rdtype):
         select if rdtype == 'SRV' else no_select,
         select if rdtype == 'SSHFP' else no_select,
         select if rdtype == 'INTR' else no_select,
+        select if rdtype == 'SYSTEM' else no_select,
         select if rdtype == 'TXT' else no_select
         ]
     return q_sets

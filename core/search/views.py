@@ -15,7 +15,8 @@ env = Environment(loader=PackageLoader('core.search', 'templates'))
 def resource_for_request(resource_name, filters, request):
     resource = v1_dns_api.canonical_resource_for(resource_name)
     objects = resource.get_object_list(request).filter(filters)
-    return [resource.model_to_data(model, request) for model in objects]
+    search_fields = resource._meta.object_class.search_fields
+    return [(search_fields, resource.model_to_data(model, request)) for model in objects]
 
 def compile_for_request(search, rformat):
     stmt = Compiler(search)
@@ -42,9 +43,11 @@ def search_json(request):
         return HttpResponse(json.dumps({'error_messages': error_resp}))
 
     #addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc = x
-    addrf, cnamef, domainf, mxf, nsf, ptrf, srvf, sshfpf, intrf, txtf, misc = x
+    addrf, cnamef, domainf, mxf, nsf, ptrf, srvf, sshfpf, intrf, sysf, txtf, misc = x
     meta = {
         # If the user wants object counts, let them use wc.
+        # TODO include feild names in the return dict so we can make tables
+        # with the data.
         "search": search,
         'objects': {
             "misc": misc,  # TODO, write a resource for misc objects
@@ -57,6 +60,7 @@ def search_json(request):
             "srvs": resource_for_request('srv', srvf, request) if srvf else [],
             "sshfps": resource_for_request('sshfp', sshfpf, request) if srvf else [],
             "intrs": resource_for_request('staticinterface', intrf, request) if intrf else [],
+            "sys": resource_for_request('system', sysf, request) if sysf else [],
             "txts": resource_for_request('txt', txtf, request) if txtf else [],
         },
     }
@@ -76,13 +80,14 @@ def search_ajax(request):
     x, error_resp = compile_for_request(search, 'raw')
     if not x:
         return HttpResponse(json.dumps({'error_messages': error_resp}))
-    addrs, cnames, domains, mxs, nss, ptrs, srvs, sshfps, intrs, txts, misc = x
+    addrs, cnames, domains, mxs, nss, ptrs, srvs, sshfps, intrs, sys, txts, misc = x
     meta = {
             'counts':{
                 'addr': addrs.count() if addrs else 0,
                 'cname': cnames.count() if cnames else 0,
                 'domain': domains.count() if domains else 0,
                 'intr': intrs.count() if intrs else 0,
+                'sys': sys.count() if sys else 0,
                 'mx': mxs.count() if mxs else 0,
                 'ns': nss.count() if nss else 0,
                 'ptr': ptrs.count() if ptrs else 0,

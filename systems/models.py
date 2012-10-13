@@ -352,6 +352,8 @@ class System(DirtyFieldsMixin, models.Model):
     is_switch = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     #network_adapter = models.ForeignKey('NetworkAdapter', blank=True, null=True)
 
+    search_fields = "hostname", "serial", "notes", "asset_tag", "oob_ip"
+
     @property
     def primary_ip(self):
         try:

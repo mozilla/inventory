@@ -1,3 +1,8 @@
+<script>
+    $(document).ready(function(){
+        console.log("We are here now.");
+    });
+</script>
 <div id="ajax_results">
 <div id="meta">
     {% if meta.counts.addr %}
@@ -20,6 +25,11 @@
     {% else %}
         zero INTR records |
     {% endif %}
+    {% if meta.counts.sys %}
+        {{ meta.counts.sys }} <a href="#System">System</a> |
+    {% else %}
+        zero Systems |
+    {% endif %}
     {% if meta.counts.mx %}
         {{ meta.counts.mx }} <a href="#MX">MX</a> records |
     {% else %}
@@ -40,7 +50,7 @@
 </div>
 <br/>
 {% if misc %}
-    <table>
+    <table class="tablesorter">
         <thead>
         <tr>
             <th>Networks, Sites, and Vlans</th>
@@ -57,7 +67,7 @@
 {% endif %}
 {% if domains %}
     <h3><a name="Domains">Domains</a></h3>
-    <table>
+    <table class="tablesorter">
         <thead>
         <tr>
             <th>Domain</th>
@@ -81,7 +91,7 @@
 
 {% if nss %}
     <h3><a name="Nameserver">Nameserver</a></h3>
-    <table>
+    <table class="tablesorter">
         <thead>
         <tr>
             <th>Domain</th>
@@ -103,7 +113,7 @@
 
 {% if mxs %}
     <h3><a name="MX">MX</a> Records</h3>
-    <table>
+    <table class="tablesorter">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -125,7 +135,7 @@
 
 {% if srvs %}
     <h3><a name="SRV">SRV</a> Records</h3>
-    <table>
+    <table class="tablesorter">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -147,7 +157,7 @@
 
 {% if txts %}
     <h3><a name="TXT">TXT</a> Records</h3>
-    <table>
+    <table class="tablesorter">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -169,7 +179,7 @@
 
 {% if cnames %}
     <h3><a name="CNAME">CNAME</a> Records</h3>
-    <table>
+    <table class="tablesorter">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -191,7 +201,7 @@
 
 {% if intrs %}
     <h3><a name="Interface">Interface</a> Records</h3>
-    <table>
+    <table class="tablesorter">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -213,7 +223,7 @@
 
 {% if addrs %}
     <h3><a name="Address">Address</a> Records</h3>
-    <table>
+    <table class="tablesorter">
         <thead>
         <tr>
             <th>FQDN</th>
@@ -235,7 +245,7 @@
 
 {% if ptrs %}
     <h3><a name="PTR">PTR</a> Records</h3>
-    <table>
+    <table class="tablesorter">
         <thead>
         <tr>
             <th>IP</th>
