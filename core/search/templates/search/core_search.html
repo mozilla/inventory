@@ -8,23 +8,27 @@
 .center{
     text-align: center;
 }
+div advanced-search-knobs input{
+    display:inline;
+}
+
 </style>
 <script type="text/javascript">
     $(document).ready(function() {
         function get_and_display_search(){
             search = document.getElementById('id_search').value;
             window.location.hash = '#q='+search;
-            $('#results').html('<p>Please wait while we retrieve your results...<p>');
+            // First make the banner go away. Then push everthing to the left... just like google.
+            $('#banner_text').empty();
+            //$('#results').html('');
+            $('#banner_area').css('text-align', 'left');
+            $('.banner').css('margin-bottom', '10px');
+            $('#btn_i').remove();
+            $('#results').html("<img id='loading' style='margin-top:5%;margin-bottom:2%;display:block;' src='{{MEDIA_URL}}images/loading.gif'>");
             var start = new Date().getTime();
 
             $.get('/core/search/search_ajax?search='+escape(search),
             function update_results(data){
-                // First make the banner go away. Then push everthing to the left... just like google.
-                $('#banner_text').empty();
-                $('#results').html('');
-                $('#banner_area').css('text-align', 'left');
-                $('.banner').css('margin-bottom', '10px');
-                $('#btn_i').remove();
                 results = document.getElementById('results');
                 results.innerHTML = data;
                 // Every table needs to have it's feilds configured.
@@ -74,6 +78,9 @@
         $('#btn_i').click(function (){
                 get_and_display_search();
         });
+        $('#advanced_button').click(function (){
+            $('#advanced-search-knobs').toggle();
+        });
         // hash, we use that data as the initial data.
         var prmarr = window.location.hash.split('&');
         console.log(window.location.hash);
@@ -91,6 +98,27 @@
     <input class='search_tools' value="Search" title="Search" type="button" id="btn_s">
     <input value="I'm Feeling Lucky" title="I'm Feeling Lucky" name="lucky" type="submit" id="btn_i">
     <input class='search_tools' value="Help" title="Help" type="button" id="help_button">
+    <input class='search_tools' value="Advanced Search" title="Advanced Search" type="button" id="advanced_button">
+    <div id='advanced-search-knobs' style="display:none;">
+        <div id='selectors'>
+            <label for='A_f'>A/AAAA: <input type='checkbox' id='A_f'/></label>
+            <label for='CNAME_f'>CNAME: <input type='checkbox' id='CNAME_f'/></label>
+            <label for='Domain_f'>Domain: <input type='checkbox' id='Domain_f'/></label>
+            <label for='INTR_f'>INTR: <input type='checkbox' id='INTR_f'/></label>
+            <label for='System_f'>System: <input type='checkbox' id='System_f'/></label>
+            <label for='MX_f'>MX: <input type='checkbox' id='MX_f'/></label>
+            <label for='NS_f'>NS: <input type='checkbox' id='NS_f'/></label>
+            <label for='PTR_f'>PTR: <input type='checkbox' id='PTR_f'/></label>
+            <label for='SRV_f'>SRV: <input type='checkbox' id='SRV_f'/></label>
+            <label for='TXT_f'>TXT: <input type='checkbox' id='TXT_f'/></label>
+        </div>
+        <div id='network-select'>
+        </div>
+        <div id='site-select'>
+        </div>
+        <div id='vlan-select'>
+        </div>
+    </div>
 </div>
 <div id="results" width="100%">
 </div>
