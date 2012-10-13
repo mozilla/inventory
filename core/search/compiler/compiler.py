@@ -113,7 +113,9 @@ class Compiler(object):
         managers.append(SRV.objects.all())
         managers.append(SSHFP.objects.all())
         managers.append(StaticInterface.objects.all())
-        managers.append(System.objects.all())
+        managers.append(System.objects.all().select_related('server_model',
+            'system_rack__location')) # speed! This really helps make things
+                                      # fast
         managers.append(TXT.objects.all())
         return managers
 

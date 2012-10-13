@@ -30,26 +30,29 @@
                 // Every table needs to have it's feilds configured.
                 $(".system-table").tablesorter({
                     headers: {
+                        0: { sorter:'hostname' },
                         1: { sorter:'ipAddress' },
                     }
                 });
                 $(".record-table").tablesorter({
                     headers: {
+                        0: { sorter:'hostname' },
                         1: { sorter:false },
+                        2: { sorter:'hostname' },
                     }
                 });
                 $(".intr-table").tablesorter({
                     headers: {
+                        0: { sorter:'hostname' },
                         1: { sorter:false },
                         2: { sorter:'ipAddress' },
                     }
                 });
                 $(".ptr-table").tablesorter({
                     headers: {
+                        0: { sorter:'ipAddress' },
                         1: { sorter:false },
-                        2: {
-                            sorter:'ipAddress'
-                        },
+                        2: { sorter:'hostname' },
                     }
                 });
                 $(".addr-table").tablesorter({
@@ -89,7 +92,7 @@
     <input value="I'm Feeling Lucky" title="I'm Feeling Lucky" name="lucky" type="submit" id="btn_i">
     <input class='search_tools' value="Help" title="Help" type="button" id="help_button">
 </div>
-<div id="results">
+<div id="results" width="100%">
 </div>
 {% include 'search/core_search_help.html' %}
 {% endblock %}

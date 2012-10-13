@@ -3,7 +3,7 @@
         console.log("We are here now.");
     });
 </script>
-<div id="ajax_results">
+<div id="ajax_results" width="100%">
 <div id="meta">
     {% if meta.counts.addr %}
         {{ meta.counts.addr }} <a href="#Address">A/AAAA</a> records |
@@ -50,13 +50,13 @@
 </div>
 <br/>
 {% if sys %}
-    <h3><a name="System">Systems</a></h3>
+    <h4><a name="System">Systems</a></h4>
     <table class="tablesorter system-table">
         <thead>
         <tr>
             <th>Hostname</th>
             <th>OOB</th>
-            <th>Status</th>
+            <th>Model</th>
             <th>Rack</th>
             <th>Serial</th>
             <th>Asset</th>
@@ -68,10 +68,10 @@
         <tr>
             <td>{{ s.hostname }}</td>
             <td>{{ s.oob_ip }}</td>
-            <td>{{ s.system_status.status }}</td>
-            <td>{{ s.system_rack }}</td>
+            <td>{{ s.server_model if s.server_model_id else "" }}</td>
+            <td>{{ s.system_rack if s.system_rack_id else "" }}</td>
             <td>{{ s.serial }}</td>
-            <td>{{ s.asset_tag }}</td>
+            <td>{{ s.asset_tag }}   </td>
             <td><a href='{{ s.get_absolute_url() }}'>View</a> <a href='{{ s.get_edit_url() }}'>Edit</a></td>
         </tr>
         {% endfor %}
@@ -95,7 +95,7 @@
     </table>
 {% endif %}
 {% if domains %}
-    <h3><a name="Domains">Domains</a></h3>
+    <h4><a name="Domains">Domains</a></h4>
     <table class="tablesorter">
         <thead>
         <tr>
@@ -119,7 +119,7 @@
 {% endif %}
 
 {% if nss %}
-    <h3><a name="Nameserver">Nameserver</a></h3>
+    <h4><a name="Nameserver">Nameserver</a></h4>
     <table class="tablesorter record-table">
         <thead>
         <tr>
@@ -141,7 +141,7 @@
 {% endif %}
 
 {% if mxs %}
-    <h3><a name="MX">MX</a> Records</h3>
+    <h4><a name="MX">MX</a> Records</h4>
     <table class="tablesorter record-table">
         <thead>
         <tr>
@@ -163,7 +163,7 @@
 {% endif %}
 
 {% if srvs %}
-    <h3><a name="SRV">SRV</a> Records</h3>
+    <h4><a name="SRV">SRV</a> Records</h4>
     <table class="tablesorter record-table">
         <thead>
         <tr>
@@ -185,7 +185,7 @@
 {% endif %}
 
 {% if txts %}
-    <h3><a name="TXT">TXT</a> Records</h3>
+    <h4><a name="TXT">TXT</a> Records</h4>
     <table class="tablesorter record-table">
         <thead>
         <tr>
@@ -207,7 +207,7 @@
 {% endif %}
 
 {% if cnames %}
-    <h3><a name="CNAME">CNAME</a> Records</h3>
+    <h4><a name="CNAME">CNAME</a> Records</h4>
     <table class="tablesorter record-table">
         <thead>
         <tr>
@@ -229,7 +229,7 @@
 {% endif %}
 
 {% if intrs %}
-    <h3><a name="Interface">Interface</a> Records</h3>
+    <h4><a name="Interface">Interface</a> Records</h4>
     <table class="tablesorter intr-table">
         <thead>
         <tr>
@@ -251,7 +251,7 @@
 {% endif %}
 
 {% if addrs %}
-    <h3><a name="Address">Address</a> Records</h3>
+    <h4><a name="Address">Address</a> Records</h4>
     <table class="tablesorter addr-table">
         <thead>
         <tr>
@@ -273,7 +273,7 @@
 {% endif %}
 
 {% if ptrs %}
-    <h3><a name="PTR">PTR</a> Records</h3>
+    <h4><a name="PTR">PTR</a> Records</h4>
     <table class="tablesorter ptr-table">
         <thead>
         <tr>
