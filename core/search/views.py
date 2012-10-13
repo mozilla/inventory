@@ -103,6 +103,7 @@ def search_ajax(request):
                                         "cnames": cnames,
                                         "domains": domains,
                                         "intrs": intrs,
+                                        "sys": sys,
                                         "mxs": mxs,
                                         "nss": nss,
                                         "ptrs": ptrs,

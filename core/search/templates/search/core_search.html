@@ -28,6 +28,11 @@
                 results = document.getElementById('results');
                 results.innerHTML = data;
                 // Every table needs to have it's feilds configured.
+                $(".system-table").tablesorter({
+                    headers: {
+                        1: { sorter:'ipAddress' },
+                    }
+                });
                 $(".record-table").tablesorter({
                     headers: {
                         1: { sorter:false },
@@ -68,17 +73,10 @@
         });
         // hash, we use that data as the initial data.
         var prmarr = window.location.hash.split('&');
-        var params = {};
-        if (prmarr != ""){
-            console.log("Auto searching");
-            for ( var i = 0; i < prmarr.length; i++) {
-                var tmparr = prmarr[i].split("=");
-                if (tmparr[0][0] === '#'){
-                    tmparr[0] = tmparr[0].substring(1,tmparr[0].length);
-                }
-                params[tmparr[0]] = tmparr[1];
-            }
-            $('#id_search').attr('value', params.q);
+        console.log(window.location.hash);
+        var params = window.location.hash.substr(3)
+        if ( params != ""){
+            $('#id_search').attr('value', params);
             get_and_display_search();
         }
     });

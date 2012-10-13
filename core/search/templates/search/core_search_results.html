@@ -26,7 +26,7 @@
         zero INTR records |
     {% endif %}
     {% if meta.counts.sys %}
-        {{ meta.counts.sys }} <a href="#System">System</a> |
+        {{ meta.counts.sys }} <a href="#System">Systems</a> |
     {% else %}
         zero Systems |
     {% endif %}
@@ -49,6 +49,35 @@
 <div id='search-time' style='margin-top: 2px;' >
 </div>
 <br/>
+{% if sys %}
+    <h3><a name="System">Systems</a></h3>
+    <table class="tablesorter system-table">
+        <thead>
+        <tr>
+            <th>Hostname</th>
+            <th>OOB</th>
+            <th>Status</th>
+            <th>Rack</th>
+            <th>Serial</th>
+            <th>Asset</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for s in sys %}
+        <tr>
+            <td>{{ s.hostname }}</td>
+            <td>{{ s.oob_ip }}</td>
+            <td>{{ s.system_status.status }}</td>
+            <td>{{ s.system_rack }}</td>
+            <td>{{ s.serial }}</td>
+            <td>{{ s.asset_tag }}</td>
+            <td><a href='{{ s.get_absolute_url() }}'>View</a> <a href='{{ s.get_edit_url() }}'>Edit</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
 {% if misc %}
     <table class="tablesorter">
         <thead>
