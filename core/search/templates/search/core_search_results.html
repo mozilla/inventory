@@ -6,42 +6,42 @@
 <div id="ajax_results" width="100%">
 <div id="meta">
     {% if meta.counts.addr %}
-        {{ meta.counts.addr }} <a href="#Address">A/AAAA</a> records |
+        {{ meta.counts.addr }} <a href="#q={{search}}&Address">A/AAAA</a> records |
     {% else %}
         zero A/AAAA records |
     {% endif %}
     {% if meta.counts.cname %}
-        {{ meta.counts.cname }} <a href="#CNAME">CNAME</a> records |
+        {{ meta.counts.cname }} <a href="#q={{search}}&CNAME">CNAME</a> records |
     {% else %}
         zero CNAME records |
     {% endif %}
     {% if meta.counts.domain %}
-        {{ meta.counts.domain }} <a href="#Domain">Domains</a> |
+        {{ meta.counts.domain }} <a href="#q={{search}}&Domain">Domains</a> |
     {% else %}
         zero Domains |
     {% endif %}
     {% if meta.counts.intr %}
-        {{ meta.counts.intr }} <a href="#Interface">INTR</a> records |
+        {{ meta.counts.intr }} <a href="#q={{search}}&Interface">INTR</a> records |
     {% else %}
         zero INTR records |
     {% endif %}
     {% if meta.counts.sys %}
-        {{ meta.counts.sys }} <a href="#System">Systems</a> |
+        {{ meta.counts.sys }} <a href="#q={{search}}&System">Systems</a> |
     {% else %}
         zero Systems |
     {% endif %}
     {% if meta.counts.mx %}
-        {{ meta.counts.mx }} <a href="#MX">MX</a> records |
+        {{ meta.counts.mx }} <a href="#q={{search}}&MX">MX</a> records |
     {% else %}
         zero MX records |
     {% endif %}
     {% if meta.counts.ptr %}
-        {{ meta.counts.ptr }} <a href="#PTR">PTR</a> records |
+        {{ meta.counts.ptr }} <a href="#q={{search}}&PTR">PTR</a> records |
     {% else %}
         zero PTR records |
     {% endif %}
     {% if meta.counts.txt %}
-        {{ meta.counts.txt }} <a href="#TXT">TXT</a> records
+        {{ meta.counts.txt }} <a href="#q={{search}}&TXT">TXT</a> records
     {% else %}
         zero TXT records
     {% endif %}
@@ -50,7 +50,7 @@
 </div>
 <br/>
 {% if sys %}
-    <h4><a name="System">Systems</a></h4>
+    <h4><a name="q={{search}}&System">Systems</a></h4>
     <table class="tablesorter system-table">
         <thead>
         <tr>
@@ -95,7 +95,7 @@
     </table>
 {% endif %}
 {% if domains %}
-    <h4><a name="Domain">Domains</a></h4>
+    <h4><a name="q={{search}}&Domain">Domains</a></h4>
     <table class="tablesorter">
         <thead>
         <tr>
@@ -119,7 +119,7 @@
 {% endif %}
 
 {% if nss %}
-    <h4><a name="Nameserver">Nameserver</a></h4>
+    <h4><a name="q={{search}}&Nameserver">Nameserver</a></h4>
     <table class="tablesorter record-table">
         <thead>
         <tr>
@@ -141,7 +141,7 @@
 {% endif %}
 
 {% if mxs %}
-    <h4><a name="MX">MX</a> Records</h4>
+    <h4><a name="q={{search}}&MX">MX</a> Records</h4>
     <table class="tablesorter record-table">
         <thead>
         <tr>
@@ -163,7 +163,7 @@
 {% endif %}
 
 {% if srvs %}
-    <h4><a name="SRV">SRV</a> Records</h4>
+    <h4><a name="q={{search}}&SRV">SRV</a> Records</h4>
     <table class="tablesorter record-table">
         <thead>
         <tr>
@@ -185,7 +185,7 @@
 {% endif %}
 
 {% if txts %}
-    <h4><a name="TXT">TXT</a> Records</h4>
+    <h4><a name="q={{search}}&TXT">TXT</a> Records</h4>
     <table class="tablesorter record-table">
         <thead>
         <tr>
@@ -207,7 +207,7 @@
 {% endif %}
 
 {% if cnames %}
-    <h4><a name="CNAME">CNAME</a> Records</h4>
+    <h4><a name="q={{search}}&CNAME">CNAME</a> Records</h4>
     <table class="tablesorter record-table">
         <thead>
         <tr>
@@ -229,7 +229,7 @@
 {% endif %}
 
 {% if intrs %}
-    <h4><a name="Interface">Interface</a> Records</h4>
+    <h4><a name="q={{search}}&Interface">Interface</a> Records</h4>
     <table class="tablesorter intr-table">
         <thead>
         <tr>
@@ -251,7 +251,7 @@
 {% endif %}
 
 {% if addrs %}
-    <h4><a name="Address">Address</a> Records</h4>
+<h4><a id="q={{search}}&Address">Address</a> Records</h4>
     <table class="tablesorter addr-table">
         <thead>
         <tr>
@@ -273,7 +273,7 @@
 {% endif %}
 
 {% if ptrs %}
-    <h4><a name="PTR">PTR</a> Records</h4>
+    <h4><a name="q={{search}}&PTR">PTR</a> Records</h4>
     <table class="tablesorter ptr-table">
         <thead>
         <tr>

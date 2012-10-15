@@ -76,6 +76,8 @@ def search_ajax(request):
     if search in dos_terms:
         return HttpResponse("Denial of Service attack prevented. The search "
                 "term '{0}' is to general".format(search))
+    if request.GET.get('advanced_search', False):
+        search += " AND " + request.GET.get("advanced_search")
 
     x, error_resp = compile_for_request(search, 'raw')
     if not x:

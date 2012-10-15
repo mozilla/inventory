@@ -17,6 +17,44 @@ div advanced-search-knobs input{
 </style>
 <script type="text/javascript">
     $(document).ready(function() {
+        function get_advanced_search_options(){
+            var adv_str = ""
+            var select_types = [];
+            if($('#A_f').attr('checked')){
+                select_types.push("type=:A");
+            }
+            if ($('#CNAME_f').attr('checked')) {
+                select_types.push("type=:CNAME");
+            }
+            if ($('#Domain_f').attr('checked')) {
+                select_types.push("type=:Domain");
+            }
+            if ($('#INTR_f').attr('checked')) {
+                select_types.push("type=:INTR");
+            }
+            if ($('#System_f').attr('checked')) {
+                select_types.push("type=:System");
+            }
+            if ($('#MX_f').attr('checked')) {
+                select_types.push("type=:MX");
+            }
+            if ($('#NS_f').attr('checked')) {
+                    select_types.push("type=:NS");
+            }
+            if ($('#PTR_f').attr('checked')) {
+                    select_types.push("type=:PTR");
+            }
+            if ($('#SRV_f').attr('checked')) {
+                    select_types.push("type=:SRV");
+            }
+            if ($('#TXT_f').attr('checked')) {
+                    select_types.push("type=:TXT");
+            }
+            if (select_types.length != 0) {
+                adv_str = adv_str + " (" + select_types.join(" OR ") + ")";
+            }
+            return adv_str;
+        }
         function get_and_display_search(){
             search = document.getElementById('id_search').value;
             window.location.hash = '#q='+search;
@@ -31,7 +69,9 @@ div advanced-search-knobs input{
 
             // We might want to abort this.
             $('#stop_search').css('display', 'inline');
-            var search_request = $.get('/core/search/search_ajax?search='+escape(search),
+            var search_request = $.get('/core/search/search_ajax?'
+                                        + 'search='+escape(search)
+                                        + '&advanced_search=' + get_advanced_search_options(),
                 function update_results(data){
                     $('#stop_search').css('display', 'none');
                     results = document.getElementById('results');
@@ -90,11 +130,10 @@ div advanced-search-knobs input{
             $('#advanced-search-knobs').toggle();
         });
         // hash, we use that data as the initial data.
-        var prmarr = window.location.hash.split('&');
+        var params = window.location.hash.split('&');
         console.log(window.location.hash);
-        var params = window.location.hash.substr(3)
-        if ( params != ""){
-            $('#id_search').attr('value', params);
+        if ( params.length >= 1){
+            $('#id_search').attr('value', params[0].substr(3));
             get_and_display_search();
         }
     });
@@ -108,6 +147,7 @@ div advanced-search-knobs input{
     <input class='search_tools' value="Help" title="Help" type="button" id="help_button">
     <input class='search_tools' value="Advanced Search" title="Advanced Search" type="button" id="advanced_button">
     <div id='advanced-search-knobs' style="display:none;">
+        <span>Filter by object type: </span>
         <div id='selectors'>
             <label for='A_f'>A/AAAA: <input type='checkbox' id='A_f'/></label>
             <label for='CNAME_f'>CNAME: <input type='checkbox' id='CNAME_f'/></label>

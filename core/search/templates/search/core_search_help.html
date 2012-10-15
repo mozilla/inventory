@@ -17,6 +17,11 @@
 
 </script>
 <div id='help-text' style="display: none;">
+<style>
+td {
+    vertical-align: top;
+}
+</style>
 <table border="1">
     <caption>Search Patterns</caption>
     <tr>
@@ -25,12 +30,11 @@
         </td>
         <td>
             <p>
-            Bare words are used to match text in objects. Objects that match <b>all</b> bare words
-            are returned. For example: <code>foo bar scl3</code> will match objects that contain the
-            words <code>foo</code> <b>AND</b> <code>bar</code> <b>AND</b> <code>scl3</code>
-            ('<code>foo.bar.scl3.mozilla.com</code>' would match but
-            <code>foo.baz.scl3.mozilla.com</code> would not).
+            Filter objects with <b>plain text</b> words. Objects that match <b>all of the words</b>
+            are returned.
             </p>
+            <p><code>[ foopy scl3 ]</code></p>
+            <p><code>[ puppet phx1 ]</code></p>
         </td>
     </tr>
     <tr>
@@ -39,9 +43,9 @@
         </td>
         <td>
             <p>
-            Words that start with the forward slash are assumed to be regex patterns. For
-            example: <code>/^puppet\d+</code>
+            Words that start with the <b>forward slash</b> are assumed to be <b>regex patterns</b>.
             </p>
+            <p><code>[ /^puppet\d+ ]</code></p>
         </td>
     </tr>
 </table>
@@ -53,8 +57,8 @@
         </td>
         <td>
             <p>
-            The dash character '-' can be used to negate any search pattern. It can also negate the
-            <code>type</code> directive.
+            The dash character '-' can be used to <b>negate</b> any search pattern. It can also negate the
+            <code>type</code> directive and parameters in parenthesis.
             </p>
         </td>
     </tr>
@@ -67,11 +71,11 @@
         </td>
         <td>
             <p>
-            The 'type' directive can be used to target a type of DNS record. For example: to see all
-            CNAME records that contained the word 'web' you could search <code>type=:CNAME web</code>.
-            To search for StaticInterface records or domains use <code>type:INTR</code> and
-            <code>type=:Domain</code>. Type is case insensitive.
-            </p>
+            The 'type' directive can be used to <b>target a type</b> of object. Type is case
+            insensitive.  <i>Important: A search query contaning the type directive with no other
+            filter will return all objects of that type and might take a while to complete
+            depending on how many objects exist.</i> </p>
+            <p><code>[ type=:CNAME web ]</code></p>
         </td>
     </tr>
     <tr>
@@ -81,40 +85,41 @@
         <td>
             <p>
             The 'site' directive can be used to search for objects that have IP addresses that fall
-            into one of the networks associated with a site (datacenter or buisness unit). For
-            example=: To see all A records in scl2, search <code>type=:A site=:scl2</code>.
+            into one of the <b>networks associated with a site</b> (datacenter or business unit).
             <a href=/core/site/>A list of all Sites</a>
             </p>
+            <p><code>[ site=:scl2 ]</code></p>
         </td>
     </tr>
     <tr>
-        <td>
+        <td style='avertical-align:text-top;'>
             vlan=:
         </td>
         <td>
             <p>
-            The 'vlan' directive can be used to search for objects that have IP addresses
-            within one of the networks associated with a specif vlan. For example: To see all
-            objects that fall into the db vlan, search <code>vlan=:db</code>. <i>Note that vlans can
-            exist in multiple data centers</i>. <a href=/core/vlan/>A list of all Vlans</a>
+            The 'vlan' directive can be used to search for objects that have IP addresses within one
+            of the <b>networks associated with a specific vlan</b>. <i>Note that vlans can exist in
+            multiple data centers</i>. <a href=/core/vlan/>A list of all Vlans</a>
             </p>
+            <p><code>[ vlan=:db ]</code></p>
         </td>
     </tr>
     <tr>
         <td>
-            network:
+            network=:
         </td>
         <td>
             <p>
-            The 'network' directive can be used to search for objects that have IP addresses within
-            a network. For example: To see all objects that fall into the 10.22.3.0/24 network,
-            search <code>network=:10.22.3.0/23</code>.
+            The 'network' directive can be used to search for objects that have <b>IP addresses within
+            a network</b>.
             </p>
+            <p><code>[ network=:10.22.3.0/23 ]</code></p>
         </td>
     </tr>
+        <!--
     <tr>
         <td>
-            range:
+            range=:
         </td>
         <td>
             <p>
@@ -124,6 +129,7 @@
             </p>
         </td>
     </tr>
+        -->
 </table>
 <table border="1">
     <caption>Examples</caption>
