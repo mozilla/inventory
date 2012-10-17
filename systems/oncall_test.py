@@ -16,11 +16,13 @@ from django.test.client import Client
 from test_utils import setup_test_environment,TestCase
 setup_test_environment()
 from test_utils import RequestFactory
+from systems import models
 class OncallTest(TestCase):
     fixtures = ['user_systems_test_data.json']
     def setUp(self):
         self.client = Client()
         self.rf = RequestFactory()
+
     def test_initial(self):
         u1 = User.objects.get(username='user1@domain.com')
         self.assertEqual(u1.username,'user1@domain.com')
@@ -29,17 +31,17 @@ class OncallTest(TestCase):
 
     def test_desktop_oncall_count(self):
         oncalls = User.objects.select_related().filter(userprofile__is_desktop_oncall=1)
-        self.assertEqual(len(oncalls), 2)
+        self.assertEqual(len(oncalls), 3)
 
     def test_sysadmin_oncall_count(self):
         oncalls = User.objects.select_related().filter(userprofile__is_sysadmin_oncall=1)
-        self.assertEqual(len(oncalls), 2)
+        self.assertEqual(len(oncalls), 3)
 
     def test_oncall_index_page(self):
         resp = self.client.get('/systems/oncall/', follow=True)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.context['form'].desktop_support_choices), 2)
-        self.assertEqual(len(resp.context['form'].sysadmin_support_choices), 2)
+        self.assertEqual(len(resp.context['form'].desktop_support_choices), 3)
+        self.assertEqual(len(resp.context['form'].sysadmin_support_choices), 3)
         self.assertEqual(resp.context['current_desktop_oncall'], 'user1@domain.com')
         self.assertEqual(resp.context['current_sysadmin_oncall'], 'user2@domain.com')
 
@@ -47,12 +49,19 @@ class OncallTest(TestCase):
         rpost = self.client.post('/en-US/systems/oncall/', {'submit':'Save', 'sysadmin_support':'user1@domain.com', 'desktop_support':'user2@domain.com'},follow=False)
         self.assertEqual(rpost.status_code, 200)
         resp = self.client.get('/systems/oncall/', follow=True)
-        self.assertEqual(resp.context['current_desktop_oncall'], 'user2@domain.com')
-        self.assertEqual(resp.context['current_sysadmin_oncall'], 'user1@domain.com')
+        self.assertEqual(resp.context['current_desktop_oncall'], 'user1@domain.com')
+        self.assertEqual(resp.context['current_sysadmin_oncall'], 'user2@domain.com')
 
     def test_updating_desktop_oncall(self):
         rpost = self.client.post('/en-US/systems/oncall/', {'submit':'Save', 'sysadmin_support':'user1@domain.com', 'desktop_support':'user1@domain.com'},follow=False)
         self.assertEqual(rpost.status_code, 200)
         resp = self.client.get('/systems/oncall/', follow=True)
         self.assertEqual(resp.context['current_desktop_oncall'], 'user1@domain.com')
-        self.assertEqual(resp.context['current_sysadmin_oncall'], 'user1@domain.com')
+        self.assertEqual(resp.context['current_sysadmin_oncall'], 'user2@domain.com')
+
+    def test_oncall_timestamp_autocreate(self):
+        ret = models.OncallTimestamp.objects.filter(oncall_type='desktop_support')
+        import pdb; pdb.set_trace()
+        self.assertNotEqual(ret, None)
+
+
