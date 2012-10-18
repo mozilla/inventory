@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block content %}
-    Are your sure you want to delete {{object.name}}?: 
+    Are your sure you want to delete {{owner.name}}?: 
     <form method="post">
         <a href=""></a>
         <input type="submit" value="Yes, I'm sure" />

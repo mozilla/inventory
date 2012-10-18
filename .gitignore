@@ -18,3 +18,8 @@ tmp/*
 src/
 .vagrant
 build/
+private.json
+truth.json
+private_tests.py
+tastytools/*.pyc
+*.pyc

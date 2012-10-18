@@ -16,8 +16,11 @@ from django.db.models.query import QuerySet
 import datetime
 import re
 from django.contrib.auth.models import User
+from settings import BUG_URL
 
 import pdb
+import socket
+
 
 class QuerySetManager(models.Manager):
     def get_query_set(self):
@@ -114,8 +117,8 @@ class Contract(models.Model):
 
 class Location(models.Model):
     name = models.CharField(unique=True, max_length=255, blank=True)
-    address = models.TextField(blank=True)
-    note = models.TextField(blank=True)
+    address = models.TextField(blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
 
     def __unicode__(self):
         return self.name
@@ -136,11 +139,12 @@ class KeyValue(models.Model):
     expanded_objects = ApiManager()
 
     def __unicode__(self):
-        return self.key
+        return self.key if self.key else ''
 
+    def __repr__(self):
+        return self.key if self.key else ''
     def save(self, *args, **kwargs):
         if re.match('^nic\.\d+\.mac_address\.\d+$', self.key):
-            print "Validating Mac"
             self.value = validate_mac(self.value)
         super(KeyValue, self).save(*args, **kwargs)
 
@@ -200,8 +204,8 @@ class Mac(models.Model):
         db_table = u'macs'
 
 class OperatingSystem(models.Model):
-    name = models.CharField(unique=True, max_length=255, blank=True)
-    version = models.CharField(unique=True, max_length=255, blank=True)
+    name = models.CharField(max_length=255, blank=True)
+    version = models.CharField(max_length=255, blank=True)
 
     def __unicode__(self):
         return "%s - %s" % (self.name, self.version)
@@ -213,8 +217,8 @@ class OperatingSystem(models.Model):
 class ServerModel(models.Model):
     vendor = models.CharField(max_length=255, blank=True)
     model = models.CharField(max_length=255, blank=True)
-    description = models.TextField(blank=True)
-    part_number = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True, null=True)
+    part_number = models.CharField(max_length=255, blank=True, null=True)
 
     def __unicode__(self):
         return "%s - %s" % (self.vendor, self.model)
@@ -271,26 +275,26 @@ class System(DirtyFieldsMixin, models.Model):
     (1, 'Yes'),
     )
     hostname = models.CharField(unique=True, max_length=255)
-    serial = models.CharField(max_length=255, blank=True)
+    serial = models.CharField(max_length=255, blank=True, null=True)
     operating_system = models.ForeignKey('OperatingSystem', blank=True, null=True)
     server_model = models.ForeignKey('ServerModel', blank=True, null=True)
     created_on = models.DateTimeField(null=True, blank=True)
     updated_on = models.DateTimeField(null=True, blank=True)
-    oob_ip = models.CharField(max_length=30, blank=True)
-    asset_tag = models.CharField(max_length=255, blank=True)
-    notes = models.TextField(blank=True)
-    licenses = models.TextField(blank=True)
+    oob_ip = models.CharField(max_length=30, blank=True, null=True)
+    asset_tag = models.CharField(max_length=255, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    licenses = models.TextField(blank=True, null=True)
     allocation = models.ForeignKey('Allocation', blank=True, null=True)
     system_rack = models.ForeignKey('SystemRack', blank=True, null=True)
     rack_order = models.DecimalField(null=True, blank=True, max_digits=6, decimal_places=2)
-    switch_ports = models.CharField(max_length=255, blank=True)
-    patch_panel_port = models.CharField(max_length=255, blank=True)
-    oob_switch_port = models.CharField(max_length=255, blank=True)
+    switch_ports = models.CharField(max_length=255, blank=True, null=True)
+    patch_panel_port = models.CharField(max_length=255, blank=True, null=True)
+    oob_switch_port = models.CharField(max_length=255, blank=True, null=True)
     purchase_date = models.DateField(null=True, blank=True)
-    purchase_price = models.CharField(max_length=255, blank=True)
+    purchase_price = models.CharField(max_length=255, blank=True, null=True)
     system_status = models.ForeignKey('SystemStatus', blank=True, null=True)
     change_password = models.DateTimeField(null=True, blank=True)
-    ram = models.CharField(max_length=255, blank=True)
+    ram = models.CharField(max_length=255, blank=True, null=True)
     is_dhcp_server = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     is_dns_server = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     is_puppet_server = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
@@ -298,7 +302,65 @@ class System(DirtyFieldsMixin, models.Model):
     is_switch = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     #network_adapter = models.ForeignKey('NetworkAdapter', blank=True, null=True)
 
+    @property
+    def primary_ip(self):
+        try:
+            first_ip = self.keyvalue_set.filter(key__contains='ipv4_address').order_by('key')[0].value
+            return first_ip
+        except:
+            return None
 
+    @property
+    def primary_reverse(self):
+        try:
+            return str(socket.gethostbyaddr(self.primary_ip)[0])
+        except:
+            return None
+
+    def get_updated_fqdn(self):
+        allowed_domains = [
+                'mozilla.com',
+                'scl3.mozilla.com',
+                'phx.mozilla.com',
+                'phx1.mozilla.com',
+                'mozilla.net',
+                'mozilla.org',
+                'build.mtv1.mozilla.com',
+                'build.mozilla.org',
+                ]
+        reverse_fqdn = self.primary_reverse
+        if self.primary_ip and reverse_fqdn:
+            current_hostname = str(self.hostname)
+
+            if current_hostname and current_hostname != reverse_fqdn:
+                res = reverse_fqdn.replace(current_hostname, '').strip('.')
+                if res in allowed_domains:
+                    self.update_host_for_migration(reverse_fqdn)
+        elif not self.primary_ip or self.primary_reverse:
+            for domain in allowed_domains:
+                updated = False
+                if not updated:
+                    try:
+                        fqdn = socket.gethostbyaddr('%s.%s' % (self.hostname, domain))
+                        if fqdn:
+                            self.update_host_for_migration(fqdn[0])
+                            updated = True
+                    except Exception, e:
+                        #print e
+                        pass
+            if not updated:
+                pass
+                #print "Could not update hostname %s" % (self.hostname)
+
+    def update_host_for_migration(self, new_hostname):
+        if new_hostname.startswith(self.hostname):
+            kv = KeyValue(system=self, key='system.hostname.alias.0', value=self.hostname)
+            kv.save()
+            try:
+                self.hostname = new_hostname
+                self.save()
+            except Exception, e:
+                print "ERROR - %s" % (e)
 
 
     objects = models.Manager()
@@ -335,6 +397,10 @@ class System(DirtyFieldsMixin, models.Model):
         except Exception, e:
             print e
             pass
+
+        if not self.id:
+            self.created_on = datetime.datetime.now()
+        self.updated_on = datetime.datetime.now()
 
         super(System, self).save(*args, **kwargs)
 
@@ -374,6 +440,19 @@ class System(DirtyFieldsMixin, models.Model):
                     nic_numbers.append(match)
         return nic_numbers
 
+    @property
+    def notes_with_link(self):
+        if self.notes:
+            patterns = [
+                '[bB]ug#?\D#?(\d+)',
+                    ]
+            for pattern in patterns:
+                m = re.search(pattern, self.notes)
+                if m:
+                    self.notes = re.sub(pattern, '<a href="%s%s">Bug %s</a>' % (BUG_URL, m.group(1), m.group(1)), self.notes)
+            return self.notes
+        else:
+            return ''
     def get_next_adapter_number(self):
         nic_numbers = self.get_adapter_numbers()
         if len(nic_numbers) > 0:
@@ -404,6 +483,33 @@ class SystemChangeLog(models.Model):
 #    user = models.ForeignKey(User, unique=True)
 #    class Meta:
 ##        db_table = u'user_profiles'
+
+class OncallManager(models.Manager):
+    def filter(self, *args, **kwargs):
+        try:
+            return self.get_query_set().filter(**kwargs)[0]
+        except IndexError:
+            """
+                We tried to get an object here, but it doesn't exist
+                Let's create and add one
+            """
+            ots = OncallTimestamp(
+                    oncall_type=kwargs['oncall_type'],
+                    updated_on=datetime.datetime.now(),
+                    )
+            ots.save()
+            return ots
+
+
+class OncallTimestamp(models.Model):
+    oncall_type = models.CharField(max_length=128, null=False, blank=False)
+    updated_on = models.DateTimeField(null=False, blank=False)
+    objects = OncallManager()
+
+    class Meta:
+        db_table = u'oncall_timestamp'
+
+
 class UserProfile(models.Model):
     PAGER_CHOICES = (
             ('epager', 'epager'),
@@ -412,13 +518,15 @@ class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
     is_desktop_oncall = models.BooleanField()
     is_sysadmin_oncall = models.BooleanField()
+    is_services_oncall = models.BooleanField()
     current_desktop_oncall = models.BooleanField()
     current_sysadmin_oncall = models.BooleanField()
-    irc_nick = models.CharField(max_length=128)
+    current_services_oncall = models.BooleanField()
+    irc_nick = models.CharField(max_length=128, null=True, blank=True)
     api_key = models.CharField(max_length=255, null=True, blank=True)
-    pager_type = models.CharField(choices=PAGER_CHOICES, max_length=255, null=False, blank=False)
-    pager_number = models.CharField(max_length=255, null=False, blank=False)
-    epager_address = models.CharField(max_length=255, null=False, blank=False)
+    pager_type = models.CharField(choices=PAGER_CHOICES, max_length=255, null=True, blank=True)
+    pager_number = models.CharField(max_length=255, null=True, blank=True)
+    epager_address = models.CharField(max_length=255, null=True, blank=True)
     objects = QuerySetManager()
     class QuerySet(QuerySet):
         def get_all_desktop_oncall(self):
@@ -426,8 +534,16 @@ class UserProfile(models.Model):
         def get_current_desktop_oncall(self):
             self.filter(current_desktop_oncall=1).select_related()
 
+        def get_all_services_oncall(self):
+            self.filter(is_services_oncall=1)
+        def get_current_services_oncall(self):
+            self.filter(current_services_oncall=1).select_related()
+
         def get_all_sysadmin_oncall(self):
             self.filter(is_sysadmin_oncall=1)
+        def get_current_sysadmin_oncall(self):
+            self.filter(current_sysadmin_oncall=1).select_related()
+
     class Meta:
         db_table = u'user_profiles'
 

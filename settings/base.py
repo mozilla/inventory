@@ -43,6 +43,8 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'api',
     'api_v2',
     'reports',
+    'tastypie',
+    'tastytools',
 ]
 
 
@@ -52,6 +54,7 @@ JINGO_EXCLUDE_APPS = [
     'build',
     'admin',
     'user_systems',
+    'tastytools',
 ]
 
 DJANGO_TEMPLATE_APPS = [
@@ -86,3 +89,4 @@ PISTON_IGNORE_DUPE_MODELS = True
 
 ROOT_URLCONF = 'mozilla_inventory.urls'
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+ROOT_URLCONF = 'inventory.urls'

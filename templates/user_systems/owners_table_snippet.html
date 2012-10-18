@@ -3,8 +3,8 @@
             <td>{{ owner.name }}</td>
             <td>{{ owner.user_location }}</td>
             <td>{{ owner.email }}</td>
-            <td><a href="{% url owner-show owner.id %}">Show</a></td>
-            <td><a href="{% url license-edit owner.id %}">Edit</a></td>
-            <td><a href="{% url license-delete owner.id %}">Delete</a></td>
+            <td><a href="{{ 'owner-show'|url(owner.id) }}">Show</a></td>
+            <td><a href="{{ 'license-edit'|url(owner.id) }}">Edit</a></td>
+            <td><a href="{{ 'license-delete'|url(owner.id) }}">Delete</a></td>
         </tr>
         {% endfor %}

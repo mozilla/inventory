@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Getting Started with TastyTools &mdash; tastytools 0.1.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="tastytools 0.1.1 documentation" href="index.html" />
+    <link rel="prev" title="Welcome to tastytools’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to tastytools’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">tastytools 0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="getting-started-with-tastytools">
+<h1>Getting Started with TastyTools<a class="headerlink" href="#getting-started-with-tastytools" title="Permalink to this headline">¶</a></h1>
+<p>For example purposes, we&#8217;ll be adding tools to the simple blog application that Tasytypie has in it&#8217;s own tutorial.</p>
+<p>Here is the code we&#8217;ll be using (taken from the tastypie quickstart and tutorial with a few minor changes).</p>
+<p><tt class="docutils literal"><span class="pre">myapp/models.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.template.defaultfilters</span> <span class="kn">import</span> <span class="n">slugify</span>
+
+
+<span class="k">class</span> <span class="nc">Entry</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">User</span><span class="p">)</span>
+    <span class="n">pub_date</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">auto_now_add</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+    <span class="n">slug</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">SlugField</span><span class="p">()</span>
+    <span class="n">body</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__unicode__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c"># For automatic slug generation.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">slug</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slug</span> <span class="o">=</span> <span class="n">slugify</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)[:</span><span class="mi">50</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Entry</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">urls.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.conf.urls.defaults</span> <span class="kn">import</span> <span class="n">patterns</span><span class="p">,</span> <span class="n">include</span><span class="p">,</span> <span class="n">url</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">tastypie.api</span> <span class="kn">import</span> <span class="n">Api</span>
+<span class="kn">from</span> <span class="nn">myapp.api.resources</span> <span class="kn">import</span> <span class="n">EntryResource</span><span class="p">,</span> <span class="n">UserResource</span>
+
+<span class="n">v1_api</span> <span class="o">=</span> <span class="n">Api</span><span class="p">(</span><span class="n">api_name</span><span class="o">=</span><span class="s">&#39;v1&#39;</span><span class="p">)</span>
+<span class="n">v1_api</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">UserResource</span><span class="p">())</span>
+<span class="n">v1_api</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">EntryResource</span><span class="p">())</span>
+
+<span class="n">admin</span><span class="o">.</span><span class="n">autodiscover</span><span class="p">()</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">url</span><span class="p">(</span><span class="s">r&#39;^admin/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+    <span class="p">(</span><span class="s">r&#39;^api/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">v1_api</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">myapp/api/resources.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
+<span class="kn">from</span> <span class="nn">tastypie</span> <span class="kn">import</span> <span class="n">fields</span>
+<span class="kn">from</span> <span class="nn">tastypie.resources</span> <span class="kn">import</span> <span class="n">ModelResource</span>
+<span class="kn">from</span> <span class="nn">myapp.models</span> <span class="kn">import</span> <span class="n">Entry</span>
+
+
+<span class="k">class</span> <span class="nc">UserResource</span><span class="p">(</span><span class="n">ModelResource</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="s">&#39;user&#39;</span>
+
+
+<span class="k">class</span> <span class="nc">EntryResource</span><span class="p">(</span><span class="n">ModelResource</span><span class="p">):</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">UserResource</span><span class="p">,</span> <span class="s">&#39;user&#39;</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">queryset</span> <span class="o">=</span> <span class="n">Entry</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">resource_name</span> <span class="o">=</span> <span class="s">&#39;entry&#39;</span>
+</pre></div>
+</div>
+<p>You can download this project by cloning <a class="reference external" href="mailto:git&#37;&#52;&#48;github&#46;com">git<span>&#64;</span>github<span>&#46;</span>com</a>:thagat/django-tastytools.git</p>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>Simply clone the repository:</p>
+<div class="highlight-python"><pre>git clone https://github.com/juanique/django-tastytools.git
+cd django-tastytools
+python setup.py install</pre>
+</div>
+</div>
+<div class="section" id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>Add <tt class="docutils literal"><span class="pre">'tastytools'</span></tt> to your <tt class="docutils literal"><span class="pre">INSTALLED_APPS</span></tt></p>
+</div>
+<div class="section" id="generating-documentation">
+<h2>Generating documentation<a class="headerlink" href="#generating-documentation" title="Permalink to this headline">¶</a></h2>
+<p>For our api to be easily consumable by users, we need documentation.
+Tastytools generates automatic documentation, so your clients always have
+the latest api docs.
+For our simple application, we&#8217;ll create a file: <tt class="docutils literal"><span class="pre">myapp/api/tools.py</span></tt> (in
+the api folder created within your app in the <a class="reference external" href="http://django-tastypie.readthedocs.org/en/latest/index.html#quick-start">tastypie quickstart</a>)
+First thing wee need to do is move much of the tastypie code form the urls.py
+file to the new tools.py file:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># myapp/api/tools.py</span>
+<span class="kn">from</span> <span class="nn">tastytools.api</span> <span class="kn">import</span> <span class="n">Api</span>
+<span class="kn">from</span> <span class="nn">trips.api.resources</span> <span class="kn">import</span> <span class="n">EntrytResource</span><span class="p">,</span> <span class="n">UserResource</span>
+
+<span class="n">v1_api</span> <span class="o">=</span> <span class="n">Api</span><span class="p">(</span><span class="n">api_name</span><span class="o">=</span><span class="s">&#39;v1&#39;</span><span class="p">)</span>
+<span class="n">v1_api</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">EntrytResource</span><span class="p">())</span>
+<span class="n">v1_api</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">UsertResource</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>Notice that our Api object does not import form tastipie anymore, we&#8217;ll be
+using from now the tastytools Api class, that inherits the tastypie Api class.</p>
+<p>Our urls.py file now needs to import the api object to keep working, but we&#8217;ll
+add a new line to generate our documentation:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># urls.py</span>
+<span class="c"># ...</span>
+<span class="kn">from</span> <span class="nn">myapp.api.tools</span> <span class="kn">import</span> <span class="n">v1_api</span>
+
+<span class="n">urlpatterns</span> <span class="o">=</span> <span class="n">patterns</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">,</span>
+    <span class="c"># ...</span>
+    <span class="p">(</span><span class="s">r&#39;^api/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="n">v1_api</span><span class="o">.</span><span class="n">urls</span><span class="p">)),</span>
+    <span class="c"># Then add:</span>
+    <span class="p">(</span><span class="s">r&#39;^tastytools/&#39;</span><span class="p">,</span> <span class="n">include</span><span class="p">(</span><span class="s">&#39;tastytools.urls&#39;</span><span class="p">),</span> <span class="p">{</span><span class="s">&#39;api_name&#39;</span><span class="p">:</span> <span class="n">v1_api</span><span class="o">.</span><span class="n">api_name</span><span class="p">}),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Now you can go check your auto generated documentation at /tastytools/doc/
+Neat right? it&#8217;s now easy to navigate through your api resources.</p>
+</div>
+<div class="section" id="generating-example-data-for-your-tastypie-api">
+<h2>Generating Example Data for your Tastypie API<a class="headerlink" href="#generating-example-data-for-your-tastypie-api" title="Permalink to this headline">¶</a></h2>
+<p>Every great documentation has examples, so tastytools helps you with this by
+generating semi-random data:
+The first thing we need to do is implement a Test Data class, Which generates
+data four our tests:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># myapp/api/tools.py</span>
+<span class="kn">from</span> <span class="nn">tastytools.test.resources</span> <span class="kn">import</span> <span class="n">ResourceTestData</span>
+
+
+<span class="k">class</span> <span class="nc">EntryTestData</span><span class="p">(</span><span class="n">ResourceTestData</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api</span><span class="p">):</span>
+        <span class="n">ResourceTestData</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">api</span><span class="p">,</span> <span class="s">&#39;entry&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&#39;user&#39;</span><span class="p">,</span> <span class="n">resource</span><span class="o">=</span><span class="s">&#39;user&#39;</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&#39;pub_date&#39;</span><span class="p">,</span> <span class="s">&#39;2010-12-24T06:23:48&#39;</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="s">&#39;Lorem ipsum&#39;</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&#39;slug&#39;</span><span class="p">,</span> <span class="s">&#39;lorem&#39;</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&#39;body&#39;</span><span class="p">,</span> <span class="s">&#39;Lorem ipsum ad his scripta blandit partiendo...&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+</pre></div>
+</div>
+<p>Then register our test data to our api:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">v1_api</span><span class="o">.</span><span class="n">register_testdata</span><span class="p">(</span><span class="n">EntryTestData</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="generating-tests-for-your-tastypie-api">
+<h2>Generating Tests for your Tastypie API<a class="headerlink" href="#generating-tests-for-your-tastypie-api" title="Permalink to this headline">¶</a></h2>
+<p>The second great feature of tastytools is that it can generate a number of
+tests for your api. This tests seek to ensure among other things, the
+readability of your api:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#myapp/api/tests.py</span>
+<span class="kn">from</span> <span class="nn">tastytools.test.definitions</span> <span class="kn">import</span> <span class="n">resources</span><span class="p">,</span> <span class="n">fields</span>
+<span class="kn">from</span> <span class="nn">api.tools</span> <span class="kn">import</span> <span class="n">v1_api</span>
+
+<span class="n">ResourceTests</span> <span class="o">=</span> <span class="n">resources</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">v1_api</span><span class="p">)</span>
+<span class="n">ResourceFieldTests</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">v1_api</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Remember to add this test.py file to the set of tests your application tests
+by importing it to your tests.py file or your tests/__init__.py file if you
+have your tests in a folder</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For the tests to work you need to specify the example_class field in the
+Meta class of your resource.</p>
+</div>
+<p>Now you have a lot of new tests for your api, which you can run with the
+./manage.py tests myapp command. Fix them and your api will gain more than a
+level in usability :D.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Getting Started with TastyTools</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#generating-documentation">Generating documentation</a></li>
+<li><a class="reference internal" href="#generating-example-data-for-your-tastypie-api">Generating Example Data for your Tastypie API</a></li>
+<li><a class="reference internal" href="#generating-tests-for-your-tastypie-api">Generating Tests for your Tastypie API</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to tastytools&#8217;s documentation!</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tutorial.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to tastytools’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">tastytools 0.1.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Ignacio Munizaga, Juan Enrique Muñoz, Sebastian Acuña.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -4,6 +4,7 @@ import operator
 from django.template import RequestContext
 from django.forms.extras.widgets import SelectDateWidget
 from django.db import connection
+from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.utils import simplejson as json
 from django.http import HttpResponse, HttpResponseRedirect
@@ -16,9 +17,31 @@ from datetime import datetime, timedelta
 from libs import ldap_lib
 import settings
 from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS
-from django.shortcuts import render_to_response, redirect, get_object_or_404
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect, get_object_or_404
+from libs.jinja import render_to_response as render_to_response
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from MozInvAuthorization.UnmanagedSystemACL import UnmanagedSystemACL
+
+def license_version_search(request):
+    query = request.GET.get('query')
+    tmp = [str(m['version']) for m in models.UserLicense.objects.filter(version__icontains=query).values('version').distinct()]
+    versions = list(set(tmp))
+    ret_dict = {}
+    ret_dict['query'] = query
+    ret_dict['suggestions'] = versions
+    ret_dict['data'] = versions
+    return HttpResponse(json.dumps(ret_dict))
+
+def license_type_search(request):
+    query = request.GET.get('query')
+    types = [m['license_type'] for m in models.UserLicense.objects.filter(license_type__icontains=query).values('license_type').distinct()]
+    ret_dict = {}
+    ret_dict['query'] = query
+    ret_dict['suggestions'] = types
+    ret_dict['data'] = types
+    return HttpResponse(json.dumps(ret_dict))
 @csrf_exempt
 def owners_quicksearch_ajax(request):
     """Returns systems sort table"""
@@ -121,12 +144,22 @@ def license_new(request):
 @csrf_exempt
 def license_quicksearch_ajax(request):
     """Returns systems sort table"""
-    search = request.POST['quicksearch']
-    filters = [Q(**{"%s__icontains" % t: search})
-                    for t in models.UserLicense.search_fields]
+    """
+        Try to get quicksearch from post
+        If fail, try to get from GET
+        return None otherwise
+    """
+    search = request.POST.get('quicksearch', None)
+    if not search:
+        search = request.GET.get('quicksearch', None)
+    if search:
+        filters = [Q(**{"%s__icontains" % t: search})
+                        for t in models.UserLicense.search_fields]
 
-    licenses = models.UserLicense.objects.filter(
-                reduce(operator.or_, filters))
+        licenses = models.UserLicense.objects.filter(
+                    reduce(operator.or_, filters))
+    else:
+        licenses = None
 
     return render_to_response('user_systems/license_quicksearch.html', {
             'licenses': licenses,
@@ -268,6 +301,13 @@ def user_system_view(request, template, data, instance=None):
     the_owner_list.append("STOCK-MTV")
     the_owner_list.append("STOCK-TOR")
     the_owner_list.append("STOCK-LON")
+    the_owner_list.append("STOCK-LON")
+    the_owner_list.append("desktop-mtv1")
+    the_owner_list.append("desktop-sfo1")
+    the_owner_list.append("desktop-tor1")
+    the_owner_list.append("desktop-lon1")
+    the_owner_list.append("desktop-par1")
+    the_owner_list.append("desktop-yvr1")
     data['owner_json'] = json.dumps(the_owner_list)
 
     #data['owner_json'] = json.dumps(ldap_lib.get_all_names())
@@ -340,29 +380,38 @@ def user_system_index(request):
         
 
 def license_delete(request, object_id):
-    from misc.generic_views import delete_object
     license = get_object_or_404(models.UserLicense, pk=object_id)
-    if request.user.username in USER_SYSTEM_ALLOWED_DELETE:
-        return delete_object(request, model=models.UserLicense, object_id=object_id,post_delete_redirect='license-list')
-    else:
-        send_mail('Unauthorized Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (license, request.user.username), settings.local.FROM_EMAIL_ADDRESS,settings.local.UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=True)
-                    
+    try:
+        license.delete()
+        return HttpResponseRedirect( reverse('license-list') )
+    except PermissionDenied, e:
         return render_to_response('user_systems/unauthorized_delete.html', {
-                'content': "You're not authorized to delete",
+                'content': 'You do not have permission to delete this license',
             },
             RequestContext(request))
+
 def unmanaged_system_delete(request, object_id):
-    from misc.generic_views import delete_object
+    #Dummy comment
     user_system = get_object_or_404(models.UnmanagedSystem, pk=object_id)
-    if request.user.username in USER_SYSTEM_ALLOWED_DELETE:
-        return delete_object(request, model=models.UnmanagedSystem, object_id=object_id,post_delete_redirect='user-system-list')
+    if request.method == 'POST':
+        try:
+            acl = UnmanagedSystemACL(request)
+            acl.check_delete()
+            user_system.delete()
+            send_mail('System Deleted', '%s Deleted by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
+            return HttpResponseRedirect( reverse('user-system-list') )
+        except PermissionDenied, e:
+            send_mail('Unauthorized System Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
+            return render_to_response('user_systems/unauthorized_delete.html', {
+                    'content': 'You do not have permission to delete this system',
+                },
+                RequestContext(request))
     else:
-        send_mail('Unauthorized Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
-                    
-        return render_to_response('user_systems/unauthorized_delete.html', {
-                'content': "You're not authorized to delete",
+        return render_to_response('user_systems/unmanagedsystem_confirm_delete.html', {
+                'owner': user_system,
             },
             RequestContext(request))
+                    
 
 def show_by_model(request, object_id):
     system_list = models.UnmanagedSystem.objects.filter(server_model=models.ServerModel.objects.get(id=object_id))
@@ -399,6 +448,7 @@ def user_system_show(request, object_id):
     #system = get_object_or_404(models.UnmanagedSystem
     return render_to_response('user_systems/unmanagedsystem_detail.html', {
             'user_system': system,
+            'settings': settings,
            },
            RequestContext(request))
 def user_system_show_by_asset_tag(request, id):
@@ -434,6 +484,14 @@ def user_system_edit(request, id):
 
 def user_system_csv(request):
     systems = models.UnmanagedSystem.objects.all().order_by('owner__name')
+    try:
+        ref_split = request.META['HTTP_REFERER'].split('/')
+        type, id = ref_split[-3:-1]
+        if type == 'model':
+            systems = systems.filter(server_model__id=id)
+    except:
+        pass
+
 
     response = HttpResponse(mimetype='text/csv')
     response['Content-Disposition'] = 'attachment; filename=user_systems.csv'
@@ -443,7 +501,10 @@ def user_system_csv(request):
                     'Operating System', 'Model', 'Date Purchased', 'Cost'])
 
     for s in systems:
-        location = s.owner.user_location
+        try:
+            location = s.owner.user_location
+        except AttributeError:
+            location = ''
         writer.writerow([s.owner, location, s.serial, s.asset_tag,
                 s.operating_system, s.server_model, s.date_purchased, s.cost])
 

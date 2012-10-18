@@ -7,7 +7,7 @@ except ImportError:
 
 import models
 from django.forms.widgets import RadioSelect, CheckboxSelectMultiple
-from systems.models import Location, Allocation
+from systems.models import Location, Allocation, SystemStatus, OperatingSystem
 class MultiSelectFormField(forms.MultipleChoiceField):
     widget = forms.CheckboxSelectMultiple
     
@@ -28,18 +28,24 @@ class ReportForm(forms.Form):
         required=True,
         choices=[
                 ('SYSTEM', 'SYSTEM'),
-                ('UNMANAGED', 'UNMANAGED'),
+                #('UNMANAGED', 'UNMANAGED'),
             ] )
     output = forms.ChoiceField(
         required=False,
         choices=[
-                ('CSV', 'CSV'),
                 ('SCREEN', 'SCREEN'),
+                ('CSV', 'CSV'),
             ] )
 
+    system_status = forms.MultipleChoiceField(
+        required=False,
+        
+        widget=CheckboxSelectMultiple(attrs={'class': 'system_status'}),
+        choices=[('-1', 'All')] + [(m.id, m) for m in SystemStatus.objects.all()])
+
     location = forms.MultipleChoiceField(
-        required=True,
-        widget=CheckboxSelectMultiple,
+        required=False,
+        widget=CheckboxSelectMultiple(attrs={'class': 'system_location'}),
         choices=[('-1', 'All')] + [(m.id, m) for m in Location.objects.all()])
                     
     allocation = forms.ChoiceField(
@@ -47,3 +53,12 @@ class ReportForm(forms.Form):
         choices=[('', 'All')] + [(m.id, m)
                     for m in Allocation.objects.all()])
 
+    operating_system = forms.CharField(
+            max_length=72,
+            required = False
+            )
+
+    server_models = forms.CharField(
+            max_length=72,
+            required = False
+            )

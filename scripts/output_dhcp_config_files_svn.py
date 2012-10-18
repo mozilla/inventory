@@ -11,25 +11,29 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardi
 import manage
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
 
-from django.test.client import Client
 from settings import DHCP_CONFIG_OUTPUT_DIRECTORY
 from dhcp.models import DHCPFile
 always_push_svn = True
+from libs.DHCPHelper import DHCPHelper
+from dhcp.DHCP import DHCP as DHCPInterface
+from systems.models import ScheduledTask
 def main():
-    client = Client()
+    dh = DHCPHelper()
     dhcp_scopes = []
-    dhcp_scopes = json.loads(client.get('/api/dhcp/1/get_scopes/', follow=True).content)
+    dhcp_scopes = dh.get_scopes_to_generate()
     output_dir = DHCP_CONFIG_OUTPUT_DIRECTORY
-    for dhcp_scope in dhcp_scopes:
+    for scope in dhcp_scopes:
+        dhcp_scope = scope.task
         try:
             dir = dhcp_scope.split("-")[0]
             output_file = '-'.join(dhcp_scope.split("-")[1:])
             final_destination_file = "%s/%s/%s_generated_hosts.conf" % (output_dir,dir, output_file)
-            output_text = client.get('/api/dhcp/%s/view_hosts/' % dhcp_scope, follow=True).content
-            output_text = output_text[1:-1]
-            output_text =  output_text.replace("\\n","\n")
-            output_text =  output_text.replace("\\t","\t")
-            output_text =  output_text.replace('\\"','"')
+            systems = dh.systems_by_scope(dhcp_scope)
+            adapters = []
+            for host in systems:
+                hostname = host['hostname']
+                adapters.append(dh.adapters_by_system_and_scope(hostname, dhcp_scope))
+            output_text = DHCPInterface([], adapters).get_hosts()
             try:
                 f = open(final_destination_file,"w")
                 f.write(output_text)
@@ -42,9 +46,9 @@ def main():
                 pass
             d = DHCPFile(dhcp_scope=dhcp_scope,file_text=output_text)
             d.save()
-            client.delete('/en-US/api/v2/dhcp/%s/remove_scheduled_task/' % dhcp_scope, follow=True)
+            scope.delete()
         except IndexError:
-            client.delete('/en-US/api/v2/dhcp/%s/remove_scheduled_task/' % dhcp_scope, follow=True)
+            scope.delete()
     if len(dhcp_scopes) > 0 or always_push_svn:
         os.chdir(output_dir)
         os.system('/usr/bin/svn update')

@@ -1,0 +1,11 @@
+*.pyc
+.DS_Store
+_build
+.*.sw[po]
+*.egg-info
+dist
+build
+MANIFEST
+tests/tastypie.db
+.buildinfo
+.tox

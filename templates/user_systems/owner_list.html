@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+{% extends "jinja_base.html" %}
 {% block content %}
 <script>
     function showUpgradeable($,t) {
         $("#show_upgradeable_link").hide();
         $("#hide_upgradeable_link").show();
-        $("#show_upgradeable").load('{% url owner-upgradeable %}');
+        $("#show_upgradeable").load('{{ 'owner-upgradeable'|url() }}');
         return false;
     }
     function hideUpgradeable($,t) {
@@ -21,7 +21,7 @@
     </form>
 </div>
 
-<a href="{% url owner-new %}">Create New</a> | <a id="show_upgradeable_link" href="#" onclick="return showUpgradeable($,this)">Show Upgradeable Users ({{ upgradeable_users }})</a><a style="display: none;" id="hide_upgradeable_link" href="#" onclick="return hideUpgradeable(jQuery,this)">Hide Upgradeable Users ({{ upgradeable_users }})</a>
+<a href="{{ 'owner-new'|url() }}">Create New</a> | <a id="show_upgradeable_link" href="#" onclick="return showUpgradeable($,this)">Show Upgradeable Users ({{ upgradeable_users }})</a><a style="display: none;" id="hide_upgradeable_link" href="#" onclick="return hideUpgradeable(jQuery,this)">Hide Upgradeable Users ({{ upgradeable_users }})</a>
 <div style='margin-top: 12px;' id="search_hits"></div>
 <div id="show_upgradeable"></div>
 
@@ -38,12 +38,12 @@
     <tbody>
         {% for owner in owner_list %}
         <tr>
-            <td><a href="{{ owner.get_absolute_url }}">{{ owner }}</a></td>
+            <td><a href="{{ owner.get_absolute_url() }}">{{ owner }}</a></td>
             <td>{{ owner.user_location }}</td>
-            <td>{{ owner.email|urlize }}</td>
-            <td><a href="{% url owner-show owner.id %}">Show</a></td>
-            <td><a href="{% url owner-edit owner.id %}">Edit</a></td>
-            <td><a href="{% url owner-delete owner.id %}">Delete</a></td>
+            <td>{{ owner.email }}</td>
+            <td><a href="{{ 'owner-show'|url(owner.id) }}">Show</a></td>
+            <td><a href="{{ 'owner-edit'|url(owner.id) }}">Edit</a></td>
+            <td><a href="{{ 'owner-delete'|url(owner.id) }}">Delete</a></td>
         </tr>
         {% endfor %}
     </tbody>
@@ -51,7 +51,7 @@
 <script>
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{% url owners-quicksearch %}");
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{{ 'owners-quicksearch'|url() }}");
 	});
 </script>
 {% endblock %}
