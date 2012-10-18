@@ -914,10 +914,13 @@ def oncall(request):
             current_desktop_oncall = form.cleaned_data['desktop_support']
             current_sysadmin_oncall = form.cleaned_data['sysadmin_support']
             current_services_oncall = form.cleaned_data['services_support']
+            form.save()
             if clear_oncall_orm():
                 set_oncall('desktop', current_desktop_oncall)
                 set_oncall('sysadmin', current_sysadmin_oncall)
                 set_oncall('services', current_services_oncall)
+                return HttpResponseRedirect('')
+
     else:
         form = OncallForm(initial = initial)
     return render(request, 'systems/generic_form.html', {'current_services_oncall':current_services_oncall, 'current_desktop_oncall':current_desktop_oncall,'current_sysadmin_oncall':current_sysadmin_oncall, 'form':form})

@@ -670,6 +670,33 @@ class SystemChangeLog(models.Model):
 #    user = models.ForeignKey(User, unique=True)
 #    class Meta:
 ##        db_table = u'user_profiles'
+
+class OncallManager(models.Manager):
+    def filter(self, *args, **kwargs):
+        try:
+            return self.get_query_set().filter(**kwargs)[0]
+        except IndexError:
+            """
+                We tried to get an object here, but it doesn't exist
+                Let's create and add one
+            """
+            ots = OncallTimestamp(
+                    oncall_type=kwargs['oncall_type'],
+                    updated_on=datetime.datetime.now(),
+                    )
+            ots.save()
+            return ots
+
+
+class OncallTimestamp(models.Model):
+    oncall_type = models.CharField(max_length=128, null=False, blank=False)
+    updated_on = models.DateTimeField(null=False, blank=False)
+    objects = OncallManager()
+
+    class Meta:
+        db_table = u'oncall_timestamp'
+
+
 class UserProfile(models.Model):
     PAGER_CHOICES = (
             ('epager', 'epager'),

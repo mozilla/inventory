@@ -16,15 +16,80 @@ class OncallForm(forms.Form):
     desktop_support_choices = [(m, m.get_profile().irc_nick) for m in User.objects.select_related().filter(userprofile__is_desktop_oncall=1)]
     sysadmin_support_choices = [(m, m.get_profile().irc_nick) for m in User.objects.select_related().filter(userprofile__is_sysadmin_oncall=1)]
     services_support_choices = [(m, m.get_profile().irc_nick) for m in User.objects.select_related().filter(userprofile__is_services_oncall=1)]
+
                     
     desktop_support = forms.ChoiceField(label='Desktop Oncall',
         choices= desktop_support_choices)
+    desktop_support_timestamp = forms.DateTimeField()
+    services_support_timestamp = forms.DateTimeField()
+    sysadmin_support_timestamp = forms.DateTimeField()
     sysadmin_support = forms.ChoiceField(label='Sysadmin Oncall',
         choices= sysadmin_support_choices)
     services_support = forms.ChoiceField(label='Services Oncall',
         choices= services_support_choices)
-    class meta:
+    
+    def clean(self):
+        cleaned_data = super(OncallForm, self).clean()
+        """
+            Check when desktop was updated last
+        """
+        from_db_desktop_support = models.OncallTimestamp.objects.filter(
+                oncall_type='desktop_support').updated_on
+        if from_db_desktop_support != cleaned_data['desktop_support_timestamp']:
+            raise forms.ValidationError('Midair Collision on setting Desktop Oncall, please refresh')
+
+        """
+            Check when sysadmin was updated last
+        """
+        from_db_sysadmin_support = models.OncallTimestamp.objects.filter(
+                oncall_type='sysadmin_support').updated_on
+        if from_db_sysadmin_support != cleaned_data['sysadmin_support_timestamp']:
+            raise forms.ValidationError('Midair Collision on setting Sysadmin Oncall, please refresh')
+
+        """
+            Check when services was updated last
+        """
+        from_db_services_support = models.OncallTimestamp.objects.filter(
+                oncall_type='services_support').updated_on
+        if from_db_services_support != cleaned_data['services_support_timestamp']:
+            raise forms.ValidationError('Midair Collision on setting Services Oncall, please refresh')
+
+        return cleaned_data
+
+    class Meta:
         model = User
+
+    def save(self, *args, **kwargs):
+        if not self.initial['desktop_support'] == self.cleaned_data['desktop_support']:
+            onc = models.OncallTimestamp.objects.get(oncall_type='desktop_support')
+            onc.updated_on = datetime.now()
+            onc.save()
+        if not self.initial['services_support'] == self.cleaned_data['services_support']:
+            onc = models.OncallTimestamp.objects.get(oncall_type='services_support')
+            onc.updated_on = datetime.now()
+            onc.save()
+        if not self.initial['sysadmin_support'] == self.cleaned_data['sysadmin_support']:
+            onc = models.OncallTimestamp.objects.get(oncall_type='sysadmin_support')
+            onc.updated_on = datetime.now()
+            onc.save()
+
+    def __init__(self, *args, **kwargs):
+        super(OncallForm, self).__init__(*args, **kwargs)
+        from django.forms.widgets import HiddenInput
+        self.fields['desktop_support_timestamp'].widget = HiddenInput()
+        self.fields['desktop_support_timestamp'].initial = models.OncallTimestamp.objects.filter(
+                oncall_type='desktop_support').updated_on
+        self.fields['sysadmin_support_timestamp'].widget = HiddenInput()
+        self.fields['sysadmin_support_timestamp'].initial = models.OncallTimestamp.objects.filter(
+                oncall_type='sysadmin_support').updated_on
+        self.fields['services_support_timestamp'].widget = HiddenInput()
+        self.fields['services_support_timestamp'].initial = models.OncallTimestamp.objects.filter(
+                oncall_type='services_support').updated_on
+
+def has_changed(instance, field):
+    old_value = instance.__class__._default_manager.\
+            filter(pk=instance.pk).values(field).get()[field]
+    return not getattr(instance, field) == old_value
 
 class SystemRackForm(forms.ModelForm):
     class Meta:
