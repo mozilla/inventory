@@ -79,9 +79,33 @@ def build_ipf_qsets(qset):
         ]
     return q_sets
 
+
+def build_rdtype_qsets(rdtype):
+    """This function needs to filter out all records of a certain rdtype (like
+    A or CNAME). Any filter produced here has to be able to be negated. We use
+    the fact that every object has a pk > -1. When a qset is negated the query
+    becomes pk <= -1.
+    """
+    rdtype = rdtype.upper() # Let's get consistent
+    select = Q(pk__gt=-1)
+    no_select = Q(pk__lte=-1)
+    q_sets = [
+        select if rdtype == 'A' else no_select,
+        select if rdtype == 'CNAME' else no_select,
+        select if rdtype == 'DOMAIN' else no_select,
+        select if rdtype == 'MX' else no_select,
+        select if rdtype == 'NS' else no_select,
+        select if rdtype == 'PTR' else no_select,
+        select if rdtype == 'SRV' else no_select,
+        select if rdtype == 'SSHFP' else no_select,
+        select if rdtype == 'INTR' else no_select,
+        select if rdtype == 'SYSTEM' else no_select,
+        select if rdtype == 'TXT' else no_select
+        ]
+    return q_sets
+
 def build_view_qsets(view_name):
-    """
-    """
+    """Filter based on DNS views."""
     view_name = view_name.lower()  # Let's get consistent
     try:
         view = View.objects.get(name=view_name)

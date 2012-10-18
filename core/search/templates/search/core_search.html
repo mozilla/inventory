@@ -39,20 +39,33 @@ div advanced-search-knobs input{
                 select_types.push("type=:MX");
             }
             if ($('#NS_f').attr('checked')) {
-                    select_types.push("type=:NS");
+                select_types.push("type=:NS");
             }
             if ($('#PTR_f').attr('checked')) {
-                    select_types.push("type=:PTR");
+                select_types.push("type=:PTR");
             }
             if ($('#SRV_f').attr('checked')) {
-                    select_types.push("type=:SRV");
+                select_types.push("type=:SRV");
             }
             if ($('#TXT_f').attr('checked')) {
-                    select_types.push("type=:TXT");
+                select_types.push("type=:TXT");
             }
             if (select_types.length != 0) {
                 adv_str = adv_str + " (" + select_types.join(" OR ") + ")";
             }
+            if ($('input[name=view-group]:radio:checked').length) {
+                if($('input[name=view-group]:radio:checked').val() == 'both') {
+                    // pass
+                } else {
+                    if (adv_str != "") {
+                        adv_str = adv_str + " AND "
+                    }
+                    view_filter = "view=:" + $('input[name=view-group]:radio:checked').val();
+                    adv_str = adv_str + view_filter;
+
+                }
+            }
+            console.log(adv_str);
             return adv_str;
         }
         function get_and_display_search(){
@@ -164,6 +177,12 @@ div advanced-search-knobs input{
             <label for='PTR_f'>PTR: <input type='checkbox' id='PTR_f'/></label>
             <label for='SRV_f'>SRV: <input type='checkbox' id='SRV_f'/></label>
             <label for='TXT_f'>TXT: <input type='checkbox' id='TXT_f'/></label>
+        </div>
+        <span>Filter by DNS view:</span>
+        <div id='view-select'>
+            <input type='radio' name='view-group' id='both' value='both' checked="checked"/>Both
+            <input type='radio' name='view-group' id='public' value='public'/>Public
+            <input type='radio' name='view-group' id='private' value='private'/>Private
         </div>
         <div id='network-select'>
         </div>
