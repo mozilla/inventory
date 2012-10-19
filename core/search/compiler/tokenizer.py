@@ -23,6 +23,7 @@ from lexer import Lexer
 import re
 import pdb
 import ipaddr
+import operator
 
 PR_UOP = 0
 PR_LPAREN = 2
@@ -127,6 +128,66 @@ def build_view_qsets(view_name):
         ]
     return q_sets
 
+def build_none():
+    q_sets = [
+        None, # A
+        None, # CNAME
+        None, # DOMAIN
+        None, # MX
+        None, # NS
+        None, # PTR
+        None, # SRV
+        None, # SSHFP
+        None, # INTR
+        None, # SYSTEM
+        None # TXT
+        ]
+
+def build_zone_qsets(zone):
+    """The point of this filter is to first find the root of a dns zone
+    specified by zone and then build a query to return all records in this
+    zone.
+    """
+    try:
+        root_domain = Domain.objects.get(name=zone)
+        # This might not actually be the root of a zone, but functionally we
+        # don't really care.
+    except ObjectDoesNotExist:
+        raise BadDirective("'{0}' part of a valid zone.".format(zone))
+
+    if not root_domain.soa:
+        raise BadDirective("'{0}' part of a valid zone.".format(zone))
+
+    def _get_zone_domains(domain):
+        domains = [domain]
+        for sub_domain in domain.domain_set.filter(soa=domain.soa):
+            domains += _get_zone_domains(sub_domain)
+        return domains
+
+    domains = _get_zone_domains(root_domain)
+
+    if root_domain.is_reverse:
+        domains = [Q(reverse_domain=domain) for domain in domains]
+    else:
+        domains = [Q(domain=domain) for domain in domains]
+
+    zone_query = reduce(operator.or_, domains, Q())
+
+    q_sets = [
+        zone_query if not root_domain.is_reverse else None,
+        zone_query,
+        None,  # Domain
+        zone_query,
+        zone_query,
+        zone_query if root_domain.is_reverse else None,
+        zone_query,
+        zone_query,
+        zone_query,
+        None,  # System
+        zone_query
+        ]
+    return q_sets
+
 
 
 class Token(object):
@@ -183,6 +244,8 @@ class DirectiveToken(Token):
             return build_ipf_qsets(ipf.compile_Q())
         elif self.directive == 'view':
             return build_view_qsets(self.value)
+        elif self.directive == 'zone':
+            return build_zone_qsets(self.value)
         elif self.directive == 'type':
             return build_rdtype_qsets(self.value)
         elif self.directive == 'site':
