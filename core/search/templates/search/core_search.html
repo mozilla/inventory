@@ -53,6 +53,12 @@ div advanced-search-knobs input{
             if (select_types.length != 0) {
                 adv_str = adv_str + " (" + select_types.join(" OR ") + ")";
             }
+            if ($('#zone-select :selected').val() != 'Any') {
+                if (adv_str != "") {
+                    adv_str = adv_str + " AND "
+                }
+                adv_str = adv_str + "zone=:" + $('#zone-select :selected').val()
+            }
             if ($('input[name=view-group]:radio:checked').length) {
                 if($('input[name=view-group]:radio:checked').val() == 'both') {
                     // pass
@@ -65,7 +71,6 @@ div advanced-search-knobs input{
 
                 }
             }
-            console.log(adv_str);
             return adv_str;
         }
         function get_and_display_search(){
@@ -150,7 +155,7 @@ div advanced-search-knobs input{
         // hash, we use that data as the initial data.
         var params = window.location.hash.split('&');
         console.log(window.location.hash);
-        if ( params.length >= 1){
+        if ( window.location.hash && params.length >= 1){
             $('#id_search').attr('value', params[0].substr(3));
             get_and_display_search();
         }
@@ -184,6 +189,13 @@ div advanced-search-knobs input{
             <input type='radio' name='view-group' id='public' value='public'/>Public
             <input type='radio' name='view-group' id='private' value='private'/>Private
         </div>
+        <span>Filter by DNS zone:</span>
+        <select id='zone-select'>
+            <option value='Any'/>Any Zone</option>
+            {% for zone in zones %}
+            <option value='{{zone}}'/>{{zone}}</option>
+            {% endfor %}
+        </select>
         <div id='network-select'>
         </div>
         <div id='site-select'>

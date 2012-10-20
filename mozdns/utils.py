@@ -1,6 +1,7 @@
 # Random functions that get used in different places.
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db.models import Q, F
 
 from mozdns.domain.models import Domain
 from mozdns.mx.models import MX
@@ -203,3 +204,9 @@ def prune_tree_helper(domain, deleted_domains):
         deleted_domains.append(purged_domain)
         domain.delete()
         return prune_tree_helper(master_domain, deleted_domains)
+
+def get_zones():
+    """This function returns a list of domains that are at the root of their
+    respective zones."""
+    return Domain.objects.filter(~Q(master_domain__soa=F('soa')),
+                            soa__isnull=False)

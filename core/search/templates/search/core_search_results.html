@@ -35,6 +35,11 @@
     {% else %}
         zero MX records |
     {% endif %}
+    {% if meta.counts.ns %}
+        {{ meta.counts.ns }} <a href="#q={{search}}&NS">NS</a> records |
+    {% else %}
+        zero NS records |
+    {% endif %}
     {% if meta.counts.ptr %}
         {{ meta.counts.ptr }} <a href="#q={{search}}&PTR">PTR</a> records |
     {% else %}

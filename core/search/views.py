@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 
 from mozdns.api.v1.api import v1_dns_api
+from mozdns.utils import get_zones
 
 import pdb
 from core.search.compiler.compiler import Compiler
@@ -69,6 +70,14 @@ def search_json(request):
 
 def search_ajax(request):
     search = request.GET.get("search", None)
+    adv_search = request.GET.get("advanced_search", "")
+
+    if adv_search:
+        if search:
+            search += " AND " + adv_search
+        else:
+            search = adv_search
+
     if not search:
         return HttpResponse("What do you want?!?")
     dos_terms = ["10", "com", "mozilla.com", "mozilla",  "network:10/8",
@@ -76,8 +85,6 @@ def search_ajax(request):
     if search in dos_terms:
         return HttpResponse("Denial of Service attack prevented. The search "
                 "term '{0}' is to general".format(search))
-    if request.GET.get('advanced_search', False):
-        search += " AND " + request.GET.get("advanced_search")
 
     x, error_resp = compile_for_request(search, 'raw')
     if not x:
@@ -119,5 +126,9 @@ def search(request):
     """Search page"""
     search = request.GET.get('search','')
     return render(request, "search/core_search.html", {
-        "search": search
+        "search": search,
+        "zones": [z.name for z in get_zones()]
     })
+
+def get_zones_json(request):
+    return HttpResponse(json.dumps([z.name for z in get_zones()]))
