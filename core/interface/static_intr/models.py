@@ -116,6 +116,10 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         return super(StaticInterface, cls).get_api_fields() + ['mac',
                     'dhcp_enabled', 'dns_enabled']
 
+    @property
+    def rdtype(self):
+        return 'INTR'
+
     def get_edit_url(self):
         return "/core/interface/{0}/update/".format(self.pk)
 

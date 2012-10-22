@@ -20,10 +20,15 @@ class TXT(MozdnsRecord):
                 ("Record Type", "TXT"),
                 ("Text", self.txt_data)
                )
+
     @classmethod
     def get_api_fields(cls):
         data = super(TXT, cls).get_api_fields() + ['txt_data']
         return data
+
+    @property
+    def rdtype(self):
+        return 'TXT'
 
     def save(self, *args, **kwargs):
         self.full_clean()

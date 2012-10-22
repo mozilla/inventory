@@ -47,6 +47,10 @@ class PTR(Ip, ObjectUrlMixin):
         db_table = 'ptr'
         unique_together = ('ip_str', 'ip_type', 'name')
 
+    @property
+    def rdtype(self):
+        return 'PTR'
+
     def save(self, *args, **kwargs):
         if self.reverse_domain and self.reverse_domain.soa:
             self.reverse_domain.soa.dirty = True

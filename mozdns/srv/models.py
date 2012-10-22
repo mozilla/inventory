@@ -74,6 +74,10 @@ class SRV(models.Model, ObjectUrlMixin):
         return ['label', 'port', 'ttl', 'weight', 'priority', 'target',
                 'comment']
 
+    @property
+    def rdtype(self):
+        return 'SRV'
+
     def delete(self, *args, **kwargs):
         from mozdns.utils import prune_tree
         objs_domain = self.domain

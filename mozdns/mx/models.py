@@ -36,6 +36,10 @@ class MX(MozdnsRecord):
         # label and domain in MozdnsRecord
         unique_together = ('domain', 'label', 'server', 'priority')
 
+    @property
+    def rdtype(self):
+        return 'MX'
+
     @classmethod
     def get_api_fields(cls):
         return super(MX, cls).get_api_fields() + ['server', 'priority']

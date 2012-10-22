@@ -5,6 +5,11 @@
 </script>
 <div id="ajax_results" width="100%">
 <div id="meta">
+    {% if meta.counts.soa %}
+        {{ meta.counts.soa }} <a href="#q={{search}}&SOA">SOA</a> records |
+    {% else %}
+        zero SOA records |
+    {% endif %}
     {% if meta.counts.addr %}
         {{ meta.counts.addr }} <a href="#q={{search}}&Address">A/AAAA</a> records |
     {% else %}
@@ -99,6 +104,25 @@
         </tbody>
     </table>
 {% endif %}
+
+{% if soas %}
+    <h4><a name="q={{search}}&SOA">SOA</a></h4>
+    <table class="tablesorter record-table">
+        <thead>
+        <tr>
+            <th>SOA</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for soa in soas %}
+        <tr>
+            <td><a href="{{ soa.get_absolute_url() }}">{{ soa }}</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
 {% if domains %}
     <h4><a name="q={{search}}&Domain">Domains</a></h4>
     <table class="tablesorter">
@@ -158,7 +182,7 @@
         <tbody>
         {% for mx in mxs %}
         <tr>
-            <td><a href="{{ mx.get_absolute_url() }}">{{ mx.fqdn }}</a></td>
+            <td><a href="{{ mx.get_fancy_edit_url() }}">{{ mx.fqdn }}</a></td>
             <td><b>MX</b></td>
             <td>{{ mx.server }}</td>
         </tr>
@@ -180,7 +204,7 @@
         <tbody>
         {% for srv in srvs %}
         <tr>
-            <td><a href="{{ srv.get_absolute_url() }}">{{ srv.fqdn }}</a></td>
+            <td><a href="{{ srv.get_fancy_edit_url() }}">{{ srv.fqdn }}</a></td>
             <td><b>SRV</b></td>
             <td>{{ srv.target }}</td>
         </tr>
@@ -202,7 +226,7 @@
         <tbody>
         {% for txt in txts %}
         <tr>
-            <td><a href="{{ txt.get_absolute_url() }}">{{ txt.fqdn }}</a></td>
+            <td><a href="{{ txt.get_fancy_edit_url() }}">{{ txt.fqdn }}</a></td>
             <td><b>TXT</b></td>
             <td>{{ txt.data_data }}</td>
         </tr>
@@ -224,7 +248,7 @@
         <tbody>
         {% for cname in cnames %}
         <tr>
-            <td><a href="{{ cname.get_absolute_url() }}">{{ cname.fqdn }}</a></td>
+            <td><a href="{{ cname.get_fancy_edit_url() }}">{{ cname.fqdn }}</a></td>
             <td><b>CNAME</b></td>
             <td>{{ cname.target }}</td>
         </tr>
@@ -268,7 +292,7 @@
         <tbody>
         {% for addr in addrs %}
         <tr>
-            <td><a href="{{ addr.get_edit_url() }}">{{ addr.fqdn }}</a></td>
+            <td><a href="{{ addr.get_fancy_edit_url() }}">{{ addr.fqdn }}</a></td>
             <td><b>{{ addr.record_type() }}</b></td>
             <td>{{ addr.ip_str }}</td>
         </tr>
@@ -292,7 +316,7 @@
         <tr>
             <td>{{ ptr.ip_str }}</td>
             <td><b>PTR</b></td>
-            <td><a href="{{ ptr.get_absolute_url() }}">{{ ptr.name }}</a></td>
+            <td><a href="{{ ptr.get_fancy_edit_url() }}">{{ ptr.name }}</a></td>
         </tr>
         {% endfor %}
         <tbody>

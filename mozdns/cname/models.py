@@ -41,6 +41,10 @@ class CNAME(MozdnsRecord):
         db_table = 'cname'
         unique_together = ('domain', 'label', 'target')
 
+    @property
+    def rdtype(self):
+        return 'CNAME'
+
     @classmethod
     def get_api_fields(cls):
         return super(CNAME, cls).get_api_fields() + ['target']

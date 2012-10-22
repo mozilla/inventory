@@ -20,6 +20,9 @@ div advanced-search-knobs input{
         function get_advanced_search_options(){
             var adv_str = ""
             var select_types = [];
+            if($('#SOA_f').attr('checked')){
+                select_types.push("type=:SOA");
+            }
             if($('#A_f').attr('checked')){
                 select_types.push("type=:A");
             }
@@ -172,6 +175,7 @@ div advanced-search-knobs input{
     <div id='advanced-search-knobs' style="display:none;">
         <span>Filter by object type: </span>
         <div id='selectors'>
+            <label for='SOA_f'>SOA: <input type='checkbox' id='SOA_f'/></label>
             <label for='A_f'>A/AAAA: <input type='checkbox' id='A_f'/></label>
             <label for='CNAME_f'>CNAME: <input type='checkbox' id='CNAME_f'/></label>
             <label for='Domain_f'>Domain: <input type='checkbox' id='Domain_f'/></label>

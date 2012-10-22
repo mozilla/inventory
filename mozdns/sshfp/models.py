@@ -43,6 +43,10 @@ class SSHFP(MozdnsRecord):
         return super(SSHFP, cls).get_api_fields() + ['fingerprint_type',
                 'algorithm_number', 'key']
 
+    @property
+    def rdtype(self):
+        return 'SSHFP'
+
     def save(self, *args, **kwargs):
         super(SSHFP, self).save(*args, **kwargs)
 

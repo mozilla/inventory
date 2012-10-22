@@ -58,6 +58,10 @@ class Nameserver(models.Model, ObjectUrlMixin):
     def get_api_fields(cls):
         return ['ttl', 'comment', 'server']
 
+    @property
+    def rdtype(self):
+        return 'NS'
+
     def details(self):
         details = [
             ("Server", self.server),

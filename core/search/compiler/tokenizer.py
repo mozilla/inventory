@@ -8,6 +8,7 @@ from mozdns.mx.models import MX
 from mozdns.nameserver.models import Nameserver
 from mozdns.ptr.models import PTR
 from mozdns.srv.models import SRV
+from mozdns.soa.models import SOA
 from mozdns.sshfp.models import SSHFP
 from mozdns.txt.models import TXT
 from mozdns.view.models import View
@@ -54,6 +55,7 @@ def build_text_qsets(f):
         build_filter(f, MX.search_fields),
         build_filter(f, Nameserver.search_fields),
         build_filter(f, PTR.search_fields),
+        build_filter(f, SOA.search_fields),
         build_filter(f, SRV.search_fields),
         build_filter(f, SSHFP.search_fields),
         build_filter(f, StaticInterface.search_fields),
@@ -72,6 +74,7 @@ def build_ipf_qsets(qset):
         None,
         None,
         qset,  # PTR
+        None,
         None,
         None,
         qset,  # StaticInterface
@@ -97,6 +100,7 @@ def build_rdtype_qsets(rdtype):
         select if rdtype == 'MX' else no_select,
         select if rdtype == 'NS' else no_select,
         select if rdtype == 'PTR' else no_select,
+        select if rdtype == 'SOA' else no_select,
         select if rdtype == 'SRV' else no_select,
         select if rdtype == 'SSHFP' else no_select,
         select if rdtype == 'INTR' else no_select,
@@ -120,6 +124,7 @@ def build_view_qsets(view_name):
         view_filter,
         view_filter,
         view_filter,
+        None, # SOA
         view_filter,
         view_filter,
         view_filter, #INTR
@@ -130,17 +135,18 @@ def build_view_qsets(view_name):
 
 def build_none():
     q_sets = [
-        None, # A
-        None, # CNAME
-        None, # DOMAIN
-        None, # MX
-        None, # NS
-        None, # PTR
-        None, # SRV
-        None, # SSHFP
-        None, # INTR
-        None, # SYSTEM
-        None # TXT
+        None,  # A
+        None,  # CNAME
+        None,  # DOMAIN
+        None,  # MX
+        None,  # NS
+        None,  # PTR
+        None,  # SOA
+        None,  # SRV
+        None,  # SSHFP
+        None,  # INTR
+        None,  # SYSTEM
+        None  # TXT
         ]
 
 def build_zone_qsets(zone):
@@ -180,6 +186,7 @@ def build_zone_qsets(zone):
         zone_query,
         zone_query,
         zone_query if root_domain.is_reverse else None,
+        Q(pk=root_domain.soa.pk),  # SOA
         zone_query,
         zone_query,
         zone_query,

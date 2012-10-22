@@ -9,6 +9,7 @@ from mozdns.mx.models import MX
 from mozdns.nameserver.models import Nameserver
 from mozdns.ptr.models import PTR
 from mozdns.srv.models import SRV
+from mozdns.soa.models import SOA
 from mozdns.sshfp.models import SSHFP
 from core.interface.static_intr.models import StaticInterface
 from mozdns.txt.models import TXT
@@ -110,6 +111,7 @@ class Compiler(object):
         managers.append(MX.objects.all())
         managers.append(Nameserver.objects.all())
         managers.append(PTR.objects.all())
+        managers.append(SOA.objects.all())
         managers.append(SRV.objects.all())
         managers.append(SSHFP.objects.all())
         managers.append(StaticInterface.objects.all())

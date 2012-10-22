@@ -44,7 +44,7 @@ def search_json(request):
         return HttpResponse(json.dumps({'error_messages': error_resp}))
 
     #addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc = x
-    addrf, cnamef, domainf, mxf, nsf, ptrf, srvf, sshfpf, intrf, sysf, txtf, misc = x
+    addrf, cnamef, domainf, mxf, nsf, ptrf, soaf, srvf, sshfpf, intrf, sysf, txtf, misc = x
     meta = {
         # If the user wants object counts, let them use wc.
         # TODO include feild names in the return dict so we can make tables
@@ -89,7 +89,7 @@ def search_ajax(request):
     x, error_resp = compile_for_request(search, 'raw')
     if not x:
         return HttpResponse(json.dumps({'error_messages': error_resp}))
-    addrs, cnames, domains, mxs, nss, ptrs, srvs, sshfps, intrs, sys, txts, misc = x
+    addrs, cnames, domains, mxs, nss, ptrs, soas, srvs, sshfps, intrs, sys, txts, misc = x
     meta = {
             'counts':{
                 'addr': addrs.count() if addrs else 0,
@@ -99,6 +99,7 @@ def search_ajax(request):
                 'sys': sys.count() if sys else 0,
                 'mx': mxs.count() if mxs else 0,
                 'ns': nss.count() if nss else 0,
+                'soa': soas.count() if soas else 0,
                 'ptr': ptrs.count() if ptrs else 0,
                 'txt': txts.count() if txts else 0,
                 }
@@ -116,6 +117,7 @@ def search_ajax(request):
                                         "mxs": mxs,
                                         "nss": nss,
                                         "ptrs": ptrs,
+                                        "soas": soas,
                                         "srvs": srvs,
                                         "txts": txts,
                                         "meta": meta,

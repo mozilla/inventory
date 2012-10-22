@@ -87,6 +87,10 @@ class SOA(models.Model, ObjectUrlMixin):
                     ('Comment', self.comment),
                 )
 
+    @property
+    def rdtype(self):
+        return 'SOA'
+
     def get_debug_build_url(self):
         return MOZDNS_BASE_URL + "/bind/build_debug/{0}/".format(self.pk)
 
