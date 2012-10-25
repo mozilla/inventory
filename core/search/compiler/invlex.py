@@ -59,8 +59,7 @@ class InvLexer(object):
         t.lexer.lineno += t.value.count("\n")
 
     def t_error(self, t):
-        print("Illegal character '%s'" % t.value[0])
-        t.lexer.skip(1)
+        raise SyntaxError("Illegal character '%s'" % t.value[0])
 
     # Build the lexer
     def build_lexer(self, **kwargs):

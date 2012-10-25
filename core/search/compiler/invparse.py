@@ -95,9 +95,9 @@ def p_term_RE(p):
 
 def p_error(p):
     if not p:
-        print "Syntax error at end of line"
+        raise SyntaxError("Syntax error at end of line")
     else:
-        print "Syntax error at '{0}'".format(p.value)
+        raise SyntaxError("Syntax error at '{0}'".format(p.value))
 
 
 def build_parser():

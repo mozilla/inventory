@@ -11,7 +11,7 @@ def compile_to_django(search):
     parse = build_parser()
     try:
         root_node = parse(search)
-    except BadDirective, e:
+    except (SyntaxError, BadDirective), e:
         return None, str(e)
     exec_stack = list(reversed(make_stack(root_node)))
     compiled_qs = compile_Q(exec_stack)[0]
