@@ -111,12 +111,16 @@
         <thead>
         <tr>
             <th>SOA</th>
+            <th>Serial</th>
+            <th>Status</th>
         </tr>
         </thead>
         <tbody>
         {% for soa in soas %}
         <tr>
             <td><a href="{{ soa.get_absolute_url() }}">{{ soa }}</a></td>
+            <td>{{ soa.serial }}</td>
+            <td>{{ 'Zone waiting to be rebuilt' if soa.dirty else 'Zone is up-to-date'}}</td>
         </tr>
         {% endfor %}
         </tbody>
