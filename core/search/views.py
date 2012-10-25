@@ -6,8 +6,8 @@ from mozdns.api.v1.api import v1_dns_api
 from mozdns.utils import get_zones
 
 import pdb
-from core.search.compiler.compiler import Compiler
-from core.search.compiler.tokenizer import BadDirective
+from core.search.compiler.django_compile import compile_to_django
+from core.search.compiler.invfilter import BadDirective
 import simplejson as json
 
 from jinja2 import Environment, PackageLoader
@@ -22,15 +22,23 @@ def resource_for_request(resource_name, filters, request):
 def compile_for_request(search, rformat):
     stmt = Compiler(search)
     try:
-        if rformat == 'json':
-            x = stmt.compile_json()
-        elif rformat == 'raw':
-            x = stmt.compile_search()
+        result = compile_to_django(search)
     except BadDirective, e:
         return None, str(e)
     except SyntaxError, e:
         return None, str(e)
-    return x, None
+    return result, None
+
+def request_to_search(request):
+    search = request.GET.get("search", None)
+    adv_search = request.GET.get("advanced_search", "")
+
+    if adv_search:
+        if search:
+            search += " AND " + adv_search
+        else:
+            search = adv_search
+    return search
 
 def search_json(request):
     """This view just returns the raw JSON objects instead of rendering the
@@ -68,16 +76,7 @@ def search_json(request):
     return HttpResponse(json.dumps(meta))
 
 
-def search_ajax(request):
-    search = request.GET.get("search", None)
-    adv_search = request.GET.get("advanced_search", "")
-
-    if adv_search:
-        if search:
-            search += " AND " + adv_search
-        else:
-            search = adv_search
-
+def handle_shady_search(search):
     if not search:
         return HttpResponse("What do you want?!?")
     dos_terms = ["10", "com", "mozilla.com", "mozilla",  "network:10/8",
@@ -85,11 +84,20 @@ def search_ajax(request):
     if search in dos_terms:
         return HttpResponse("Denial of Service attack prevented. The search "
                 "term '{0}' is to general".format(search))
+    return None
 
-    x, error_resp = compile_for_request(search, 'raw')
-    if not x:
+def search_ajax(request):
+    search = request_to_search(request)
+
+    errors = handle_shady_search(search)
+    if errors:
+        return errors
+
+    objs, error_resp = compile_to_django(search)
+    if not objs:
         return HttpResponse(json.dumps({'error_messages': error_resp}))
-    addrs, cnames, domains, mxs, nss, ptrs, soas, srvs, sshfps, intrs, sys, txts, misc = x
+    (addrs, cnames, domains, mxs, nss, ptrs, soas, srvs, sshfps, intrs, sys,
+            txts, misc) = objs
     meta = {
             'counts':{
                 'addr': addrs.count() if addrs else 0,
