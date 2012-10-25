@@ -10,6 +10,7 @@ from settings import MOZDNS_BASE_URL
 from core.keyvalue.models import KeyValue
 from core.keyvalue.utils import AuxAttr
 import os
+import pdb
 
 
 #TODO, put these defaults in a config file.
@@ -103,8 +104,9 @@ class SOA(models.Model, ObjectUrlMixin):
         self.full_clean()
         if self.pk:
             db_self = SOA.objects.get(pk=self.pk)
-            fields = ['primary', 'contact', 'serial', 'expire', 'retry',
+            fields = ['primary', 'contact', 'expire', 'retry',
                     'refresh', 'comment']
+            # Leave out serial for obvious reasons
             for field in fields:
                 if getattr(db_self, field) != getattr(self, field):
                     self.dirty = True
