@@ -206,27 +206,6 @@
                     });
                 s_dialog.show();
             });
-            $('#launch-soa-search').click(function(){
-                var soa_dialog = $( "#search-soa-dialog" ).dialog({
-                            title: 'Search for a BIND file',  // Click the selected record
-                            autoShow: true,
-                            minWidth: 520,
-                            buttons: {
-                                "View ZONE file": function() {
-                                    //$( this ).dialog( "close" );
-                                    // Ok, they want to edit the record. Get the saved pk (happened when the user 'selected' from the
-                                    // drop down, and request that objects form and replace the current form.
-                                    window.open('/mozdns/bind/build_debug/'+$('#search-soa-dialog').attr('stage_soa_pk')+'/');
-                                    $(this).dialog("close");
-                                },
-                                cancel: function() {
-                                    $('#search-dialog').attr('stage_soa_pk', ''), // we don't want this anymore.
-                                    $(this).dialog("close");
-                                }
-                            }
-                        });
-                soa_dialog.show();
-            });
             $('#reset').click(function(){
                 $.get('/mozdns/record/ajax_form/',
                     {
@@ -292,9 +271,6 @@
         </div>
         <div style='display:inline;'>
         <input type='button' id='reset' value='Reset' style='display:inline;'/>
-        </div>
-        <div style='display:inline;'>
-        <input type='button' id='launch-soa-search' value='View BIND file' style='display:inline;'/>
         </div>
     </div>
     <div id="search-dialog" title="Search For Record" style='display: none;'>
