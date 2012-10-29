@@ -13,7 +13,7 @@ def ip_to_dns_form(ip, ip_type='4', uppercase=False):
         name = '.in-addr.arpa'
     if ip_type == '6':
         octets = nibbilize(ip).split('.')
-        name = '.ipv6.arpa'
+        name = '.ip6.arpa'
     if uppercase:
         name = name.uppercase
 
@@ -30,7 +30,7 @@ def ip_to_domain_name(ip, ip_type='4', uppercase=False):
     if ip_type == '4':
         name = '.in-addr.arpa'
     if ip_type == '6':
-        name = '.ipv6.arpa'
+        name = '.ip6.arpa'
     if uppercase:
         name = name.uppercase
 

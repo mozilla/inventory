@@ -408,8 +408,8 @@ class PTRV6APITests(MozdnsAPITests, ResourceTestCase):
     test_type = PTR
     def setUp(self):
         Domain.objects.get_or_create(name='arpa')
-        Domain.objects.get_or_create(name='ipv6.arpa')
-        Domain.objects.get_or_create(name='1.ipv6.arpa')
+        Domain.objects.get_or_create(name='ip6.arpa')
+        Domain.objects.get_or_create(name='1.ip6.arpa')
         super(PTRV6APITests, self).setUp()
 
     def test_fqdn_create(self):
@@ -495,8 +495,8 @@ class StaticIntrV6APITests(MozdnsAPITests, ResourceTestCase):
     test_type = StaticInterface
     def setUp(self):
         Domain.objects.get_or_create(name='arpa')
-        Domain.objects.get_or_create(name='ipv6.arpa')
-        Domain.objects.get_or_create(name='2.ipv6.arpa')
+        Domain.objects.get_or_create(name='ip6.arpa')
+        Domain.objects.get_or_create(name='2.ip6.arpa')
         super(StaticIntrV6APITests, self).setUp()
         self.s = System(hostname="foobar")
         self.s.save()

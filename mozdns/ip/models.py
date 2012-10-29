@@ -101,7 +101,7 @@ class Ip(models.Model):
                 self.reverse_domain = name_to_domain(ip_to_domain_name(self.ip_str,
                     ip_type='4'))
                 if (self.reverse_domain is None or self.reverse_domain.name in
-                        ('arpa', 'in-addr.arpa', 'ipv6.arpa')):
+                        ('arpa', 'in-addr.arpa', 'ip6.arpa')):
                     raise ValidationError("No reverse Domain found for {0} "
                             .format(self.ip_str))
             self.ip_upper = 0
@@ -119,7 +119,7 @@ class Ip(models.Model):
                 revname = ip_to_domain_name(nibz, ip_type='6')
                 self.reverse_domain = name_to_domain(revname)
                 if (self.reverse_domain is None or self.reverse_domain.name in
-                        ('arpa', 'in-addr.arpa', 'ipv6.arpa')):
+                        ('arpa', 'in-addr.arpa', 'ip6.arpa')):
                     raise ValidationError("No reverse Domain found for {0} "
                             .format(self.ip_str))
             self.ip_upper, self.ip_lower = ipv6_to_longs(int(ip))

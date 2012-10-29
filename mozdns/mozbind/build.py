@@ -126,7 +126,7 @@ def render_reverse_zone(view, forward_mega_filter, reverse_mega_filter):
                     'ip_type', 'label', 'ip_upper', 'ip_lower'),
 
             ptr_set=PTR.objects.filter(reverse_mega_filter).filter(views__name=view.name
-                ).order_by('ip_upper').order_by( 'ip_lower'),
+                ).order_by('ip_upper').order_by('ip_lower'),
 
         )
     return data

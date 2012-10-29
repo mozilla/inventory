@@ -35,7 +35,7 @@ class Domain(models.Model, ObjectUrlMixin):
     ``foo.com`` domain because it is in the same zone.
 
     Both 'forward' domains under TLD's like 'com', 'edu', and 'org' and
-    'reverse' domains under the TLD's 'in-addr.arpa' and 'ipv6.arpa' are stored
+    'reverse' domains under the TLD's 'in-addr.arpa' and 'ip6.arpa' are stored
     in this table. At first glance it would seem like the two types of domains
     have disjoint data set's; record types that have a Foreign Key back to a
     'reverse' domain would never need to have a Foreign Key back to a 'forward'
@@ -64,7 +64,7 @@ class Domain(models.Model, ObjectUrlMixin):
         *   A 'reverse' domain should have ``is_reverse`` set to True.
 
         *   A 'reverse' domain's name should end in either 'in-addr.arpa' or
-            'ipv6.arpa'
+            'ip6.arpa'
 
         *   When a PTR is added it is pointed back to a 'reverse' domain. This
             is done by converting the IP address to the connonical DNS form and
@@ -135,7 +135,7 @@ class Domain(models.Model, ObjectUrlMixin):
     def ip_type(self):
         if self.name.endswith('in-addr.arpa'):
             return '4'
-        elif self.name.endswith('ipv6.arpa'):
+        elif self.name.endswith('ip6.arpa'):
             return '6'
         else:
             return None

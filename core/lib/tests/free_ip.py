@@ -43,7 +43,7 @@ class LibTestsFreeIP(TestCase):
 
         d, _ = Domain.objects.get_or_create(name="arpa")
         d, _ = Domain.objects.get_or_create(name="in-addr.arpa")
-        d, _ = Domain.objects.get_or_create(name="ipv6.arpa")
+        d, _ = Domain.objects.get_or_create(name="ip6.arpa")
         d, _ = Domain.objects.get_or_create(name="15.in-addr.arpa")
         d, _ = Domain.objects.get_or_create(name="2.in-addr.arpa")
         n = Network(network_str="15.0.0.0/8", ip_type="4")

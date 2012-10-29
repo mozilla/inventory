@@ -25,7 +25,7 @@ class PTRTests(TestCase):
         self.arpa.save()
         self.i_arpa = self.create_domain( name = 'in-addr.arpa')
         self.i_arpa.save()
-        self.i6_arpa = self.create_domain( name = 'ipv6.arpa')
+        self.i6_arpa = self.create_domain( name = 'ip6.arpa')
         self.i6_arpa.save()
 
         self._128 = self.create_domain( name = '128', ip_type='4')
@@ -42,7 +42,7 @@ class PTRTests(TestCase):
     def create_domain(self, name, ip_type=None, delegated=False):
         if ip_type is None:
             ip_type = '4'
-        if name in ('arpa', 'in-addr.arpa', 'ipv6.arpa'):
+        if name in ('arpa', 'in-addr.arpa', 'ip6.arpa'):
             pass
         else:
             name = ip_to_domain_name(name, ip_type=ip_type)
@@ -86,7 +86,7 @@ class PTRTests(TestCase):
     def test_dns_form_ipv6(self):
         ret = self.do_generic_add("8620:105:F000::1",
                 "foo.bar.oregonstate.edu", '6')
-        self.assertEqual("1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.f.5.0.1.0.0.2.6.8.ipv6.arpa.",
+        self.assertEqual("1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.f.5.0.1.0.0.2.6.8.ip6.arpa.",
                 ret.dns_name())
 
     def test_add_ipv4_ptr(self):
