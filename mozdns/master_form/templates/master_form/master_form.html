@@ -142,6 +142,9 @@
                     select: function( event, ui ) {
                         // Save the selected pk so we can use it if the user decides to edit the record.
                         $('#search-dialog').attr('stage_pk', ui.item.pk);
+                        $("#record_search").prop('disabled', true);
+                        $('#record_search_selected').html('Edit <font color="green"><code>'
+                                                          +ui.item.label+'</code></font> ?');
                     }
                 });
             }
@@ -284,15 +287,22 @@
             {% endif %}
         </select>
 
+        <div style='display:inline;'>
         <input type='button' id='launch-search' value='Edit an existing record' style='display:inline;'/>
+        </div>
+        <div style='display:inline;'>
         <input type='button' id='reset' value='Reset' style='display:inline;'/>
+        </div>
+        <div style='display:inline;'>
         <input type='button' id='launch-soa-search' value='View BIND file' style='display:inline;'/>
+        </div>
     </div>
     <div id="search-dialog" title="Search For Record" style='display: none;'>
         <div>
             <label for='record_search'>Search:
                 <input type='text' name='record_search' id='record_search' style='width: 400px;' value=''/>
             </label>
+            <div id='record_search_selected'></div>
         </div>
     </div>
     <div id="search-soa-dialog" title="Search a BIND file (will open in new tab)" style='display: none;'>
