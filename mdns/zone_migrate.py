@@ -23,6 +23,7 @@ from mdns.svn_build import collect_svn_zone, collect_rev_svn_zone
 import dns
 import dns.zone
 import pdb
+import ipaddr
 from copy import deepcopy
 
 def buildzone3(job):
@@ -82,7 +83,7 @@ def migrate_zone(root_domain_name, name_reversed, zone_path, ztype, view, relati
         populate_forward_dns(svn_zone, root_domain_name, views)
     if ztype == 'r':
         print "++ Migrating {0} {1}".format(root_domain_name, zone_path)
-        populate_reverse_dns(svn_zone, name_reversed, root_domain_name, views)
+        populate_reverse_dns(svn_zone, root_domain_name, views)
 
 def null_zone_tree(domain, clobber_soa):
     """Starting at domain, change any domain's soa that is clobber_soa to None.
@@ -150,10 +151,10 @@ def populate_forward_dns(zone, root_domain_name, views):
     color_zone_tree(root_domain, clobber_soa, soa)
 
 
-def populate_reverse_dns(zone, name_reversed, root_domain_name, views):
+def populate_reverse_dns(zone, root_domain_name, views):
     ensure_domain("arpa", force=True)
     ensure_domain("in-addr.arpa", force=True)
-    ensure_domain("ipv6.arpa", force=True)
+    ensure_domain("ip6.arpa", force=True)
     soa = migrate_soa(zone, root_domain_name)
     root_domain = ensure_domain(root_domain_name, force=True)
     migrate_NS(zone, root_domain, soa, views)
@@ -178,26 +179,30 @@ def migrate_PTR(zone, root_domain, soa, views):
         if name.endswith('.in-addr.arpa'):
             ip_type = '4'
             ip_str = name.replace('.in-addr.arpa','')
-        elif name.endswith('.ipv6.arpa'):
+            ip_str = '.'.join(list(reversed(ip_str.split('.'))))
+            ip_upper, ip_lower = 0, ipaddr.IPv4Address(ip_str)
+        elif name.endswith('.ip6.arpa'):
             ip_type = '6'
-            ip_str = name.replace('.ipv6.arpa','')
-            raise NotImplemented("Ipv6 migration isn't done yet.")
+            ip_str = name.replace('.ip6.arpa','')
+            chunks = [''.join(ip_str.split('.')[i:i+4]) for i in xrange(0, len(ip_str.split('.')), 4)]
+            ip_str = ':'.join(chunks)[::-1]
+            ip_upper, ip_lower = ipv6_to_longs(ip_str)
         else:
             print "We so fucked. Lol"
             pdb.set_trace()
             continue
 
-        ip_str = '.'.join(list(reversed(ip_str.split('.'))))
         if ip_str == '10.2.171.IN':
             print "Skipping "+ip_str+" "+fqdn
             continue
 
         print str(name) + " PTR " + str(fqdn)
-        ptr = PTR.objects.filter(name = fqdn, ip_str = ip_str, ip_type='4')
+        ptr = PTR.objects.filter(name = fqdn, ip_upper=ip_upper,
+                ip_lower=ip_lower, ip_type=ip_type)
         if ptr:
             ptr = ptr[0]
         else:
-            ptr = PTR(name = fqdn, ip_str = ip_str, ip_type='4')
+            ptr = PTR(name = fqdn, ip_str = ip_str, ip_type=ip_type)
             ptr.full_clean()
             ptr.save()
 
