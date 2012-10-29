@@ -141,14 +141,6 @@ class CNAMETests(TestCase):
         data = "foo.com"
         self.assertRaises(ValidationError, self.do_add, *(label, domain, data))
 
-    def test_data_domain(self):
-        label = "fo1"
-        domain = self.g
-        data = "foo.dz"
-        cn = self.do_add(label, domain, data)
-
-        self.assertTrue(self.d == cn.target_domain)
-
     def test_add_bad(self):
         label = ""
         domain = self.g

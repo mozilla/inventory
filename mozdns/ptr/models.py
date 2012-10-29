@@ -25,8 +25,6 @@ class PTR(Ip, ObjectUrlMixin):
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
             validators=[validate_ttl])
     reverse_domain = models.ForeignKey(Domain, null=False, blank=True)
-    data_domain = models.ForeignKey(Domain, null=True, blank=True,
-            related_name='ptrs', on_delete=models.SET_NULL)
     views = models.ManyToManyField(View, blank=True)
     comment = models.CharField(max_length=1000, null=True, blank=True)
 
@@ -85,7 +83,6 @@ class PTR(Ip, ObjectUrlMixin):
     def clean(self, *args, **kwargs):
         urd = kwargs.pop('update_reverse_domain', True)
         self.clean_ip(update_reverse_domain=urd)
-        self.data_domain = _name_to_domain(self.name)
         # We need to check if there is an interface using our ip and name
         # because that interface will generate a ptr record.
         if (StaticInterface.objects.filter(fqdn=self.name,

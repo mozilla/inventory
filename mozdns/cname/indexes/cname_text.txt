@@ -2,4 +2,3 @@
 {{ object.label }}
 {{ object.data }}
 {{ object.domain.name }}
-{{ object.data_domain.name }}

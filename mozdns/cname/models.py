@@ -24,9 +24,6 @@ class CNAME(MozdnsRecord):
     id = models.AutoField(primary_key=True)
     target = models.CharField(max_length=100, validators=[validate_name],
             help_text="CNAME Target")
-    target_domain = models.ForeignKey(Domain, null=True,
-                        related_name='target_domains', blank=True,
-                        on_delete=models.SET_NULL)
 
     search_fields = ('fqdn', 'target')
 
@@ -52,19 +49,12 @@ class CNAME(MozdnsRecord):
     def save(self, *args, **kwargs):
         # If label, and domain have not changed, don't mark our domain for
         # rebuilding.
-        if self.pk:  # We need to exist in the db first.
-            db_self = CNAME.objects.get(pk=self.pk)
-            if db_self.label == self.label and db_self.domain == self.domain:
-                kwargs['no_build'] = True
-                 # Either nothing has changed or just target_domain. We want
-                 # rebuild.
         super(CNAME, self).save(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
         super(CNAME, self).clean(*args, **kwargs)
         super(CNAME, self).check_for_delegation()
         self.check_SOA_condition()
-        self.target_domain = _name_to_domain(self.target)
         self.existing_node_check()
 
     def __str__(self):

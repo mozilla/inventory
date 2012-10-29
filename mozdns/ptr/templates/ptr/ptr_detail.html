@@ -24,15 +24,7 @@
             <tr>
             {% for item, value in object.details() %}
                 <td>
-                    {% if loop.last %}
-                        {% if object.data_domain %}
-                        {{value}}<br><a href='{{ object.data_domain.get_absolute_url() }}'>View {{object.data_domain.name}}</a>
-                        {% else %}
-                            {{ value }}
-                        {% endif %}
-                    {% else %}
-                        {{ value }}
-                    {% endif %}
+                    {{ value }}
                 </td>
             {% endfor %}
             {% for view in object.views.all() %}

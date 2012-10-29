@@ -113,8 +113,6 @@ class Domain(models.Model, ObjectUrlMixin):
         self.check_for_children()
         if self.is_reverse:
             self.reassign_ptr_delete()
-        else:
-            self.reassign_data_domains()
         super(Domain, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
@@ -124,12 +122,8 @@ class Domain(models.Model, ObjectUrlMixin):
         else:
             new_domain = False
         super(Domain, self).save(*args, **kwargs)
-        if not self.is_reverse and new_domain:
-            self.look_for_data_domains()  # This needs to come after super's
-            # save becase when a domain is first created it is not in the db.
-            # look_for_data_domains relies on the domain having a pk.
-        else:
-            # Collect any ptr's that belong to me.
+        if self.is_reverse and new_domain:
+            # Collect any ptr's that belong to this new domain.
             reassign_reverse_ptrs(self, self.master_domain, self.ip_type())
 
     def ip_type(self):
@@ -169,47 +163,6 @@ class Domain(models.Model, ObjectUrlMixin):
         if self.domain_set.all().exists():
             raise ValidationError("Before deleting this domain, please "
                                   "remove it's children.")
-
-    def look_for_data_domains(self):
-        """When a domain is created, look for CNAMEs and PTRs that could
-        have data domains in this domain."""
-        if self.master_domain:
-            ptrs = self.master_domain.ptrs.all()
-            cnames = self.master_domain.target_domains.all()
-        else:
-            CNAME = mozdns.cname.models.CNAME
-            PTR = mozdns.ptr.models.PTR
-            cnames = CNAME.objects.filter(target_domain=None)
-            ptrs = PTR.objects.filter(data_domain=None)
-
-        for ptr in ptrs:
-            ptr.data_domain = _name_to_domain(ptr.name)
-            ptr.save()
-
-        for cname in cnames:
-            cname.target_domain = _name_to_domain(cname.target)
-            cname.save()
-
-    def reassign_data_domains(self):
-        """The :class:`PTR` s and :class:`CNAME` s keep track of which domain
-        their data is pointing to. This function reassign's those data
-        domains to the data_domain's master domain.
-        """
-
-        for ptr in self.ptrs.all():
-            if ptr.data_domain.master_domain:
-                ptr.data_domain = ptr.data_domain.master_domain
-            else:
-                ptr.data_domain = None
-            ptr.save()
-
-        for cname in self.target_domains.all():
-            if cname.target_domain.master_domain:
-                cname.target_domain = cname.target_domain.master_domain
-            else:
-                cname.target_domain = None
-            cname.save()
-
     ### Reverse Domain Functions
 
     def reassign_ptr_delete(self):

@@ -6,7 +6,7 @@ from mozdns.cname.models import CNAME
 class CNAMEForm(ModelForm):
     class Meta:
         model = CNAME
-        exclude = ('target_domain', 'fqdn')
+        exclude = ('fqdn',)
         fields = ('label', 'domain', 'target', 'views', 'ttl', 'comment')
         widgets = {'views': forms.CheckboxSelectMultiple}
         # https://code.djangoproject.com/ticket/9321
