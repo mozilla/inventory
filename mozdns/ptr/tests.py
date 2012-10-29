@@ -13,6 +13,7 @@ from mozdns.ip.utils import ip_to_domain_name
 from mozdns.domain.models import Domain, boot_strap_ipv6_reverse_domain
 
 from mozdns.ptr.models import PTR
+from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
 from mozdns.ip.models import ipv6_to_longs, Ip
 from mozdns.ip.utils import ip_to_domain_name
@@ -310,49 +311,3 @@ class PTRTests(TestCase):
         self.do_generic_invalid_update( ptr, fqdn, '6', ValidationError )
         fqdn = "%.s#.com"
         self.do_generic_invalid_update( ptr, fqdn, '6', ValidationError )
-
-    #TODO impliment this in mozdns.domain.models
-    """
-    def test_reasign_domain( self ):
-        _127 = add_reverse_ipv4_domain('127')
-        boot_strap_ipv6_reverse_domain("9.6.2.0")
-        osu_block = "9620:105:F000:"
-        edu = add_domain("com")
-        o_edu = add_domain("oregonstate.com")
-        ptr0 = add_ipv4_ptr( "127.0.0.1", "foo.bar.oregonstate.com" )
-        ptr1 = add_ipv6_ptr( osu_block+":1", "foo.bar.oregonstate.com" )
-        self.assertTrue( ptr0.domain == o_edu )
-        self.assertTrue( ptr1.domain == o_edu )
-
-        b_o_edu = add_domain("bar.oregonstate.com")
-        self.assertTrue( ptr0.domain == b_o_edu )
-        self.assertTrue( ptr1.domain == b_o_edu )
-
-        f_b_o_edu = add_domain("foo.bar.oregonstate.com")
-        self.assertTrue( ptr0.domain == f_b_o_edu )
-        self.assertTrue( ptr1.domain == f_b_o_edu )
-
-        remove_domain("foo.bar.oregonstate.com")
-        self.assertTrue( ptr0.domain == b_o_edu )
-        self.assertTrue( ptr1.domain == b_o_edu )
-
-        remove_domain("bar.oregonstate.com")
-        self.assertTrue( ptr0.domain == o_edu )
-        self.assertTrue( ptr1.domain == o_edu )
-
-        remove_domain("oregonstate.com")
-        self.assertTrue( ptr0.domain == edu )
-        self.assertTrue( ptr1.domain == edu )
-
-        remove_domain("com")
-        self.assertTrue( ptr0.domain == None )
-        self.assertTrue( ptr1.domain == None )
-
-        edu = add_domain("com")
-        self.assertTrue( ptr0.domain == edu )
-        self.assertTrue( ptr1.domain == edu )
-
-        o_edu = add_domain("oregonstate.com")
-        self.assertTrue( ptr0.domain == o_edu )
-        self.assertTrue( ptr1.domain == o_edu )
-    """

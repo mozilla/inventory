@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from mozdns.view.models import View
 from mozdns.domain.models import Domain, _name_to_domain
 from mozdns.ip.models import Ip
+from mozdns.cname.models import CNAME
 from mozdns.ip.utils import ip_to_dns_form
 from mozdns.validation import validate_name, validate_ttl
 from mozdns.validation import validate_views
@@ -77,11 +78,15 @@ class PTR(Ip, ObjectUrlMixin):
             1.1.193.128     PTR         FOO.BAR.COM
             ^-- PTR's shouldn't point to CNAMES
         """
-        pass
-        #TODO, impliment this function and call it in clean()
+        if CNAME.objects.filter(fqdn=self.name).exists():
+            raise ValidationError("PTR records must point back to a valid A "
+                                  "record, not a alias defined by a CNAME."
+                                  " -- RFC 1034")
+
 
     def clean(self, *args, **kwargs):
         urd = kwargs.pop('update_reverse_domain', True)
+        self.validate_no_cname()
         self.clean_ip(update_reverse_domain=urd)
         # We need to check if there is an interface using our ip and name
         # because that interface will generate a ptr record.

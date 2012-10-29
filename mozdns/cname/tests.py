@@ -14,6 +14,7 @@ from mozdns.nameserver.models import Nameserver
 from mozdns.mx.models import MX
 from mozdns.srv.models import SRV
 from mozdns.txt.models import TXT
+from mozdns.ptr.models import PTR
 from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
 
@@ -321,3 +322,27 @@ class CNAMETests(TestCase):
         cn.save()
         intr.clean()
         intr.save()
+
+    def test_ptr_exists(self):
+        label = "testyfoo"
+        data = "wat"
+        dom,_ = Domain.objects.get_or_create(name="cd")
+        dom,_ = Domain.objects.get_or_create(name="what.cd")
+
+        rec = PTR(ip_str="10.193.1.1", ip_type='4', name='testyfoo.what.cd')
+        rec.full_clean()
+        rec.save()
+
+        cn = CNAME(label = label, domain = dom, target = data)
+        self.assertRaises(ValidationError, cn.full_clean)
+
+    def test_ptr_cname_exists(self):
+        label = "testyfoo"
+        data = "wat"
+        dom,_ = Domain.objects.get_or_create(name="cd")
+        dom,_ = Domain.objects.get_or_create(name="what.cd")
+
+        cn = CNAME.objects.get_or_create(label = label, domain = dom, target = data)
+        rec = PTR(ip_str="10.193.1.1", ip_type='4', name='testyfoo.what.cd')
+
+        self.assertRaises(ValidationError, rec.clean)

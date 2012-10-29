@@ -47,8 +47,7 @@ class CNAME(MozdnsRecord):
         return super(CNAME, cls).get_api_fields() + ['target']
 
     def save(self, *args, **kwargs):
-        # If label, and domain have not changed, don't mark our domain for
-        # rebuilding.
+        self.clean()
         super(CNAME, self).save(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
@@ -115,4 +114,11 @@ class CNAME(MozdnsRecord):
         MX = mozdns.mx.models.MX
         if MX.objects.filter(server=self.fqdn):
             raise ValidationError("RFC 2181 says you shouldn't point MX "
-                                    "records at CNAMEs")
+                                  "records at CNAMEs and an MX points to"
+                                  " this name!")
+        PTR = mozdns.ptr.models.PTR
+        if PTR.objects.filter(name=self.fqdn):
+            raise ValidationError("RFC 1034 says you shouldn't point PTR "
+                                  "records at CNAMEs, and a PTR points to"
+                                  " this name!")
+        # Should SRV's not be allowed to point to a CNAME? /me looks for an RFC
