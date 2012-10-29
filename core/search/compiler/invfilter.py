@@ -253,7 +253,7 @@ def build_zone_qsets(zone):
         if hasattr(Klass, 'domain') and not root_domain.is_reverse:
             result.append(zone_query)
         elif hasattr(Klass, 'reverse_domain') and root_domain.is_reverse:
-            result.append(q)
+            result.append(zone_query)
         elif name == 'SOA':
             result.append(Q(pk=root_domain.soa.pk))
         else:
