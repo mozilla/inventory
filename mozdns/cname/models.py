@@ -116,9 +116,12 @@ class CNAME(MozdnsRecord):
             raise ValidationError("RFC 2181 says you shouldn't point MX "
                                   "records at CNAMEs and an MX points to"
                                   " this name!")
-        PTR = mozdns.ptr.models.PTR
-        if PTR.objects.filter(name=self.fqdn):
-            raise ValidationError("RFC 1034 says you shouldn't point PTR "
-                                  "records at CNAMEs, and a PTR points to"
-                                  " this name!")
+        # There are preexisting records that break this rule. We can't support
+        # this requirement until those records are fixed
+        #PTR = mozdns.ptr.models.PTR
+        #if PTR.objects.filter(name=self.fqdn):
+        #    raise ValidationError("RFC 1034 says you shouldn't point PTR "
+        #                          "records at CNAMEs, and a PTR points to"
+        #                          " this name!")
+
         # Should SRV's not be allowed to point to a CNAME? /me looks for an RFC
