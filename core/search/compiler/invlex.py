@@ -31,7 +31,7 @@ class InvLexer(object):
 
     def t_DIRECTIVE(self, t):
         r'([a-zA-Z_]+)=:([a-zA-Z0-9_\./]+)'
-        r = r'([a-zA-Z_]+)=:([a-zA-Z0-9_\./]+)'
+        r = r'([a-zA-Z_]+)=:([a-zA-Z0-9_\./:]+)'
         match = re.compile(r).match(t.value)
         directive = match.groups(1)[0]
         dvalue = match.groups(1)[1]
@@ -47,7 +47,7 @@ class InvLexer(object):
         return t
 
     def t_TEXT(self, t):
-        r'[a-zA-Z0-9_\.-]+'
+        r'[a-zA-Z0-9_\.-:]+'
         t.value = TextFilter(t.value)
         return t
 
