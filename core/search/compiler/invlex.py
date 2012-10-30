@@ -17,7 +17,7 @@ class InvLexer(object):
     t_RPAREN = r'\)'
 
     def t_NOT(self, t):
-        r'-'
+        r'\s*-'
         t.value = 'NOT'
         return t
 
@@ -47,7 +47,7 @@ class InvLexer(object):
         return t
 
     def t_TEXT(self, t):
-        r'[a-zA-Z0-9_\.]+'
+        r'[a-zA-Z0-9_\.-]+'
         t.value = TextFilter(t.value)
         return t
 

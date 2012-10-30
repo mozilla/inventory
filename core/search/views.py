@@ -7,6 +7,7 @@ from mozdns.utils import get_zones
 
 import pdb
 from core.search.compiler.django_compile import compile_to_django
+from core.search.compiler.django_compile import compile_q_objects
 from core.search.compiler.invfilter import BadDirective
 import simplejson as json
 
@@ -18,16 +19,6 @@ def resource_for_request(resource_name, filters, request):
     objects = resource.get_object_list(request).filter(filters)
     search_fields = resource._meta.object_class.search_fields
     return [(search_fields, resource.model_to_data(model, request)) for model in objects]
-
-def compile_for_request(search, rformat):
-    stmt = Compiler(search)
-    try:
-        result = compile_to_django(search)
-    except BadDirective, e:
-        return None, str(e)
-    except SyntaxError, e:
-        return None, str(e)
-    return result, None
 
 def request_to_search(request):
     search = request.GET.get("search", None)
@@ -47,12 +38,12 @@ def search_json(request):
     if not search:
         return HttpResponse("{}")
     print search
-    x, error_resp = compile_for_request(search, 'json')
-    if not x:
+    objs_f, error_resp = compile_q_objects(search)
+    if not objs_f:
         return HttpResponse(json.dumps({'error_messages': error_resp}))
 
-    #addrs, cnames, domains, intrs, mxs, nss, ptrs, srvs, txts, misc = x
-    addrf, cnamef, domainf, mxf, nsf, ptrf, soaf, srvf, sshfpf, intrf, sysf, txtf, misc = x
+    (addrf, cnamef, domainf, mxf, nsf, ptrf, soaf, srvf, sshfpf, intrf, sysf,
+            txtf, misc) = objs_f
     meta = {
         # If the user wants object counts, let them use wc.
         # TODO include feild names in the return dict so we can make tables

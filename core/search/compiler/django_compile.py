@@ -8,14 +8,21 @@ from core.search.compiler.invfilter import get_managers
 
 
 def compile_to_django(search):
+    compiled_qs, error = compile_q_objects(search)
+    if error:
+        return None, error
+    return filter_objects(compiled_qs), ""
+
+def compile_q_objects(search):
     parse = build_parser()
     try:
         root_node = parse(search)
     except (SyntaxError, BadDirective), e:
         return None, str(e)
     exec_stack = list(reversed(make_stack(root_node)))
-    compiled_qs = compile_Q(exec_stack)[0]
-    return filter_objects(compiled_qs), ""
+    qs = compile_Q(exec_stack)[0]
+    qs.append([]) # This last list is for misc objects
+    return qs, None
 
 
 def compile_Q(stack):
