@@ -3,7 +3,7 @@ import mozdns
 
 def name_to_domain(fqdn):
     """
-    This function doesn't through an exception if nothing is found.
+    This function doesn't throw an exception if nothing is found.
     """
     from mozdns.domain.models import Domain
     _name_type_check(fqdn)
