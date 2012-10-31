@@ -71,7 +71,8 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
         # We need to override this because fqdn is actually self.domain.name
         template = Template(self.template).substitute(**self.justs)
         return template.format(rdtype=self.rdtype, rdclass='IN',
-                                bind_name=self.domain.name, **self.__dict__)
+                                bind_name=self.domain.name + '.',
+                                **self.__dict__)
 
     def details(self):
         details = [
