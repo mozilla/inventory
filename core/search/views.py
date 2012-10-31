@@ -10,6 +10,7 @@ from core.search.compiler.django_compile import compile_to_django
 from core.search.compiler.django_compile import compile_q_objects
 from core.search.compiler.invfilter import BadDirective
 import simplejson as json
+from gettext import gettext as _
 
 from jinja2 import Environment, PackageLoader
 env = Environment(loader=PackageLoader('core.search', 'templates'))
@@ -31,10 +32,6 @@ def request_to_search(request):
             search = adv_search
     return search
 
-def search_dns_text(request):
-    template = env.get_template('search/core_search_results.txt')
-    return _search(request, template)
-
 
 def handle_shady_search(search):
     if not search:
@@ -48,9 +45,34 @@ def handle_shady_search(search):
 
 def search_ajax(request):
     template = env.get_template('search/core_search_results.html')
-    return _search(request, template)
+    def html_response(**kwargs):
+        return template.render(**kwargs)
+    return _search(request, html_response)
 
-def _search(request, template):
+def search_dns_text(request):
+    template = env.get_template('search/core_search_results.txt')
+    def render_rdtype(rdtype_set, **kwargs):
+        response_str = ""
+        for obj in rdtype_set:
+            response_str += _("{0:<6}".format(obj.pk) +
+                                obj.bind_render_record(**kwargs) + "\n")
+        return response_str
+    def text_response(**kwargs):
+        response_str = ""
+        response_str += render_rdtype(kwargs['nss'])
+        response_str += render_rdtype(kwargs['mxs'])
+        response_str += render_rdtype(kwargs['srvs'])
+        response_str += render_rdtype(kwargs['sshfps'])
+        response_str += render_rdtype(kwargs['txts'])
+        response_str += render_rdtype(kwargs['addrs'])
+        response_str += render_rdtype(kwargs['intrs'])
+        response_str += render_rdtype(kwargs['ptrs'])
+        response_str += render_rdtype(kwargs['intrs'], reverse=True)
+        return response_str
+
+    return _search(request, text_response)
+
+def _search(request, response):
     search = request_to_search(request)
 
     errors = handle_shady_search(search)
@@ -76,10 +98,9 @@ def _search(request, template):
                 'txt': txts.count() if txts else 0,
                 }
             }
-    return HttpResponse(template.render(
+    return HttpResponse(response(
                                     **{
                                         "misc": misc,
-                                        "search": search,
                                         "addrs": addrs,
                                         "cnames": cnames,
                                         "domains": domains,
@@ -89,6 +110,7 @@ def _search(request, template):
                                         "nss": nss,
                                         "ptrs": ptrs,
                                         "soas": soas,
+                                        "sshfps": sshfps,
                                         "srvs": srvs,
                                         "txts": txts,
                                         "meta": meta,
