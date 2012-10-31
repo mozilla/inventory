@@ -8,13 +8,14 @@ from mozdns.cname.models import CNAME
 from mozdns.ip.utils import ip_to_dns_form
 from mozdns.validation import validate_name, validate_ttl
 from mozdns.validation import validate_views
-from mozdns.mixins import ObjectUrlMixin
+from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from core.interface.static_intr.models import StaticInterface
 
+from gettext import gettext as _
 import pdb
 
 
-class PTR(Ip, ObjectUrlMixin):
+class PTR(Ip, ObjectUrlMixin, DisplayMixin):
     """A PTR is used to map an IP to a domain name.
 
     >>> PTR(ip_str=ip_str, name=fqdn, ip_type=ip_type)
@@ -28,7 +29,8 @@ class PTR(Ip, ObjectUrlMixin):
     reverse_domain = models.ForeignKey(Domain, null=False, blank=True)
     views = models.ManyToManyField(View, blank=True)
     comment = models.CharField(max_length=1000, null=True, blank=True)
-
+    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+                 "{rdtype:$rdtype_just} {name:1}.")
     search_fields = ('ip_str', 'name')
 
     @classmethod
@@ -49,6 +51,10 @@ class PTR(Ip, ObjectUrlMixin):
     @property
     def rdtype(self):
         return 'PTR'
+
+    def bind_render_record(self, pk=False, **kwargs):
+        self.fqdn = self.dns_name().strip('.')
+        return super(PTR, self).bind_render_record(pk=pk, **kwargs)
 
     def save(self, *args, **kwargs):
         if self.reverse_domain and self.reverse_domain.soa:

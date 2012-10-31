@@ -31,40 +31,9 @@ def request_to_search(request):
             search = adv_search
     return search
 
-def search_json(request):
-    """This view just returns the raw JSON objects instead of rendering the
-    objects with the HTML"""
-    search = request.GET.get("search", None)
-    if not search:
-        return HttpResponse("{}")
-    print search
-    objs_f, error_resp = compile_q_objects(search)
-    if not objs_f:
-        return HttpResponse(json.dumps({'error_messages': error_resp}))
-
-    (addrf, cnamef, domainf, mxf, nsf, ptrf, soaf, srvf, sshfpf, intrf, sysf,
-            txtf, misc) = objs_f
-    meta = {
-        # If the user wants object counts, let them use wc.
-        # TODO include feild names in the return dict so we can make tables
-        # with the data.
-        "search": search,
-        'objects': {
-            "misc": misc,  # TODO, write a resource for misc objects
-            "addrs": resource_for_request('addressrecord', addrf, request)  if addrf else [],
-            "cnames": resource_for_request('cname', cnamef, request) if cnamef else [],
-            "domains": [],  # Not sure if this will ever have a resource
-            "mxs": resource_for_request('mx', mxf, request) if mxf else [],
-            "nss": resource_for_request('nameserver', nsf, request) if nsf else [],
-            "ptrs": resource_for_request('ptr', ptrf, request) if ptrf else [],
-            "srvs": resource_for_request('srv', srvf, request) if srvf else [],
-            "sshfps": resource_for_request('sshfp', sshfpf, request) if srvf else [],
-            "intrs": resource_for_request('staticinterface', intrf, request) if intrf else [],
-            "sys": resource_for_request('system', sysf, request) if sysf else [],
-            "txts": resource_for_request('txt', txtf, request) if txtf else [],
-        },
-    }
-    return HttpResponse(json.dumps(meta))
+def search_dns_text(request):
+    template = env.get_template('search/core_search_results.txt')
+    return _search(request, template)
 
 
 def handle_shady_search(search):
@@ -78,6 +47,10 @@ def handle_shady_search(search):
     return None
 
 def search_ajax(request):
+    template = env.get_template('search/core_search_results.html')
+    return _search(request, template)
+
+def _search(request, template):
     search = request_to_search(request)
 
     errors = handle_shady_search(search)
@@ -103,7 +76,6 @@ def search_ajax(request):
                 'txt': txts.count() if txts else 0,
                 }
             }
-    template = env.get_template('search/core_search_results.html')
     return HttpResponse(template.render(
                                     **{
                                         "misc": misc,

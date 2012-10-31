@@ -1,7 +1,9 @@
 from django.db import models
 
 from mozdns.models import MozdnsRecord
+
 import pdb
+from gettext import gettext as _
 
 
 class TXT(MozdnsRecord):
@@ -13,6 +15,10 @@ class TXT(MozdnsRecord):
     txt_data = models.TextField(help_text="The text data for this record.")
 
     search_fields = ("fqdn", "txt_data")
+
+    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+                 "{rdtype:$rdtype_just} \"{txt_data:$rhs_just}\"")
+
 
     def details(self):
         return (

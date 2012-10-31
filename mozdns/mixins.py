@@ -1,6 +1,27 @@
 from settings import MOZDNS_BASE_URL
 from gettext import gettext as _
+from string import Template
+import pdb
 
+
+class DisplayMixin(object):
+    # Knobs
+    justs = {
+        'pk_just': 10,
+        'rhs_just': 1,
+        'ttl_just': 1,
+        'rdtype_just': 4,
+        'rdclass_just': 3,
+        'prio_just': 1,
+        'lhs_just': 40,
+        'extra_just': 1
+    }
+
+    def bind_render_record(self, pk=False):
+        template = Template(self.template).substitute(**self.justs)
+        bind_name = self.fqdn + "."
+        return template.format(bind_name=bind_name, rdtype=self.rdtype, rdclass='IN',
+                                **self.__dict__)
 
 class ObjectUrlMixin(object):
     """

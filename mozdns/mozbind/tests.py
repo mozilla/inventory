@@ -58,6 +58,7 @@ class DirtySOATests(TestCase):
         rec = Klass(**create_data)
         rec.full_clean()
         rec.save()
+        print rec.bind_render_record()
         local_soa = SOA.objects.get(pk=local_soa.pk)
         self.assertTrue(local_soa.dirty)
 

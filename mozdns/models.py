@@ -6,14 +6,14 @@ from django.db.models.signals import m2m_changed
 import mozdns
 from mozdns.domain.models import Domain, _check_TLD_condition
 from mozdns.view.models import View
-from mozdns.mixins import ObjectUrlMixin
+from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.validation import validate_first_label, validate_name
 from mozdns.validation import validate_ttl, is_rfc1918, is_rfc4193
 from settings import MOZDNS_BASE_URL
 
 import pdb
 
-class MozdnsRecord(models.Model, ObjectUrlMixin):
+class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
     """
     This class provides common functionality that many DNS record
     classes share.  This includes a foreign key to the ``domain`` table

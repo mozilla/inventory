@@ -36,7 +36,7 @@ def compile_Q(stack):
             q_stack.append(top.Q)
         elif istype(top, 'NOT'):
             term = q_stack.pop()
-            q_stack.append(lambda Q: ~Q, term)
+            q_stack.append(map(lambda Q: ~Q, term))
             continue
         elif istype(top, 'AND') or istype(top, 'OR'):
             t1 = q_stack.pop()

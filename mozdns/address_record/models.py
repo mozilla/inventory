@@ -11,13 +11,14 @@ from mozdns.models import check_TLD_condition
 from mozdns.validation import validate_first_label, validate_name
 from mozdns.validation import validate_ttl, validate_views
 from mozdns.domain.models import Domain
-from mozdns.mixins import ObjectUrlMixin
+from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.soa.utils import update_soa
 
+from gettext import gettext as _
 import pdb
 
 
-class BaseAddressRecord(Ip):
+class BaseAddressRecord(Ip, DisplayMixin):
     """AddressRecord is the class that generates A and AAAA records
 
         >>> AddressRecord(label=label, domain=domain_object, ip_str=ip_str,
@@ -44,6 +45,7 @@ class BaseAddressRecord(Ip):
     views = models.ManyToManyField(View, blank=True)
 
     search_fields = ("fqdn", "ip_str")
+
 
     class Meta:
         abstract = True
@@ -188,6 +190,9 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
     id = models.AutoField(primary_key=True)
     reverse_domain = models.ForeignKey(Domain, null=True, blank=True,
             related_name="addressrecordomain_set")
+
+    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+                 "{rdtype:$rdtype_just} {ip_str:$rhs_just}")
 
     class Meta:
         db_table = "address_record"

@@ -8,6 +8,7 @@ from mozdns.validation import validate_mx_priority
 from mozdns.validation import validate_ttl
 from mozdns.validation import validate_name
 
+from gettext import gettext as _
 
 class MX(MozdnsRecord):
     """
@@ -20,7 +21,11 @@ class MX(MozdnsRecord):
                 help_text="The name of the mail server this record points to.")
     priority = models.PositiveIntegerField(null=False,
                         validators=[validate_mx_priority])
+    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+                 "{rdtype:$rdtype_just}{priority:$prio_just} "
+                 "{server:$rhs_just}.")
     search_fields = ('fqdn', 'server')
+
 
     def details(self):
         return  (

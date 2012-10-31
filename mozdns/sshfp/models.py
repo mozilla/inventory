@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 
 from mozdns.models import MozdnsRecord
 
+from gettext import gettext as _
+
 
 def validate_algorithm(number):
     if number not in (1,2):
@@ -26,6 +28,10 @@ class SSHFP(MozdnsRecord):
     fingerprint_type = models.PositiveIntegerField(null=False, blank=False,
             validators=[validate_fingerprint], help_text="Fingerprint type "
             "must be 1 (SHA-1)")
+
+    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+                 "{rdtype:$rdtype_just} {algorithm_number} {fingerprint_type} "
+                 "{key:$rhs_just}.")
 
     search_fields = ("fqdn", "key")
 

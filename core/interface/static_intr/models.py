@@ -14,9 +14,11 @@ from mozdns.view.models import View
 from mozdns.domain.models import Domain
 from mozdns.cname.models import CNAME
 from mozdns.ip.models import Ip
+from mozdns.ip.utils import ip_to_dns_form
 from settings import CORE_BASE_URL
 
 import re
+from gettext import gettext as _
 import pdb
 
 
@@ -192,6 +194,19 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
             raise ValidationError("This Interface represents a glue record "
                     "for a Nameserver. Change the Nameserver to edit this "
                     "record.")
+
+    A_template = _("{bind_name:$rhs_just} {ttl} {rdclass:$rdclass_just} "
+                   "{rdtype:$rdtype_just} {ip_str:$lhs_just}")
+    PTR_template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+                     "{rdtype:$rdtype_just} {fqdn:1}.")
+
+    def bind_render_record(self, pk=False, **kwargs):
+        if kwargs.pop('reverse', False):
+            self.template = self.PTR_template
+            self.dns_ip = self.ip_to_dns_form(self.ip_str)
+        else:
+            self.template = self.A_template
+        super(StaticInterface, self).bind_render_record(pk=pk, **kwargs)
 
     def record_type(self):
         return "A/PTR"

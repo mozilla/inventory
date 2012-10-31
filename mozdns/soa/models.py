@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from mozdns.validation import validate_name
-from mozdns.mixins import ObjectUrlMixin
+from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 
 from settings import MOZDNS_BASE_URL
 from core.keyvalue.models import KeyValue
@@ -62,10 +62,12 @@ class SOA(models.Model, ObjectUrlMixin):
     comment = models.CharField(max_length=200, null=True, blank=True)
     # This indicates if this SOA needs to be rebuilt
     dirty = models.BooleanField(default=False)
-
     search_fields = ('primary', 'contact', 'comment')
 
     attrs = None
+
+    def bind_render_record(self):
+        pass
 
     def update_attrs(self):
         self.attrs = AuxAttr(SOAKeyValue, self, 'soa')

@@ -18,7 +18,7 @@ class BOP(object):
 
 class UOP(object):
     def __init__(self, value, child):
-        self.value = value
+        self.value , self.ntype = value, value
         self.child = child
 
     def __str__(self):

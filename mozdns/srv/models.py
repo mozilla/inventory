@@ -4,7 +4,7 @@ import mozdns
 from mozdns.domain.models import Domain
 from mozdns.models import MozdnsRecord
 from mozdns.validation import validate_name
-from mozdns.mixins import ObjectUrlMixin
+from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.view.models import View
 from mozdns.soa.utils import update_soa
 
@@ -13,13 +13,14 @@ from mozdns.validation import validate_srv_priority, validate_srv_weight
 from mozdns.validation import validate_srv_name, validate_ttl
 from mozdns.validation import validate_srv_target
 
+from gettext import gettext as _
 import pdb
 
 # Rhetorical Question: Why is SRV not a common record?  SRV records have
 # a '_' in their label. Most domain names do not allow this.  Mozdns
 # record has a validator that would raise an exception when validating
 # it's label.  TODO, verify this.
-class SRV(models.Model, ObjectUrlMixin):
+class SRV(models.Model, ObjectUrlMixin, DisplayMixin):
     """
     >>> SRV(label=label, domain=domain, target=target, port=port,
     ... priority=priority, weight=weight, ttl=ttl)
@@ -52,6 +53,10 @@ class SRV(models.Model, ObjectUrlMixin):
             validators=[validate_ttl],
             help_text="Time to Live of this record")
     comment = models.CharField(max_length=1000, blank=True, null=True)
+    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+                 "{rdtype:$rdtype_just} {priority:$prio_just} "
+                 "{weight:$extra_just} {port:$extra_just} "
+                 "{target:$extra_just}.")
 
     search_fields = ("fqdn", "target")
 

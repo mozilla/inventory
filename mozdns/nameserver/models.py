@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.validation import validate_label, validate_name
-from mozdns.mixins import ObjectUrlMixin
+from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.view.models import View
 from mozdns.validation import validate_ttl
 from mozdns.models import check_for_cname
@@ -12,10 +12,12 @@ from mozdns.soa.utils import update_soa
 
 from core.interface.static_intr.models import StaticInterface
 
+from string import Template
+from gettext import gettext as _
 import pdb
 
 
-class Nameserver(models.Model, ObjectUrlMixin):
+class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
     """Name server for forward domains::
 
         >>> Nameserver(domain = domain, server = server)
@@ -48,6 +50,9 @@ class Nameserver(models.Model, ObjectUrlMixin):
     comment = models.CharField(max_length=1000, null=True, blank=True,
                 help_text="Comments about this record.")
 
+    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+                 "{rdtype:$rdtype_just} {server:$rhs_just}.")
+
     search_fields = ("server", "domain__name")
 
     class Meta:
@@ -61,6 +66,12 @@ class Nameserver(models.Model, ObjectUrlMixin):
     @property
     def rdtype(self):
         return 'NS'
+
+    def bind_render_record(self, pk=False, **kwargs):
+        # We need to override this because fqdn is actually self.domain.name
+        template = Template(self.template).substitute(**self.justs)
+        return template.format(rdtype=self.rdtype, rdclass='IN',
+                                bind_name=self.domain.name, **self.__dict__)
 
     def details(self):
         details = [
