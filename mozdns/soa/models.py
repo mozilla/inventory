@@ -1,14 +1,18 @@
-import time
-from django.core.exceptions import ValidationError
-
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db import models
+from django.db.models import Q, F
 
 from mozdns.validation import validate_name
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
+from mozdns.validation import validate_ttl
 
 from settings import MOZDNS_BASE_URL
 from core.keyvalue.models import KeyValue
 from core.keyvalue.utils import AuxAttr
+
+from gettext import gettext as _
+from string import Template
+import time
 import os
 import pdb
 
@@ -21,7 +25,7 @@ DEFAULT_REFRESH = 180  # 3 min
 DEFAULT_MINIMUM = 180  # 3 min
 
 
-class SOA(models.Model, ObjectUrlMixin):
+class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     """
     SOA stands for Start of Authority
 
@@ -48,6 +52,9 @@ class SOA(models.Model, ObjectUrlMixin):
     """
 
     id = models.AutoField(primary_key=True)
+    ttl = models.PositiveIntegerField(default=3600, blank=True, null=False,
+            validators=[validate_ttl],
+            help_text="Time to Live of this record")
     primary = models.CharField(max_length=100, validators=[validate_name])
     contact = models.CharField(max_length=100, validators=[validate_name])
     serial = models.PositiveIntegerField(null=False, default=int(time.time()))
@@ -60,14 +67,19 @@ class SOA(models.Model, ObjectUrlMixin):
     refresh = models.PositiveIntegerField(null=False, default=DEFAULT_REFRESH)
     minimum = models.PositiveIntegerField(null=False, default=DEFAULT_MINIMUM)
     comment = models.CharField(max_length=200, null=True, blank=True)
-    # This indicates if this SOA needs to be rebuilt
+    # This indicates if this SOA's zone needs to be rebuilt
     dirty = models.BooleanField(default=False)
     search_fields = ('primary', 'contact', 'comment')
+    template = _("{root_domain}. {ttl} {rdclass:$rdclass_just} {rdtype:$rdtype_just}"
+                "{primary}. {contact}. ({serial} {refresh} {retry} {expire})")
 
     attrs = None
 
     def bind_render_record(self):
-        pass
+        template = Template(self.template).substitute(**self.justs)
+        return template.format(root_domain=self.root_domain,
+                               rdtype=self.rdtype, rdclass='IN',
+                               **self.__dict__)
 
     def update_attrs(self):
         self.attrs = AuxAttr(SOAKeyValue, self, 'soa')
@@ -93,6 +105,15 @@ class SOA(models.Model, ObjectUrlMixin):
     @property
     def rdtype(self):
         return 'SOA'
+
+    @property
+    def root_domain(self):
+        try:
+            return self.domain_set.get(~Q(master_domain__soa=F('soa')),
+                    soa__isnull=False)
+        except ObjectDoesNotExist:
+            return None
+
 
     def get_debug_build_url(self):
         return MOZDNS_BASE_URL + "/bind/build_debug/{0}/".format(self.pk)
