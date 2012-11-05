@@ -166,12 +166,18 @@ def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
     return domain
 
 
-def ensure_label_domain(fqdn):
+def ensure_label_domain(fqdn, force=False):
     """Returns a label and domain object."""
     if fqdn == '':
         raise ValidationError("FQDN cannot be the emptry string.")
-    if Domain.objects.filter(name=fqdn).exists():
-        return '', Domain.objects.get(name=fqdn)
+    try:
+        domain = Domain.objects.get(name=fqdn)
+        if not domain.soa and not force:
+            raise ValidationError("You must create a record inside an "
+                                  "existing zones.")
+        return '', domain
+    except ObjectDoesNotExist:
+        pass
     fqdn_partition = fqdn.split('.')
     if len(fqdn_partition) == 1:
         raise ValidationError("Creating this record would force the creation "
@@ -179,6 +185,9 @@ def ensure_label_domain(fqdn):
     else:
         label, domain_name = fqdn_partition[0], '.'.join(fqdn_partition[1:])
         domain = ensure_domain(domain_name, purgeable=True, inherit_soa=True)
+        if not domain.soa and not force:
+            raise ValidationError("You must create a record inside an "
+                                  "existing zones.")
         return label, domain
 
 

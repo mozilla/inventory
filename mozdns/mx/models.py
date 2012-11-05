@@ -5,7 +5,6 @@ from mozdns.models import MozdnsRecord
 from mozdns.cname.models import CNAME
 
 from mozdns.validation import validate_mx_priority
-from mozdns.validation import validate_ttl
 from mozdns.validation import validate_name
 
 from gettext import gettext as _

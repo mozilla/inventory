@@ -53,3 +53,16 @@ class AutoCreateTests(TestCase):
         # Even with domains there, they aren't part of a zone and should so
         # creation should fail.
         self.assertRaises(ValidationError, ensure_label_domain, fqdn)
+
+
+    def test_no_soa_block2(self):
+        c = Domain(name = 'moo')
+        c.save()
+        f_c = Domain(name = 'foo.moo')
+        f_c.save()
+        s, _ = SOA.objects.get_or_create(primary="bar23", contact="Foo",
+                comment="bar")
+        f_c.soa = s
+        f_c.save()
+
+        self.assertRaises(ValidationError, ensure_label_domain, "baz.moo")

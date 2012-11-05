@@ -52,13 +52,17 @@ class DirtySOATests(TestCase):
         self.s = System()
         self.s.save()
 
+    def test_print_soa(self):
+        self.assertTrue(self.soa.bind_render_record() not in ('', None))
+        self.assertTrue(self.rsoa.bind_render_record() not in ('', None))
+
     def generic_dirty(self, Klass, create_data, update_data, local_soa):
         local_soa.dirty = False
         local_soa.save()
         rec = Klass(**create_data)
         rec.full_clean()
         rec.save()
-        print rec.bind_render_record()
+        self.assertTrue(rec.bind_render_record() not in ('', None))
         local_soa = SOA.objects.get(pk=local_soa.pk)
         self.assertTrue(local_soa.dirty)
 

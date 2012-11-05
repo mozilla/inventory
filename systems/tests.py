@@ -608,17 +608,35 @@ class SystemAdapterTest(TestCase):
         public = View(name="public")
         public.save()
         Domain(name='com').save()
-        Domain(name='mozilla.com').save()
+        d0 = Domain(name='mozilla.com')
+        d0.save()
         s = SOA(primary="foo", comment="bar", contact="asdf")
         s.save()
+        d0.soa = s
+        d0.save()
         d = Domain(name='dc.mozilla.com')
         d.soa = s
         d.save()
-        Domain(name='vlan.dc.mozilla.com').save()
+        d = Domain(name='vlan.dc.mozilla.com')
+        d.save()
+        d.soa = s
+        d.save()
         Domain(name='arpa').save()
         Domain(name='in-addr.arpa').save()
-        Domain(name='10.in-addr.arpa').save()
-        Domain(name='66.in-addr.arpa').save()
+
+        # Create Reverse Domains
+        s = SOA(primary="foo", comment="bar", contact="asdfasdf")
+        s.save()
+        d = Domain(name='10.in-addr.arpa')
+        d.soa = s
+        d.save()
+
+        s = SOA(primary="foo.reverse", comment="bar", contact="asdfasdf")
+        s.save()
+        d = Domain(name='66.in-addr.arpa')
+        d.soa = s
+        d.save()
+
         vlan = Vlan(name='vlan', number=99)
         vlan.save()
         site = Site(name='dc')
