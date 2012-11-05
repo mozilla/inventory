@@ -155,8 +155,11 @@ def build_view_qsets(view_name):
         raise BadDirective("'{0}' isn't a valid view.".format(view_name))
     view_filter = Q(views=view) # This will slow queries down due to joins
     q_sets = []
+    select = Q(pk__gt=-1)
     for name, Klass in searchables:
-        if hasattr(Klass, 'views'):
+        if name == 'SOA':
+            q_sets.append(select)  # SOA's are always public and private
+        elif hasattr(Klass, 'views'):
             q_sets.append(view_filter)
         else:
             q_sets.append(None)

@@ -1,10 +1,10 @@
 import pdb
-import unittest
+from django.test import TestCase
 from core.search.compiler.invparse import build_parser
 from core.search.compiler.utils import make_stack
 
 
-class TestParser(unittest.TestCase):
+class TestParser(TestCase):
     def compare(self, ss, expected_stack_str):
         parse = build_parser()
         root_node = parse(ss)
@@ -125,13 +125,18 @@ class TestParser(unittest.TestCase):
         self.compare(ss, exp)
 
     def test22(self):
-        ss = "vlan=:a -(c OR -b)"
-        exp = 'vlan=:a c b NOT OR NOT AND'
+        ss = "type=:a -(c OR -b)"
+        exp = 'type=:a c b NOT OR NOT AND'
         self.compare(ss, exp)
 
     def test23(self):
         ss = "a b d OR c f g"
         exp = 'a b AND d AND c f AND g AND OR'
+        self.compare(ss, exp)
+
+    def test24(self):
+        ss = "type=:foo.bar -type=:baz"
+        exp = 'type=:foo.bar type=:baz NOT AND'
         self.compare(ss, exp)
 
 

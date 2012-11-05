@@ -6,9 +6,9 @@ from core.search.compiler.invfilter import *
 
 class InvLexer(object):
 
-    tokens = (
+    tokens = ( 'NOT',
         'TEXT', 'DIRECTIVE', 'RE',
-        'AND', 'NOT', 'OR',
+        'AND', 'OR',
         'LPAREN', 'RPAREN',
     )
 
@@ -17,7 +17,7 @@ class InvLexer(object):
     t_RPAREN = r'\)'
 
     def t_NOT(self, t):
-        r'\s+-'
+        r'\s*-'
         t.value = 'NOT'
         return t
 

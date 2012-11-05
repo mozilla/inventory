@@ -59,9 +59,11 @@ def search_dns_text(request):
         return response_str
     def text_response(**kwargs):
         response_str = ""
+        response_str += render_rdtype(kwargs['soas'])
         response_str += render_rdtype(kwargs['nss'])
         response_str += render_rdtype(kwargs['mxs'])
         response_str += render_rdtype(kwargs['srvs'])
+        response_str += render_rdtype(kwargs['cnames'])
         response_str += render_rdtype(kwargs['sshfps'])
         response_str += render_rdtype(kwargs['txts'])
         response_str += render_rdtype(kwargs['addrs'])
