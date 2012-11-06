@@ -204,6 +204,54 @@ def redirect_to_range_from_ip(request):
              'redirect_url':range_[0].get_absolute_url()}))
 
 
+def get_next_available_ip_by_range(request, range_id):
+    range = get_object_or_404(Range, id=range_id)
+    ret = {}
+    ret_ip = range.get_next_ip()
+    display_ip = ret_ip.exploded
+    ret['success'] = True
+    ret['ip_address'] = display_ip
+    return HttpResponse(json.dumps(ret))
+
+def get_all_ranges_ajax(request):
+    system_pk = request.GET.get('system_pk', '-1')
+    pdb.set_trace()
+    location = None
+    system = None
+    ret_list = []
+    from systems.models import System
+    try:
+        system = System.objects.get(pk=system_pk)
+    except ObjectDoesNotExist:
+        pass
+    if system:
+        try:
+            location = system.system_rack.location.name.title()
+        except AttributeError:
+            pass
+
+    for r in Range.objects.all().order_by('network__site'):
+        relevant = False
+        if r.network.site:
+            site_name = r.network.site.get_site_path()
+            if location and location == r.network.site.name.title():
+                relevant = True
+        else:
+            site_name = ''
+
+        if r.network.vlan:
+            vlan_name = r.network.vlan.name
+        else:
+            vlan_name = ''
+
+        ret_list.append({'id': r.pk,
+                         'display': r.choice_display(),
+                         'vlan': vlan_name,
+                         'site': site_name,
+                         'relevant': relevant
+                         })
+    return HttpResponse(json.dumps(ret_list))
+
 
 class RangeUpdateView(RangeView, CoreUpdateView):
     """ """

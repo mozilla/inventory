@@ -11,5 +11,8 @@ urlpatterns = patterns('',
     url(r'attr/(?P<attr_pk>[\w-]+)/delete/$', csrf_exempt(delete_range_attr)),
     url(r'(?P<pk>[\w-]+)/delete/$',
         csrf_exempt(RangeDeleteView.as_view())),
+    url(r'^get_next_available_ip_by_range/(?P<range_id>\d+)[/]$',
+        csrf_exempt(get_next_available_ip_by_range), name='system-adapter-next-ip'),
+    url(r'^get_all_ranges_ajax[/]', get_all_ranges_ajax, name='get-all-ranges-ajax'),
     url(r'(?P<range_pk>[\w-]+)/$', csrf_exempt(range_detail)),
 )

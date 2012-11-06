@@ -241,7 +241,7 @@
             make_smart_name_get_domains($("#add_adapter_fqdn"), true);
             $.ajax({
                     type: "GET",
-                    url: "/en-US/systems/get_all_ranges_ajax/",
+                    url: "/core/range/get_all_ranges_ajax/",
                     data: {'system_pk':'{{system.pk}}'},
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
@@ -411,7 +411,7 @@
         $("#override_fqdn").attr("checked", "");
         function auto_assign_ip(the_range){
             if (the_range){
-                $.get('/en-US/systems/get_next_available_ip_by_range/' + the_range + '/',
+                $.get('/core/range/get_next_available_ip_by_range/' + the_range + '/',
                     function(data){
                         var obj = jQuery.parseJSON(data);
                         if(obj.success == true){
