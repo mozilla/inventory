@@ -23,7 +23,7 @@ class DisplayMixin(object):
         if not self.ttl:
             self.ttl = 3600
         return template.format(bind_name=bind_name, rdtype=self.rdtype, rdclass='IN',
-                                **self.__dict__)
+                                **vars(self))
 
 class ObjectUrlMixin(object):
     """

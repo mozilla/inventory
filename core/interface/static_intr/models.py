@@ -195,13 +195,13 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
                     "for a Nameserver. Change the Nameserver to edit this "
                     "record.")
 
-    A_template = _("{bind_name:$rhs_just} {ttl} {rdclass_clob:$rdclass_just}"
-                   "{rdtype:$rdtype_just} {ip_str:$lhs_just}")
-    PTR_template = _("{dns_ip:$lhs_just} {ttl} {rdclass_clob:$rdclass_just}"
-                     " {rdtype:$rdtype_just} {fqdn:1}.")
+    A_template = _("{bind_name:$rhs_just} {ttl} {rdclass:$rdclass_just}"
+                   "{rdtype_clob:$rdtype_just} {ip_str:$lhs_just}")
+    PTR_template = _("{dns_ip:$lhs_just} {ttl} {rdclass:$rdclass_just}"
+                     " {rdtype_clob:$rdtype_just} {fqdn:1}.")
 
     def bind_render_record(self, pk=False, **kwargs):
-        self.rdclass_clob = kwargs.get('rdtype', 'INTR')
+        self.rdtype_clob = kwargs.pop('rdtype', 'INTR')
         if kwargs.pop('reverse', False):
             self.template = self.PTR_template
             self.dns_ip = ip_to_dns_form(self.ip_str)
