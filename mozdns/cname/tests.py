@@ -324,6 +324,7 @@ class CNAMETests(TestCase):
         intr.save()
 
     def test_ptr_exists(self):
+        """Failing: see BUG https://bugzilla.mozilla.org/show_bug.cgi?id=810106"""
         label = "testyfoo"
         data = "wat"
         dom,_ = Domain.objects.get_or_create(name="cd")
@@ -337,6 +338,7 @@ class CNAMETests(TestCase):
         self.assertRaises(ValidationError, cn.full_clean)
 
     def test_ptr_cname_exists(self):
+        """Failing: see BUG https://bugzilla.mozilla.org/show_bug.cgi?id=810106"""
         label = "testyfoo"
         data = "wat"
         dom,_ = Domain.objects.get_or_create(name="cd")
