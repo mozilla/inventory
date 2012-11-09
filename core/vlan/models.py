@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from core.site.models import Site
 from core.mixins import ObjectUrlMixin
 from mozdns.domain.models import Domain
+from core.utils import networks_to_Q
 
 from core.keyvalue.models import KeyValue
 from core.utils import IPFilterSet
@@ -42,9 +43,10 @@ class Vlan(models.Model, ObjectUrlMixin):
             ipf.add(network.ipf)
         return ipf
 
-    def compile_Q(self, ip_type):
-        ipf = self.get_ipf(ip_type)
-        return ipf.compile_OR_Q()
+    def compile_Q(self):
+        """Compile a Django Q that will match any IP inside this vlan."""
+        return networks_to_Q(self.network_set.all())
+
 
     def find_domain(self):
         """

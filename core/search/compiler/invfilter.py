@@ -209,13 +209,11 @@ def build_network_qsets(network_str):
         ip_type = '4'
     try:
         network = Klass(network_str)
-        ip_info = two_to_four(int(network.network),
-                              int(network.broadcast))
-        ipf = IPFilter(None, ip_type, *ip_info)
+        ipf = IPFilter(network.network, network.broadcast, ip_type)
     except (ipaddr.AddressValueError, ipaddr.NetmaskValueError), e:
         raise BadDirective("{0} isn't a valid "
                 "network.".format(network_str))
-    return build_ipf_qsets(ipf.compile_Q())
+    return build_ipf_qsets(ipf.Q)
 
 
 def build_site_qsets(site_name):
@@ -224,7 +222,7 @@ def build_site_qsets(site_name):
     except ObjectDoesNotExist, e:
         raise BadDirective("{0} isn't a valid "
                 "site.".format(site_name))
-    return build_ipf_qsets(site.compile_Q('4'))
+    return build_ipf_qsets(site.compile_Q())
 
 
 def build_vlan_qsets(vlan_name):
@@ -239,7 +237,7 @@ def build_vlan_qsets(vlan_name):
     except MultipleObjectsReturned, e:
         raise BadDirective("{0} doesn't uniquely identify"
                 "a vlan.".format(vlan_name))
-    return build_ipf_qsets(vlan.compile_Q('4'))
+    return build_ipf_qsets(vlan.compile_Q())
 
 
 def build_zone_qsets(zone):

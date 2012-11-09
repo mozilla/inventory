@@ -5,40 +5,9 @@ import ipaddr
 import pdb
 
 
-def start_end_filter(start, end, ip_type):
-    ip_type = ip_type
-    if ip_type == '6':
-        IPKlass = ipaddr.IPv6Address
-    elif ip_type == '4':
-        IPKlass = ipaddr.IPv4Address
-
-    istart = IPKlass(start)
-    iend = IPKlass(end)
-
-    if int(istart) == int(iend):
-        raise ValidationError("start and end cannot be equal")
-    elif int(istart) > int(iend):
-        raise ValidationError("start cannot be greater than end")
-
-    start_upper, start_lower = one_to_two(int(istart))
-    end_upper, end_lower = one_to_two(int(iend))
-
-    # Equal uppers. Lower must be within.
-    if start_upper == end_upper:
-        q = Q(ip_upper=start_upper,
-                ip_lower__gte=start_lower,
-                ip_lower__lte=end_lower,
-                ip_type=ip_type)
-    else:
-        q = Q(ip_upper__gt=start_upper, ip_upper__lt=end_upper,
-                ip_type=ip_type)
-
-    return istart, iend, q
-
-
 class IPFilterSet(object):
     """The IPFilterSet expects that all IPFilters added to it are of the same
-    type.
+    type. This might be useful later.
     """
     def __init__(self):
         self.ipfs = []
@@ -130,20 +99,10 @@ class IPFilterSet(object):
 
 
 class IPFilter(object):
-    def __init__(self, object_, ip_type, start_upper, start_lower, end_upper, end_lower):
-        self.object_ = object_  # The composite object (if it exists, it can be
-                                # None)
+    def __init__(self, start, end, ip_type, object_=None):
+        self.object_ = object_  # The composite object (it can be None)
         self.ip_type = ip_type
-        if ip_type == '6':
-            self.IPKlass = ipaddr.IPv6Address
-        elif ip_type == '4':
-            self.IPKlass = ipaddr.IPv4Address
-        self.start = self.IPKlass(two_to_one(start_upper, start_lower))
-        self.end = self.IPKlass(two_to_one(end_upper, end_lower))
-        self.start_upper = start_upper
-        self.start_lower = start_lower
-        self.end_upper = end_upper
-        self.end_lower = end_lower
+        self.start, self.end, self.Q = start_end_filter(start, end, ip_type)
 
     def __str__(self):
         return "{0} -- {1}".format(self.start, self.end)
@@ -151,11 +110,46 @@ class IPFilter(object):
     def __repr__(self):
         return str(self)
 
-    def compile_Q(self):
-        # This only works for ipv4
-        q_filter = Q(ip_upper=self.start_upper, ip_lower__gte=self.start_lower,
-                ip_lower__lte=self.end_lower, ip_type=self.ip_type)
-        return q_filter
+
+def start_end_filter(start, end, ip_type):
+    ip_type = ip_type
+    if ip_type == '6':
+        IPKlass = ipaddr.IPv6Address
+    elif ip_type == '4':
+        IPKlass = ipaddr.IPv4Address
+
+    istart = IPKlass(start)
+    iend = IPKlass(end)
+
+    if int(istart) == int(iend):
+        raise ValidationError("start and end cannot be equal")
+    elif int(istart) > int(iend):
+        raise ValidationError("start cannot be greater than end")
+
+    start_upper, start_lower = one_to_two(int(istart))
+    end_upper, end_lower = one_to_two(int(iend))
+
+    # Equal uppers. Lower must be within.
+    if start_upper == end_upper:
+        q = Q(ip_upper=start_upper,
+                ip_lower__gte=start_lower,
+                ip_lower__lte=end_lower,
+                ip_type=ip_type)
+    else:
+        q = Q(ip_upper__gt=start_upper, ip_upper__lt=end_upper,
+                ip_type=ip_type)
+
+    return istart, iend, q
+
+
+def networks_to_Q(networks):
+    """Take a list of network objects and compile a Q that matches any object
+    that exists in one of those networks."""
+    q = Q()
+    for network in networks:
+        network.update_ipf()
+        q = q | network.ipf.Q
+    return q
 
 
 def two_to_four(start, end):

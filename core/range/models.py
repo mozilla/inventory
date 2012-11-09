@@ -175,8 +175,8 @@ class Range(models.Model, ObjectUrlMixin):
     def update_ipf(self):
         """Update the IP filter. Used for compiling search queries and firewall
         rules."""
-        self.ipf = IPFilter(self.start_upper, self.start_lower,
-                            self.end_upper, self.end_lower)
+        self.ipf = IPFilter(self.start_str, self.end_str, self.network.ip_type,
+                            object_=self)
 
     def display(self):
         return "Range: {3} to {4}  {0} -- {2} -- {1}  ".format(

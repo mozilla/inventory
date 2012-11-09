@@ -1,9 +1,12 @@
 from django.db import models
+
 from django.core.exceptions import ValidationError
 
 from core.mixins import ObjectUrlMixin
 from core.keyvalue.models import KeyValue
-from core.utils import IPFilterSet
+from core.utils import IPFilterSet, networks_to_Q
+
+import pdb
 
 
 class Site(models.Model, ObjectUrlMixin):
@@ -38,19 +41,9 @@ class Site(models.Model, ObjectUrlMixin):
                 target = target.parent
         return full_name
 
-    def get_ipf(self, ip_type):
-        """Update the IPF for this object. You must set the IP version of the
-        ipf.
-        """
-        ipf = IPFilterSet()
-        for network in self.network_set.filter(ip_type=ip_type):
-            network.update_ipf()
-            ipf.add(network.ipf)
-        return ipf
-
-    def compile_Q(self, ip_type):
-        ipf = self.get_ipf(ip_type)
-        return ipf.compile_OR_Q()
+    def compile_Q(self):
+        """Compile a Django Q that will match any IP inside this site."""
+        return networks_to_Q(self.network_set.all())
 
     class Meta:
         db_table = 'site'
