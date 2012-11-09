@@ -7,7 +7,6 @@ from mozdns.domain.models import Domain
 from core.utils import networks_to_Q
 
 from core.keyvalue.models import KeyValue
-from core.utils import IPFilterSet
 
 import pdb
 
@@ -32,16 +31,6 @@ class Vlan(models.Model, ObjectUrlMixin):
 
     def __repr__(self):
         return "<Vlan {0}>".format(str(self))
-
-    def get_ipf(self, ip_type):
-        """Update the IPF for this object. You must set the IP version of the
-        ipf.
-        """
-        ipf = IPFilterSet()
-        for network in self.network_set.filter(ip_type=ip_type):
-            network.update_ipf()
-            ipf.add(network.ipf)
-        return ipf
 
     def compile_Q(self):
         """Compile a Django Q that will match any IP inside this vlan."""

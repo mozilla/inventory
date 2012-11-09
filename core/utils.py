@@ -30,27 +30,6 @@ class IPFilterSet(object):
         new list of IPFilter objects that represent this range.
         """
 
-    def compile_OR_Q(self):
-        mega_filter = Q()
-        for ipf in self.ipfs:
-            mega_filter = mega_filter | ipf.compile_Q()
-        return mega_filter
-
-    def compile_AND(self):
-        """Returns an IPF object containing the intersections of all ipfs."""
-        if not self.ipfs:
-            return None
-        ip_type = self.ipfs[0].ip_type
-        return self.trim(self.ipfs[0], self.ipfs[1:], ip_type)
-
-    def compile_AND_Q(self):
-        """Returns a Q object containing the intersections of all ipfs."""
-        if not self.ipfs:
-            return Q()
-        ip_type = self.ipfs[0].ip_type
-        rx = self.trim(self.ipfs[0], self.ipfs[1:], ip_type)
-        return rx.compile_Q()
-
     def trim(self, r, rs, ip_type):
         if not (rs and r):
             return r
@@ -159,6 +138,7 @@ def two_to_four(start, end):
     end_lower = end & (1 << 64) - 1
     return start_upper, start_lower, end_upper, end_lower
 
+
 def one_to_two(ip):
     return (ip >> 64, ip & (1 << 64) - 1)
 
@@ -171,6 +151,7 @@ def four_to_two(start_upper, start_lower, end_upper, end_lower):
     start = start_upper << 64 + start_lower
     end = end_upper << 64 + end_lower
     return start, end
+
 
 def int_to_ip(ip, ip_type):
     """A wrapper that converts a 32 or 128 bit integer into human readable IP

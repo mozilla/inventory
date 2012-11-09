@@ -31,13 +31,3 @@ def calc_parent(network):
 def calc_parent_str(network_str, ip_type):
     network = Network(network_str=network_str, ip_type=ip_type)
     return calc_parent(network)
-
-
-def networks_to_Q(networks):
-    """Take a list of network objects and compile a Q that matches any object
-    that exists in one of those networks."""
-    q = Q()
-    for network in networks:
-        network.update_ipf()
-        q = q | network.ipf.Q
-    return q
