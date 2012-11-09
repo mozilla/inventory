@@ -70,7 +70,7 @@ def search_dns_text(request):
         response_str += render_rdtype(kwargs['intrs'])
         response_str += render_rdtype(kwargs['ptrs'])
         response_str += render_rdtype(kwargs['intrs'], reverse=True)
-        return response_str
+        return json.dumps({'text_response': response_str})
 
     return _search(request, text_response)
 

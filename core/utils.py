@@ -1,11 +1,40 @@
 from django.db.models import Q
+from django.core.exceptions import ValidationError
 
 import ipaddr
 import pdb
 
-def get_interfaces_range(start, stop):
-    intrs = StaticInterface.objects.filter(ip_upper=0, ip_lower__gte=start,
-            ip_lower__lte=end)
+
+def start_end_filter(start, end, ip_type):
+    ip_type = ip_type
+    if ip_type == '6':
+        IPKlass = ipaddr.IPv6Address
+    elif ip_type == '4':
+        IPKlass = ipaddr.IPv4Address
+
+    istart = IPKlass(start)
+    iend = IPKlass(end)
+
+    if int(istart) == int(iend):
+        raise ValidationError("start and end cannot be equal")
+    elif int(istart) > int(iend):
+        raise ValidationError("start cannot be greater than end")
+
+    start_upper, start_lower = one_to_two(int(istart))
+    end_upper, end_lower = one_to_two(int(iend))
+
+    # Equal uppers. Lower must be within.
+    if start_upper == end_upper:
+        q = Q(ip_upper=start_upper,
+                ip_lower__gte=start_lower,
+                ip_lower__lte=end_lower,
+                ip_type=ip_type)
+    else:
+        q = Q(ip_upper__gt=start_upper, ip_upper__lt=end_upper,
+                ip_type=ip_type)
+
+    return istart, iend, q
+
 
 class IPFilterSet(object):
     """The IPFilterSet expects that all IPFilters added to it are of the same
@@ -123,8 +152,9 @@ class IPFilter(object):
         return str(self)
 
     def compile_Q(self):
+        # This only works for ipv4
         q_filter = Q(ip_upper=self.start_upper, ip_lower__gte=self.start_lower,
-                ip_lower__lte=self.end_lower)
+                ip_lower__lte=self.end_lower, ip_type=self.ip_type)
         return q_filter
 
 
@@ -135,6 +165,9 @@ def two_to_four(start, end):
     end_lower = end & (1 << 64) - 1
     return start_upper, start_lower, end_upper, end_lower
 
+def one_to_two(ip):
+    return (ip >> 64, ip & (1 << 64) - 1)
+
 
 def two_to_one(upper, lower):
     return long(upper << 64) + long(lower)
@@ -144,3 +177,12 @@ def four_to_two(start_upper, start_lower, end_upper, end_lower):
     start = start_upper << 64 + start_lower
     end = end_upper << 64 + end_lower
     return start, end
+
+def int_to_ip(ip, ip_type):
+    """A wrapper that converts a 32 or 128 bit integer into human readable IP
+    format."""
+    if ip_type == '6':
+        IPKlass = ipaddr.IPv6Address
+    elif ip_type == '4':
+        IPKlass = ipaddr.IPv4Address
+    return str(IPKlass(ip))

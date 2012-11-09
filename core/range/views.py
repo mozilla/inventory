@@ -2,9 +2,11 @@ from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 
+from core.utils import int_to_ip
 from core.range.forms import RangeForm
+from core.range.utils import range_usage
 from core.range.models import Range, RangeKeyValue
 from core.interface.static_intr.models import StaticInterface
 from mozdns.address_record.models import AddressRecord
@@ -55,6 +57,29 @@ def delete_range_attr(request, attr_pk):
     attr.delete()
     return HttpResponse("Attribute Removed.")
 
+def range_usage_text(request):
+    start = request.GET.get('start', None)
+    end = request.GET.get('end', None)
+    format = request.GET.get('format', 'human_readable')
+    if not (start and end):
+        return HttpResponseBadRequest(json.dumps({'error_messages':
+                    'Provide a start and end'}))
+
+    get_objects = request.GET.get('get_objects', False)
+    if start.find(':') > -1:
+        ip_type = '6'
+    else:
+        ip_type = '4'
+    try:
+        usage_data = range_usage(start, end, ip_type, get_objects)
+    except (ValidationError, ipaddr.AddressValueError), e:
+        return HttpResponseBadRequest(json.dumps({'error_messages': str(e)}))
+
+    if format == 'human_readable':
+        usage_data['free_ranges'] = map(lambda x: (int_to_ip(x[0], ip_type),
+            int_to_ip(x[1], ip_type)), usage_data['free_ranges'])
+
+    return HttpResponse(json.dumps(usage_data))
 
 def range_detail(request, range_pk):
     mrange = get_object_or_404(Range, pk=range_pk)
@@ -215,7 +240,6 @@ def get_next_available_ip_by_range(request, range_id):
 
 def get_all_ranges_ajax(request):
     system_pk = request.GET.get('system_pk', '-1')
-    pdb.set_trace()
     location = None
     system = None
     ret_list = []

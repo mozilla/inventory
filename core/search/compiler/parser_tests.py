@@ -139,6 +139,11 @@ class TestParser(TestCase):
         exp = 'type=:foo.bar type=:baz NOT AND'
         self.compare(ss, exp)
 
+    def test25(self):
+        ss = "foo-bar baz"
+        exp = 'foo-bar baz AND'
+        self.compare(ss, exp)
+
 
 if __name__ == "__main__":
     unittest.main()

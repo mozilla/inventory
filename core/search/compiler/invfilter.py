@@ -20,6 +20,8 @@ from mozdns.view.models import View
 from core.interface.static_intr.models import StaticInterface
 from core.site.models import Site
 from core.utils import two_to_four, IPFilter
+from core.utils import start_end_filter, one_to_two, two_to_one
+
 from core.vlan.models import Vlan
 
 from systems.models import System
@@ -111,6 +113,8 @@ class DirectiveFilter(_Filter):
             return build_vlan_qsets(dvalue)
         elif directive == 'zone':
             return build_zone_qsets(dvalue)
+        elif directive == 'range':
+            return build_range_qsets(dvalue)
         elif directive == 'type':
             return build_rdtype_qsets(dvalue)
         elif directive == 'site':
@@ -177,6 +181,23 @@ def build_ipf_qsets(q):
         else:
             q_sets.append(None)
     return q_sets
+
+
+def build_range_qsets(range_):
+    try:
+        start, end = range_.split(',')
+    except ValueError:
+        raise BadDirective("Specify a range using the format: start,end")
+    if start.find(':') > -1:
+        ip_type = '6'
+    if end.find('.') > -1:
+        ip_type = '4'
+    try:
+        istart, iend, ipf_q = start_end_filter(start, end, ip_type)
+    except (ValidationError, ipaddr.AddressValueError), e:
+        raise BadDirective(str(e))
+    return build_ipf_qsets(ipf_q)
+
 
 def build_network_qsets(network_str):
     # Todo move these directive processors into functions.
