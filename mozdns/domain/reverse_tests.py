@@ -72,7 +72,7 @@ class ReverseDomainTests(TestCase):
         b_m = self.create_domain( name = '8.3')
         b_m.save()
 
-        s = SOA( primary="ns1.foo.com", contact="asdf", comment="test")
+        s = SOA( primary="ns1.foo.com", contact="asdf", description="test")
         s.save()
 
         f_m.soa = s
@@ -95,14 +95,14 @@ class ReverseDomainTests(TestCase):
         m.soa = None
         self.assertRaises(ValidationError, m.save)
 
-        s2 = SOA( primary="ns1.foo.com", contact="asdf", comment="test2")
+        s2 = SOA( primary="ns1.foo.com", contact="asdf", description="test2")
         s2.save()
 
         m.soa = s2
         self.assertRaises(ValidationError, m.save)
 
     def test_2_soa_validators(self):
-        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact = "hostmaster.foo",        comment="foo.gaz2")
+        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact = "hostmaster.foo",        description="foo.gaz2")
         d, _ = Domain.objects.get_or_create(name="11.in-addr.arpa")
         d.soa = None
         d.save()
@@ -111,7 +111,7 @@ class ReverseDomainTests(TestCase):
         d1.save()
 
     def test_3_soa_validators(self):
-        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo2.gaz", contact = "hostmaster.foo",       comment="foo.gaz2")
+        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo2.gaz", contact = "hostmaster.foo",       description="foo.gaz2")
 
         d, _ = Domain.objects.get_or_create(name="gaz")
         d.soa = s1

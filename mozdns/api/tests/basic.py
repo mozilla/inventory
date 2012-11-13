@@ -32,7 +32,7 @@ def build_sample_domain():
     for i in range(2):
         domain_name = random_label()
         domain = Domain(name=domain_name)
-    soa = SOA(primary=random_label(), contact="asf", comment=random_label())
+    soa = SOA(primary=random_label(), contact="asf", description=random_label())
     soa.save()
     domain.soa = soa
     domain.save()
@@ -136,8 +136,8 @@ class MozdnsAPITests(object):
         resp, post_data = self.generic_create(self.post_data())
         _, (_, new_object_url) = resp.items()
         change_post_data = {}
-        change_post_data['comment'] = "==DIFFERENT=="
-        post_data['comment'] = "==DIFFERENT=="
+        change_post_data['description'] = "==DIFFERENT=="
+        post_data['description'] = "==DIFFERENT=="
         resp, patch_data = self.generic_update(new_object_url, change_post_data)
         new_resp = self.api_client.get(new_object_url, format='json')
         updated_obj_data = json.loads(new_resp.content)
@@ -255,7 +255,7 @@ class MangleTests(ResourceTestCase):
 
     def post_data(self):
         return {
-            'comment':random_label(),
+            'description':random_label(),
             'ttl': random_byte(),
             'label': 'b' + random_label(),
             'domain':self.domain.name,
@@ -296,7 +296,7 @@ class CNAMEAPITests(MozdnsAPITests, ResourceTestCase):
 
     def post_data(self):
         return {
-            'comment':random_label(),
+            'description':random_label(),
             'ttl': random_byte(),
             'label': 'd' + random_label(),
             'domain':self.domain.name,
@@ -309,7 +309,7 @@ class MXAPITests(MozdnsAPITests, ResourceTestCase):
 
     def post_data(self):
         return {
-            'comment': random_label(),
+            'description': random_label(),
             'ttl': random_byte(),
             'label':  'e' + random_label(),
             'domain':self.domain.name,
@@ -322,7 +322,7 @@ class SRVAPITests(MozdnsAPITests, ResourceTestCase):
     test_type = SRV
     def post_data(self):
         return {
-            'comment': random_label(),
+            'description': random_label(),
             'ttl': random_byte(),
             'label':"_"+random_label(),
             'domain':self.domain.name,
@@ -337,7 +337,7 @@ class TXTAPITests(MozdnsAPITests, ResourceTestCase):
     test_type = TXT
     def post_data(self):
         return {
-            'comment': random_label(),
+            'description': random_label(),
             'ttl': random_byte(),
             'label': 'f' + random_label(),
             'domain':self.domain.name,
@@ -351,7 +351,7 @@ class NameserverAPITests(MozdnsAPITests, ResourceTestCase):
     def post_data(self):
         return {
             'server': 'g' + random_label(),
-            'comment': random_label(),
+            'description': random_label(),
             'ttl': random_byte(),
             'domain':self.domain.name,
         }
@@ -361,7 +361,7 @@ class SSHFPAPITests(MozdnsAPITests, ResourceTestCase):
     test_type = SSHFP
     def post_data(self):
         return {
-            'comment': random_label(),
+            'description': random_label(),
             'ttl': random_byte(),
             'label': 'h' + random_label(),
             'domain': self.domain.name,
@@ -377,7 +377,7 @@ class AdderessRecordV4APITests(MozdnsAPITests, ResourceTestCase):
 
     def post_data(self):
         return {
-            'comment': random_label(),
+            'description': random_label(),
             'ttl': random_byte(),
             'label': 'i' + random_label(),
             'domain': self.domain.name,
@@ -395,7 +395,7 @@ class AdderessRecordV6APITests(MozdnsAPITests, ResourceTestCase):
 
     def post_data(self):
         return {
-            'comment': random_label(),
+            'description': random_label(),
             'ttl': random_byte(),
             'label': 'j' + random_label(),
             'domain': self.domain.name,
@@ -417,7 +417,7 @@ class PTRV6APITests(MozdnsAPITests, ResourceTestCase):
 
     def post_data(self):
         return {
-            'comment': 'k' + random_label(),
+            'description': 'k' + random_label(),
             'ttl': random_byte(),
             'ip_str': "1000:{0}:{1}:{2}:{3}:{4}::".format(random_byte(), random_byte(),
                 random_byte(),random_byte(),random_byte()),
@@ -438,7 +438,7 @@ class PTRV4APITests(MozdnsAPITests, ResourceTestCase):
 
     def post_data(self):
         return {
-            'comment': random_label(),
+            'description': random_label(),
             'ttl': random_byte(),
             'ip_str': "11.{0}.{1}.{2}".format(random_byte(), random_byte(), random_byte()),
             'ip_type': '4',
@@ -478,7 +478,7 @@ class StaticIntrV4APITests(MozdnsAPITests, ResourceTestCase):
 
     def post_data(self):
         return {
-            'comment': 'm' + random_label(),
+            'description': 'm' + random_label(),
             'ttl': random_byte(),
             'mac': '11:22:33:44:55:00',
             'system': '/tasty/v3/system/{0}/'.format(self.s.pk),
@@ -510,7 +510,7 @@ class StaticIntrV6APITests(MozdnsAPITests, ResourceTestCase):
 
     def post_data(self):
         return {
-            'comment': random_label(),
+            'description': random_label(),
             'ttl': random_byte(),
             'label': 'p' + random_label(),
             'iname': 'mgmt4',

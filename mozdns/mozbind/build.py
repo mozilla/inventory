@@ -278,7 +278,7 @@ def build_dns():
     slave_public_zones = ""
     slave_private_zones = ""
 
-    for soa in SOA.objects.all().order_by("comment"):
+    for soa in SOA.objects.all().order_by("description"):
         root_domain = find_root_domain(soa)
         if not root_domain:
             print ("Couldn't find root domain. No zone statement was printed "

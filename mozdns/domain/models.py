@@ -23,7 +23,7 @@ class Domain(models.Model, ObjectUrlMixin):
 
     If two domains are part of different zones, they (and their
     subdomains) will need different SOA objects even if the data contained
-    in the SOA is exactly the same. Use the comment field to
+    in the SOA is exactly the same. Use the description field to
     distinguish between similar SOAs. This model enforces these
     requirements and will raise a ``ValidationError`` during
     :func:`clean` if it is violated.

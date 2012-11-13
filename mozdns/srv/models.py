@@ -52,7 +52,7 @@ class SRV(models.Model, ObjectUrlMixin, DisplayMixin):
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
             validators=[validate_ttl],
             help_text="Time to Live of this record")
-    comment = models.CharField(max_length=1000, blank=True, null=True)
+    description = models.CharField(max_length=1000, blank=True, null=True)
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {priority:$prio_just} "
                  "{weight:$extra_just} {port:$extra_just} "
@@ -77,7 +77,7 @@ class SRV(models.Model, ObjectUrlMixin, DisplayMixin):
     @classmethod
     def get_api_fields(cls):
         return ['label', 'port', 'ttl', 'weight', 'priority', 'target',
-                'comment']
+                'description']
 
     @property
     def rdtype(self):

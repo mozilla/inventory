@@ -11,7 +11,7 @@ import simplejson as json
 import pdb
 
 def mozdns_home(request):
-    domains = Domain.objects.filter(is_reverse=False).order_by('name').order_by('soa__comment')
+    domains = Domain.objects.filter(is_reverse=False).order_by('name').order_by('soa__description')
     return render(request, 'mozdns/mozdns.html', {
         'domains': domains,
     })

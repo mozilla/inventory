@@ -217,14 +217,14 @@ def migrate_soa(zone, root_domain_name):
         print str(name) + " SOA " + str(rdata)
         exists = SOA.objects.filter(minimum=rdata.minimum,
                 contact=rdata.rname.to_text().strip('.'),
-                primary=rdata.mname.to_text().strip('.'), comment="SOA for"
+                primary=rdata.mname.to_text().strip('.'), description="SOA for"
                 " {0}".format(root_domain_name))
         if exists:
             soa = exists[0]
         else:
             soa = SOA(serial=rdata.serial, minimum=rdata.minimum,
                     contact=rdata.rname.to_text().strip('.'),
-                    primary=rdata.mname.to_text().strip('.'), comment="SOA for"
+                    primary=rdata.mname.to_text().strip('.'), description="SOA for"
                     " {0}".format(root_domain_name))
             soa.clean()
             soa.save()

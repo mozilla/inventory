@@ -40,8 +40,8 @@ class BaseAddressRecord(Ip, DisplayMixin):
                 validators=[validate_name])
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
             validators=[validate_ttl], help_text="Time to Live of the record")
-    comment = models.CharField(max_length=1000, blank=True, null=True,
-                help_text="Comments about this record.")
+    description = models.CharField(max_length=1000, blank=True, null=True,
+                help_text="A description of this record.")
     views = models.ManyToManyField(View, blank=True)
 
     search_fields = ("fqdn", "ip_str")
@@ -65,7 +65,7 @@ class BaseAddressRecord(Ip, DisplayMixin):
 
     @classmethod
     def get_api_fields(cls):
-        return  ['label', 'ip_str', 'ip_type', 'comment', 'ttl']
+        return  ['label', 'ip_str', 'ip_type', 'description', 'ttl']
 
     def save(self, *args, **kwargs):
         self.full_clean()

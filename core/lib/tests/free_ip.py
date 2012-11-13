@@ -23,7 +23,7 @@ class LibTestsFreeIP(TestCase):
         Domain.objects.get_or_create(name="com")
         d1, _ = Domain.objects.get_or_create(name="mozilla.com")
         soa, _ = SOA.objects.get_or_create(primary="fo.bar", contact="foo.bar.com",
-                comment="foo bar")
+                description="foo bar")
         self.s = soa
         d1.soa = soa
         d1.save()

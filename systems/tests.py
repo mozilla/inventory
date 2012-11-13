@@ -610,7 +610,7 @@ class SystemAdapterTest(TestCase):
         Domain(name='com').save()
         d0 = Domain(name='mozilla.com')
         d0.save()
-        s = SOA(primary="foo", comment="bar", contact="asdf")
+        s = SOA(primary="foo", description="bar", contact="asdf")
         s.save()
         d0.soa = s
         d0.save()
@@ -625,13 +625,13 @@ class SystemAdapterTest(TestCase):
         Domain(name='in-addr.arpa').save()
 
         # Create Reverse Domains
-        s = SOA(primary="foo", comment="bar", contact="asdfasdf")
+        s = SOA(primary="foo", description="bar", contact="asdfasdf")
         s.save()
         d = Domain(name='10.in-addr.arpa')
         d.soa = s
         d.save()
 
-        s = SOA(primary="foo.reverse", comment="bar", contact="asdfasdf")
+        s = SOA(primary="foo.reverse", description="bar", contact="asdfasdf")
         s.save()
         d = Domain(name='66.in-addr.arpa')
         d.soa = s

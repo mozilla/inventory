@@ -122,13 +122,13 @@
             $("#{{rec_type}}_build_ip").keyup(function(){ update_ip('{{rec_type}}'); });
             </script>
     {%- endmacro %}
-    {% macro draw_build_comment(rec_type) -%}
-            <label class='optional_field' for='{{rec_type}}_build_comment'>Comment:
-                {{input(rec_type + "_build_comment")}}
+    {% macro draw_build_description(rec_type) -%}
+            <label class='optional_field' for='{{rec_type}}_build_description'>Description:
+                {{input(rec_type + "_build_description")}}
             </label>
-            <div class='field_errors' id='{{rec_type}}_build_comment_errors'>This is an error</div>
+            <div class='field_errors' id='{{rec_type}}_build_description_errors'>This is an error</div>
             <script>
-            $("#{{rec_type}}_build_comment").keyup(function(){ update_comment('{{rec_type}}'); });
+            $("#{{rec_type}}_build_description").keyup(function(){ update_description('{{rec_type}}'); });
             </script>
     {%- endmacro %}
     {% macro draw_build_target_name(rec_type, description='Target') -%}
@@ -221,8 +221,8 @@
     {% macro display_rec_attr(rec_type, attr, default="", reset="false") -%}
             <div class="inline" reset='{{reset}}' value="{{attr}}" id="{{rec_type}}_display_{{attr}}"><i>{{default}}</i></div>
     {%- endmacro %}
-    {% macro display_rec_comment(rec_type) -%}
-            <div class="inline" reset='true' id="{{rec_type}}_display_comment"></div>
+    {% macro display_rec_description(rec_type) -%}
+            <div class="inline" reset='true' id="{{rec_type}}_display_description"></div>
     {%- endmacro %}
     {% macro display_rec_text(rec_type) -%}
             <div class="inline" reset='false' id="{{rec_type}}_display_text" value='Text'><i>Text</i></div>
@@ -250,7 +250,7 @@
                 <td></td>
             </tr>
             <tr>
-                <td>{{draw_build_comment('A')}}</td>
+                <td>{{draw_build_description('A')}}</td>
                 <td></td>
             </tr>
             <tr>
@@ -265,7 +265,7 @@
             {{display_rec_type('A')}}
             {{display_rec_ttl('A')}}
             {{display_rec_ip('A')}}
-            {{display_rec_comment('A')}}
+            {{display_rec_description('A')}}
         </div>
     </div>
 
@@ -288,7 +288,7 @@
                 <td></td>
             </tr>
             <tr>
-                <td>{{draw_build_comment('MX')}}</td>
+                <td>{{draw_build_description('MX')}}</td>
                 <td></td>
             </tr>
             <tr>
@@ -304,7 +304,7 @@
             {{display_rec_ttl('MX')}}
             {{display_rec_attr('MX', 'Priority', 'Priority', reset='true')}}
             {{display_target_name('MX')}}
-            {{display_rec_comment('MX')}}
+            {{display_rec_description('MX')}}
         </div>
     </div>
     <div id="NS_display" style='display:none;'>
@@ -322,7 +322,7 @@
                 <td></td>
             </tr>
             <tr>
-                <td>{{draw_build_comment('NS')}}</td>
+                <td>{{draw_build_description('NS')}}</td>
                 <td></td>
             </tr>
             <tr>
@@ -337,7 +337,7 @@
             {{display_rec_type('NS')}}
             {{display_rec_ttl('NS')}}
             {{display_target_name('NS')}}
-            {{display_rec_comment('NS')}}
+            {{display_rec_description('NS')}}
         </div>
     </div>
     <div id="PTR_display" style='display:none;'>
@@ -355,7 +355,7 @@
                 <td></td>
             </tr>
             <tr>
-                <td>{{draw_build_comment('PTR')}}</td>
+                <td>{{draw_build_description('PTR')}}</td>
                 <td></td>
             </tr>
             <tr>
@@ -370,7 +370,7 @@
             {{display_rec_type('PTR')}}
             {{display_rec_ttl('PTR')}}
             {{display_target_name('PTR')}}
-            {{display_rec_comment('PTR')}}
+            {{display_rec_description('PTR')}}
         </div>
     </div>
 
@@ -389,7 +389,7 @@
                 <td></td>
             </tr>
             <tr>
-                <td>{{draw_build_comment('CNAME')}}</td>
+                <td>{{draw_build_description('CNAME')}}</td>
                 <td></td>
             </tr>
             <tr>
@@ -404,7 +404,7 @@
             {{display_rec_type('CNAME')}}
             {{display_rec_ttl('CNAME')}}
             {{display_target_name('CNAME')}}
-            {{display_rec_comment('CNAME')}}
+            {{display_rec_description('CNAME')}}
         </div>
     </div>
 
@@ -435,7 +435,7 @@
                 <td></td>
             </tr>
             <tr>
-                <td>{{draw_build_comment('SRV')}}</td>
+                <td>{{draw_build_description('SRV')}}</td>
                 <td></td>
             </tr>
             <tr>
@@ -453,7 +453,7 @@
             {{display_rec_attr('SRV', 'Weight', 'Weight', reset='false')}}
             {{display_rec_attr('SRV', 'Priority', 'Priority', reset='false')}}
             {{display_target_name('SRV')}}
-            {{display_rec_comment('SRV')}}
+            {{display_rec_description('SRV')}}
         </div>
     </div>
 
@@ -472,7 +472,7 @@
                 <td></td>
             </tr>
             <tr>
-                <td>{{draw_build_comment('TXT')}}</td>
+                <td>{{draw_build_description('TXT')}}</td>
                 <td></td>
             </tr>
             <tr>
@@ -487,7 +487,7 @@
             {{display_rec_type('TXT')}}
             {{display_rec_ttl('TXT')}}
             {{display_rec_text('TXT')}}
-            {{display_rec_comment('TXT')}}
+            {{display_rec_description('TXT')}}
         </div>
     </div>
     <br>

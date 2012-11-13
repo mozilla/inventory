@@ -47,8 +47,8 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
     intr_glue = models.ForeignKey(StaticInterface, null=True, blank=True,
             related_name="intrnameserver_set")
     views = models.ManyToManyField(View, blank=True)
-    comment = models.CharField(max_length=1000, null=True, blank=True,
-                help_text="Comments about this record.")
+    description = models.CharField(max_length=1000, null=True, blank=True,
+                help_text="A description of this record.")
 
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {server:$rhs_just}.")
@@ -61,7 +61,7 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
 
     @classmethod
     def get_api_fields(cls):
-        return ['ttl', 'comment', 'server']
+        return ['ttl', 'description', 'server']
 
     @property
     def rdtype(self):

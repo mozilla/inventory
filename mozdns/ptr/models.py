@@ -28,14 +28,14 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
             validators=[validate_ttl])
     reverse_domain = models.ForeignKey(Domain, null=False, blank=True)
     views = models.ManyToManyField(View, blank=True)
-    comment = models.CharField(max_length=1000, null=True, blank=True)
+    description = models.CharField(max_length=1000, null=True, blank=True)
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {name:1}.")
     search_fields = ('ip_str', 'name')
 
     @classmethod
     def get_api_fields(cls):
-        return ['ip_str', 'ip_type', 'name', 'ttl', 'comment']
+        return ['ip_str', 'ip_type', 'name', 'ttl', 'description']
 
     def details(self):
         return (

@@ -7,13 +7,13 @@ class CNAMEForm(ModelForm):
     class Meta:
         model = CNAME
         exclude = ('fqdn',)
-        fields = ('label', 'domain', 'target', 'views', 'ttl', 'comment')
+        fields = ('label', 'domain', 'target', 'views', 'ttl', 'description')
         widgets = {'views': forms.CheckboxSelectMultiple}
         # https://code.djangoproject.com/ticket/9321
 
 class CNAMEFQDNForm(ModelForm):
     class Meta:
         model = CNAME
-        fields = ('fqdn', 'target', 'views', 'ttl', 'comment')
+        fields = ('fqdn', 'target', 'views', 'ttl', 'description')
         widgets = {'views': forms.CheckboxSelectMultiple}
         # https://code.djangoproject.com/ticket/9321

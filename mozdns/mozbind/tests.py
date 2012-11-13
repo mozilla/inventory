@@ -25,12 +25,12 @@ class DirtySOATests(TestCase):
         Domain.objects.get_or_create(name="in-addr.arpa")
         self.r1, _ = Domain.objects.get_or_create(name="10.in-addr.arpa")
         self.sr, sr_c = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact =
-                "hostmaster.foo", comment="123foo.gazsdi2")
+                "hostmaster.foo", description="123foo.gazsdi2")
         self.r1.soa = self.sr
         self.r1.save()
 
         s1, s1_c = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact =
-                "hostmaster.dfdfoo", comment="123fooasdfsdfasdfsa.gaz2")
+                "hostmaster.dfdfoo", description="123fooasdfsdfasdfsa.gaz2")
         self.soa = s1
         d, _ = Domain.objects.get_or_create(name="bgaz")
         d.soa = s1
@@ -40,7 +40,7 @@ class DirtySOATests(TestCase):
         self.dom.dirty = False
 
         s2, s1_c = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact =
-                "hostmaster.foo", comment="123fooasdfsdf.gaz2")
+                "hostmaster.foo", description="123fooasdfsdf.gaz2")
         self.rsoa = s2
         rd, _ = Domain.objects.get_or_create(name="123.in-addr.arpa")
         rd.soa = s2

@@ -44,9 +44,9 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
 
 
         >>> SOA(primary=primary, contact=contact, retry=retry,
-        ... refresh=refresh, comment=comment)
+        ... refresh=refresh, description=description)
 
-    Each DNS zone must have it's own SOA object. Use the comment field to
+    Each DNS zone must have it's own SOA object. Use the description field to
     remind yourself which zone an SOA corresponds to if different SOA's have a
     similar ``primary`` and ``contact`` value.
     """
@@ -66,10 +66,10 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     # The time when the slave will try to refresh the zone from the master
     refresh = models.PositiveIntegerField(null=False, default=DEFAULT_REFRESH)
     minimum = models.PositiveIntegerField(null=False, default=DEFAULT_MINIMUM)
-    comment = models.CharField(max_length=200, null=True, blank=True)
+    description = models.CharField(max_length=200, null=True, blank=True)
     # This indicates if this SOA's zone needs to be rebuilt
     dirty = models.BooleanField(default=False)
-    search_fields = ('primary', 'contact', 'comment')
+    search_fields = ('primary', 'contact', 'description')
     template = _("{root_domain}. {ttl} {rdclass:$rdclass_just} {rdtype:$rdtype_just}"
                 "{primary}. {contact}. ({serial} {refresh} {retry} {expire})")
 
@@ -86,10 +86,10 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
 
     class Meta:
         db_table = 'soa'
-        # We are using the comment field here to stop the same SOA from
+        # We are using the description field here to stop the same SOA from
         # being assigned to multiple zones. See the documentation in the
         # Domain models.py file for more info.
-        unique_together = ('primary', 'contact', 'comment')
+        unique_together = ('primary', 'contact', 'description')
 
     def details(self):
         return  (
@@ -99,7 +99,7 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
                     ('Expire', self.expire),
                     ('Retry', self.retry),
                     ('Refresh', self.refresh),
-                    ('Comment', self.comment),
+                    ('Description', self.description),
                 )
 
     @property
@@ -128,7 +128,7 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
         if self.pk:
             db_self = SOA.objects.get(pk=self.pk)
             fields = ['primary', 'contact', 'expire', 'retry',
-                    'refresh', 'comment']
+                    'refresh', 'description']
             # Leave out serial for obvious reasons
             for field in fields:
                 if getattr(db_self, field) != getattr(self, field):
@@ -136,7 +136,7 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
         super(SOA, self).save(*args, **kwargs)
 
     def __str__(self):
-        return "{0}".format(str(self.comment))
+        return "{0}".format(str(self.description))
 
     def __repr__(self):
         return "<'{0}'>".format(str(self))

@@ -61,8 +61,8 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
             validators=[validate_ttl],
             help_text="Time to Live of this record")
     views = models.ManyToManyField(View, blank=True)
-    comment = models.CharField(max_length=1000, blank=True, null=True,
-                help_text="Comments about this record.")
+    description = models.CharField(max_length=1000, blank=True, null=True,
+                help_text="A description of this record.")
     # fqdn = label + domain.name <--- see set_fqdn
 
     class Meta:
@@ -77,7 +77,7 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
         the model. See the ModelResource definitions for view and domain
         fields.
         """
-        return ['label', 'ttl', 'comment']
+        return ['label', 'ttl', 'description']
 
     def clean(self):
         set_fqdn(self)

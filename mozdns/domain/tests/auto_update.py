@@ -27,7 +27,7 @@ class UpdateRecordDeleteDomainTests(TestCase):
         self.assertFalse(c.purgeable)
         f_c, _ = Domain.objects.get_or_create(name = 'foo.foo22')
         s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
-                comment="foo.foo22")
+                description="foo.foo22")
         f_c.soa = s
         f_c.save()
         self.assertFalse(f_c.purgeable)
