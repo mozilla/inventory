@@ -32,35 +32,56 @@
 </style>
 {% if obj %}
 <div class='object_meta'>
-    {% if obj.domain.soa %}
+    {% if not reverse and obj.domain.soa or reverse and obj.reverse_domain.soa  %}
     <table>
         <caption>You are editing the {{record_type}} record: <code>{{obj}}</code></caption>
         <tr>
             <td>
-                ZONE: 
-                <a href='{{ obj.domain.soa.get_absolute_url() }}'>{{ obj.domain.soa }}</a>
+                {% if not reverse %}
+                ZONE: <a href='{{ obj.domain.soa.get_absolute_url() }}'>{{ obj.domain.soa }}</a>
+                {% else %}
+                ZONE: <a href='{{ obj.reverse_domain.soa.get_absolute_url() }}'>{{ obj.reverse_domain.soa }}</a>
+                {% endif %}
             </td>
         </tr>
         <tr>
             <td>
                 Zone Status:
-                {% if obj.domain.soa.dirty %}
-                <div class='soa_status_dirty'>REBUILD NEEDED</div>
+                {% if not reverse %}
+                    {% if obj.domain.soa.dirty %}
+                    <div class='soa_status_dirty'>REBUILD NEEDED</div>
+                    {% else %}
+                    <div class='soa_status_clean'>UP TO DATE</div>
+                    {% endif %}
                 {% else %}
-                <div class='soa_status_clean'>UP TO DATE</div>
+                    {% if obj.reverse_domain.soa.dirty %}
+                    <div class='soa_status_dirty'>REBUILD NEEDED</div>
+                    {% else %}
+                    <div class='soa_status_clean'>UP TO DATE</div>
+                    {% endif %}
                 {% endif %}
             </td>
         </tr>
         <tr>
             <td>
                 Debug BIND File:
-                <a href='{{ obj.domain.soa.get_debug_build_url() }}'> click </a>
+                {% if not reverse %}
+                    <a href='{{ obj.domain.soa.get_debug_build_url() }}'> click </a>
+                {% else %}
+                    <a href='{{ obj.reverse_domain.soa.get_debug_build_url() }}'> click </a>
+                {% endif %}
             </td>
         </tr>
         <tr>
             <td>
                 View Record:
                 <a href='{{ obj.get_absolute_url() }}'> click </a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Record History:
+                <a href='{{ obj.get_history_url() }}'> click </a>
             </td>
         </tr>
     </table>

@@ -12,6 +12,8 @@ from mozdns.soa.utils import update_soa
 
 from core.interface.static_intr.models import StaticInterface
 
+import reversion
+
 from string import Template
 from gettext import gettext as _
 import pdb
@@ -61,7 +63,7 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
 
     @classmethod
     def get_api_fields(cls):
-        return ['ttl', 'description', 'server']
+        return ['ttl', 'description', 'server', 'domain', 'views']
 
     @property
     def rdtype(self):
@@ -194,3 +196,5 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
             # It's not a valid label
             return False
         return True
+
+reversion.register(Nameserver)

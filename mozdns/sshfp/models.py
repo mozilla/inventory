@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 
 from mozdns.models import MozdnsRecord
 
+import reversion
+
 from gettext import gettext as _
 
 
@@ -68,3 +70,6 @@ class SSHFP(MozdnsRecord):
         # _mysql_exceptions.OperationalError: (1170, "BLOB/TEXT column
         # 'txt_data' used in key specification without a key length")
         # Fix that ^
+
+
+reversion.register(SSHFP)

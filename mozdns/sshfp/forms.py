@@ -1,15 +1,16 @@
 from django.forms import ModelForm
 
 from mozdns.sshfp.models import SSHFP
+from mozdns.forms import BaseForm
 
 
-class SSHFPForm(ModelForm):
+class SSHFPForm(BaseForm):
     class Meta:
         model = SSHFP
         exclude = ('fqdn',)
 
 
-class FQDNSSHFPForm(ModelForm):
+class FQDNSSHFPForm(BaseForm):
     class Meta:
         model = SSHFP
         exclude = ('label', 'domain')

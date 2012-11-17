@@ -10,6 +10,8 @@ from settings import MOZDNS_BASE_URL
 from core.keyvalue.models import KeyValue
 from core.keyvalue.utils import AuxAttr
 
+import reversion
+
 from gettext import gettext as _
 from string import Template
 import time
@@ -141,6 +143,8 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     def __repr__(self):
         return "<'{0}'>".format(str(self))
 
+reversion.register(SOA)
+
 class SOAKeyValue(KeyValue):
     soa = models.ForeignKey(SOA, null=False)
 
@@ -167,3 +171,5 @@ class SOAKeyValue(KeyValue):
             raise ValidationError("Disabled should be set to either {0} OR "
                         "{1}".format(", ".join(true_values),
                         ", ".join(false_values)))
+
+reversion.register(SOAKeyValue)

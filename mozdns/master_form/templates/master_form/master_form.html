@@ -31,15 +31,13 @@
                                     {
                                         'record_type': $(select).attr('value'),
                                         'record_pk': '',
-                                    },
-                                    function (data) {
+                                    }, function (data) {
                                         $('#current_form_data').empty();
                                         $('#current_form_data').append(data);
                                         bind_smart_names();
                                         bind_record_search_box();
-                                    } // end get() handler
-                                ); // end get()
-                            }); // end click()
+                                    })
+                });
             });
 
             var initial_record_type = $('#record_type').attr('value');
@@ -105,7 +103,7 @@
                 }
             }
 
-            $('#current_form').submit(function (){
+            function submit_record(){
                     $('#form-message').html("<p>Sending data...</p>");
                     var start = new Date().getTime();
                     $.post('/mozdns/record/',
@@ -119,7 +117,33 @@
                                 var time = end - start;
                                 $('#action-time').html('('+time/1000+' seconds)');
 
-                            })
+                            }
+                    );
+                    $("#record_search").prop('disabled', false);
+            }
+
+            $('#current_form').submit(function (){
+                    if ($('#add_comment').is(':checked')) {
+                        var c_dialog = $( "#commit-dialog" ).dialog({
+                                    title: 'Comment on this commit? (A bug number would be nice)',
+                                    autoShow: false,
+                                    minWidth: 520,
+                                    buttons: {
+                                        "Commit": function() {
+                                            $('#id_comment').val($('#commit-message').val());
+                                            submit_record();
+                                            $(this).dialog("close");
+                                        },
+                                        Cancel: function() {
+                                            // pass
+                                            $(this).dialog("close");
+                                        }
+                                    }
+                        });
+                    } else {
+                        submit_record();
+                    }
+                    $(this).dialog("close");
                     return false;
             }); // end submit()
 
@@ -128,7 +152,7 @@
                 var inputs = $('input');
                 inputs.length;
                 for (var x = 0; x < inputs.length; x++){
-                    if(inputs[x].id === 'id_fqdn' || inputs[x].id === 'id_target' || inputs[x].id === 'id_server'){
+                    if(inputs[x].id === 'id_name' || inputs[x].id === 'id_fqdn' || inputs[x].id === 'id_target' || inputs[x].id === 'id_server'){
                         make_smart_name_get_domains(inputs[x], true)
                         $(inputs[x]).css('width', '400px');
                     }
@@ -196,10 +220,16 @@
                                         // Notice how we don't call bind_smart_names here. We don't want the autocomplete to get in the way
                                         // It's likely that they are just making a small change.
                                     });
+                                $("#record_search").prop('disabled', false);
+                                $('#record_search_selected').html('');
+                                $("#record_search").val('');
                                 $(this).dialog("close");
                             },
                             cancel: function() {
                                 $('#search-dialog').attr('stage_pk', ''), // we don't want this anymore.
+                                $("#record_search").prop('disabled', false);
+                                $('#record_search_selected').html('');
+                                $("#record_search").val('');
                                 $(this).dialog("close");
                             }
                         }
@@ -272,6 +302,13 @@
         <div style='display:inline;'>
         <input type='button' id='reset' value='Reset' style='display:inline;'/>
         </div>
+        <div style=''>
+            <label>Add commit message: <input type='checkbox' id='add_comment' value='' checked='checked'/></label>
+        </div>
+    </div>
+    <div id="commit-dialog" style='display: none;'>
+        <textarea id='commit-message' rows="0" cols="0">
+        </textarea>
     </div>
     <div id="search-dialog" title="Search For Record" style='display: none;'>
         <div>

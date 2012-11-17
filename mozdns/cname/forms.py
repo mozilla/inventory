@@ -1,9 +1,10 @@
 from django import forms
 from django.forms import ModelForm
 from mozdns.cname.models import CNAME
+from mozdns.forms import BaseForm
 
 
-class CNAMEForm(ModelForm):
+class CNAMEForm(BaseForm):
     class Meta:
         model = CNAME
         exclude = ('fqdn',)
@@ -11,7 +12,7 @@ class CNAMEForm(ModelForm):
         widgets = {'views': forms.CheckboxSelectMultiple}
         # https://code.djangoproject.com/ticket/9321
 
-class CNAMEFQDNForm(ModelForm):
+class CNAMEFQDNForm(BaseForm):
     class Meta:
         model = CNAME
         fields = ('fqdn', 'target', 'views', 'ttl', 'description')

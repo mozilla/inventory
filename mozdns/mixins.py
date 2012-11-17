@@ -46,6 +46,9 @@ class ObjectUrlMixin(object):
     def absolute_url(self):
         return self.get_absolute_url()
 
+    def get_history_url(self):
+        return "/reversion_compare/history_view/{0}/{1}/".format(self.rdtype, self.pk)
+
     def get_edit_url(self):
         """
         Return the edit url of an object.

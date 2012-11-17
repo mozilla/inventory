@@ -1,6 +1,6 @@
 from django import forms
-from django.forms import ModelForm
 
+from mozdns.forms import BaseForm
 from mozdns.nameserver.models import Nameserver
 from mozdns.address_record.models import AddressRecord
 from core.interface.static_intr.models import StaticInterface
@@ -9,7 +9,7 @@ import itertools
 import pdb
 
 
-class NameserverForm(ModelForm):
+class NameserverForm(BaseForm):
     class Meta:
         model = Nameserver
         exclude = ('addr_glue', 'intr_glue')

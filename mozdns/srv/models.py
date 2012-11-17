@@ -13,6 +13,8 @@ from mozdns.validation import validate_srv_priority, validate_srv_weight
 from mozdns.validation import validate_srv_name, validate_ttl
 from mozdns.validation import validate_srv_target
 
+import reversion
+
 from gettext import gettext as _
 import pdb
 
@@ -76,8 +78,8 @@ class SRV(models.Model, ObjectUrlMixin, DisplayMixin):
 
     @classmethod
     def get_api_fields(cls):
-        return ['label', 'port', 'ttl', 'weight', 'priority', 'target',
-                'description']
+        return ['label', 'fqdn', 'domain', 'views', 'port', 'ttl', 'weight',
+                'priority', 'target', 'description']
 
     @property
     def rdtype(self):
@@ -152,3 +154,5 @@ class SRV(models.Model, ObjectUrlMixin, DisplayMixin):
         CNAME = mozdns.cname.models.CNAME
         if CNAME.objects.filter(fqdn=self.fqdn).exists():
             raise ValidationError("A CNAME with this name already exists.")
+
+reversion.register(SRV)

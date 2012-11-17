@@ -79,10 +79,12 @@ class MozdnsAPITests(object):
         #  if authentication is not None:
         #     kwargs['HTTP_AUTHORIZATION'] = authentication
 
-        resp, post_data = self.generic_create(self.post_data())
+        post_data = self.post_data()
+        resp, post_data = self.generic_create(post_data)
         _, (_, new_object_url) = resp.items()
+        patch_data = self.post_data()
         update_resp, patch_data = self.generic_update(new_object_url,
-                self.post_data())
+                patch_data)
 
         # Now make sure the data used to patch is sticking to the model.
         patch_resp = self.api_client.get(new_object_url, format='json')
@@ -98,19 +100,6 @@ class MozdnsAPITests(object):
         resp = self.api_client.delete(new_object_url, format='json')
         self.assertHttpAccepted(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count)
-
-    def test_fqdn_create(self):
-        obj_data = self.post_data()
-        label = obj_data.pop('label')
-        domain = random_label() + '.' + str(self.test_type.__name__) + '.' + random_label() + '.' + random_label() + '.' + obj_data.pop('domain')
-        obj_data['fqdn'] = label + '.' + domain
-        resp, post_data = self.generic_create(obj_data)
-        _, (_, new_object_url) = resp.items()
-        new_resp = self.api_client.get(new_object_url, format='json')
-        self.assertValidJSONResponse(new_resp)
-        new_obj_data = json.loads(new_resp.content)
-        self.assertEqual(label, new_obj_data['label'])
-        self.assertEqual(domain, new_obj_data['domain'])
 
     def generic_update(self, patch_url, patch_data):
         obj_count = self.test_type.objects.count()
@@ -197,7 +186,7 @@ class MangleTests(ResourceTestCase):
 
     def test_missing_key(self):
         post_data = self.post_data()
-        post_data.pop('label')
+        post_data.pop('fqdn')
         obj_count = self.test_type.objects.count()
         create_url = self.object_list_url.format(API_VERSION,
                         str(self.test_type.__name__).lower())
@@ -207,7 +196,7 @@ class MangleTests(ResourceTestCase):
 
     def test_mangled_key(self):
         post_data = self.post_data()
-        post_data['label'] = post_data['label'] + '.'
+        post_data['fqdn'] = post_data['fqdn'] + '.'
         obj_count = self.test_type.objects.count()
         create_url = self.object_list_url.format(API_VERSION,
                         str(self.test_type.__name__).lower())
@@ -215,9 +204,9 @@ class MangleTests(ResourceTestCase):
         self.assertHttpBadRequest(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count)
 
-    def test_bad_domain(self):
+    def test_bad_fqdn(self):
         post_data = self.post_data()
-        post_data['domain'] = ''
+        post_data['fqdn'] = ''
         obj_count = self.test_type.objects.count()
         create_url = self.object_list_url.format(API_VERSION,
                         str(self.test_type.__name__).lower())
@@ -225,16 +214,6 @@ class MangleTests(ResourceTestCase):
         self.assertHttpBadRequest(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count)
 
-    def test_label_domain_fqdn(self):
-        # Make sure posting with label, domain, and fqdn causes a 500
-        post_data = self.post_data()
-        post_data['fqdn'] = post_data['label'] + '.' + post_data['domain']
-        obj_count = self.test_type.objects.count()
-        create_url = self.object_list_url.format(API_VERSION,
-                        str(self.test_type.__name__).lower())
-        resp = self.api_client.post(create_url, format='json', data=post_data)
-        self.assertHttpBadRequest(resp)
-        self.assertEqual(self.test_type.objects.count(), obj_count)
 
     def test_ensure_label_domain_fail(self):
         # MAke ensure_label_domain fail
@@ -242,10 +221,7 @@ class MangleTests(ResourceTestCase):
         Domain.objects.get_or_create(name="asdf")
         Domain.objects.get_or_create(name="foo.asdf")
         domain , _= Domain.objects.get_or_create(name="bar.foo.asdf")
-        fqdn = post_data['label'] + '.' + domain.name
-        post_data.pop('label')
-        post_data.pop('domain')
-        post_data['fqdn'] = 'secondbar.x.y.' + fqdn
+        post_data['fqdn'] = 'secondbar.x.y.' + domain.name
         obj_count = self.test_type.objects.count()
         create_url = self.object_list_url.format(API_VERSION,
                         str(self.test_type.__name__).lower())
@@ -257,8 +233,7 @@ class MangleTests(ResourceTestCase):
         return {
             'description':random_label(),
             'ttl': random_byte(),
-            'label': 'b' + random_label(),
-            'domain':self.domain.name,
+            'fqdn': 'b' + random_label() + "." + self.domain.name,
             'target':random_label()
         }
 
@@ -298,8 +273,7 @@ class CNAMEAPITests(MozdnsAPITests, ResourceTestCase):
         return {
             'description':random_label(),
             'ttl': random_byte(),
-            'label': 'd' + random_label(),
-            'domain':self.domain.name,
+            'fqdn': 'd' + random_label() + "." + self.domain.name,
             'target': random_label()
         }
 
@@ -311,8 +285,7 @@ class MXAPITests(MozdnsAPITests, ResourceTestCase):
         return {
             'description': random_label(),
             'ttl': random_byte(),
-            'label':  'e' + random_label(),
-            'domain':self.domain.name,
+            'fqdn':  'e' + random_label() + "." + self.domain.name,
             'server': random_label(),
             'priority':123,
             'ttl':213
@@ -324,8 +297,7 @@ class SRVAPITests(MozdnsAPITests, ResourceTestCase):
         return {
             'description': random_label(),
             'ttl': random_byte(),
-            'label':"_"+random_label(),
-            'domain':self.domain.name,
+            'fqdn':"_"+random_label() + "." + self.domain.name,
             'target': random_label(),
             'priority':2 ,
             'weight':2222 ,
@@ -339,8 +311,7 @@ class TXTAPITests(MozdnsAPITests, ResourceTestCase):
         return {
             'description': random_label(),
             'ttl': random_byte(),
-            'label': 'f' + random_label(),
-            'domain':self.domain.name,
+            'fqdn': 'f' + random_label() + "." + self.domain.name,
             'txt_data': random_label()
         }
 
@@ -363,8 +334,7 @@ class SSHFPAPITests(MozdnsAPITests, ResourceTestCase):
         return {
             'description': random_label(),
             'ttl': random_byte(),
-            'label': 'h' + random_label(),
-            'domain': self.domain.name,
+            'fqdn': 'h' + random_label() + "." + self.domain.name,
             'algorithm_number': 1,
             'fingerprint_type': 1,
             'key': random_label()
@@ -379,8 +349,7 @@ class AdderessRecordV4APITests(MozdnsAPITests, ResourceTestCase):
         return {
             'description': random_label(),
             'ttl': random_byte(),
-            'label': 'i' + random_label(),
-            'domain': self.domain.name,
+            'fqdn': 'i' + random_label() + "." + self.domain.name,
             'ip_str': "11.{0}.{1}.{2}".format(random_byte(), random_byte(), random_byte()),
             'ip_type': '4'
         }
@@ -397,8 +366,7 @@ class AdderessRecordV6APITests(MozdnsAPITests, ResourceTestCase):
         return {
             'description': random_label(),
             'ttl': random_byte(),
-            'label': 'j' + random_label(),
-            'domain': self.domain.name,
+            'fqdn': 'j' + random_label() + "." + self.domain.name,
             'ip_str': "1000:{0}:{1}:{2}::".format(random_byte(), random_byte(),
                 random_byte()),
             'ip_type': '6'
@@ -482,11 +450,10 @@ class StaticIntrV4APITests(MozdnsAPITests, ResourceTestCase):
             'ttl': random_byte(),
             'mac': '11:22:33:44:55:00',
             'system': '/tasty/v3/system/{0}/'.format(self.s.pk),
-            'label': 'a' + random_label(),
+            'fqdn': 'a' + random_label() + "." + self.domain.name,
             'iname': 'eth2.4',
             'dhcp_enabled': False,
             'dns_enabled': True,
-            'domain': self.domain.name,
             'ip_str': "11.255.{0}.{1}".format(random_byte(), random_byte()),
             'ip_type': '4'
         }
@@ -512,13 +479,12 @@ class StaticIntrV6APITests(MozdnsAPITests, ResourceTestCase):
         return {
             'description': random_label(),
             'ttl': random_byte(),
-            'label': 'p' + random_label(),
+            'fqdn': 'p' + random_label() + "." + self.domain.name,
             'iname': 'mgmt4',
             'dhcp_enabled': True,
             'dns_enabled': True,
             'mac': '11:22:33:44:55:00',
             'system': '/tasty/v3/system/{0}/'.format(self.s.pk),
-            'domain': self.domain.name,
             'ip_str': "2000:a{0}:a{1}:a{2}::".format(random_byte(), random_byte(),
                 random_byte()),
             'ip_type': '6'

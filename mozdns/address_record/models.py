@@ -14,6 +14,7 @@ from mozdns.domain.models import Domain
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.soa.utils import update_soa
 
+import reversion
 from gettext import gettext as _
 import pdb
 
@@ -65,7 +66,7 @@ class BaseAddressRecord(Ip, DisplayMixin):
 
     @classmethod
     def get_api_fields(cls):
-        return  ['label', 'ip_str', 'ip_type', 'description', 'ttl']
+        return  ['fqdn', 'ip_str', 'ip_type', 'description', 'ttl']
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -198,3 +199,5 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
         db_table = "address_record"
         unique_together = ("label", "domain", "fqdn", "ip_upper", "ip_lower",
                 "ip_type")
+
+reversion.register(AddressRecord)

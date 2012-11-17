@@ -27,7 +27,10 @@ from mozdns.cname.models import CNAME
 from mozdns.cname.forms import CNAMEForm
 from mozdns.domain.forms import DomainForm
 from mozdns.view.models import View
+
 from tastypie.validation import FormValidation
+
+import reversion
 
 import pdb
 import sys
@@ -38,6 +41,7 @@ from gettext import gettext as _, ngettext
 
 
 class CommonDNSResource(ModelResource):
+    comment = fields.CharField()
     domain = fields.CharField()
     # User passes string, in hydrate we find a
     # domain
@@ -47,7 +51,7 @@ class CommonDNSResource(ModelResource):
 
     def obj_delete_list(self, request=None, **kwargs):
         # We don't want this method being used
-        raise NotImplemented
+        raise NotImplemented()
 
     def dehydrate(self, bundle):
         # Most DNS Resources should have a domain and a fqdn and some views
@@ -64,27 +68,8 @@ class CommonDNSResource(ModelResource):
         return bundle
 
     def hydrate(self, bundle):
-        """Hydrate handles the conversion of fqdn to a label or domain.
-            This function handles two cases:
-                1) Label and domain are in bundle
-                2) Label and domain are *not* in bundle and fqdn is in bundle.
-            All other cases cause hydration errors to be raised and
-            bundle.errors will be set.
-        """
-        # Every DNS Resource should have a domain
-        if ('fqdn' not in bundle.data and 'domain' in bundle.data and 'label'
-                in bundle.data):
-            domain_name = bundle.data.get('domain')
-            try:
-                domain = Domain.objects.get(name=domain_name)
-                bundle.data['domain'] = domain
-            except ObjectDoesNotExist, e:
-                errors = {}
-                errors['domain'] = "Couldn't find domain {0}".format(
-                                                                domain_name)
-                bundle.errors['error_messages'] = json.dumps(errors)
-        elif ('fqdn' in bundle.data and not ('domain' in bundle.data or 'label'
-                in bundle.data)):
+        """Hydrate handles the conversion of fqdn to a label or domain."""
+        if 'fqdn' in bundle.data:
             try:
                 label_domain = ensure_label_domain(bundle.data['fqdn'])
                 bundle.data['label'], bundle.data['domain'] = label_domain
@@ -96,7 +81,7 @@ class CommonDNSResource(ModelResource):
                 # with the errors that are thrown by full_clean.
         else:
             errors = {}
-            errors['label_and_domain'] = _("Couldn't determine a label and "
+            errors['fqdn'] = _("Couldn't determine a label and "
                     "domain for this record.")
             bundle.errors['error_messages'] = json.dumps(errors)
 
@@ -118,13 +103,9 @@ class CommonDNSResource(ModelResource):
             self.error_response(bundle.errors, request)
 
         views = bundle.data.pop('views', [])
+        comment = bundle.data.pop('comment', '')
         if bundle.errors:
             self.error_response(bundle.errors, request)
-        if ('label' in bundle.data and 'domain' in bundle.data and 'fqdn' in
-            bundle.data):
-            # See top comment. fqdn takes precidence.
-            del bundle.data['label']
-            del bundle.data['domain']
         bundle = self.full_hydrate(bundle)
 
         if bundle.errors:
@@ -132,7 +113,7 @@ class CommonDNSResource(ModelResource):
         # bundle should only have valid data.
         # If it doesn't errors will be thrown
         self.apply_commit(obj, bundle.data)
-        return self.save_commit(request, bundle, views, kv)
+        return self.save_commit(request, bundle, views, comment, kv)
 
     def update_views(self, obj, views):
         # We have to remove views from data because those need to be added
@@ -177,6 +158,7 @@ class CommonDNSResource(ModelResource):
             self.error_response(bundle.errors, request)
 
         views = bundle.data.pop('views', [])
+        comment = bundle.data.pop('comment', '')
         # views should be saved after the object has been created
         if bundle.errors:
             self.error_response(bundle.errors, request)
@@ -199,12 +181,13 @@ class CommonDNSResource(ModelResource):
             bundle.errors['error_messages'] = e.message
             self.error_response(bundle.errors, request)
 
-        return self.save_commit(request, bundle, views, kv)
+        return self.save_commit(request, bundle, views, comment, kv)
 
-    def save_commit(self, request, bundle, views, kv):
+    def save_commit(self, request, bundle, views, comment, kv):
         try:
             bundle.obj.full_clean()
             bundle.obj.save()
+            reversion.set_comment(comment)
         except ValidationError, e:
             if 'domain' in bundle.data:
                 prune_tree(bundle.data['domain'])
@@ -248,7 +231,7 @@ class CNAMEResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = CNAME.objects.all()
-        fields = CNAME.get_api_fields() + ['domain', 'views']
+        fields = CNAME.get_api_fields() + ['views']
         authorization = Authorization()
         allowed_methods = allowed_methods
 
@@ -260,7 +243,7 @@ class TXTResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = TXT.objects.all()
-        fields = TXT.get_api_fields() + ['domain', 'views']
+        fields = TXT.get_api_fields() + ['views']
         authorization = Authorization()
         allowed_methods = allowed_methods
 
@@ -272,7 +255,7 @@ class SRVResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = SRV.objects.all()
-        fields = SRV.get_api_fields() + ['domain', 'views']
+        fields = SRV.get_api_fields() + ['views']
         authorization = Authorization()
         allowed_methods = allowed_methods
 
@@ -284,7 +267,7 @@ class MXResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = MX.objects.all()
-        fields = MX.get_api_fields() + ['domain', 'views']
+        fields = MX.get_api_fields() + ['views']
         authorization = Authorization()
         allowed_methods = allowed_methods
 
@@ -296,7 +279,7 @@ class SSHFPResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = SSHFP.objects.all()
-        fields = SSHFP.get_api_fields() + ['domain', 'views']
+        fields = SSHFP.get_api_fields() + ['views']
         authorization = Authorization()
         allowed_methods = allowed_methods
 
@@ -308,7 +291,7 @@ class AddressRecordResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = AddressRecord.objects.all()
-        fields = AddressRecord.get_api_fields() + ['domain', 'views']
+        fields = AddressRecord.get_api_fields() + ['views']
         authorization = Authorization()
         allowed_methods = allowed_methods
 
@@ -448,8 +431,7 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
     class Meta:
         always_return_data = True
         queryset = StaticInterface.objects.all()
-        fields = StaticInterface.get_api_fields() + ['domain', 'views',
-                'system']
+        fields = StaticInterface.get_api_fields() + ['views', 'system']
         authorization = Authorization()
         allowed_methods = allowed_methods
         resource_name = 'staticinterface'

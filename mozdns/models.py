@@ -77,7 +77,7 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
         the model. See the ModelResource definitions for view and domain
         fields.
         """
-        return ['label', 'ttl', 'description']
+        return ['fqdn', 'ttl', 'description', 'views']
 
     def clean(self):
         set_fqdn(self)

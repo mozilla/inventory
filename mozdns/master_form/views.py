@@ -26,46 +26,16 @@ from mozdns.domain.models import Domain
 from mozdns.view.models import View
 from mozdns.utils import ensure_label_domain
 from mozdns.utils import prune_tree
-import operator
+from mozdns.master_form.utils import get_klasses
 
+import reversion
+
+import operator
 from gettext import gettext as _, ngettext
 import simplejson as json
 import pdb
 
 
-def get_klasses(record_type):
-    if record_type == "A":
-        Klass = AddressRecord
-        FormKlass = AddressRecordForm
-        FQDNFormKlass = AddressRecordFQDNForm
-    elif record_type == "PTR":
-        Klass = PTR
-        FormKlass = PTRForm
-        FQDNFormKlass = PTRForm
-    elif record_type == "SRV":
-        Klass = SRV
-        FormKlass = SRVForm
-        FQDNFormKlass = FQDNSRVForm
-    elif record_type == "CNAME":
-        Klass = CNAME
-        FormKlass = CNAMEForm
-        FQDNFormKlass = CNAMEFQDNForm
-    elif record_type == "TXT":
-        Klass = TXT
-        FormKlass = TXTForm
-        FQDNFormKlass = FQDNTXTForm
-    elif record_type == "MX":
-        Klass = MX
-        FormKlass = MXForm
-        FQDNFormKlass = FQDNMXForm
-    elif record_type == "SOA":
-        Klass = SOA
-        FormKlass = SOAForm
-        FQDNFormKlass = SOAForm
-    else:
-        Klass, FormKlass, FQDNFormKlass = None, None, None
-
-    return Klass, FormKlass, FQDNFormKlass
 
 def mozdns_record_search_ajax(request):
     """This function will return a list of records matching the 'query' of type
@@ -110,6 +80,7 @@ def mozdns_record_form_ajax(request):
         message = _("Enter some data and press 'Commit' to create a new "
                     "{0}".format(record_type))
     return render(request, 'master_form/ajax_form.html', {
+        'reverse': True if record_type == 'PTR' else False,
         'record_type': record_type,
         'record_pk': record_pk,
         'form': form,
@@ -124,6 +95,7 @@ def mozdns_record(request, record_type='', record_pk=''):
         record_pk = str(request.GET.get('record_pk', ''))
         domains = Domain.objects.filter(is_reverse=False)
         return render(request, 'master_form/master_form.html', {
+            'reverse': True if record_type == 'PTR' else False,
             'record_type': record_type,
             'record_pk': record_pk,
             'domains': json.dumps([domain.name for domain in domains]),
@@ -135,20 +107,16 @@ def mozdns_record(request, record_type='', record_pk=''):
     qd = request.POST.copy()  # make qd mutable
     orig_qd = request.POST.copy()  # If there are ever errors, we use this qd
         # to populate the form we send to the user
-    record_type = qd.pop('record_type', '')
-    object_ = None
-    if record_type:
-        record_type = record_type[0]
-    record_pk = qd.pop('record_pk', '')
-    if record_pk:
-        record_pk = record_pk[0]
+    record_type = qd.pop('record_type', [None])[0]
     if not record_type:
         raise Http404
+    record_pk = qd.pop('record_pk', [None])[0]
     Klass, FormKlass, FQDNFormKlass = get_klasses(record_type)
-    if 'fqdn' in qd:
-        fqdn = qd.pop('fqdn')
-        fqdn = fqdn[0]
+    comment = qd.pop('comment', [''])[0].strip()
+    fqdn = qd.pop('fqdn', [''])[0]
+
     domain = None
+    object_ = None
     if record_type == 'PTR':
         pass
     else:
@@ -161,6 +129,7 @@ def mozdns_record(request, record_type='', record_pk=''):
             form._errors = ErrorDict()
             form._errors['__all__'] = ErrorList(e.messages)
             return render(request, 'master_form/ajax_form.html', {
+                'reverse': True if record_type == 'PTR' else False,
                 'form': form,
                 'record_type': record_type,
                 'record_pk': record_pk,
@@ -179,12 +148,14 @@ def mozdns_record(request, record_type='', record_pk=''):
     if form.is_valid():
         try:
             object_ = form.save()
+            reversion.set_comment(comment)
         except ValidationError, e:
             prune_tree(domain)
             error_form = FQDNFormKlass(orig_qd)
             error_form._errors = ErrorDict()
             error_form._errors['__all__'] = ErrorList(e.messages)
             return render(request, 'master_form/ajax_form.html', {
+                'reverse': True if record_type == 'PTR' else False,
                 'form': error_form,
                 'record_type': record_type,
                 'record_pk': record_pk,
@@ -197,6 +168,7 @@ def mozdns_record(request, record_type='', record_pk=''):
         else:
             message = 'Record Created!'
         return render(request, 'master_form/ajax_form.html', {
+            'reverse': True if record_type == 'PTR' else False,
             'form': fqdn_form,
             'record_type': record_type,
             'record_pk': object_.pk,
@@ -208,6 +180,7 @@ def mozdns_record(request, record_type='', record_pk=''):
         error_form = FQDNFormKlass(orig_qd)
         error_form._errors = form._errors
         return render(request, 'master_form/ajax_form.html', {
+            'reverse': True if record_type == 'PTR' else False,
             'form': error_form,
             'record_type': record_type,
             'record_pk': record_pk,

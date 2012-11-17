@@ -1,8 +1,9 @@
 from django.forms import ModelForm
 from mozdns.soa.models import SOA
+from mozdns.forms import BaseForm
 
 
-class SOAForm(ModelForm):
+class SOAForm(BaseForm):
     class Meta:
         model = SOA
         exclude = ('serial', 'dirty',)

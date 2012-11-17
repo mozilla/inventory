@@ -7,6 +7,8 @@ from mozdns.cname.models import CNAME
 from mozdns.validation import validate_mx_priority
 from mozdns.validation import validate_name
 
+import reversion
+
 from gettext import gettext as _
 
 class MX(MozdnsRecord):
@@ -70,3 +72,5 @@ class MX(MozdnsRecord):
         # TODO, cite an RFC.
         if CNAME.objects.filter(fqdn=self.server):
             raise ValidationError("MX records should not point to CNAMES.")
+
+reversion.register(MX)

@@ -11,6 +11,8 @@ from mozdns.validation import validate_views
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from core.interface.static_intr.models import StaticInterface
 
+import reversion
+
 from gettext import gettext as _
 import pdb
 
@@ -115,4 +117,4 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
         reverse zone file."""
         return ip_to_dns_form(self.ip_str, ip_type=self.ip_type)
 
-
+reversion.register(PTR)
