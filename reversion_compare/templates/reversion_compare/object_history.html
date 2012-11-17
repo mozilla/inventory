@@ -1,0 +1,62 @@
+{% extends "core/core_base.html" %}
+
+{% block content %}
+    <div id="content-main">
+    
+        <p><a href="{{object.get_fancy_edit_url()}}">Back</a> to <code>{{object}}</code></p>
+        <p>Choose a date from the list below to revert to a previous version of this object.</p>
+    
+        <div class="module">
+            {% if action_list %}
+                {% if compare_view %}<form method="GET" action="../history/compare/">{% endif %}
+                <table id="change-history">
+                    <thead>
+                        <tr>
+                            {% if compare_view %}
+                                <th scope="col">
+                                    {% if comparable %}
+                                        <input type="hidden" name="object_id" value="{{object_id}}">
+                                        <input type="submit" value="compare">
+                                    {% else %}
+                                       <i>compare</i>
+                                    {% endif %}
+                                </th>
+                            {% endif %}
+                            <th scope="col">Date/time</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Comment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for action in action_list %}
+                            <tr>
+                                {% if compare_view %}
+                                <td scope="row">
+                                    {% if comparable %}
+                                       <input type="radio" name="version_id1" value="{{ action.version.pk }}" {% if action.first %}style="visibility:hidden" {% endif %}{% if action.second %}checked="checked" {% endif %}/>
+                                       <input type="radio" name="version_id2" value="{{ action.version.pk }}" {% if action.first == 1 %}checked="checked" {% endif %}/>
+                                    {% else %}
+                                       <i>-</i>
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                                <th scope="row">{{action.revision.date_created}}</th>
+                                <td>
+                                    {% if action.revision.user %}
+                                        {{action.revision.user.username}}
+                                        {% if action.revision.user.first_name %} ({{action.revision.user.first_name}} {{action.revision.user.last_name}}){% endif %}
+                                    {% endif %}
+                                </td>
+                                <td>{{action.revision.comment}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if compare_view %}</form>{% endif %}
+            {% else %}
+                <p>"This object doesn't have a change history. It probably wasn't added via this admin site."</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
