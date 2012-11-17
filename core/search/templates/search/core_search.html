@@ -17,6 +17,12 @@ div advanced-search-knobs input{
 </style>
 <script type="text/javascript">
     $(document).ready(function() {
+        $("input").keypress(function(event) {
+            if (event.which == 13) {
+                event.preventDefault();
+                $("#btn_s").click();
+            }
+        });
         function get_advanced_search_options(){
             var adv_str = ""
             var select_types = [];
