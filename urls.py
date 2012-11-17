@@ -41,6 +41,7 @@ urlpatterns = patterns('',
 
     (r'^en-US/mozdns/', include('mozdns.urls')),
     (r'^mozdns/', include('mozdns.urls')),
+    (r'^reversion_compare/', include('reversion_compare.urls')),
     (r'^en-US/core/', include('core.urls')),
     (r'^core/', include('core.urls')),
 )
