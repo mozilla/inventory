@@ -58,6 +58,8 @@ class CNAME(MozdnsRecord):
     def clean(self, *args, **kwargs):
         super(CNAME, self).clean(*args, **kwargs)
         super(CNAME, self).check_for_delegation()
+        if self.fqdn == self.target:
+            raise ValidationError("CNAME loop detected.")
         self.check_SOA_condition()
         self.existing_node_check()
 

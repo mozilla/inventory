@@ -348,3 +348,12 @@ class CNAMETests(TestCase):
         rec = PTR(ip_str="10.193.1.1", ip_type='4', name='testyfoo.what.cd')
 
         self.assertRaises(ValidationError, rec.clean)
+
+    def test_cname_point_to_itself(self):
+        label = "foopy"
+        data = "foopy.what.cd"
+        dom,_ = Domain.objects.get_or_create(name="cd")
+        dom,_ = Domain.objects.get_or_create(name="what.cd")
+
+        cn = CNAME(label = label, domain = dom, target = data)
+        self.assertRaises(ValidationError, cn.clean)
