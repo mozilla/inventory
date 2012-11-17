@@ -79,6 +79,8 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'debug_toolbar',
     'tastypie',
     'tastytools',
+    'reversion',
+    'reversion_compare',
 ]
 
 
@@ -148,6 +150,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'reversion.middleware.RevisionMiddleware',
 )
 
 INTERNAL_IPS = ('127.0.0.1','10.22.74.139','10.250.2.54')
