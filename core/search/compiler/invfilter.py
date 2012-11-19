@@ -25,6 +25,7 @@ from core.utils import start_end_filter, one_to_two, two_to_one
 from core.vlan.models import Vlan
 
 from systems.models import System
+import re
 
 
 searchables = (
@@ -90,8 +91,25 @@ class TextFilter(_Filter):
 
 
 class REFilter(TextFilter):
+    num_match = re.compile("\[(\d+)-(\d+)\]")
+
+    def _expand_number_regex(self, value):
+        """We want to turn something like /hp-node[31-40].phx1 into
+            '/hp-node(31|32|33|34|35|36|37|38|39|40).phx1'"""
+        matches = self.num_match.findall(value)
+        for low, high in matches:
+            if int(low) >= int(high):
+                continue
+            new_value = ""
+            for i in xrange(int(low), int(high) + 1):
+                new_value += "{0}|".format(i)
+            new_value = '(' + new_value.strip('|') + ')'
+            value = value.replace('[{0}-{1}]'.format(low, high), new_value)
+        return value
+
     def compile_Q(self, value):
         result = []
+        value = self._expand_number_regex(value)
         for name, Klass in searchables:
             result.append(build_filter(value, Klass.search_fields, 'regex'))
         return result
