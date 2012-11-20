@@ -4,3 +4,4 @@ src/django-tastytools
 src/django-multidb-router
 src/mimeparse
 src/django-extensions
+src/django-reversion/src
