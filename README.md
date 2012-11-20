@@ -14,4 +14,6 @@ sudo pip install ipaddr
 pip install -e git+git://github.com/uberj/dnspython.git#egg=dnspython
 
 sudo pip install easyzone
+
+https://github.com/downloads/etianen/django-reversion/django-reversion-1.5.2.tar.gz
 ```
