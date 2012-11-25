@@ -18,7 +18,7 @@ import models
 from mozilla_inventory.middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 
 import re
-from django.test.client import Client
+from django.test.client import RequestFactory
 from jinja2.filters import contextfilter
 from django.utils import translation
 from libs.jinja import render_to_response as render_to_response
@@ -26,6 +26,15 @@ from jingo import render
 from django.views.decorators.csrf import csrf_exempt
 from Rack import Rack
 from MozInvAuthorization.KeyValueACL import KeyValueACL 
+
+# Import resources
+from api_v2.dhcp_handler import DHCPHandler
+from api_v2.keyvalue_handler import KeyValueHandler
+
+
+# Use this object to generate request objects for calling tastypie views
+factory = RequestFactory()
+
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
 def tryint(s):
@@ -474,8 +483,10 @@ def system_show(request, id):
     show_nics_in_key_value = False
     is_release = False
     try:
-        client = Client()
-        adapters = json.loads(client.get('/api/v2/keyvalue/3/', {'key_type':'adapters_by_system','system':system.hostname}, follow=True).content)
+        request = factory.get('/api/v2/keyvalue/3/',
+                {'key_type':'adapters_by_system','system':system.hostname})
+        h = KeyValueHandler()
+        adapters = h.read(request, key_value_id='3')
     except:
         adapters = []
     if system.allocation is 'release':
@@ -544,10 +555,10 @@ def system_new(request):
 @csrf_exempt
 def system_edit(request, id):
     system = get_object_or_404(models.System, pk=id)
-    client = Client()
     dhcp_scopes = None
     try:
-        dhcp_scopes = json.loads(client.get('/api/v2/dhcp/phx-vlan73/get_scopes_with_names/', follow=True).content)
+        h = DHCPHandler()
+        dhcp_scopes = h.read(request, dhcp_scope='phx-vlan73', dhcp_action='get_scopes_with_names')
     except Exception, e:
         print e
         pass
@@ -597,11 +608,13 @@ def system_releng_csv(request):
 
 def get_expanded_key_value_store(request, system_id):
     try:
-        from django.test.client import Client
-        client = Client()
         system = models.System.objects.get(id=system_id)
-        resp = client.get('/api/keyvalue/?keystore=%s' % (system.hostname), follow=True)
-        return_obj = resp.content.replace("\n","<br />")
+        request = factory.get('/api/v2/keyvalue/3/',
+                {'key_type':'adapters_by_system','system':system.hostname})
+        h = KeyValueHandler()
+        request = factory.get('/api/keyvalue/?keystore=%s' % (system.hostname), follow=True)
+        resp = json.dumps(h.read(request, key_value_id='3'))
+        return_obj = resp.replace(",",",<br />")
     except:
         return_obj = 'This failed'
     return HttpResponse(return_obj)
