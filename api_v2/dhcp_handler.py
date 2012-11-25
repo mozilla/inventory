@@ -10,8 +10,13 @@ try:
     import json
 except:
     from django.utils import simplejson as json
-from django.test.client import Client
+from django.test.client import RequestFactory
 from settings import API_ACCESS
+from api_v2.keyvalue_handler import KeyValueHandler
+
+factory = RequestFactory()
+
+
 class DHCPHandler(BaseHandler):
     allowed_methods = API_ACCESS
     exclude = ()
@@ -31,15 +36,18 @@ class DHCPHandler(BaseHandler):
             return truth_list
         if dhcp_scope and dhcp_action == 'view_hosts':
             scope_options = []
-            client = Client()
-            hosts = json.loads(client.get('/api/v2/keyvalue/?key_type=system_by_scope&scope=%s' % dhcp_scope, follow=True).content)
-            #print hosts
+            h = KeyValueHandler()
+            request = factory.get('/api/v2/keyvalue/?key_type=system_by_scope&scope=%s' %
+                    dhcp_scope, follow=True)
+            hosts = h.read(request)
             adapter_list = []
             for host in hosts:
                 if 'hostname' in host:
                     the_url = '/api/v2/keyvalue/?key_type=adapters_by_system_and_scope&dhcp_scope=%s&system=%s' % (dhcp_scope, host['hostname'])
                     try:
-                        adapter_list.append(json.loads(client.get(the_url, follow=True).content))
+                        request = factory.get('/api/v2/keyvalue/?key_type=adapters_by_system_and_scope&dhcp_scope=%s&system=%s'
+                                                % (dhcp_scope, host['hostname']))
+                        adapter_list.append(h.read(request))
                     except:
                         pass
             d = DHCPInterface(scope_options, adapter_list)
