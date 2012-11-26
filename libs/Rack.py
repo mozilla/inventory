@@ -1,12 +1,13 @@
-# To test this: ./manage.py test -s libs/test_Rack.py
-
-
-
 from KeyValueTree import KeyValueTree
 from truth.models import KeyValue as TruthKeyValue, Truth
 from systems.models import KeyValue as KeyValue
-from django.test.client import Client
+from django.test.client import RequestFactory
+from api_v2.keyvalue_handler import KeyValueHandler
 import json
+
+factory = RequestFactory()
+
+
 class Rack:
     rack_name = None
     tree = None
@@ -23,11 +24,11 @@ class Rack:
         self.system_list = KeyValue.objects.select_related('system').filter(value__contains="truth:%s" % (self.rack_name))
         self.ethernet_patch_panel_24 = self._get_ethernet_patch_panels(self.kv, 'ethernet', 24)
         self.ethernet_patch_panel_48 = self._get_ethernet_patch_panels(self.kv, 'ethernet', 48)
+        import pdb
+        h = KeyValueHandler()
         for s in self.system_list:
-            #print dir(s)
-            client = Client()
-            resp = client.get('/api/v2/keyvalue/?keystore=%s' % (s.system.hostname), follow=True)
-            tree = json.loads(resp.content) 
+            request = factory.get('/api/v2/keyvalue/?keystore=%s' % (s.system.hostname), follow=True)
+            tree = h.read(request)
             system_ru = self._get_system_ru(tree)
             system_image = self._get_system_image(tree)
             system_slot = self._get_system_slot(tree)
