@@ -117,9 +117,13 @@
                         var end = new Date().getTime();
                         var time = end - start;
                         $('#action-time').html('('+time/1000+' seconds)');
-
                     }
-                );
+                    ).error(function(e) { console.log(e); alert(e); 
+                        var newDoc = document.open("text/html", "replace");
+                        newDoc.write(e.responseText);
+                        newDoc.close();
+                        $('#form-message').html("<p>Error</p>");
+                     });
                 $("#record_search").prop('disabled', false);
                 clear_commit_message();
             }
