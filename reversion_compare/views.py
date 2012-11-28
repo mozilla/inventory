@@ -507,7 +507,7 @@ def compare(obj, version1, version2):
     # Create a list of all normal fields and append many-to-many fields
     fields = [field for field in obj._meta.fields]
     fields += obj._meta.many_to_many
-    compare_fields = obj.get_api_fields()
+    compare_fields = obj.get_api_fields() + ['views']
     ignore_fields = []
 
     has_unfollowed_fields = False
