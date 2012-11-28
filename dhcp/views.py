@@ -20,19 +20,22 @@ from systems.models import NetworkAdapter
 from mozilla_inventory.middleware.restrict_to_remote import allow_anyone
 
 from DHCP import DHCP
-from django.test.client import Client
+from django.test.client import RequestFactory
 from django.template.defaulttags import URLNode
 from django.conf import settings
 from jinja2.filters import contextfilter
 from django.utils import translation
 from libs.jinja import jinja_render_to_response
+from api_v2.keyvalue_handler import KeyValueHandler
+
+factory = RequestFactory()
+
 
 def showall(request):
-    dhcp_scopes = models.DHCP.objects.all()	
-    import pdb; pdb.set_trace()
-    client = Client()
-    resp = client.get('/en-US/api/keyvalue/?key=is_dhcp_scope', follow=True)
-    obj = json.loads(resp.content)
+    dhcp_scopes = models.DHCP.objects.all()
+    h = KeyValueHandler()
+    request = factory.get('/en-US/api/keyvalue/?key=is_dhcp_scope', follow=True)
+    obj = h.read(request)
     dhcp_scopes = []
     for key in obj.iterkeys():
         dhcp_scopes.append(key.split(":")[1])
@@ -122,95 +125,135 @@ def create(request):
             "form": form 
            },
            RequestContext(request))
+
 def edit(request, dhcp_scope):
-    client = Client()
-    resp = client.get('/api/keyvalue/?keystore=%s' % dhcp_scope, follow=True)
-    instance = json.loads(resp.content)
+    h = KeyValueHandler()
+    trequest = factory.get('/api/keyvalue/?keystore=%s' % dhcp_scope, follow=True)
+    instance = h.read(trequest)
     initial = {}
     initial['scope_name'] = dhcp_scope
     ##A bunch of try/catch blocks to create key/value pairs if one does not exist
     try:
         initial['scope_start'] = instance['dhcp.scope.start']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.scope.start', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        trequest = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.scope.start', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['scope_start'] = ''
     try:
         initial['scope_end'] = instance['dhcp.scope.end']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.scope.end', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.scope.end', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['scope_end'] = ''
     try:
         initial['scope_netmask'] = instance['dhcp.scope.netmask']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.scope.netmask', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.scope.netmask', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['scope_netmask'] = ''
     try:
         initial['pool_start'] = instance['dhcp.pool.start']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.pool.start', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.pool.start', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['pool_start'] = ''
     try:
         initial['pool_end'] = instance['dhcp.pool.end']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.pool.end', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.pool.end', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['pool_end'] = ''
     try:
         initial['ntp_server1'] = instance['dhcp.option.ntp_server.0']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.option.ntp_server.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.option.ntp_server.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['ntp_server1'] = ''
     try:
         initial['ntp_server2'] = instance['dhcp.option.ntp_server.1']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.option.ntp_server.1', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.option.ntp_server.1', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['ntp_server2'] = ''
     try:
         initial['router'] = instance['dhcp.option.router.0']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.option.router.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.option.router.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['router'] = ''
     try:
         initial['domain_name'] = instance['dhcp.option.domain_name.0']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.option.domain_name.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.option.domain_name.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['domain_name'] = ''
     try:
         initial['dns_server1'] = instance['dhcp.dns_server.0']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.dns_server.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.dns_server.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['dns_server1'] = ''
     try:
-        initial['dns_server2'] = instance['dhcp.dns_server.0']
+        initial['dns_server2'] = instance['dhcp.dns_server.1']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.dns_server.1', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.dns_server.1', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['dns_server2'] = ''
     try:
         initial['allow_booting'] = instance['dhcp.pool.allow_booting.0']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.pool.allow_booting.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.pool.allow_booting.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['allow_booting'] = ''
     try:
         initial['allow_bootp'] = instance['dhcp.pool.allow_bootp.0']
     except:
-        client.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.pool.allow_bootp.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        treqeust = factory.post('/en-US/api/keyvalue/%s/' % dhcp_scope, {'key':'dhcp.pool.allow_bootp.0', 'value':'', 'truth_name':dhcp_scope}, follow=True)
+        h.create(trequest)
         initial['allow_bootp'] = ''
 
     if request.method == 'POST':
         form = forms.EditDHCPScopeForm(request.POST)
         if form.is_valid():
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.scope.start', 'value':form.cleaned_data['scope_start']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.scope.end', 'value':form.cleaned_data['scope_end']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.scope.netmask', 'value':form.cleaned_data['scope_netmask']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.pool.start', 'value':form.cleaned_data['pool_start']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.pool.end', 'value':form.cleaned_data['pool_end']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.option.ntp_server.0', 'value':form.cleaned_data['ntp_server1']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.option.ntp_server.1', 'value':form.cleaned_data['ntp_server2']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.dns_server.0', 'value':form.cleaned_data['dns_server1']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.dns_server.1', 'value':form.cleaned_data['dns_server2']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.option.domain_name.0', 'value':form.cleaned_data['domain_name']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.option.router.0', 'value':form.cleaned_data['router']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.pool.allow_booting.0', 'value':form.cleaned_data['allow_booting']}, follow=True)
-            client.put('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.pool.allow_bootp.0', 'value':form.cleaned_data['allow_bootp']}, follow=True)
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.scope.start', 'value':form.cleaned_data['scope_start']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.scope.end', 'value':form.cleaned_data['scope_end']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.scope.netmask', 'value':form.cleaned_data['scope_netmask']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.pool.start', 'value':form.cleaned_data['pool_start']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.pool.end', 'value':form.cleaned_data['pool_end']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.option.ntp_server.0', 'value':form.cleaned_data['ntp_server1']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.option.ntp_server.1', 'value':form.cleaned_data['ntp_server2']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.dns_server.0', 'value':form.cleaned_data['dns_server1']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.dns_server.1', 'value':form.cleaned_data['dns_server2']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.option.domain_name.0', 'value':form.cleaned_data['domain_name']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.option.router.0', 'value':form.cleaned_data['router']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.pool.allow_booting.0', 'value':form.cleaned_data['allow_booting']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
+            trequest = factory.post('/en-US/api/v2/keyvalue/%s/' % dhcp_scope, {'truth_id': dhcp_scope, 'key':'dhcp.pool.allow_bootp.0', 'value':form.cleaned_data['allow_bootp']}, follow=True)
+            h.update(trequest, dhcp_scope)
+
     else:
         form = forms.EditDHCPScopeForm(initial=initial)
 

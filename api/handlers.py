@@ -10,37 +10,14 @@ try:
     import json
 except:
     from django.utils import simplejson as json
-from django.test.client import Client
 from settings import API_ACCESS
-class DHCPHandler(BaseHandler):
-    allowed_methods = API_ACCESS
-    model = System
-    #fields = ('id', 'asset_tag', 'oob_ip', 'hostname', 'operating_system', ('system_status',('status', 'id')))
-    exclude = ()
-    def read(self, request, dhcp_scope=None, dhcp_action=None):
-        if dhcp_scope and dhcp_action == 'get_scopes':
-            tasks = []
-            for task in ScheduledTask.objects.get_all_dhcp():
-                tasks.append(task.task)
-            #ScheduledTask.objects.delete_all_dhcp()
-            return tasks
-        if dhcp_scope and dhcp_action == 'view_hosts':
-            scope_options = []
-            client = Client()
-            hosts = json.loads(client.get('/api/keyvalue/?key_type=system_by_scope&scope=%s' % dhcp_scope, follow=True).content)
-            #print hosts
-            adapter_list = []
-            for host in hosts:
-                if 'hostname' in host:
-                    the_url = '/api/keyvalue/?key_type=adapters_by_system_and_scope&dhcp_scope=%s&system=%s' % (dhcp_scope, host['hostname'])
-                    try:
-                        adapter_list.append(json.loads(client.get(the_url, follow=True).content))
-                    except:
-                        pass
-            d = DHCPInterface(scope_options, adapter_list)
-            return d.get_hosts()
+
 
 class SystemHandler(BaseHandler):
+    #########################################################################
+    # WARNING: Don't hit these views with the test client. Call it directly #
+    #########################################################################
+
     allowed_methods = API_ACCESS
     model = System
     #fields = ('id', 'asset_tag', 'oob_ip', 'hostname', 'operating_system', ('system_status',('status', 'id')))
@@ -210,7 +187,12 @@ class TruthHandler(BaseHandler):
         except:
             resp = rc.NOT_FOUND
         return resp
+
+
 class KeyValueHandler(BaseHandler):
+    #########################################################################
+    # WARNING: Don't hit these views with the test client. Call it directly #
+    #########################################################################
     allowed_methods = API_ACCESS
     def create(self, request, key_value_id=None):
         if 'system_id' in request.POST:
@@ -588,7 +570,12 @@ class KeyValueHandler(BaseHandler):
         resp.write('json = {"id":"1"}')
         return resp
 
+
 class NetworkAdapterHandler(BaseHandler):
+    #########################################################################
+    # WARNING: Don't hit these views with the test client. Call it directly #
+    #########################################################################
+
     allowed_methods = API_ACCESS
     model = NetworkAdapter
     def create(self, request, network_adapter_id=None):
