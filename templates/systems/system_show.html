@@ -332,6 +332,11 @@
                                     alert(obj.error_message);
 
                                 }
+                            }).error(function (e) {
+                                var newDoc = document.open("text/html", "replace");
+                                newDoc.write(e.responseText);
+                                newDoc.close();
+                                $('#form-message').html("<p>Error</p>");
                             });
                         },
                         Cancel: function() {
