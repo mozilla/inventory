@@ -82,7 +82,7 @@ class CommonDNSResource(ModelResource):
         else:
             errors = {}
             errors['fqdn'] = _("Couldn't determine a label and "
-                               "domain for this record.")
+                    "domain for this record.")
             bundle.errors['error_messages'] = json.dumps(errors)
 
         return bundle
@@ -251,7 +251,7 @@ class TXTResource(CommonDNSResource, ObjectListMixin, ModelResource):
 v1_dns_api.register(TXTResource())
 
 
-class SRVResource(CommonDNSResource, ModelResource):
+class SRVResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = SRV.objects.all()
@@ -263,7 +263,7 @@ class SRVResource(CommonDNSResource, ModelResource):
 v1_dns_api.register(SRVResource())
 
 
-class MXResource(CommonDNSResource, ModelResource):
+class MXResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = MX.objects.all()
@@ -319,9 +319,10 @@ class NameserverResource(CommonDNSResource, ObjectListMixin):
     class Meta:
         always_return_data = True
         queryset = Nameserver.objects.all()
-        fields = Nameserver.get_api_fields() + ['views']
+        fields = Nameserver.get_api_fields() + ['domain', 'views']
         authorization = Authorization()
         allowed_methods = allowed_methods
+
 
 v1_dns_api.register(NameserverResource())
 
@@ -367,7 +368,7 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
     def hydrate(self, bundle):
         if 'system_hostname' in bundle.data and 'system' in bundle.data:
             bundle.errors = _("Please only specify a system via the 'system' "
-                              "xor the 'system_hostname' parameter")
+                "xor the 'system_hostname' parameter")
         if 'system_hostname' in bundle.data:
             system_hostname = bundle.data.get('system_hostname')
             try:
@@ -375,7 +376,7 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
                 bundle.data['system'] = system
             except ObjectDoesNotExist, e:
                 bundle.errors['system'] = _("Couldn't find system with "
-                                            "hostname {0}".format(system_hostname))
+                    "hostname {0}".format(system_hostname))
         super(StaticInterfaceResource, self).hydrate(bundle)
         return bundle
 
@@ -393,20 +394,20 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
         if 'key' in bundle.data and 'value' in bundle.data:
             # It's key and value. Nothing else is allowed in the bundle.
             if set('key', 'value') != set(bundle.data):
-                error = _("key and value must be the only keys in your request "
-                          "when you are updating KV pairs.")
+                error = _("key and value must be the only keys in your "
+                    "request when you are updating KV pairs.")
                 bundle.errors['keyvalue'] = error
                 return []
             else:
                 kv.append((bundle.data['key'], bundle.data['value']))
         elif 'key' in bundle.data and 'value' not in bundle.data:
-            error = _("When specifying a key you must also specify a value for "
-                      "that key")
+            error = _("When specifying a key you must also specify a value "
+                    "for that key")
             bundle.errors['keyvalue'] = error
             return []
         elif 'value' in bundle.data and 'key' not in bundle.data:
-            error = _("When specifying a value you must also specify a key for "
-                      "that value")
+            error = _("When specifying a value you must also specify a key "
+                    "for that value")
             bundle.errors['keyvalue'] = error
             return []
         elif 'iname' in bundle.data:
@@ -414,7 +415,8 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
             del bundle.data['iname']
             if not iname:
                 error = _("Could not parse iname {0} into interface_type and "
-                          "primary (or possible not an alias).".format(bundle.data['iname']))
+                        "primary (or possible not an "
+                        "alias).".format(bundle.data['iname']))
                 bundle.errors['iname'] = error
                 return []
             kv.append(('interface_type', iname.group(1)))
@@ -436,13 +438,12 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
 
 v1_dns_api.register(StaticInterfaceResource())
 
-
 """
 class XXXResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
         queryset = XXX.objects.all()
-        fields = XXX.get_api_fields() + ['views']
+        fields = XXX.get_api_fields() + ['domain', 'views']
         authorization = Authorization()
         allowed_methods = allowed_methods
 

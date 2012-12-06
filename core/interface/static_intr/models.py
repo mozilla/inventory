@@ -20,7 +20,6 @@ from settings import CORE_BASE_URL
 import re
 from gettext import gettext as _
 import pdb
-import reversion
 
 
 class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
@@ -85,16 +84,16 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     """
     id = models.AutoField(primary_key=True)
     mac = models.CharField(max_length=17, validators=[validate_mac],
-                           help_text="Mac address in format XX:XX:XX:XX:XX:XX")
+            help_text="Mac address in format XX:XX:XX:XX:XX:XX")
     reverse_domain = models.ForeignKey(Domain, null=True, blank=True,
-                                       related_name="staticintrdomain_set")
+                        related_name="staticintrdomain_set")
 
     system = models.ForeignKey(System, null=True, blank=True,
-                               help_text="System to associate the interface with")
+                help_text="System to associate the interface with")
     dhcp_enabled = models.BooleanField(default=True,
-                                       help_text="Enable dhcp for this interface?")
+                    help_text="Enable dhcp for this interface?")
     dns_enabled = models.BooleanField(default=True,
-                                      help_text="Enable dns for this interface?")
+                    help_text="Enable dns for this interface?")
 
     attrs = None
 
@@ -117,8 +116,8 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
     @classmethod
     def get_api_fields(cls):
         return super(StaticInterface, cls).get_api_fields() + ['mac',
-                                                               'dhcp_enabled',
-                                                               'dns_enabled']
+                    'dhcp_enabled', 'dns_enabled']
+
     @property
     def rdtype(self):
         return 'INTR'
@@ -154,29 +153,27 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         #self.mac = self.mac.lower()
         if not self.system:
             raise ValidationError("An interface means nothing without it's "
-                                  "system.")
+                "system.")
         from mozdns.ptr.models import PTR
         if PTR.objects.filter(ip_str=self.ip_str, name=self.fqdn).exists():
             raise ValidationError("A PTR already uses this Name and IP")
         from mozdns.address_record.models import AddressRecord
         if AddressRecord.objects.filter(ip_str=self.ip_str, fqdn=self.fqdn
-                                        ).exists():
+                ).exists():
             raise ValidationError("An A record already uses this Name and IP")
 
         if kwargs.pop("validate_glue", True):
             self.check_glue_status()
 
         super(StaticInterface, self).clean(validate_glue=False,
-                                           update_reverse_domain=True,
-                                           ignore_interface=True)
+                update_reverse_domain=True, ignore_interface=True)
 
         if self.pk and self.ip_str.startswith("10."):
             p = View.objects.filter(name="private")
             if p:
                 self.views.add(p[0])
                 super(StaticInterface, self).clean(validate_glue=False,
-                                                   update_reverse_domain=True,
-                                                   ignore_interface=True)
+                        update_reverse_domain=True, ignore_interface=True)
 
     def check_glue_status(self):
         """If this interface is a 'glue' record for a Nameserver instance,
@@ -195,8 +192,8 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         Nameserver = mozdns.nameserver.models.Nameserver
         if Nameserver.objects.filter(intr_glue=self).exists():
             raise ValidationError("This Interface represents a glue record "
-                                  "for a Nameserver. Change the Nameserver to "
-                                  "edit this record.")
+                    "for a Nameserver. Change the Nameserver to edit this "
+                    "record.")
 
     A_template = _("{bind_name:$rhs_just} {ttl} {rdclass:$rdclass_just}"
                    "{rdtype_clob:$rdtype_just} {ip_str:$lhs_just}")
@@ -219,10 +216,10 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         if kwargs.pop("validate_glue", True):
             if self.intrnameserver_set.exists():
                 raise ValidationError("Cannot delete the record {0}. It is a "
-                                      "glue record.".format(self.record_type()))
+                    "glue record.".format(self.record_type()))
         check_cname = kwargs.pop("check_cname", True)
         super(StaticInterface, self).delete(validate_glue=False,
-                                            check_cname=check_cname)
+                check_cname=check_cname)
 
     def __repr__(self):
         return "<StaticInterface: {0}>".format(str(self))
@@ -231,10 +228,7 @@ class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
         #return "IP:{0} Full Name:{1} Mac:{2}".format(self.ip_str,
         #        self.fqdn, self.mac)
         return "IP:{0} Full Name:{1}".format(self.ip_str,
-                                             self.fqdn)
-
-
-reversion.register(StaticInterface)
+                self.fqdn)
 
 
 is_eth = re.compile("^eth$")
@@ -288,6 +282,4 @@ class StaticIntrKeyValue(KeyValue):
         """Either eth (ethernet) or mgmt (mgmt)."""
         if not (is_eth.match(self.value) or is_mgmt.match(self.value)):
             raise ValidationError("Interface type must either be 'eth' "
-                                  "or 'mgmt'")
-
-reversion.register(StaticInterKeyValue)
+                "or 'mgmt'")

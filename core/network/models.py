@@ -11,8 +11,6 @@ from core.mixins import ObjectUrlMixin
 from core.keyvalue.models import KeyValue
 from core.keyvalue.base_option import CommonOption
 
-import reversion
-
 import ipaddr
 import pdb
 
@@ -20,14 +18,14 @@ import pdb
 class Network(models.Model, ObjectUrlMixin):
     id = models.AutoField(primary_key=True)
     vlan = models.ForeignKey(Vlan, null=True,
-                             blank=True, on_delete=models.SET_NULL)
+            blank=True, on_delete=models.SET_NULL)
     site = models.ForeignKey(Site, null=True,
-                             blank=True, on_delete=models.SET_NULL)
+            blank=True, on_delete=models.SET_NULL)
 
     # NETWORK/NETMASK FIELDS
     IP_TYPE_CHOICES = (('4', 'ipv4'), ('6', 'ipv6'))
     ip_type = models.CharField(max_length=1, choices=IP_TYPE_CHOICES,
-                               editable=True, validators=[validate_ip_type])
+                editable=True, validators=[validate_ip_type])
     ip_upper = models.BigIntegerField(null=False, blank=True)
     ip_lower = models.BigIntegerField(null=False, blank=True)
     # This field is here so ES can search this model easier.
@@ -72,7 +70,7 @@ class Network(models.Model, ObjectUrlMixin):
     def delete(self, *args, **kwargs):
         if self.range_set.all().exists():
             raise ValidationError("Cannot delete this network because it has "
-                                  "child ranges")
+                "child ranges")
         super(Network, self).delete(*args, **kwargs)
 
     def clean(self):
@@ -89,10 +87,10 @@ class Network(models.Model, ObjectUrlMixin):
             if range_.start_upper < self.ip_upper:
                 fail = True
             elif (range_.start_upper > self.ip_upper and range_.start_lower <
-                    self.ip_lower):
+                  self.ip_lower):
                 fail = True
             elif (range_.start_upper == self.ip_upper and range_.start_lower
-                    < self.ip_lower):
+                  < self.ip_lower):
                 fail = True
 
             if self.ip_type == '4':
@@ -105,16 +103,15 @@ class Network(models.Model, ObjectUrlMixin):
             if range_.end_upper > brdcst_upper:
                 fail = True
             elif (range_.end_upper < brdcst_upper and range_.end_lower >
-                    brdcst_lower):
+                  brdcst_lower):
                 fail = True
             elif (range_.end_upper == brdcst_upper and range_.end_lower
-                    > brdcst_lower):
+                  > brdcst_lower):
                 fail = True
 
             if fail:
                 raise ValidationError("Resizing this subnet to the requested "
-                                      "network prefix would orphan existing "
-                                      "ranges.")
+                        "network prefix would orphan existing ranges.")
 
     def update_ipf(self):
         """Update the IP filter. Used for compiling search queries and firewall
@@ -137,10 +134,10 @@ class Network(models.Model, ObjectUrlMixin):
                 self.network = ipaddr.IPv6Network(self.network_str)
             else:
                 raise ValidationError("Could not determine IP type of network"
-                                      " %s" % (self.network_str))
+                        " %s" % (self.network_str))
         except (ipaddr.AddressValueError, ipaddr.NetmaskValueError), e:
             raise ValidationError("Invalid network for ip type of "
-                                  "'{0}'.".format(self, self.ip_type))
+                    "'{0}'.".format(self, self.ip_type))
         # Update fields
         self.ip_upper = int(self.network) >> 64
         self.ip_lower = int(self.network) & (1 << 64) - 1  # Mask off
@@ -152,9 +149,6 @@ class Network(models.Model, ObjectUrlMixin):
 
     def __repr__(self):
         return "<Network {0}>".format(str(self))
-
-
-reversion.register(Network)
 
 
 class NetworkKeyValue(CommonOption):
@@ -228,5 +222,3 @@ class NetworkKeyValue(CommonOption):
 
     def _aa_ntp_servers(self):
         self._ntp_servers(self.network.ip_type)
-
-reversion.register(NetworkKeyValue)

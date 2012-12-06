@@ -16,7 +16,6 @@ def get_dhcp_aa(obj):
             aa.append(member_name)
     return aa
 
-
 def get_aa(obj):
     members = dir(obj)
     aa = []
@@ -38,7 +37,7 @@ def get_attrs(query_dict):
 
                 if key in kv:
                     raise ValidationError("{0} is already an "
-                                          "attribute.".format(key))
+                        "attribute.".format(key))
                 kv[key] = value
 
     return kv
@@ -139,10 +138,10 @@ class AuxAttr(object):
         else:
             try:
                 kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
-                                                 self.obj})
+                    self.obj})
             except ObjectDoesNotExist, e:
                 raise AttributeError("{0} AuxAttr has no attribute "
-                                     "{1}".format(self.KVClass, attr))
+                        "{1}".format(self.KVClass, attr))
             self.cache[attr] = kv.value
             return kv.value
         raise AttributeError()
@@ -165,7 +164,7 @@ class AuxAttr(object):
             pass
         try:
             kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
-                                             self.obj})
+                self.obj})
         except ObjectDoesNotExist, e:
             kv = self.KVClass(**{'key': attr, self.obj_name: self.obj})
         kv.value = value
@@ -183,9 +182,9 @@ class AuxAttr(object):
         if hasattr(self, attr):
             self.cache.pop(attr)
             kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
-                                             self.obj})
+                self.obj})
             kv.delete()
             return
         else:
             raise AttributeError("{0} AuxAttr has no attribute "
-                                 "{1}".format(self.KVClass, attr))
+                    "{1}".format(self.KVClass, attr))

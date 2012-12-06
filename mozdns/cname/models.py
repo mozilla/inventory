@@ -12,7 +12,6 @@ import reversion
 from gettext import gettext as _
 import pdb
 
-
 class CNAME(MozdnsRecord):
     """CNAMES can't point to an any other records. Said another way,
     CNAMES can't be at the samle level as any other record. This means
@@ -27,7 +26,7 @@ class CNAME(MozdnsRecord):
     # TODO cite an RFC for that ^ (it's around somewhere)
     id = models.AutoField(primary_key=True)
     target = models.CharField(max_length=100, validators=[validate_name],
-                              help_text="CNAME Target")
+            help_text="CNAME Target")
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                 "{rdtype:$rdtype_just} {target:$rhs_just}.")
 
@@ -76,7 +75,7 @@ class CNAME(MozdnsRecord):
         try:
             self.domain
         except ObjectDoesNotExist:
-            return  # Validation will fail eventually
+            return # Validation will fail eventually
         root_domain = find_root_domain(self.domain.soa)
         if root_domain is None:
             return

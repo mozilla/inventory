@@ -76,8 +76,7 @@ class Ip(models.Model):
     # the definition for 'domain'.
     # reverse_domain = models.ForeignKey(Domain, null=True, blank=True)
     ip_type = models.CharField(max_length=1, choices=IP_TYPE_CHOICES,
-                               editable=True, help_text='IPv4 or IPv6 Address '
-                               'type')
+                    editable=True, help_text='IPv4 or IPv6 Address type')
 
     class Meta:
         abstract = True
@@ -98,7 +97,6 @@ class Ip(models.Model):
             except ipaddr.AddressValueError, e:
                 raise ValidationError("Invalid Ip address {0}".
                                       format(self.ip_str))
-
             if update_reverse_domain:
                 self.reverse_domain = name_to_domain(ip_to_domain_name(self.ip_str,
                     ip_type='4'))
@@ -123,7 +121,7 @@ class Ip(models.Model):
                 if (self.reverse_domain is None or self.reverse_domain.name in
                         ('arpa', 'in-addr.arpa', 'ip6.arpa')):
                     raise ValidationError("No reverse Domain found for {0} "
-                                          .format(self.ip_str))
+                            .format(self.ip_str))
             self.ip_upper, self.ip_lower = ipv6_to_longs(int(ip))
 
     def __int__(self):

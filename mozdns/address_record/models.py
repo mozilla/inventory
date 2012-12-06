@@ -2,7 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 import mozdns
-import core 
+import core as core
 from mozdns.cname.models import CNAME
 from mozdns.view.models import View
 from mozdns.ip.models import Ip
@@ -26,6 +26,10 @@ class BaseAddressRecord(Ip, DisplayMixin):
         ... ip_type=ip_type)
 
     """
+    ############################
+    # See Ip for all ip fields #
+    ############################
+
     label = models.CharField(max_length=63, blank=True, null=True,
                 validators=[validate_first_label],
                 help_text="The short hostname goes here. If this is a record "
@@ -42,6 +46,7 @@ class BaseAddressRecord(Ip, DisplayMixin):
     views = models.ManyToManyField(View, blank=True)
 
     search_fields = ("fqdn", "ip_str")
+
 
     class Meta:
         abstract = True
@@ -94,16 +99,16 @@ class BaseAddressRecord(Ip, DisplayMixin):
             pass
         check_for_cname(self)
 
+
         urd = kwargs.pop("update_reverse_domain", False)
         self.clean_ip(update_reverse_domain=urd)
 
         if not kwargs.pop("ignore_interface", False):
             from core.interface.static_intr.models import StaticInterface
             if StaticInterface.objects.filter(fqdn=self.fqdn,
-                                              ip_upper=self.ip_upper,
-                                              ip_lower=self.ip_lower).exists():
+                    ip_upper=self.ip_upper, ip_lower=self.ip_lower).exists():
                 raise ValidationError("A Static Interface has already "
-                                      "reserved this A record.")
+                    "reserved this A record.")
 
     def delete(self, *args, **kwargs):
         """Address Records that are glue records or that are pointed to
@@ -112,12 +117,11 @@ class BaseAddressRecord(Ip, DisplayMixin):
         if kwargs.pop("validate_glue", True):
             if self.nameserver_set.exists():
                 raise ValidationError("Cannot delete the record {0}. It is "
-                                "a glue record.".format(self.record_type()))
+                    "a glue record.".format(self.record_type()))
         if kwargs.pop("check_cname", True):
             if CNAME.objects.filter(target=self.fqdn):
                 raise ValidationError("A CNAME points to this {0} record. "
-                                      "Change the CNAME before deleting this "
-                                      "record.".
+                    "Change the CNAME before deleting this record.".
                     format(self.record_type()))
 
         from mozdns.utils import prune_tree
@@ -135,9 +139,8 @@ class BaseAddressRecord(Ip, DisplayMixin):
             return
         else:
             # Confusing error messege?
-            raise ValidationError('You can only create A records in a '
-                                  'delegated domain that have an NS record '
-                                  'pointing to them.')
+            raise ValidationError("You can only create A records in a "
+                "delegated domain that have an NS record pointing to them.")
 
     def check_glue_status(self):
         """If this record is a "glue" record for a Nameserver instance,
@@ -182,9 +185,12 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
         ... ip_type=ip_type)
 
     """
+    ############################
+    # See Ip for all ip fields #
+    ############################
     id = models.AutoField(primary_key=True)
     reverse_domain = models.ForeignKey(Domain, null=True, blank=True,
-                                      related_name="addressrecordomain_set")
+            related_name="addressrecordomain_set")
 
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {ip_str:$rhs_just}")
@@ -192,6 +198,6 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
     class Meta:
         db_table = "address_record"
         unique_together = ("label", "domain", "fqdn", "ip_upper", "ip_lower",
-                            "ip_type")
+                "ip_type")
 
 reversion.register(AddressRecord)

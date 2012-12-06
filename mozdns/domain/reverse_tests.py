@@ -320,20 +320,20 @@ class ReverseDomainTests(TestCase):
     def test_bad_names(self):
         name = None
         self.assertRaises(ValidationError, self.create_domain, **{'name':name,
-                            'ip_type':'6'})
+            'ip_type':'6'})
         name = 124
         self.assertRaises(ValidationError, self.create_domain, **{'name':name,
-                            'ip_type':'6'})
+            'ip_type':'6'})
         name = "0.9.0"
         ip_type = "asdf"
         self.assertRaises(ValidationError, self.create_domain, **{'name':name,
-                            'ip_type':ip_type})
+            'ip_type':ip_type})
         ip_type = None
         self.assertRaises(ValidationError, self.create_domain, **{'name':name,
-                            'ip_type':ip_type})
+            'ip_type':ip_type})
         ip_type = 1234
         self.assertRaises(ValidationError, self.create_domain, **{'name':name,
-                            'ip_type':ip_type})
+            'ip_type':ip_type})
 
     def test_add_remove_reverse_ipv6_domains(self):
         osu_block = "2620:105:F000"
@@ -529,4 +529,4 @@ class ReverseDomainTests(TestCase):
         dom.save()
 
         self.assertRaises(ValidationError, self.create_domain, **{ 'name':
-                            '3.4', 'delegated':False })
+            '3.4', 'delegated':False })

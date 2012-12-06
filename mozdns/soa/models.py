@@ -130,7 +130,7 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
         if self.pk:
             db_self = SOA.objects.get(pk=self.pk)
             fields = ['primary', 'contact', 'expire', 'retry',
-                      'refresh', 'description']
+                    'refresh', 'description']
             # Leave out serial for obvious reasons
             for field in fields:
                 if getattr(db_self, field) != getattr(self, field):

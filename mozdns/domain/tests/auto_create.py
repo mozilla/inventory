@@ -54,6 +54,7 @@ class AutoCreateTests(TestCase):
         # creation should fail.
         self.assertRaises(ValidationError, ensure_label_domain, fqdn)
 
+
     def test_no_soa_block2(self):
         c = Domain(name = 'moo')
         c.save()
