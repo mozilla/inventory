@@ -18,6 +18,7 @@ from core.site.models import Site
 
 import pdb
 
+
 class DomainTests(TestCase):
 
     def setUp(self):

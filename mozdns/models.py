@@ -48,21 +48,21 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
     """
 
     domain = models.ForeignKey(Domain, null=False, help_text="FQDN of the "
-                "domain after the short hostname. "
-                "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
+                               "domain after the short hostname. "
+                               "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
     # "The length of any one label is limited to between 1 and 63 octets."
     # RFC218
     label = models.CharField(max_length=63, blank=True, null=True,
-                validators=[validate_first_label],
-                help_text="Short name of the fqdn")
+                             validators=[validate_first_label],
+                             help_text="Short name of the fqdn")
     fqdn = models.CharField(max_length=255, blank=True, null=True,
-                validators=[validate_name], db_index=True)
+                            validators=[validate_name], db_index=True)
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-            validators=[validate_ttl],
-            help_text="Time to Live of this record")
+                                      validators=[validate_ttl],
+                                      help_text="Time to Live of this record")
     views = models.ManyToManyField(View, blank=True)
     description = models.CharField(max_length=1000, blank=True, null=True,
-                help_text="A description of this record.")
+                                   help_text="A description of this record.")
     # fqdn = label + domain.name <--- see set_fqdn
 
     class Meta:
@@ -124,7 +124,6 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
         _check_TLD_condition(self)
 
 
-#####
 def set_fqdn(record):
     try:
         if record.label == '':
@@ -136,7 +135,7 @@ def set_fqdn(record):
 
 
 def check_for_cname(record):
-    """"If a CNAME RR is preent at a node, no other data should be
+    """"If a CNAME RR is present at a node, no other data should be
     present; this ensures that the data for a canonical name and its
     aliases cannot be different."
 
@@ -148,11 +147,12 @@ def check_for_cname(record):
     CNAME = mozdns.cname.models.CNAME
     if hasattr(record, 'label'):
         if CNAME.objects.filter(domain=record.domain,
-                label=record.label).exists():
+                                label=record.label).exists():
             raise ValidationError("A CNAME with this name already exists.")
     else:
         if CNAME.objects.filter(label='', domain=record.domain).exists():
             raise ValidationError("A CNAME with this name already exists.")
+
 
 def check_for_delegation(record):
     """If an object's domain is delegated it should not be able to

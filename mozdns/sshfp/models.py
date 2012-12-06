@@ -9,7 +9,7 @@ from gettext import gettext as _
 
 
 def validate_algorithm(number):
-    if number not in (1,2):
+    if number not in (1, 2):
         raise ValidationError("Algorithm number must be with 1 (RSA) or 2 (DSA)")
 
 def validate_fingerprint(number):
@@ -49,7 +49,7 @@ class SSHFP(MozdnsRecord):
     @classmethod
     def get_api_fields(cls):
         return super(SSHFP, cls).get_api_fields() + ['fingerprint_type',
-                'algorithm_number', 'key']
+                                                     'algorithm_number', 'key']
 
     @property
     def rdtype(self):

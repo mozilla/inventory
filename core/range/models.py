@@ -10,6 +10,8 @@ from mozdns.ip.models import ipv6_to_longs
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
 
+import reversion
+
 import ipaddr
 
 import pdb
@@ -61,12 +63,12 @@ class Range(models.Model, ObjectUrlMixin):
         (DYNAMIC, 'Dynamic'),
     )
     models.CharField(max_length=2, choices=RANGE_TYPE, default=STATIC,
-                        editable=False)
+                     editable=False)
 
     class Meta:
         db_table = 'range'
         unique_together = ('start_upper', 'start_lower', 'end_upper',
-                'end_lower')
+                           'end_lower')
 
     def save(self, *args, **kwargs):
         self.clean()
@@ -116,17 +118,17 @@ class Range(models.Model, ObjectUrlMixin):
             # start > end
             fail = True
         if (self.start_upper == self.end_upper and self.start_lower >
-            self.end_lower):
+                self.end_lower):
             # start > end
             fail = True
         if (self.start_upper == self.end_upper and self.start_lower ==
-            self.end_lower):
+                self.end_lower):
             # end == start
             fail = True
 
         if fail:
             raise ValidationError("The start of a range cannot be greater than"
-                    " or equal to the end of the range.")
+                                  " or equal to the end of the range.")
 
         self.network.update_network()
         if self.network.ip_type == '4':
@@ -137,10 +139,10 @@ class Range(models.Model, ObjectUrlMixin):
         if IPClass(self.start_str) < self.network.network.network:
             #lol, network.network.network.network.network....
             raise ValidationError("The start of a range cannot be less than "
-                "it's network's network address.")
+                                  "it's network's network address.")
         if IPClass(self.end_str) > self.network.network.broadcast:
             raise ValidationError("The end of a range cannot be more than "
-                "it's network's broadcast address.")
+                                  "it's network's broadcast address.")
 
         self.check_for_overlaps()
 
@@ -156,21 +158,21 @@ class Range(models.Model, ObjectUrlMixin):
             if self.start_upper > range_.end_upper:
                 continue
             if (self.start_upper == range_.end_upper and self.start_lower >
-                range_.end_lower):
+                    range_.end_lower):
                 continue
             # end < start
             if self.end_upper < range_.start_upper:
                 continue
             if (self.end_upper == range_.start_upper and self.end_lower <
-                range_.start_lower):
+                    range_.start_lower):
                 continue
             raise ValidationError("Ranges cannot exist inside of other "
-                "ranges.")
+                    "ranges.")
 
     def __str__(self):
         x = "Site: {0} Vlan: {1} Network: {2} Range: Start - {3} End -  {4}"
         return x.format(self.network.site, self.network.vlan, self.network,
-            self.start_str, self.end_str)
+                        self.start_str, self.end_str)
 
     def update_ipf(self):
         """Update the IP filter. Used for compiling search queries and firewall
@@ -213,11 +215,12 @@ class Range(models.Model, ObjectUrlMixin):
         end = self.end_lower
         if start >= end - 1:
             return HttpResponse("Too small of a range.")
-        ip = find_free_ip(start, end, ip_type = '4')
+        ip = find_free_ip(start, end, ip_type='4')
         if ip:
             return ip
         else:
             return None
+
 
 def find_free_ip(start, end, ip_type='4'):
     """Given start and end numbers, find a free ip.
@@ -230,11 +233,11 @@ def find_free_ip(start, end, ip_type='4'):
     """
     if ip_type == '4':
         records = AddressRecord.objects.filter(ip_upper=0, ip_lower__gte=start,
-                ip_lower__lte=end)
+                                               ip_lower__lte=end)
         ptrs = PTR.objects.filter(ip_upper=0, ip_lower__gte=start,
-                ip_lower__lte=end)
+                                  ip_lower__lte=end)
         intrs = StaticInterface.objects.filter(ip_upper=0, ip_lower__gte=start,
-                ip_lower__lte=end)
+                                               ip_lower__lte=end)
         if not records and not intrs:
             ip = ipaddr.IPv4Address(start)
             return ip
@@ -259,6 +262,10 @@ def find_free_ip(start, end, ip_type='4'):
     else:
         raise NotImplemented
 
+
+reversion.register(Range)
+
+
 class RangeKeyValue(CommonOption):
     range = models.ForeignKey(Range, null=False)
 
@@ -271,10 +278,12 @@ class RangeKeyValue(CommonOption):
         self.is_option = False
         if self.value != "peer \"dhcp-failover\"":
             raise ValidationError("Invalid failover option. Try `peer "
-                "\"dhcp-failover\"`")
+                                  "\"dhcp-failover\"`")
 
     def _aa_routers(self):
         self._routers(self.range.network.ip_type)
 
     def _aa_ntp_servers(self):
         self._ntp_servers(self.range.network.ip_type)
+
+reversion.register(RangeKeyValue)

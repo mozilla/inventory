@@ -50,7 +50,7 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
             related_name="intrnameserver_set")
     views = models.ManyToManyField(View, blank=True)
     description = models.CharField(max_length=1000, null=True, blank=True,
-                help_text="A description of this record.")
+                                   help_text="A description of this record.")
 
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {server:$rhs_just}.")
@@ -76,13 +76,20 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
                                 bind_name=self.domain.name + '.',
                                 **self.__dict__)
 
+
+    def __repr__(self):
+        return "<Forward '{0}'>".format(str(self))
+
+    def __str__(self):
+        return "{0} {1} {2}".format(self.domain.name, "NS", self.server)
+
     def details(self):
-        details = [
+        details = (
             ("Server", self.server),
             ("Domain", self.domain.name),
             ("Glue", self.get_glue()),
-        ]
-        return tuple(details)
+        )
+        return details
 
     def delete(self, *args, **kwargs):
         from mozdns.utils import prune_tree
@@ -126,8 +133,8 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
             self.intr_glue = None
         else:
             raise ValueError("Cannot assing {0}: Nameserver.glue must be of "
-                    "either type AddressRecord or type "
-                    "StaticInterface.".format(glue))
+                             "either type AddressRecord or type "
+                             "StaticInterface.".format(glue))
 
     def del_glue(self):
         if self.addr_glue:
@@ -152,15 +159,15 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
             # AddressRecords take higher priority over interface records.
             glue_label = self.server.split('.')[0]  # foo.com -> foo
             if (self.glue and self.glue.label == glue_label and
-                self.glue.domain == self.domain):
+                    self.glue.domain == self.domain):
                 # Our glue record is valid. Don't go looking for a new one.
                 pass
             else:
                 # Ok, our glue record wasn't valid, let's find a new one.
                 addr_glue = AddressRecord.objects.filter(label=glue_label,
-                        domain=self.domain)
+                                                         domain=self.domain)
                 intr_glue = StaticInterface.objects.filter(label=glue_label,
-                        domain=self.domain)
+                                                           domain=self.domain)
                 if not (addr_glue or intr_glue):
                     raise ValidationError(
                         "This NS needs a glue record. Create a glue "
@@ -172,12 +179,6 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
                         self.glue = addr_glue[0]
                     else:
                         self.glue = intr_glue[0]
-
-    def __repr__(self):
-        return "<Forward '{0}'>".format(str(self))
-
-    def __str__(self):
-        return "{0} {1} {2}".format(self.domain.name, "NS", self.server)
 
     def _needs_glue(self):
         # Replace the domain portion of the server with "".

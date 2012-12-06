@@ -28,6 +28,7 @@ def calc_parent(network):
     parent = list(reversed(sorted(eldars, key=lambda n: n.prefixlen)))[0]
     return parent
 
+
 def calc_parent_str(network_str, ip_type):
     network = Network(network_str=network_str, ip_type=ip_type)
     return calc_parent(network)

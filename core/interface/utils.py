@@ -15,7 +15,7 @@ def get_available_ip_by_domain(domain):
     things it raises a ValidationError.
     """
 
-    name = domain.name.replace('mozilla.com','')
+    name = domain.name.replace('mozilla.com', '')
     # First look for a site. This could be the first label or a combination of
     # labels.
     site_name = ""

@@ -39,12 +39,19 @@ class MX(MozdnsRecord):
 
     class Meta:
         db_table = 'mx'
-        # label and domain in MozdnsRecord
         unique_together = ('domain', 'label', 'server', 'priority')
 
     @property
     def rdtype(self):
         return 'MX'
+
+    def __str__(self):
+        return "{0} {1} {3} {4} {5}".format(self.fqdn, self.ttl, 'IN', 'MX',
+                                            self.priority, self.server)
+
+    def __repr__(self):
+        return "<MX '{0}'>".format(str(self))
+
 
     @classmethod
     def get_api_fields(cls):
@@ -59,13 +66,6 @@ class MX(MozdnsRecord):
         super(MX, self).check_for_delegation()
         super(MX, self).check_for_cname()
         self.no_point_to_cname()
-
-    def __str__(self):
-        return "{0} {1} {3} {4} {5}".format(self.fqdn, self.ttl, 'IN', 'MX',
-            self.priority, self.server)
-
-    def __repr__(self):
-        return "<MX '{0}'>".format(str(self))
 
     def no_point_to_cname(self):
         """MX records should not point to CNAMES."""

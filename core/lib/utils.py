@@ -22,34 +22,35 @@ import re
 import ipaddr
 
 is_mozilla_tld = re.compile(".*mozilla\.(org|net|ru|co|it|me|de|hu|pt|"
-        "at|uk|rs|la|tv)$")
+                            "at|uk|rs|la|tv)$")
 
 def create_ipv4_intr_from_domain(
         label, domain_name, system, mac,
         specific_site=False):
     """A wrapper for `create_ipv4_interface`."""
 
+
 def create_ipv4_intr_from_domain(label, domain_name, system, mac,
-        network_str=None):
+                                 network_str=None):
     """A wrapper for :func:`create_ipv4_interface`."""
     if is_mozilla_tld.match(domain_name):
         d = domain_name.split('.')[:-2]
         domain_suffix = '.'.join(d[-2:])
     else:
         # It's probably a mozilla.com TLD
-       d_str = domain_name.replace(".mozilla.com","")
-       d = d_str.split('.')
-       domain_suffix = "mozilla.com"
+        d_str = domain_name.replace(".mozilla.com","")
+        d = d_str.split('.')
+        domain_suffix = "mozilla.com"
 
     vlan_str = d[0]
     datacenter = ".".join(d[1:])
 
     return create_ipv4_interface(label, vlan_str, datacenter, system, mac,
-                                domain_suffix, network_str)
+                                 domain_suffix, network_str)
 
 
 def create_ipv4_interface(label, vlan_str, site_str, system,
-                            mac, domain_suffix, network_str=None):
+                          mac, domain_suffix, network_str=None):
     """This is an api for creating an interface.
 
     :param label: The label of the interface.
@@ -149,7 +150,8 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
         return None, errors
 
     if not system:
-        errors['system'] = ErrorList("Please supply a system.".format(site_str))
+        errors['system'] = ErrorList("Please supply a "
+                                     "system.".format(site_str))
         return None, errors
 
     site = None
@@ -158,7 +160,8 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
             site = s
             break
     if not site:
-        errors['site'] = ErrorList(["Site {0} does not exist".format(site_str)])
+        errors['site'] = ErrorList(["Site {0} does not "
+                                    "exist".format(site_str)])
         return None, errors
 
     try:
@@ -174,7 +177,7 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
         domain = Domain.objects.get(name=domain_name)
     except ObjectDoesNotExist, e:
         errors['domain'] = ErrorList(["Could not find domain "
-            "{0}".format(domain_name)])
+                                      "{0}".format(domain_name)])
         return None, errors
 
     if not network_str:
@@ -188,7 +191,8 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
                     ", ".join([n.network_str for n in networks]))])
             return None, errors
         except ObjectDoesNotExist, e:
-            errors['network'] = "No network for vlan {0} in {1}.".format(vlan, site)
+            errors['network'] = "No network for vlan {0} in {1}.".format(vlan,
+                                                                         site)
             return None, errors
     else:
         try:
@@ -211,10 +215,10 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
             network = Network.objects.get(ip_type=ip_type, ip_upper=ip_upper,
                     ip_lower=ip_lower, prefixlen=tmp_network.prefixlen)
         except ObjectDoesNotExist, e:
-                errors['network'] = ErrorList(["The network {0} was not "
-                    "found. Consider creating it in the web UI.".format(
-                    network_str)])
-                return None, errors
+            errors['network'] = ErrorList(["The network {0} was not "
+                "found. Consider creating it in the web UI.".format(
+                network_str)])
+            return None, errors
 
 
     if not network.range_set.all().exists():
@@ -235,7 +239,7 @@ def create_ipv4_interface(label, vlan_str, site_str, system,
 
 
 def create_ipv4_intr_from_range(label, domain_name, system, mac,
-        range_start_str, range_end_str):
+                                range_start_str, range_end_str):
     """This function creates an interface using the first free ip in the
     specified range. This function will also ensure that a :class:`Domain` with
     the name=``domain_name`` exists in the database. If a new domain is created
@@ -325,10 +329,10 @@ def calc_free_ips_int(range_start, range_end):
 
     if range_start_upper == range_end_upper:
         ip_query = Q(ip_upper=range_start_upper, ip_lower__gte=range_start,
-                ip_lower__lte=range_end_lower)
+                     ip_lower__lte=range_end_lower)
     else:
         ip_query = Q(ip_upper__gte=range_start_upper,
-                ip_upper__lte=range_end_upper)
+                     ip_upper__lte=range_end_upper)
 
     records = AddressRecord.objects.filter(ip_query)
     ips = [record.ip_str for record in records]

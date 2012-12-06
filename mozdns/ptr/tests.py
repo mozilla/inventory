@@ -90,6 +90,8 @@ class PTRTests(TestCase):
         self.assertEqual("1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.f.5.0.1.0.0.2.6.8.ip6.arpa.",
                 ret.dns_name())
 
+
+
     def do_generic_invalid_add( self, ip, fqdn, ip_type, exception, domain = None ):
         # LOL, looks like I didn't know about assertRaises!
         e = None

@@ -22,6 +22,8 @@ import pdb
 # a '_' in their label. Most domain names do not allow this.  Mozdns
 # record has a validator that would raise an exception when validating
 # it's label.  TODO, verify this.
+
+
 class SRV(models.Model, ObjectUrlMixin, DisplayMixin):
     """
     >>> SRV(label=label, domain=domain, target=target, port=port,
@@ -32,28 +34,26 @@ class SRV(models.Model, ObjectUrlMixin, DisplayMixin):
             validators=[validate_srv_label], help_text="Short name of the "
             "fqdn")
     domain = models.ForeignKey(Domain, null=False, help_text="FQDN of the "
-                "domain after the short hostname. "
-                "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
+                               "domain after the short hostname. "
+                               "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
     fqdn = models.CharField(max_length=255, blank=True, null=True,
                             validators=[validate_srv_name])
-    # fqdn = label + domain.name <--- see set_fqdn
-
     views = models.ManyToManyField(View, blank=True)
 
     target = models.CharField(max_length=100,
-                validators=[validate_srv_target])
+                              validators=[validate_srv_target])
 
     port = models.PositiveIntegerField(null=False,
-            validators=[validate_srv_port])
+                                       validators=[validate_srv_port])
 
     priority = models.PositiveIntegerField(null=False,
-                validators=[validate_srv_priority])
+                                           validators=[validate_srv_priority])
 
     weight = models.PositiveIntegerField(null=False,
                                          validators=[validate_srv_weight])
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-            validators=[validate_ttl],
-            help_text="Time to Live of this record")
+                                      validators=[validate_ttl],
+                                      help_text="Time to Live of this record")
     description = models.CharField(max_length=1000, blank=True, null=True)
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {priority:$prio_just} "
@@ -138,8 +138,8 @@ class SRV(models.Model, ObjectUrlMixin, DisplayMixin):
             return
         if not self.pk:  # We don't exist yet.
             raise ValidationError("No objects can be created in the {0}"
-                                   "domain. It is delegated.".
-                                   format(self.domain.name))
+                                  "domain. It is delegated.".
+                                  format(self.domain.name))
 
     def check_for_cname(self):
         """"If a CNAME RR is preent at a node, no other data should be

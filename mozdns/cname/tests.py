@@ -35,7 +35,7 @@ class CNAMETests(TestCase):
             pass
         else:
             name = ip_to_domain_name(name, ip_type=ip_type)
-        d = Domain(name = name, delegated=delegated)
+        d = Domain(name=name, delegated=delegated)
         d.clean()
         self.assertTrue(d.is_reverse)
         return d
@@ -46,7 +46,8 @@ class CNAMETests(TestCase):
         contact = "admin.oregonstate.edu"
         retry = 1234
         refresh = 1234123
-        self.soa = SOA(primary = primary, contact = contact, retry = retry, refresh = refresh)
+        self.soa = SOA(primary=primary, contact=contact, retry=retry,
+                       refresh=refresh)
         self.soa.save()
 
         self.g = Domain(name = "gz")
@@ -57,9 +58,9 @@ class CNAMETests(TestCase):
         self.d = Domain(name = "dz")
         self.d.save()
 
-        self.arpa = self.create_domain( name = 'arpa')
+        self.arpa = self.create_domain(name='arpa')
         self.arpa.save()
-        self.i_arpa = self.create_domain( name = 'in-addr.arpa')
+        self.i_arpa = self.create_domain(name='in-addr.arpa')
         self.i_arpa.save()
         self.r1 = self.create_domain(name="10")
         self.r1.save()
@@ -154,7 +155,8 @@ class CNAMETests(TestCase):
         data = "foo.com"
 
         fqdn = label+'.'+domain.name
-        mx_data = { 'label':'' ,'domain':self.c_g ,'server':fqdn ,'priority':2 ,'ttl':2222 }
+        mx_data = { 'label':'' ,'domain':self.c_g ,'server':fqdn,
+                    'priority': 2, 'ttl':2222}
         mx = MX(**mx_data)
         mx.save()
 

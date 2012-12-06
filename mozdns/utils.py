@@ -75,6 +75,7 @@ def slim_form(domain_pk=None, form=None):
         form.fields['domain'].empty_label = None
     return form
 
+
 def get_clobbered(domain_name):
     classes = [MX, AddressRecord, CNAME, TXT, SRV, StaticInterface, SSHFP]
     clobber_objects = []  # Objects that have the same name as a domain
@@ -92,6 +93,7 @@ def get_clobbered(domain_name):
                 kwargs = {}
             obj.delete(**kwargs)
     return clobber_objects
+
 
 def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
     """This function will take ``domain_name`` and make sure that that domain with that name
@@ -124,16 +126,16 @@ def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
 
         if not leaf_domain:
             raise ValidationError("Creating this record would cause the "
-                    "creation of a new TLD. Please contact "
-                    "http://www.icann.org/ for more information.")
+                                  "creation of a new TLD. Please contact "
+                                  "http://www.icann.org/ for more information.")
         if leaf_domain.delegated:
             raise ValidationError("Creating this record would cause the "
-                    "creation of a domain that would "
-                    "be a child of a delegated domain.")
+                                  "creation of a domain that would "
+                                  "be a child of a delegated domain.")
         if not leaf_domain.soa:
             raise ValidationError("Creating this record would cause the "
-                    "creation of a domain that would "
-                    "not be in an existing DNS zone.")
+                                  "creation of a domain that would "
+                                  "not be in an existing DNS zone.")
 
     domain_name = ''
     for i in range(len(parts)):
@@ -181,7 +183,7 @@ def ensure_label_domain(fqdn, force=False):
     fqdn_partition = fqdn.split('.')
     if len(fqdn_partition) == 1:
         raise ValidationError("Creating this record would force the creation "
-                "of a new TLD '{0}'!".format(fqdn))
+                              "of a new TLD '{0}'!".format(fqdn))
     else:
         label, domain_name = fqdn_partition[0], '.'.join(fqdn_partition[1:])
         domain = ensure_domain(domain_name, purgeable=True, inherit_soa=True)

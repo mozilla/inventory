@@ -25,9 +25,9 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
     """
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, validators=[validate_name],
-                help_text="The name that this record points to.")
+                            help_text="The name that this record points to.")
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-            validators=[validate_ttl])
+                                      validators=[validate_ttl])
     reverse_domain = models.ForeignKey(Domain, null=False, blank=True)
     views = models.ManyToManyField(View, blank=True)
     description = models.CharField(max_length=1000, null=True, blank=True)
