@@ -24,7 +24,8 @@ from Rack import Rack
 from MozInvAuthorization.KeyValueACL import KeyValueACL 
 from core.interface.static_intr.models import StaticInterface
 import simplejson as json
-from mozdns.utils import ensure_label_domain
+from mozdns.utils import ensure_label_domain, prune_tree
+
 
 # Import resources
 from api_v2.dhcp_handler import DHCPHandler

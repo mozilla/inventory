@@ -1,13 +1,13 @@
 from django.conf.urls.defaults import *
 from django.views.generic.simple import direct_to_template
-from mozdns.master_form.views import mozdns_record
 from mozdns.api.v1.api import v1_dns_api
+from mozdns.views import *
+
 
 
 urlpatterns = patterns('',
-    url(r'^$', mozdns_record, name='mozdns-index'),
-    url(r'^record/', include('mozdns.master_form.urls')),
-    url(r'^address_record/', include('mozdns.address_record.urls')),
+
+    url(r'^record/', include('mozdns.record.urls')),
     url(r'^cname/', include('mozdns.cname.urls')),
     url(r'^domain/', include('mozdns.domain.urls')),
     url(r'^mx/', include('mozdns.mx.urls')),

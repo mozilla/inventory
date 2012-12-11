@@ -14,4 +14,5 @@ class FQDNMXForm(BaseForm):
     class Meta:
         model = MX
         exclude = ('label', 'domain')
+        fields = ('fqdn', 'server', 'ttl', 'views', 'description')
         widgets = {'views': forms.CheckboxSelectMultiple}

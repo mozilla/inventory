@@ -15,5 +15,5 @@ class TXTForm(BaseForm):
 class FQDNTXTForm(BaseForm):
     class Meta:
         model = TXT
-        exclude = ('label', 'domain')
+        include = ('fqdn', 'txt_data', 'views', 'description')
         widgets = {'views': forms.CheckboxSelectMultiple}

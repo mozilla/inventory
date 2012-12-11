@@ -1,6 +1,6 @@
 {% extends "mozdns/detail.html" %}
 
-{% block dns_content %}
+{% block content %}
     {% if object.domain %}
         <a class="btn" href="{{ object.domain.get_absolute_url() }}">View Domain</a>
     {% endif %}

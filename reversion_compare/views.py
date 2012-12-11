@@ -29,7 +29,7 @@ from reversion_compare.helpers import html_diff, compare_queryset
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 
-from mozdns.master_form.utils import get_klasses
+from mozdns.record.utils import get_obj_meta
 import pdb
 
 
@@ -74,7 +74,7 @@ class CompareObject(object):
         if isinstance(self.value, basestring):
             return self.value
         else:
-            self._obj_repr(self.value)
+            return self._obj_repr(self.value)
 
     def __cmp__(self, other):
         raise NotImplemented()
@@ -413,7 +413,8 @@ def _get_action_list(request, object_, extra_context=None):
 
 def history_view(request, object_class, object_id, extra_context=None):
     """Renders the history view."""
-    object_klass, _, _ = get_klasses(object_class)
+    object_klass = get_obj_meta(object_class).Klass
+
     if not object_klass:
         raise Http404
     object_ = get_object_or_404(object_klass, pk=object_id)
@@ -457,7 +458,7 @@ def compare_view(request, object_class, extra_context=None):
     version_id1 = form.cleaned_data["version_id1"]
     version_id2 = form.cleaned_data["version_id2"]
 
-    object_klass, _, _ = get_klasses(object_class)
+    object_klass = get_obj_meta(object_class).Klass
     if not object_klass:
         raise Http404("No {0} object type with id {1}".format(object_class,
                         object_id))

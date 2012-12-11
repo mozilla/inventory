@@ -161,7 +161,6 @@ class DomainTests(TestCase):
         self.assertRaises(ValidationError, f_c.delete)
 
     def test_remove_has_child_records(self):
-        pdb.set_trace()
         Domain(name = 'com').save()
         f_c = Domain(name = 'foo.com')
         f_c.save()

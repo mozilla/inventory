@@ -14,6 +14,7 @@
       <link rel="stylesheet" href="{{ MEDIA_URL }}stylesheets/blueprint/ie.css" type="text/css" media="screen, projection">
     <![endif]-->
     <link href="{{ MEDIA_URL }}stylesheets/screen.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="{{ MEDIA_URL }}css/header_menu.css" media="screen" rel="stylesheet" type="text/css" />
      <link rel="shortcut icon" href="/static/images/favicon.ico">
      <link rel="icon" href="/static/images/favicon.ico">
 
@@ -21,62 +22,59 @@
 
 </head>
 <body>
-<div id="header">
-    <div class="container">
-        <h1 id="inventory"><a href="/">Inventory</a></h1>
+<div class="header-bar">
+    <div class="header">
+    <h1><a href="/">Inventory</a></h1>
+    <div class='nav-bar'>
+            <ul>
+                <li>
+                    <a>Systems</a>
+                    <ul>
+                        <li><a href="/">Systems</a></li>
+                        <li><a href="/user_systems/">Unmanaged</a></li>
+                        <li><a href="/user_systems/owners/">Owners</a></li>
+                        <li><a href="/user_systems/licenses/">User Licenses</a></li>
+                        <li><a href="/build/">Release</a></li>
+                        <li><a href="/misc/">Misc</a></li>
+                        <li><a href="/truth/">Truth Database</a></li>
+                        <li><a href="/reports/">Reporting</a></li>
+                        <li><a href="/systems/oncall/">On Call</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a>DNS</a>
+                    <ul>
+                        {% for rdtype in ['CNAME', 'MX', 'NS', 'SRV', 'SSHFP', 'PTR', 'TXT'] %}
+                        <li><a href="/mozdns/record/search/{{rdtype}}/">{{rdtype}}</a></li>
+                        {% endfor %}
+                        <li><a href="/mozdns/record/search/A/">A/AAAA</a></li>
+                        <li><a href="/mozdns/record/search/DOMAIN/">Domain</a></li>
+                        <li><a href="/mozdns/record/search/SOA/">SOA</a></li>
+                    </ul>
+                </li>
+
+                <li><a href="/core/">IPAM</a>
+                    <ul>
+                        <li><a class="nav-link" href="/core/search/">Search</a></li>
+                        <li><a class="nav-link" href="/core/site/">Site</a></li>
+                        <li><a class="nav-link" href="/core/network/">Network</a></li>
+                        <li><a class="nav-link" href="/core/vlan/">Vlan</a></li>
+                        <li><a class="nav-link" href="/core/range/">Range</a></li>
+                    </ul>
+                </li>
+            </ul>
+    </div>
     </div>
 </div>
 <div id="main" class="container"> 
+    <!--
     <div id="hd">
         <div id="toptabs">
             <ul id="app-buttons">
-<!-- @TODO Implement Reverses -->
-                <li><a href="/">Systems</a></li>
-                <li><a href="/systems/racks/">Racks</a></li>
-                {% if not read_only %}
-                <li><a href="/user_systems/">Unmanaged</a></li>
-                <li><a href="/user_systems/owners/">Owners</a></li>
-                <li><a href="/user_systems/licenses/">User Licenses</a></li>
-                <li><a href="/build/">Release</a></li>
-                <li><a href="/misc/">Misc</a></li>
-                <li><a href="/core/">IPAM</a>
-                    <div style="position:relative;">
-                        <ul class='header-drop-down'>
-                            <li><a class="nav-link" href="/core/search/">Search</a></li>
-                            <li><a class="nav-link" href="/core/site/">Site</a></li>
-                            <li><a class="nav-link" href="/core/network/">Network</a></li>
-                            <li><a class="nav-link" href="/core/vlan/">Vlan</a></li>
-                            <li><a class="nav-link" href="/core/range/">Range</a></li>
-                        </ul>
-                    </div>
-                </li>
-                <li><a href="/mozdns/">DNS</a>
-                    <div style="position:relative;">
-                        <ul class='header-drop-down'>
-                            <li><a class='drop-down-item' href="/mozdns/">Edit Records</a></li>
-                            <li><a class="nav-link" href="/mozdns/address_record/">A/AAAA</a></li>
-                            <li><a class='drop-down-item' href="/mozdns/cname/">CNAME</a></li>
-                            <li><a class='drop-down-item' href="/mozdns/domain/">Domain</a></li>
-                            <li><a class="nav-link" href="/mozdns/mx/">MX</a></li>
-                            <li><a class="nav-link" href="/mozdns/nameserver/">NS</a></li>
-                            <li><a class="nav-link" href="/mozdns/srv/">SRV</a></li>
-                            <li><a class="nav-link" href="/mozdns/soa/">SOA</a></li>
-                            <li><a class="nav-link" href="/mozdns/sshfp/">SSHFP</a></li>
-                            <li><a class="nav-link" href="/mozdns/ptr/">PTR</a></li>
-                            <li><a class="nav-link" href="/mozdns/txt/">TXT</a></li>
-                            <li><a class="nav-link" href="/mozdns/domain/reverse_domains">Reverse Domains</a></li>
-                        </ul>
-
-                    </div>
-                </li>
-                <li><a href="/truth/">Truth Database</a></li>
-                <li><a href="/reports/">Reporting</a></li>
-                <li><a href="/systems/oncall/">On Call</a></li>
-                {% endif %}
             </ul>
         </div>
-        {% block site_tabs %} {% endblock %}
     </div>
+    -->
     <div id="bd">
         {% block content %}{% endblock %}
     </div>

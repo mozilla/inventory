@@ -1,0 +1,47 @@
+{% extends "mozdns/mozdns_base.html" %}
+
+{% block head %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.js" type="text/javascript"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.js" type="text/javascript"></script>
+    <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+    <script type="text/javascript" src="/static/javascripts/dns_form_utils.js"></script>
+    <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
+{% endblock %}
+
+{% block content %}
+    {# Edit form (hidden) #}
+    {#  form (hidden) #}
+    {# List objects #}
+    <script>
+
+    $(document).ready(function(){
+        // A little bit of js to handle the timing of doing search results
+        var timerHandle;
+        var timeOutInterval = 200; //1 second
+        $('#search-query').keyup(function(){
+            clearTimeout(timerHandle);
+            if ($('#search-query').val()){
+                timerHandle = setTimeout(do_search, timeOutInterval);
+            }
+        });
+        setup_search_table();
+
+    });
+    </script>
+
+    <div id='dns-data' record_type="{{record_type}}" record_pk="{{record_pk}}"></div>
+
+    <div id="object-controls">
+        <span>Create new <a id='create-new' href="/mozdns/record/create/{{record_type}}/">{{record_type}}</a></span>
+    </div>
+
+    <br />
+    <div id='record-search'>
+        <label for='search-query'>Search {{record_type}}'s: <input id='search-query' width="200px" /></label>
+        <div id='search-results' class="containter">
+            <table class="tablesorter" id="record-table">
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

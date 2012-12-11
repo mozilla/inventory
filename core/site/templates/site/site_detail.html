@@ -1,7 +1,7 @@
 {% extends "core/core_base.html" %}
 
 
-{% block core_content %}
+{% block content %}
     {% if site.parent %}
         <div class='dns-title'>{{ site.get_full_name() }}</div>
         Parent site: <a href='{{ site.parent.get_absolute_url() }}'>{{ site.parent.get_full_name() }}</a>

@@ -70,7 +70,7 @@
             <th>Rack</th>
             <th>Serial</th>
             <th>Asset</th>
-            <th>Action</th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
@@ -105,225 +105,55 @@
     </table>
 {% endif %}
 
+
+{% import 'record/draw_record_table.html' as drawer %}
 {% if soas %}
     <h4><a name="q={{search}}&SOA">SOA</a></h4>
-    <table class="tablesorter record-table">
-        <thead>
-        <tr>
-            <th>SOA</th>
-            <th>Serial</th>
-            <th>Status</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for soa in soas %}
-        <tr>
-            <td><a href="{{ soa.get_absolute_url() }}">{{ soa }}</a></td>
-            <td>{{ soa.serial }}</td>
-            <td>{{ 'Zone waiting to be rebuilt' if soa.dirty else 'Zone is up-to-date'}}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {{ drawer.draw_record_table('SOA', soas, table_class='tablesorter record-table', table_id='soa-table') }}
 {% endif %}
 
 {% if domains %}
     <h4><a name="q={{search}}&Domain">Domains</a></h4>
-    <table class="tablesorter">
-        <thead>
-        <tr>
-            <th>Domain</th>
-            <th>SOA</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for domain in domains %}
-        <tr>
-            <td><a href="{{ domain.get_absolute_url() }}">{{ domain.name }}</a></td>
-            <td>
-                {% if domain.soa %}
-                <a href="{{ domain.soa.get_absolute_url() }}">{{ domain.soa }}</a>
-                {% endif %}
-            </td>
-        </tr>
-        </tbody>
-        {% endfor %}
-    </table>
+    {{ drawer.draw_record_table('DOMAIN', domains, table_class='tablesorter record-table', table_id='domain-table') }}
 {% endif %}
 
 {% if nss %}
     <h4><a name="q={{search}}&Nameserver">Nameserver</a></h4>
-    <table class="tablesorter record-table">
-        <thead>
-        <tr>
-            <th>Domain</th>
-            <th></th>
-            <th>Server</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for ns in nss %}
-        <tr>
-            <td><a href="{{ ns.get_absolute_url() }}">{{ ns.domain.name }}</a></td>
-            <td><b>NS</b></td>
-            <td>{{ ns.server }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {{ drawer.draw_record_table('NS', nss, table_class='tablesorter record-table', table_id='ns-table') }}
 {% endif %}
 
 {% if mxs %}
     <h4><a name="q={{search}}&MX">MX</a> Records</h4>
-    <table class="tablesorter record-table">
-        <thead>
-        <tr>
-            <th>FQDN</th>
-            <th></th>
-            <th>Server</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for mx in mxs %}
-        <tr>
-            <td><a href="{{ mx.get_fancy_edit_url() }}">{{ mx.fqdn }}</a></td>
-            <td><b>MX</b></td>
-            <td>{{ mx.server }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {{ drawer.draw_record_table('MX', mxs, table_class='tablesorter record-table', table_id='mx-table') }}
 {% endif %}
 
 {% if srvs %}
     <h4><a name="q={{search}}&SRV">SRV</a> Records</h4>
-    <table class="tablesorter record-table">
-        <thead>
-        <tr>
-            <th>FQDN</th>
-            <th></th>
-            <th>Target</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for srv in srvs %}
-        <tr>
-            <td><a href="{{ srv.get_fancy_edit_url() }}">{{ srv.fqdn }}</a></td>
-            <td><b>SRV</b></td>
-            <td>{{ srv.target }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {{ drawer.draw_record_table('SRV', srvs, table_class='tablesorter record-table', table_id='srv-table') }}
 {% endif %}
 
 {% if txts %}
     <h4><a name="q={{search}}&TXT">TXT</a> Records</h4>
-    <table class="tablesorter record-table">
-        <thead>
-        <tr>
-            <th>FQDN</th>
-            <th></th>
-            <th>Data</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for txt in txts %}
-        <tr>
-            <td><a href="{{ txt.get_fancy_edit_url() }}">{{ txt.fqdn }}</a></td>
-            <td><b>TXT</b></td>
-            <td>{{ txt.data_data }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {{ drawer.draw_record_table('TXT', txts, table_class='tablesorter record-table', table_id='txt-table') }}
 {% endif %}
 
 {% if cnames %}
     <h4><a name="q={{search}}&CNAME">CNAME</a> Records</h4>
-    <table class="tablesorter record-table">
-        <thead>
-        <tr>
-            <th>FQDN</th>
-            <th></th>
-            <th>Data</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for cname in cnames %}
-        <tr>
-            <td><a href="{{ cname.get_fancy_edit_url() }}">{{ cname.fqdn }}</a></td>
-            <td><b>CNAME</b></td>
-            <td>{{ cname.target }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {{ drawer.draw_record_table('CNAME', cnames, table_class='tablesorter record-table', table_id='cname-table') }}
 {% endif %}
 
 {% if intrs %}
     <h4><a name="q={{search}}&Interface">Interface</a> Records</h4>
-    <table class="tablesorter intr-table">
-        <thead>
-        <tr>
-            <th>FQDN</th>
-            <th></th>
-            <th>IP</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for intr in intrs %}
-        <tr>
-            <td><a href="{{ intr.get_absolute_url() }}">{{ intr.fqdn }}</a></td>
-            <td><b>A/PTR</b></td>
-            <td>{{ intr.ip_str }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {{ drawer.draw_record_table('INTR', intrs, table_class='tablesorter intr-table', table_id='intr-table') }}
 {% endif %}
 
 {% if addrs %}
 <h4><a id="q={{search}}&Address">Address</a> Records</h4>
-    <table class="tablesorter addr-table">
-        <thead>
-        <tr>
-            <th>FQDN</th>
-            <th></th>
-            <th>IP</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for addr in addrs %}
-        <tr>
-            <td><a href="{{ addr.get_fancy_edit_url() }}">{{ addr.fqdn }}</a></td>
-            <td><b>{{ addr.record_type() }}</b></td>
-            <td>{{ addr.ip_str }}</td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    {{ drawer.draw_record_table('A', addrs, table_class='tablesorter addr-table', table_id='addr-table') }}
 {% endif %}
 
 {% if ptrs %}
     <h4><a name="q={{search}}&PTR">PTR</a> Records</h4>
-    <table class="tablesorter ptr-table">
-        <thead>
-        <tr>
-            <th>IP</th>
-            <th></th>
-            <th>FQDN</th>
-        </tr>
-        <thead>
-        <tbody>
-        {% for ptr in ptrs %}
-        <tr>
-            <td>{{ ptr.ip_str }}</td>
-            <td><b>PTR</b></td>
-            <td><a href="{{ ptr.get_fancy_edit_url() }}">{{ ptr.name }}</a></td>
-        </tr>
-        {% endfor %}
-        <tbody>
-    </table>
+    {{ drawer.draw_record_table('PTR', ptrs, table_class='tablesorter ptr-table', table_id='ptr-table') }}
 {% endif %}
 </div>

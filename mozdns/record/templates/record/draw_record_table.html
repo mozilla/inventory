@@ -1,0 +1,201 @@
+{%- macro draw_record_table(record_type, objs, table_id, table_class='tablesorter') %}
+<table class="{{ table_class }}"  id="{{table_id}}">
+{% if record_type == "SOA" %}
+        <thead>
+        <tr>
+            <th>SOA</th>
+            <th>Serial</th>
+            <th>Primary</th>
+            <th>Contact</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for soa in objs %}
+        <tr>
+            <td>{{ soa }}</td>
+            <td>{{ soa.serial }}</td>
+            <td>{{ soa.primary }}</td>
+            <td>{{ soa.contact }}</td>
+            <td>{{ 'Zone waiting to be rebuilt' if soa.dirty else 'Zone is up-to-date'}}</td>
+            <td><a href="{{ soa.get_absolute_url() }}">View</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+{% elif record_type == "DOMAIN" %}
+        <thead>
+        <tr>
+            <th>Domain</th>
+            <th>SOA</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for domain in objs %}
+        <tr>
+            <td>{{ domain.name }}</td>
+            <td>
+                {% if domain.soa %}
+                {{ domain.soa }}
+                {% endif %}
+            </td>
+            <td><a href="{{ domain.get_absolute_url() }}">View</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+{% elif record_type == "NS" %}
+        <thead>
+        <tr>
+            <th>Domain</th>
+            <th></th>
+            <th>Server</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for ns in objs %}
+        <tr>
+            <td>ns.domain.name</td>
+            <td><b>NS</b></td>
+            <td>{{ ns.server }}</td>
+            <td><a href="{{ ns.get_fancy_edit_url() }}">Edit</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+{% elif record_type == "MX" %}
+        <thead>
+        <tr>
+            <th>Domain</th>
+            <th></th>
+            <th>Server</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for mx in objs %}
+        <tr>
+            <td>{{ mx.fqdn }}</a></td>
+            <td><b>MX</b></td>
+            <td>{{ mx.server }}</td>
+            <td><a href="{{ mx.get_fancy_edit_url() }}">Edit</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+{% elif record_type == "SRV" %}
+        <thead>
+        <tr>
+            <th>FQDN</th>
+            <th></th>
+            <th>Target</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for srv in objs %}
+        <tr>
+            <td>{{ srv.fqdn }}</td>
+            <td><b>SRV</b></td>
+            <td>{{ srv.target }}</td>
+            <td><a href="{{ srv.get_fancy_edit_url() }}">Edit</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+{% elif record_type == "TXT" %}
+        <thead>
+        <tr>
+            <th>FQDN</th>
+            <th></th>
+            <th>Data</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for txt in objs %}
+        <tr>
+            <td>{{ txt.fqdn }}</td>
+            <td><b>TXT</b></td>
+            <td>{{ txt.data_data }}</td>
+            <td><a href="{{ txt.get_fancy_edit_url() }}">Edit</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+{% elif record_type == "CNAME" %}
+        <thead>
+        <tr>
+            <th>FQDN</th>
+            <th></th>
+            <th>Data</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for cname in objs %}
+        <tr>
+            <td>{{ cname.fqdn }}</td>
+            <td><b>CNAME</b></td>
+            <td>{{ cname.target }}</td>
+            <td><a href="{{ cname.get_fancy_edit_url() }}">Edit</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+{% elif record_type == "INTR" %}
+        <thead>
+        <tr>
+            <th>FQDN</th>
+            <th></th>
+            <th>IP</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for obj in objs %}
+        <tr>
+            <td>{{ obj.fqdn }}</td>
+            <td><b>{{ obj.record_type() }}</b></td>
+            <td>{{ obj.ip_str }}</td>
+            <td><a href="{{ obj.get_absolute_url() }}">Edit</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+{% elif record_type == "A" or record_type == "AAAA" %}
+        <thead>
+        <tr>
+            <th>FQDN</th>
+            <th></th>
+            <th>IP</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for obj in objs %}
+        <tr>
+            <td>{{ obj.fqdn }}</td>
+            <td><b>{{ obj.record_type() }}</b></td>
+            <td>{{ obj.ip_str }}</td>
+            <td><a href="{{ obj.get_fancy_edit_url() }}">Edit</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+{% elif record_type == "PTR" %}
+        <thead>
+        <tr>
+            <th>IP</th>
+            <th></th>
+            <th>FQDN</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for ptr in objs %}
+        <tr>
+            <td>{{ ptr.ip_str }}</td>
+            <td><b>PTR</b></td>
+            <td>{{ ptr.name }}</td>
+            <td><a href="{{ ptr.get_fancy_edit_url() }}">Edit</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+{% endif %}
+</table>
+{%- endmacro %}

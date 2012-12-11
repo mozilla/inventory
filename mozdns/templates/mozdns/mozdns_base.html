@@ -1,4 +1,4 @@
-{% extends "mozdns/base.html" %}
+{% extends "base.html" %}
 {% if messages %}
     <ul class="messages">
         {% for message in messages %}
@@ -8,5 +8,5 @@
 {% endif %}
 
 <div class='dns-content'>
-{% block dns_content %}{% endblock %}
+{% block content %}{% endblock %}
 </div>

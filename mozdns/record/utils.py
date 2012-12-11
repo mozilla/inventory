@@ -1,0 +1,241 @@
+import copy
+import simplejson as json
+
+from django.http import QueryDict
+from django.core.exceptions import ValidationError
+from django.forms.util import ErrorList, ErrorDict
+from django.shortcuts import render
+from django.db.models import Q
+from django.http import HttpResponse
+from django.http import Http404
+
+import reversion
+
+from mozdns.address_record.models import AddressRecord
+from mozdns.address_record.forms import AddressRecordFQDNForm
+from mozdns.address_record.forms import AddressRecordForm
+from mozdns.ptr.models import PTR
+from mozdns.ptr.forms import PTRForm
+from mozdns.srv.models import SRV
+from mozdns.srv.forms import SRVForm, FQDNSRVForm
+from mozdns.sshfp.models import SSHFP
+from mozdns.sshfp.forms import SSHFPForm, FQDNSSHFPForm
+from mozdns.txt.models import TXT
+from mozdns.txt.forms import TXTForm, FQDNTXTForm
+from mozdns.mx.models import MX
+from mozdns.mx.forms import MXForm, FQDNMXForm
+from mozdns.cname.models import CNAME
+from mozdns.cname.forms import CNAMEFQDNForm, CNAMEForm
+from mozdns.soa.models import SOA
+from mozdns.soa.forms import SOAForm
+from mozdns.domain.models import Domain
+from mozdns.domain.forms import DomainForm
+from mozdns.nameserver.models import Nameserver
+from mozdns.nameserver.forms import NameserverForm
+from mozdns.utils import ensure_label_domain, prune_tree
+
+import pdb
+
+
+class RecordView(object):
+    form_template = 'record/ajax_form.html'
+
+    def get_context_data(self, context):
+        return context
+
+    def get(self, request, record_type, record_pk):
+        if not record_pk:
+            object_ = None
+        else:
+            try:
+                object_ = self.Klass.objects.get(pk=record_pk)
+            except self.Klass.DoesNotExist:
+                raise Http404
+        return self._display_object(request, object_, record_type, record_pk)
+
+    def _display_object(self, request, object_, record_type, record_pk):
+        domains = Domain.objects.filter(is_reverse=False)
+        if not object_:
+            form = self.DisplayForm()
+        else:
+            form = self.DisplayForm(instance=object_)
+
+        return render(request, self.form_template, {
+            'form': form,
+            'object_': object_,
+            'record_type': record_type if record_type else '',
+            'record_pk': record_pk if record_pk else '',
+            'domains': json.dumps([domain.name for domain in domains]),
+        })
+
+    def post(self, request, record_type, record_pk):
+        try:
+            object_ = self.Klass.objects.get(pk=str(record_pk))
+        except (self.Klass.DoesNotExist, ValueError):
+            # We will try to create an object
+            object_ = None
+
+        new_object, errors = self.post_handler(object_, record_type, request.POST)
+
+        if object_:
+            verb = "update"
+        else:
+            verb = "create"
+
+        if errors:
+            return_form = self.DisplayForm(request.POST)
+            return_form._errors = errors
+            message = "Errors during {0}. Commit Aborted.".format(verb)
+        else:
+            message = "Succesful {0}".format(verb)
+            return_form = self.DisplayForm(instance=new_object)
+            record_pk = new_object.pk
+
+        basic_context = {
+            'form': return_form,
+            'message': message,
+            'record_type': record_type,
+            'record_pk': record_pk,
+            'object_': object_
+        }
+
+        # Allow overrides
+        context = self.get_context_data(basic_context)
+
+        return render(request, self.form_template, context)
+
+    def post_handler(self, object_, record_type, orig_qd):
+        """Create or update object_. qd is a QueryDict.
+        """
+        qd = copy.deepcopy(orig_qd)  # If there are ever errors, we have to preserver
+                                     # the original qd
+        comment = qd.pop('comment', [''])[0].strip()
+        fqdn = qd.pop('fqdn', [''])[0]
+
+        # This little chunk of code could be factored out, but I think it's
+        # more clear when you see which objects don't need to call this in one
+        # spot.
+        domain = None
+        if record_type not in ('PTR', 'NS', 'DOMAIN', 'SOA'):
+            try:
+                label, domain = ensure_label_domain(fqdn)
+                # If something goes bad latter on you must call prune_tree on
+                # domain.  If you don't do this there will be a domain leak.
+            except ValidationError, e:
+                e_dict = ErrorDict()
+                e_dict['fqdn'] = e.messages
+                return None, e_dict
+            qd['label'], qd['domain'] = label, str(domain.pk)
+
+        # Create a save-able form to create/update the object
+        if object_:
+            object_form = self.form(qd, instance=object_)
+        else:
+            object_form = self.form(qd)
+
+        if object_form.is_valid():
+            try:
+                object_ = object_form.save()
+                reversion.set_comment(comment)
+            except ValidationError, e:
+                prune_tree(domain)
+                e_dict = ErrorDict()
+                e_dict['__all__'] = ErrorList(e.messages)
+                return None, e_dict
+            return object_, None
+        else:
+            prune_tree(domain)
+            return None, object_form._errors
+
+def make_rdtype_tagger(tagged_klasses):
+    def tag(Klass):
+        tagged_klasses[Klass.__name__] = Klass
+        return Klass
+    return tag
+
+obj_meta = {}
+tag_rdtype = make_rdtype_tagger(obj_meta)
+
+def get_obj_meta(record_type):
+    return obj_meta[record_type]
+
+"""
+Name the class the same as the rdtype it's standing for.
+"""
+
+
+@tag_rdtype
+class A(RecordView):
+    Klass = AddressRecord
+    form = AddressRecordForm
+    DisplayForm = AddressRecordFQDNForm
+
+
+@tag_rdtype
+class CNAME(RecordView):
+    Klass = CNAME
+    form = CNAMEForm
+    DisplayForm = CNAMEFQDNForm
+
+
+@tag_rdtype
+class DOMAIN(RecordView):
+    Klass = Domain
+    form = DomainForm
+    DisplayForm = DomainForm
+
+
+@tag_rdtype
+class MX(RecordView):
+    Klass = MX
+    form = MXForm
+    DisplayForm = FQDNMXForm
+
+
+@tag_rdtype
+class NS(RecordView):
+    Klass = Nameserver
+    form = NameserverForm
+    DisplayForm = NameserverForm
+
+
+@tag_rdtype
+class PTR(RecordView):
+    Klass = PTR
+    form = PTRForm
+    DisplayForm = PTRForm
+
+
+@tag_rdtype
+class TXT(RecordView):
+    Klass = TXT
+    form = TXTForm
+    DisplayForm = FQDNTXTForm
+
+
+@tag_rdtype
+class SSHFP(RecordView):
+    Klass = SSHFP
+    form = SSHFPForm
+    DisplayForm = FQDNSSHFPForm
+
+
+@tag_rdtype
+class SOA(RecordView):
+    Klass = SOA
+    form = SOAForm
+    DisplayForm = SOAForm
+
+
+@tag_rdtype
+class SRV(RecordView):
+    Klass = SRV
+    form = SRVForm
+    DisplayForm = FQDNSRVForm
+
+
+@tag_rdtype
+class TXT(RecordView):
+    Klass = TXT
+    form = TXTForm
+    DisplayForm = FQDNTXTForm

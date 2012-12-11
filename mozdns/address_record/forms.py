@@ -15,5 +15,5 @@ class AddressRecordForm(BaseForm):
 class AddressRecordFQDNForm(BaseForm):
     class Meta:
         model = AddressRecord
-        fields = ('fqdn', 'ip_type', 'ip_str', 'views', 'ttl', 'description')
+        fields = ('fqdn', 'ip_str', 'ip_type', 'ttl', 'views', 'description')
         widgets = {'views': forms.CheckboxSelectMultiple}

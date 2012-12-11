@@ -15,6 +15,6 @@ class CNAMEForm(BaseForm):
 class CNAMEFQDNForm(BaseForm):
     class Meta:
         model = CNAME
-        fields = ('fqdn', 'target', 'views', 'ttl', 'description')
+        fields = ('fqdn', 'target', 'ttl', 'views', 'description')
         widgets = {'views': forms.CheckboxSelectMultiple}
         # https://code.djangoproject.com/ticket/9321

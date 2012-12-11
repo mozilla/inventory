@@ -1,10 +1,11 @@
 import pdb
 from itertools import izip
 
+
 from core.search.compiler.invparse import build_parser
 from core.search.compiler.invfilter import BadDirective
 from core.search.compiler.utils import make_stack, istype
-from core.search.compiler.invfilter import get_managers
+from core.search.compiler.invfilter import get_managers, searchables
 
 
 def compile_to_django(search):
@@ -12,6 +13,16 @@ def compile_to_django(search):
     if error:
         return None, error
     return filter_objects(compiled_qs), ""
+
+def search_type(search, rtype):
+    """A simple wrapper for returning an objects Q object."""
+    qs, error = compile_q_objects(search)
+    if error:
+        return None, error
+    for t, q in izip(searchables, qs):
+        if rtype == t[0]:
+            return q, None
+    return None, None
 
 def compile_q_objects(search):
     parse = build_parser()

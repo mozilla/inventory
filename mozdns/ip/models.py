@@ -111,7 +111,7 @@ class Ip(models.Model):
                 ip = ipaddr.IPv6Address(self.ip_str)
                 self.ip_str = str(ip)
             except ipaddr.AddressValueError, e:
-                raise ValidationError("Invalid ip {0} for IPv6s.".
+                raise ValidationError("Invalid ip {0} for IPv6.".
                                       format(self.ip_str))
 
             if update_reverse_domain:

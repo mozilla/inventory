@@ -1,10 +1,11 @@
 {% extends "core/core_base.html" %}
 {% block head %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.js" type="text/javascript"></script>
     <script src="{{ MEDIA_URL }}js/jquery-ui-1.8.11.custom.min.js" type="text/javascript"></script>
     <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
     <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
 {% endblock %}
-{% block core_content %}
+{% block content %}
 
 <style type="text/css">
 .center{
@@ -87,7 +88,6 @@ div advanced-search-knobs input{
             window.location.hash = '#q='+search;
             // First make the banner go away. Then push everthing to the left... just like google.
             $('#banner_text').empty();
-            //$('#results').html('');
             $('#banner_area').css('text-align', 'left');
             $('.banner').css('margin-bottom', '10px');
             $('#btn_i').remove();
@@ -96,56 +96,68 @@ div advanced-search-knobs input{
 
             // We might want to abort this.
             $('#stop_search').css('display', 'inline');
-            var search_request = $.get('/core/search/search_ajax?'
-                                        + 'search='+escape(search)
-                                        + '&advanced_search=' + get_advanced_search_options(),
-                function update_results(data){
-                    $('#stop_search').css('display', 'none');
-                    results = document.getElementById('results');
-                    results.innerHTML = data;
-                    // Every table needs to have it's feilds configured.
-                    $(".system-table").tablesorter({
-                        sortList: [[0,1]],
-                        headers: {
-                            0: { sorter:'hostname' },
-                            1: { sorter:'ipAddress' },
-                        }
-                    });
-                    $(".record-table").tablesorter({
-                        sortList: [[0,1]],
-                        headers: {
-                            0: { sorter:'hostname' },
-                            1: { sorter:false },
-                            2: { sorter:'hostname' },
-                        }
-                    });
-                    $(".intr-table").tablesorter({
-                        sortList: [[0,1],[2,1]],
-                        headers: {
-                            0: { sorter:'hostname' },
-                            1: { sorter:false },
-                            2: { sorter:'ipAddress' },
-                        }
-                    });
-                    $(".ptr-table").tablesorter({
-                        sortList: [[0,1],[2,1]],
-                        headers: {
-                            0: { sorter:'ipAddress' },
-                            1: { sorter:false },
-                            2: { sorter:'hostname' },
-                        }
-                    });
-                    $(".addr-table").tablesorter({
-                        sortList: [[0,1],[2,1]],
-                        headers: {
-                            1: { sorter:false },
-                            2: { sorter:'ipAddress' },
-                        }
-                    });
+            var search_request = $.get('/core/search/search_ajax/',
+                    {
+                        'search': search,
+                        'advanced_search': get_advanced_search_options(),
+                    },
+                    function update_results(data){
+                        $('#stop_search').css('display', 'none');
+                        results = document.getElementById('results');
+                        results.innerHTML = data;
+                        // Every table needs to have it's feilds configured.
+                        $(".system-table").tablesorter({
+                            sortList: [[0,1]],
+                            headers: {
+                                0: { sorter:'hostname' },
+                                1: { sorter:'ipAddress' },
+                            }
+                        });
+                        $(".record-table").tablesorter({
+                            sortList: [[0,1]],
+                            headers: {
+                                0: { sorter:'hostname' },
+                                1: { sorter:false },
+                                2: { sorter:'hostname' },
+                            }
+                        });
+                        $(".intr-table").tablesorter({
+                            sortList: [[0,1],[2,1]],
+                            headers: {
+                                0: { sorter:'hostname' },
+                                1: { sorter:false },
+                                2: { sorter:'ipAddress' },
+                            }
+                        });
+                        $(".ptr-table").tablesorter({
+                            sortList: [[0,1],[2,1]],
+                            headers: {
+                                0: { sorter:'ipAddress' },
+                                1: { sorter:false },
+                                2: { sorter:'hostname' },
+                            }
+                        });
+                        $(".addr-table").tablesorter({
+                            sortList: [[0,1],[2,1]],
+                            headers: {
+                                1: { sorter:false },
+                                2: { sorter:'ipAddress' },
+                            }
+                        });
+                        $(".tablesorter th:last-child").css('width', '40px');
 
-                    var end = new Date().getTime();
-                    var time = end - start;
-                    $('#search-time').html('In ('+time/1000+' seconds)');
+                        var end = new Date().getTime();
+                        var time = end - start;
+                        $('#search-time').html('In ('+time/1000+' seconds)');
+            }).error(function(e) {
+                console.log(e);
+                if (e['statusText'] != "abort"){
+                    var newDoc = document.open("text/html", "replace");
+                    newDoc.write(e.responseText);
+                    newDoc.close();
+                } else {
+                    $('#results').html('');
+                }
             });
             $('#stop_search').click(function (){
                 search_request.abort();
@@ -166,6 +178,8 @@ div advanced-search-knobs input{
         console.log(window.location.hash);
         if ( window.location.hash && params.length >= 1){
             $('#id_search').attr('value', params[0].substr(3));
+            get_and_display_search();
+        } else if ("{{search}}" != "") {
             get_and_display_search();
         }
     });

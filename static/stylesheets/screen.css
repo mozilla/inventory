@@ -1,12 +1,35 @@
 body {
   background: -moz-linear-gradient( top, #eeeeee, white 400px ); }
+html, body { margin: 0; height: 100%; }
 
-div#header {
-  background-color: #222;
-  height: 50px; }
-  div#header h1 a {
+.header-bar {
+    background-color: #222;
+    height: 3.7em;
+    display:table-inline;
+    margin-bottom: 22px;
+}
+
+.header {
+    width: 950px;
+    margin: 0 auto;
+    height: inherit;
+}
+.header h1 {
+    display: inline;
+    float: left;
+}
+.header h1 a {
+    display: inline;
     text-decoration: none;
-    color: white; }
+    vertical-align: center;
+    color: white;
+    height: inherit;
+}
+.nav-header {
+    height:100%;
+    display:inline;
+}
+
 
 #main {
   background-color: #eeeeee;
@@ -16,6 +39,7 @@ div#header {
   -webkit-box-shadow: 0 0 1em black; }
 
 ul#app-buttons {
+    text-align:center;
     margin: 0;
     padding: 0;
     border: 0;
@@ -29,7 +53,7 @@ ul#app-buttons {
     display: block;
     visibility: hidden;
     padding-left:0;
-    position:fixed;
+    position:absolute;
     z-index: 200;
     margin-top:2px;
 }
@@ -218,6 +242,28 @@ dl.show {
       float: left;
       text-align: left; }
 
+#object-controls {
+    margin-top: 30px;
+}
+
+#add-comment {
+    margin-top: 20px;
+}
+.form-container {
+    margin-top: 20px;
+}
+
+.form-container input {
+}
+.form-container input{
+    margin: 0;
+}
+
+.form-container ul {
+    margin: 0px;
+    padding: 0px;
+}
+
 .releng_div_label {
 	padding: 0 15px 0 0;
 	margin: 0 15px 0 0;
@@ -240,69 +286,12 @@ dl.show {
 	margin: 5px 10px 0 5px;
 	width: 140px;
 }
-ul
-{
+ul {
     list-style-type: none;
 }
 
 
-/* DNS Menu block */
-.dns-title {
-    display: block;
-    position: relative;
-    overflow: hidden; /* will contain if #first is longer than #second */
-    font-size: 15pt;
-}
-.dns-content {
-    display: block;
-    position: relative;
-    float: left;
-    overflow: hidden; /* will contain if #first is longer than #second */
-    margin-left: 1em;
-    margin-top: 1em;
-	width: 90%;
-}
-.dns-menu {
-    padding-top:.75em;
-    float:left; /* add this */
-    width:150px;
-    overflow: hidden; /* if you don't want #second to wrap below #first */
-}
-
-.nav-item {
-    display: block;
-    position: relative;
-    right: auto;
-}
-
-/* DNS Main Page */
-.mozdns-item {
-    display: block;
-    position: relative;
-    right: auto;
-}
-
-a.mozdns-action {
-    display: block;
-    width: 200px;
-    padding: .75em .75em .75em 1.5em;
-
-    color: rgb(220,220,220);
-    background: rgb(40,40,40);
-    -moz-border-radius: 4px;
-
-    border-style: solid none;
-    border-width: 1px;
-    border-color: rgb(46,46,46);
-}
-a.mozdns-action:hover {
-    color: rgb(220,220,220);
-    background: rgb(30, 30, 30);
-
-    border-color: rgb(10,10,10);
-
-    text-decoration: none;
-}
+/* DNS forms */
 
 /* Pagination */
 .pagination {
@@ -366,30 +355,6 @@ a.mozdns-action:hover {
 }
 .pagination-right {
   text-align: right;
-}
-
-
-
-/* Links */
-a.nav-link {
-    display: block;
-    padding: .75em .75em .75em 1.5em;
-    -moz-border-radius: 10px;
-
-    color: rgb(220,220,220);
-    background: rgb(0,0,0);
-
-    border-style: solid none;
-    border-width: 1px;
-    border-color: rgb(46,46,46);
-}
-a.nav-link:hover {
-    color: rgb(220,220,220);
-    background: rgb(30, 30, 30);
-
-    border-color: rgb(10,10,10);
-
-    text-decoration: none;
 }
 
 span.helptext {

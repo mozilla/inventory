@@ -12,8 +12,11 @@ from core.search.compiler.invfilter import BadDirective
 import simplejson as json
 from gettext import gettext as _
 
-from jinja2 import Environment, PackageLoader
-env = Environment(loader=PackageLoader('core.search', 'templates'))
+from jinja2 import Environment, PackageLoader, ChoiceLoader
+env = Environment(loader=ChoiceLoader(
+                        [PackageLoader('mozdns.record', 'templates'),
+                         PackageLoader('core.search', 'templates')]
+                        ))
 
 def resource_for_request(resource_name, filters, request):
     resource = v1_dns_api.canonical_resource_for(resource_name)

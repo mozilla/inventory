@@ -94,8 +94,8 @@ def get_clobbered(domain_name):
     return clobber_objects
 
 def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
-    """This function will take ``domain_name`` and make sure that that domain with that name
-    exists in the db. If this function creates a domain it will set the domain's purgeable flag
+    """This function will take ``domain_name`` and make sure that a domain with that name
+    exists. If this function creates a domain it will set the domain's purgeable flag
     to the value of the named arguement ``purgeable``. See the doc page about
     Labels and Domains for more information about this function"""
     try:

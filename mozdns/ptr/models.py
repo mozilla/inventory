@@ -115,6 +115,6 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
     def dns_name(self):
         """Return the cononical name of this ptr that can be placed in a
         reverse zone file."""
-        return ip_to_dns_form(self.ip_str, ip_type=self.ip_type)
+        return ip_to_dns_form(self.ip_str)
 
 reversion.register(PTR)
