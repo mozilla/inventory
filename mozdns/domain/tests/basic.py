@@ -160,6 +160,18 @@ class DomainTests(TestCase):
         Domain(name = 'boo.foo.com').save()
         self.assertRaises(ValidationError, f_c.delete)
 
+    def test_remove_has_child_records(self):
+        pdb.set_trace()
+        Domain(name = 'com').save()
+        f_c = Domain(name = 'foo.com')
+        f_c.save()
+
+        cn = CNAME(domain=f_c, label="no", target="asdf")
+        cn.full_clean()
+        cn.save()
+
+        self.assertRaises(ValidationError, f_c.delete)
+
     def test_invalid_add(self):
 
         bad = "asfda.as df"
@@ -181,11 +193,6 @@ class DomainTests(TestCase):
         bad = "!@#$"
         dom = Domain(name = bad)
         self.assertRaises(ValidationError, dom.save)
-
-    def test_remove_has_child_records(self):
-        pass
-        # Make sure deleting a domain doesn't leave stuff hanging.
-        # TODO A records, Mx, TXT... all of the records!!
 
     def test_delegation_add_domain(self):
         name = "boom1"

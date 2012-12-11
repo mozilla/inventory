@@ -121,6 +121,9 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
         return MOZDNS_BASE_URL + "/bind/build_debug/{0}/".format(self.pk)
 
     def delete(self, *args, **kwargs):
+        if self.domain_set.exists():
+            raise ValidationError("Domains exist in this SOA's zone. Delete "
+                                  "those domains before deleting this SOA.")
         super(SOA, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):

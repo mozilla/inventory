@@ -103,6 +103,17 @@ class SOATests(TestCase):
         soa = SOA(**data)
         self.assertRaises(ValidationError, soa.save)
 
+    def test_delete_with_domains(self):
+        data = { 'primary':"ns1asfdadsf.foo.com" , 'contact':"email.foo.com" }
+        soa = SOA(**data)
+        soa.save()
+        d0 = Domain( name = 'com' )
+        d0.save()
+        d1 = Domain( name = 'foo.com', soa = soa )
+        d1.soa = soa
+        d1.save()
+        self.assertRaises(ValidationError, soa.delete)
+
     def test_chain_soa_domain_add(self):
         data = { 'primary':"ns1.foo.com" , 'contact':"email.foo.com" }
         soa = SOA(**data)

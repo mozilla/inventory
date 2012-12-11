@@ -1,6 +1,6 @@
 {% extends "mozdns/mozdns_detail.html" %}
 
-{% block dns_content %}
+{% block content %}
     <div class='dns-title'>The {{ object.name }} Domain</div>
     {% if object.master_domain %}
     Goto <a class="btn" href="{{ object.master_domain.get_absolute_url() }}">{{ object.master_domain.name }}</a>

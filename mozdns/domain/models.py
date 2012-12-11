@@ -101,6 +101,10 @@ class Domain(models.Model, ObjectUrlMixin):
     class Meta:
         db_table = 'domain'
 
+    @property
+    def rdtype(self):
+        return 'DOMAIN'
+
     def details(self):
         return (
             ('Name', self.name),
@@ -111,6 +115,10 @@ class Domain(models.Model, ObjectUrlMixin):
 
     def delete(self, *args, **kwargs):
         self.check_for_children()
+        if self.has_record_set():
+            raise ValidationError("There are records associated with this "
+                                  "domain. Delete them before deleting this "
+                                  "domain.")
         if self.is_reverse:
             self.reassign_ptr_delete()
         super(Domain, self).delete(*args, **kwargs)
