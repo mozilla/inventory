@@ -2,7 +2,7 @@ import copy
 import simplejson as json
 
 from django.http import QueryDict
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.util import ErrorList, ErrorDict
 from django.shortcuts import render
 from django.db.models import Q
@@ -71,11 +71,12 @@ class RecordView(object):
     def post(self, request, record_type, record_pk):
         try:
             object_ = self.Klass.objects.get(pk=str(record_pk))
-        except (self.Klass.DoesNotExist, ValueError):
+        except (ObjectDoesNotExist, ValueError):
             # We will try to create an object
             object_ = None
 
-        new_object, errors = self.post_handler(object_, record_type, request.POST)
+        new_object, errors = self.post_handler(object_, record_type,
+                request.POST.copy())
 
         if object_:
             verb = "update"
@@ -83,6 +84,9 @@ class RecordView(object):
             verb = "create"
 
         if errors:
+            # Reload the object.
+            if object_:
+                object_ = self.Klass.objects.get(pk=object_.pk)
             return_form = self.DisplayForm(request.POST)
             return_form._errors = errors
             message = "Errors during {0}. Commit Aborted.".format(verb)
@@ -104,28 +108,33 @@ class RecordView(object):
 
         return render(request, self.form_template, context)
 
+    def modify_qd(self, qd):
+        fqdn = qd.pop('fqdn', [''])[0]
+        domain = None
+        #if record_type not in ('PTR', 'NS', 'DOMAIN', 'SOA'):
+        try:
+            label, domain = ensure_label_domain(fqdn)
+            # If something goes bad latter on you must call prune_tree on
+            # domain.  If you don't do this there will be a domain leak.
+        except ValidationError, e:
+            errors = ErrorDict()
+            errors['fqdn'] = e.messages
+            return None, errors
+        qd['label'], qd['domain'] = label, str(domain.pk)
+        return qd, None
+
     def post_handler(self, object_, record_type, orig_qd):
-        """Create or update object_. qd is a QueryDict.
-        """
+        """Create or update object_. qd is a QueryDict."""
         qd = copy.deepcopy(orig_qd)  # If there are ever errors, we have to preserver
                                      # the original qd
         comment = qd.pop('comment', [''])[0].strip()
-        fqdn = qd.pop('fqdn', [''])[0]
 
         # This little chunk of code could be factored out, but I think it's
         # more clear when you see which objects don't need to call this in one
         # spot.
-        domain = None
-        if record_type not in ('PTR', 'NS', 'DOMAIN', 'SOA'):
-            try:
-                label, domain = ensure_label_domain(fqdn)
-                # If something goes bad latter on you must call prune_tree on
-                # domain.  If you don't do this there will be a domain leak.
-            except ValidationError, e:
-                e_dict = ErrorDict()
-                e_dict['fqdn'] = e.messages
-                return None, e_dict
-            qd['label'], qd['domain'] = label, str(domain.pk)
+        qd, errors = self.modify_qd(qd)
+        if errors:
+            return None, errors
 
         # Create a save-able form to create/update the object
         if object_:
@@ -138,13 +147,15 @@ class RecordView(object):
                 object_ = object_form.save()
                 reversion.set_comment(comment)
             except ValidationError, e:
-                prune_tree(domain)
+                if 'domain' in qd:
+                    prune_tree(Domain.objects.get(pk=qd['domain']))
                 e_dict = ErrorDict()
                 e_dict['__all__'] = ErrorList(e.messages)
                 return None, e_dict
             return object_, None
         else:
-            prune_tree(domain)
+            if 'domain' in qd:
+                prune_tree(Domain.objects.get(pk=qd['domain']))
             return None, object_form._errors
 
 def make_rdtype_tagger(tagged_klasses):
@@ -198,12 +209,27 @@ class NS(RecordView):
     form = NameserverForm
     DisplayForm = NameserverForm
 
+    def modify_qd(self, qd):
+        domain_name = qd.pop('domain', '')[0]
+        try:
+            domain = Domain.objects.get(name=domain_name)
+            qd['domain'] = str(domain.pk)
+        except Domain.DoesNotExist, e:
+            error_message = "Could not find domain '{0}'".format(domain_name)
+            errors = ErrorDict()
+            errors['domain'] = error_message
+            return None, errors
+        return qd, None
+
 
 @tag_rdtype
 class PTR(RecordView):
     Klass = PTR
     form = PTRForm
     DisplayForm = PTRForm
+
+    def modify_qd(self, qd):
+        return qd, None
 
 
 @tag_rdtype
@@ -220,11 +246,16 @@ class SSHFP(RecordView):
     DisplayForm = FQDNSSHFPForm
 
 
+"""
 @tag_rdtype
 class SOA(RecordView):
     Klass = SOA
     form = SOAForm
     DisplayForm = SOAForm
+
+    def modify_qd(self, qd):
+        return qd, None
+"""
 
 
 @tag_rdtype
@@ -232,10 +263,3 @@ class SRV(RecordView):
     Klass = SRV
     form = SRVForm
     DisplayForm = FQDNSRVForm
-
-
-@tag_rdtype
-class TXT(RecordView):
-    Klass = TXT
-    form = TXTForm
-    DisplayForm = FQDNTXTForm

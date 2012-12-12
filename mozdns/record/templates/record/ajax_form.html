@@ -38,7 +38,7 @@
     <div class='object_meta container'>
     <table>
         <caption>{{object_.bind_render_record()}}</caption>
-        {% if d.soa %}
+        {% if d.soa  %}
         <tr>
             <td>
                 ZONE: <a href='{{ d.soa.get_absolute_url() }}'>{{ d.soa }}</a>
@@ -54,6 +54,11 @@
                     {% endif %}
             </td>
         </tr>
+        <tr>
+            <td>
+                Debug BIND File: <a href='{{ d.soa.get_debug_build_url() }}'> click </a>
+            </td>
+        </tr>
         {% else %}
         <tr>
             <td>
@@ -61,11 +66,6 @@
             </td>
         </tr>
         {% endif %}
-        <tr>
-            <td>
-                Debug BIND File: <a href='{{ d.soa.get_debug_build_url() }}'> click </a>
-            </td>
-        </tr>
         <tr>
             <td>
                 View Record: <a href='{{ object_.get_absolute_url() }}'> click </a>

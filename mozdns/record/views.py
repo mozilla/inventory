@@ -42,7 +42,7 @@ def record_search_ajax(request):
     query = request.GET.get('query', '')
     record_type = request.GET.get('record_type', '')
     obj_meta = get_obj_meta(record_type)
-    if not query or not record_type:
+    if not record_type:
         raise Http404
     if not query and record_type:
         return render(request, 'record/record_search_results.html', {
