@@ -85,6 +85,9 @@ class NSTestsModels(TestCase):
         data = {'domain':self.f_r , 'server':'ns3.foo.ru'}
         self.assertRaises(ValidationError, self.do_add, **data )
 
+        data = {'domain':self.f_r , 'server':''}
+        self.assertRaises(ValidationError, self.do_add, **data )
+
     def testtest_add_ns_in_domain(self):
         # Use an A record as a glue record.
         glue = AddressRecord(label='ns2', domain = self.r, ip_str = '128.193.1.10', ip_type='4')

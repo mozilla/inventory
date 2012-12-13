@@ -7,8 +7,7 @@ from tastypie.test import ResourceTestCase
 from systems.models import System
 from core.interface.static_intr.models import StaticInterface
 from mozdns.utils import ensure_label_domain, prune_tree
-from mozdns.tests.view_tests_template import GenericViewTests, random_label
-from mozdns.tests.view_tests_template import random_byte
+from mozdns.tests.view_tests_template import  random_label, random_byte
 from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
 from mozdns.domain.models import Domain

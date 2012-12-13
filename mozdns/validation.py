@@ -288,7 +288,7 @@ def validate_domain_name(name):
     for label in name.split('.'):
         if not label:
             raise ValidationError("Error: Ivalid name {0}. Empty label."
-                                    .format(label))
+                                    .format(name))
         valid_chars = string.ascii_letters + "0123456789" + "-_"
         validate_label(label, valid_chars=valid_chars)
 
@@ -338,7 +338,7 @@ def validate_name(fqdn):
     for label in fqdn.split('.'):
         if not label:
             raise ValidationError("Ivalid name {0}. Empty label."
-                                    .format(label))
+                                    .format(fqdn))
         validate_label(label)
 
 

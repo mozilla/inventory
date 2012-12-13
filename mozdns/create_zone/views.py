@@ -1,20 +1,28 @@
-import time
-import simplejson as json
+from gettext import gettext as _
 import pdb
+import simplejson as json
+import time
 
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.forms.util import ErrorList, ErrorDict
+
 from mozdns.domain.models import Domain
 from mozdns.nameserver.models import Nameserver
 from mozdns.soa.models import SOA
-from mozdns.utils import get_zones, ensure_domain
-from gettext import gettext as _
+from mozdns.utils import get_zones, ensure_domain, prune_tree
 
 
 def create_zone_ajax(request):
-    """This view tries to creat a new zone and returns an JSON with either
+    """This view tries to create a new zone and returns an JSON with either
     'success' = True or 'success' = False and some errors.
+
+    Throughout this function note that objects that are created are recorded,
+    and if an error is caught, the previously created objects are deleted. This
+    backing-out *may* be better handling by a transaction. Django has this sort
+    of thing (middleware and decorators), but I'm in a time crunch so this
+    manual deletetion will have to do.
     """
 
     qd = request.POST.copy()
@@ -34,19 +42,26 @@ def create_zone_ajax(request):
     primary = qd.get('soa_primary', None)
     if not primary:
         error = "Please specify a primary nameserver for the SOA record."
+        return HttpResponse(json.dumps({'success':False, 'error': error }))
     contact = qd.get('soa_contact', None)
     if not contact:
         error = "Please specify a contact address for the SOA record."
+        return HttpResponse(json.dumps({'success':False, 'error': error }))
     contact.replace('@','.')
 
     # Find all the NS entries
     nss = []
     for k, v in request.POST.iteritems():
         if k.startswith('nameserver_'):
-            ttl_key = qd.get('ttl_{0}'.format(v[-1:]))
-            ttl = qd.get(ttl_key, 3600)
+            ttl = qd.get('ttl_{0}'.format(k[-1:]), 3600)
             server = v
             nss.append(Nameserver(server=server, ttl=ttl))
+
+    if not nss:
+        # They must create at least one nameserver
+        error = _("You must choose an authoritative nameserver to serve this "
+                  "zone")
+        return HttpResponse(json.dumps({'success':False, 'error': error }))
 
     # We want all domains created up to this point to inherit their
     # master_domain's soa. We will override the return domain's SOA.
@@ -54,18 +69,57 @@ def create_zone_ajax(request):
     # domain to non-purgeable. This will also allow us to call prune tree.
     domain = ensure_domain(root_domain, purgeable=True, inherit_soa=False, force=True)
 
-    soa = SOA(primary=primary, contact=contact, serial=int(time.time()))
-    soa.save()
+    soa = SOA(primary=primary, contact=contact, serial=int(time.time()),
+              description="SOA for {0}".format(root_domain))
+    try:
+        soa.save()
+    except ValidationError, e:
+        _clean_domain_tree(domain)
+        return HttpResponse(json.dumps({'success':False,
+                                        'error': e.messages[0]}))
     domain.purgeable = False
     domain.soa = soa
     domain.save()
-    for ns in nss:
+    saved_nss = [] # If these are errors, back out
+    for i, ns in enumerate(nss):
         ns.domain = domain
-        ns.save()
+        try:
+            ns.save()
+            saved_nss.append(ns)
+        except ValidationError, e:
+            suffixes = ["th", "st", "nd", "rd", ] + ["th"] * 16
+            suffixed_i = str(i + 1) + suffixes[i + 1 % 100]
+            error_field, error_val = e.message_dict.items()[0]
+            error = _("When trying to create the {0} nameserver entry, the "
+                      "nameserver field '{1}' returned the error '{2}'".format(
+                      suffixed_i, error_field, error_val[0]))
+                      
+            for s_ns in saved_nss:
+                s_ns.delete()
+            _clean_domain_tree(domain)
+            soa.delete()
+            return HttpResponse(json.dumps({'success':False,
+                                            'error': error}))
+
 
     return HttpResponse(json.dumps(
                 {
-                    'success':True,
+                    'success': True,
+                    'success_url': '/core/?search=zone=:{0}'.format(domain.name)
+                }))
+
+def _clean_domain_tree(domain):
+    if not domain.master_domain:
+        # They tried to create a TLD, prune_tree will not delete it.
+        domain.delete()
+    else:
+        domain.purgeable = True
+        prune_tree(domain)  # prune_tree will delete this domain
+
+def _error_out(errors):
+    return HttpResponse(json.dumps(
+                {
+                    'success': False,
                     'success_url': '/core/?search=zone=:{0}'.format(domain.name)
                 }))
 
@@ -96,4 +150,4 @@ def create_zone(request):
             'nss': [],
         }
 
-    return render(request, 'soa/zone_create.html', context)
+    return render(request, 'create_zone/create_zone.html', context)

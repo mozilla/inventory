@@ -249,12 +249,13 @@ dl.show {
 #add-comment {
     margin-top: 20px;
 }
+/* DNS forms */
+
 .form-container {
     margin-top: 20px;
 }
 
-.form-container input {
-}
+
 .form-container input{
     margin: 0;
 }
@@ -291,7 +292,6 @@ ul {
 }
 
 
-/* DNS forms */
 
 /* Pagination */
 .pagination {

@@ -76,6 +76,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'mozdns.view',
     'mozdns.mozbind',
     'mozdns.record',
+    'mozdns.create_zone',
     'debug_toolbar',
     'tastypie',
     'tastytools',

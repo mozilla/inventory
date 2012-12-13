@@ -48,7 +48,7 @@
             newBlock.insertAfter(blocks.last());
         });
         $('#zoneForm').submit(function (){
-            $.post('/mozdns/soa/create_zone_ajax/',
+            $.post('/mozdns/create_zone/create_zone_ajax/',
                 $('#zoneForm').serialize(),
                 function (data) {
                     console.log(data);
@@ -81,6 +81,7 @@
 
     <input type='button' value='Use another zone as a template' id='useTemplate'>
 
+    <div class="form-container">
     <form id='zoneForm' method='POST'>
         <h3>Create a new DNS Zone</h3>
         {% if message %}
@@ -89,44 +90,41 @@
         <div>
             <p id='errors'></p>
         </div>
-        <h4>The zone's root domain</h4>
         <table>
+        <caption>Fillout the information needed to create the SOA record.</caption>
         <tbody>
             <tr>
-                <td><label>Domain: <input class="" type='text' name='root_domain' value={{root_domain}}></label></td>
+                <th><label>Domain:</label></th>
+                <td><input class="" type='text' name='root_domain' value={{root_domain}}></td>
             </tr>
-        </tbody>
 
-        </table>
-
-        <h4>SOA Record</h4>
-        <table>
-        <tbody>
+        <caption>SOA Record</caption>
             <tr>
-                <td><label>Primary: <input class="" type='text'
-                        name='soa_primary' value='{{primary}}'></label></td>
-                <td><label>Contact: <input class="" type='text' name='soa_contact'
-                        value='{{contact}}'></label></td>
+                <th><label>Primary:</label></th>
+                <td><input class="" type='text' name='soa_primary' value='{{primary}}'></td>
+            </tr>
+            <tr>
+                <th><label>Contact:</label></th>
+                <td><input class="" type='text' name='soa_contact' value='{{contact}}'></td>
             </tr>
         </tbody>
         </table>
 
-        <h4>Nameservers <input type='button' id='btnMore' value='Add another NS'></h4>
+        <h5>Nameservers <input type='button' id='btnMore' value='Add another NS'></h5>
         <table>
+        <caption>Add nameservers for this zone.</caption>
         <tbody>
             {% if not nss %}
             <tr class='nameserver-block'>
-                <td><label>NS: <input class="nameserver-entry" type='text'
-                        name='nameserver_1'></label></td>
-                <td><label>TTL: <input class="nameserver-ttl" type='text' name='ttl_1' value="3600"></label>
-                        <input class='remove-entry' id='first-remove'type='button' value='-'
-                        style='visibility:hidden;'></td>
+                <th><label>NS:</label></th>
+                <td><input class="nameserver-entry" type='text' name='nameserver_1'></td>
+                <th><label>TTL:</label></th>
+                <td><input class="nameserver-ttl" type='text' name='ttl_1' value="3600"> <input class='remove-entry' id='first-remove'type='button' value='-' style='visibility:hidden;'></td>
             </tr>
             {% endif %}
             {% for ns in nss %}
             <tr class='nameserver-block'>
-                    <td><input class="nameserver-entry" type='text'
-                        name='nameserver_{{loop.index}}' value="{{ns.server}}"></td>
+                    <td><input class="nameserver-entry" type='text' name='nameserver_{{loop.index}}' value="{{ns.server}}"></td>
                     <td>
                         <input class="nameserver-ttl" type='text'
                         name='ttl_{{loop.index}}' value="{{ns.ttl}}">
@@ -139,6 +137,7 @@
             {% endfor %}
         </tbody>
         </table>
-        <input type='submit' value='Create Zone'>
+        <input type='submit' value='Create Zone With This Configuration'>
     </form>
+    </div>
 {% endblock %}

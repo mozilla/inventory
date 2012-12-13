@@ -56,7 +56,7 @@
         <tbody>
         {% for ns in objs %}
         <tr>
-            <td>ns.domain.name</td>
+            <td>{{ ns.domain.name }}</td>
             <td><b>NS</b></td>
             <td>{{ ns.server }}</td>
             <td><a href="{{ ns.get_fancy_edit_url() }}">Edit</a></td>
