@@ -34,6 +34,28 @@ def record(request, record_type='', record_pk=''):
         'domains': json.dumps([domain.name for domain in domains]),
     })
 
+def record_delete(request, record_type='', record_pk=''):
+    if request.method != 'POST':
+        raise Http404
+    obj_meta = get_obj_meta(record_type)
+
+    try:
+        object_ = obj_meta.Klass.objects.get(pk=record_pk)
+    except obj_meta.Klass.DoesNotExist:
+        error = "Could not find that object."
+        return HttpResponse(json.dumps({'success': False, 'error': error }))
+
+    try:
+        object_.delete()
+    except ValidationError, e:
+        error = e.messages[0]
+        return HttpResponse(json.dumps({'success': False, 'error': error }))
+
+    return HttpResponse(json.dumps({'success': True }))
+
+
+
+
 def record_search_ajax(request):
     """
     This function will return a list of records matching the 'query' of type

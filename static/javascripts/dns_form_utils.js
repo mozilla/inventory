@@ -1,100 +1,3 @@
-/*
-
-function bind_record_search_box(){
-    // We also need bind an auto complete to the search
-    // field for this specifc record type.
-    $( "#record_search" ).autocomplete({
-        minLength: 2,
-        source: '/mozdns/record/ajax_search/?record_type='
-                + $('#rec_type_select option:selected').attr('value'),
-        select: function( event, ui ) {
-            // Save the selected pk so we can use it if
-            // the user decides to edit the record.
-            var data = $('dns-data').record_pk = ui.item.pk;
-            $("#record_search").prop('disabled', true);
-            $('#record_search_selected').html('Edit <font color="green"><code>'
-                                              +ui.item.label+'</code></font> ?');
-        }
-    });
-}
-
-$('#launch-search').click(function(){
-    var s_dialog = $( "#search-dialog" ).dialog({
-        title: 'Search '+$('#rec_type_select option:selected').attr('value')+' records',
-        // Click the selected record
-        autoShow: false,
-        minWidth: 520,
-        buttons: {
-            "Edit Record": function() {
-                $.get('/mozdns/record/ajax_form/',
-                    {
-                        'record_type':$('#rec_type_select option:selected').attr('value'),
-                        'record_pk': $('#search-dialog').attr('stage_pk'),
-                    },
-                    function (data) {
-                        $('#current_form_data').empty();
-                        $('#current_form_data').append(data);
-                        // Notice how we don't call
-                        // bind_smart_names here. We don't
-                        // want the autocomplete to get in
-                        // the way
-                        // It's likely that they are just making a small change.
-                    });
-                $("#record_search").prop('disabled', false);
-                $('#record_search_selected').html('');
-                $("#record_search").val('');
-                $(this).dialog("close");
-            },
-            cancel: function() {
-                $('#search-dialog').attr('stage_pk', ''), // we don't want this anymore.
-                $("#record_search").prop('disabled', false);
-                $('#record_search_selected').html('');
-                $("#record_search").val('');
-                $(this).dialog("close");
-            }
-        }
-    });
-    s_dialog.show();
-});
-
-function populate_dns_form() {
-    var data = $('dns-data');
-
-    $.get('/mozdns/record/ajax_form/',
-        {
-            'record_type': data.record_type,
-            'record_pk': data.record_pk,
-        }, function (data) {
-            $('#current-form-area').empty();
-            $('#current-form-area').append(data);
-            bind_smart_names();
-            bind_record_search_box();
-        })
-}
-
-function edit_clear(){
-}
-function bind_record_search_box(){
-    // We also need bind an auto complete to the search
-    // field for this specifc record type.
-    $("#record_search").autocomplete({
-        minLength: 2,
-        source: '/mozdns/record/ajax_search/?record_type='
-                + $('#rec_type_select option:selected').attr('value'),
-        select: function(event, ui) {
-            // Save the selected pk so we can use it if
-            // the user decides to edit the record.
-            var data = $('dns-data');
-            var record_pk = data.record_pk;
-            var record_type = data.record_type;
-        }
-    });
-}
-
-function get_form(record_type, record_pk) {
-}
-*/
-
 function select_state(state) {
     function insert_new_form(record_type, record_pk, callback){
         console.log(record_type + " " + record_pk);
@@ -159,14 +62,12 @@ function select_state(state) {
                     fix_css();
                     return;
                 });
+                setup_delete();
             }
             break;
     }
 }
 
-function clear_commit_message(){
-    $('#commit-message').val('');
-}
 function bind_submit(form) {
     console.log("[DEBUG] Binding submit");
     form.submit(function (){
@@ -215,7 +116,7 @@ function submit_handler(){
             fix_css();  // Make names the correct length
             bind_submit($('#current-form'));  // It's a new form.
         }
-        ).error(function(e) { console.log(e); alert(e);
+        ).error(function(e) {
             var newDoc = document.open("text/html", "replace");
             newDoc.write(e.responseText);
             newDoc.close();
@@ -384,4 +285,61 @@ function do_search(){
             newDoc.close();
         });
     return false;
+}
+function setup_delete(){
+    var data = $('#dns-data');
+    var record_type = data.attr('record_type');
+    var record_pk = data.attr('record_pk');
+    function delete_handler(){
+        $.post('/mozdns/record/delete/' + record_type + '/' + record_pk + '/',
+            function (data) {
+                data = $.parseJSON(data)
+                if (data['success']) {
+                    alert("Delete successful");
+                    window.location = "/";
+                } else {
+                    alert("Error during delete: " + data['error']);
+                }
+            }
+        ).error(function(e) {
+            var newDoc = document.open("text/html", "replace");
+            newDoc.write(e.responseText);
+            newDoc.close();
+            $('#form-message').html("<p>Error</p>");
+        });
+    }
+    $('#delete-button').click(function(){
+        var data = $('#dns-data');
+        var record_type = data.attr('record_type');
+        var record_pk = data.attr('record_pk');
+        $("#delete-dialog").dialog({
+            title: 'Why this record is being deleted? (A bug number would be nice)',
+            // Click the selected record
+            autoOpen: false,
+            modal: true,
+            minWidth: 520,
+            minHeight: 20,
+            buttons: {
+                "Confirm Delete": function() {
+                    if(/^\s*$/.test($('#delete-message').val())){
+                        alert("Aborting commit due to empty commit message.");
+                    } else {
+                        $('#id_comment').val($('#delete-message').val());
+                        delete_handler();
+                    }
+                    $(this).dialog("close");
+                },
+                Cancel: function() {
+                    $(this).dialog("close");
+                }
+            }
+        });
+        $('#commit-message').val('')
+        $('#delete-message').val('')
+        if ($('#add-comment').is(':checked')) {
+            $("#delete-dialog").dialog("open");
+        } else {
+            delete_handler();
+        }
+    });
 }

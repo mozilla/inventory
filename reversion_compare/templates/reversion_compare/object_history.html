@@ -2,10 +2,10 @@
 
 {% block content %}
     <div id="content-main">
-    
+
         <p><a href="{{object.get_fancy_edit_url()}}">Back</a> to <code>{{object}}</code></p>
         <p>Choose a date from the list below to revert to a previous version of this object.</p>
-    
+
         <div class="module">
             {% if action_list %}
                 {% if compare_view %}<form method="GET" action="../history/compare/">{% endif %}

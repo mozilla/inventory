@@ -25,14 +25,19 @@
             }
         });
         setup_search_table();
+        $('#create-button').click(function(){
+            window.location = '/mozdns/record/create/{{record_type}}/';
+        });
 
     });
     </script>
 
     <div id='dns-data' record_type="{{record_type}}" record_pk="{{record_pk}}"></div>
 
-    <div id="object-controls">
-        <span>Create new <a id='create-new' href="/mozdns/record/create/{{record_type}}/">{{record_type}}</a></span>
+    <div id="object-controls" style="float:right;">
+        <label/>Add new {{record_type}}</label>
+        <a href="/mozdns/record/create/{{record_type}}/" class="dns-action-button" id="create-button"><img src="{{MEDIA_URL}}images/buttons/button-add-icon.png"/></a>
+        </div>
     </div>
 
     <br />

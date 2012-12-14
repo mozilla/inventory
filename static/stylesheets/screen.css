@@ -1,6 +1,9 @@
 body {
   background: -moz-linear-gradient( top, #eeeeee, white 400px ); }
-html, body { margin: 0; height: 100%; }
+html, body {
+    margin: 0; height: 100%;
+    overflow-y: scroll;
+}
 
 .header-bar {
     background-color: #222;
@@ -242,13 +245,46 @@ dl.show {
       float: left;
       text-align: left; }
 
+/* Record Update/Create controls */
 #object-controls {
+    margin-top: 30px;
+    margin-right: 40px;
+    float: right;
+}
+
+#object-controls div {
+    margin-top: 30px;
+    margin-left: 10px;
+    display: inline;
+}
+
+#search-results {
     margin-top: 30px;
 }
 
 #add-comment {
     margin-top: 20px;
 }
+
+/* Buttons */
+.dns-action-button img {
+    height: 16px;
+    vertical-align: middle; /* align the text vertically centered */
+    cursor: pointer;        /* make the cursor like hovering over an <a> element */
+}
+
+
+.button-delete img {
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: 0px 0px; /* equivalent to 'top left' */
+    border: none;           /* assuming we don't want any borders */
+    height: 16px;
+    padding-left: 16px;     /* make text start to the right of the image */
+    vertical-align: middle; /* align the text vertically centered */
+    outline: 0;
+}
+
 /* DNS forms */
 
 .form-container {

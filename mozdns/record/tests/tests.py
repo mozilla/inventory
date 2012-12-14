@@ -68,11 +68,12 @@ class BaseViewTestCase(object):
         # This test is just making sure that all objects can be created,
         # updated, and that the view 'record_ajax' can handle a non-valid
         # object.
+        start_obj_count = self.test_type.objects.all().count()
         resp = self.c.post('/mozdns/record/record_ajax/',
                            data=self.update_rdtype(self.post_data()))
         self.assertEqual(resp.status_code, 200)
         new_obj_count = self.test_type.objects.all().count()
-        self.assertEqual(1, new_obj_count)
+        self.assertEqual(start_obj_count + 1, new_obj_count)
         obj_ = self.test_type.objects.all()[0]
 
         # Now update. Make sure no new object was created.
@@ -80,18 +81,55 @@ class BaseViewTestCase(object):
         resp = self.c.post('/mozdns/record/record_ajax/', data=post_data)
         self.assertEqual(resp.status_code, 200)
         after_update_obj_count = self.test_type.objects.all().count()
-        self.assertEqual(1, after_update_obj_count)
+        self.assertEqual(new_obj_count, after_update_obj_count)
 
         # Now causes an error
         post_data = self.update_pk(self.update_rdtype(self.post_data()), obj_)
         post_data['ttl'] = 'charaters'
         resp = self.c.post('/mozdns/record/record_ajax/', data=post_data)
         after_error_obj_count = self.test_type.objects.all().count()
-        self.assertEqual(1, after_error_obj_count)
+        self.assertEqual(new_obj_count, after_error_obj_count)
         self.assertEqual(resp.status_code, 200)
 
+    def test_delete(self):
+        start_obj_count = self.test_type.objects.all().count()
+        resp = self.c.post('/mozdns/record/record_ajax/',
+                           data=self.update_rdtype(self.post_data()))
+        self.assertEqual(resp.status_code, 200)
+        new_obj_count = self.test_type.objects.all().count()
+        self.assertEqual(start_obj_count + 1, new_obj_count)
 
-class CNAMETests(BaseViewTestCase, TestCase):
+        # Get the most recent object
+        new_obj = self.test_type.objects.all().order_by('pk')[0]
+        obj_ = self.test_type.objects.all()[0]
+
+        resp = self.c.post('/mozdns/record/delete/{0}/{1}/'.format(
+                           self.rdtype, new_obj.pk))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(0, self.test_type.objects.filter(pk=new_obj.pk).count())
+
+        delete_obj_count = self.test_type.objects.all().count()
+        self.assertEqual(start_obj_count, delete_obj_count)
+
+    def test_bad_delete(self):
+        start_obj_count = self.test_type.objects.all().count()
+        resp = self.c.post('/mozdns/record/record_ajax/',
+                           data=self.update_rdtype(self.post_data()))
+        self.assertEqual(resp.status_code, 200)
+        new_obj_count = self.test_type.objects.all().count()
+        self.assertEqual(start_obj_count + 1, new_obj_count)
+
+        # Get the most recent object
+        new_obj = self.test_type.objects.all().order_by('pk')[0]
+        obj_ = self.test_type.objects.all()[0]
+
+        resp = self.c.post('/mozdns/record/delete/{0}/{1}/'.format(
+                           self.rdtype, new_obj.pk + 1))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(1, self.test_type.objects.filter(pk=new_obj.pk).count())
+
+
+class CNAMERecordTests(BaseViewTestCase, TestCase):
     test_type = CNAME
 
     def post_data(self):
@@ -103,7 +141,7 @@ class CNAMETests(BaseViewTestCase, TestCase):
         }
 
 
-class MXTests(BaseViewTestCase, TestCase):
+class MXRecordTests(BaseViewTestCase, TestCase):
     test_type = MX
 
     def post_data(self):
@@ -116,7 +154,7 @@ class MXTests(BaseViewTestCase, TestCase):
             'ttl':213
         }
 
-class SRVTests(BaseViewTestCase, TestCase):
+class SRVRecordTests(BaseViewTestCase, TestCase):
     test_type = SRV
     def post_data(self):
         return {
@@ -130,7 +168,7 @@ class SRVTests(BaseViewTestCase, TestCase):
         }
 
 
-class TXTTests(BaseViewTestCase, TestCase):
+class TXTRecordTests(BaseViewTestCase, TestCase):
     test_type = TXT
     def post_data(self):
         return {
@@ -140,18 +178,18 @@ class TXTTests(BaseViewTestCase, TestCase):
             'txt_data': random_label()
         }
 
-class NameserverTests(BaseViewTestCase, TestCase):
+class NameserverRecordTests(BaseViewTestCase, TestCase):
     test_type = Nameserver
     def post_data(self):
         return {
             'server': 'g' + random_label(),
             'description': random_label(),
             'ttl': random_byte(),
-            'domain':self.domain.name,
+            'domain':self.domain.pk,
         }
 
 
-class SSHFPTests(BaseViewTestCase, TestCase):
+class SSHFPRecordTests(BaseViewTestCase, TestCase):
     test_type = SSHFP
     def post_data(self):
         return {
@@ -163,10 +201,10 @@ class SSHFPTests(BaseViewTestCase, TestCase):
             'key': random_label()
         }
 
-class AdderessRecordV4Tests(BaseViewTestCase, TestCase):
+class AdderessRecordV4RecordTests(BaseViewTestCase, TestCase):
     test_type = AddressRecord
     def setUp(self):
-        super(AdderessRecordV4Tests, self).setUp()
+        super(AdderessRecordV4RecordTests, self).setUp()
 
     def post_data(self):
         return {
@@ -177,13 +215,13 @@ class AdderessRecordV4Tests(BaseViewTestCase, TestCase):
             'ip_type': '4'
         }
 
-class AdderessRecordV6Tests(BaseViewTestCase, TestCase):
+class AdderessRecordV6RecordTests(BaseViewTestCase, TestCase):
     test_type = AddressRecord
     def setUp(self):
         Domain.objects.get_or_create(name='arpa')
         Domain.objects.get_or_create(name='ip6.arpa')
         Domain.objects.get_or_create(name='1.ip6.arpa')
-        super(AdderessRecordV6Tests, self).setUp()
+        super(AdderessRecordV6RecordTests, self).setUp()
 
     def post_data(self):
         return {
@@ -195,13 +233,13 @@ class AdderessRecordV6Tests(BaseViewTestCase, TestCase):
             'ip_type': '6'
         }
 
-class PTRV6Tests(BaseViewTestCase, TestCase):
+class PTRV6RecordTests(BaseViewTestCase, TestCase):
     test_type = PTR
     def setUp(self):
         Domain.objects.get_or_create(name='arpa')
         Domain.objects.get_or_create(name='ip6.arpa')
         Domain.objects.get_or_create(name='1.ip6.arpa')
-        super(PTRV6Tests, self).setUp()
+        super(PTRV6RecordTests, self).setUp()
 
     def post_data(self):
         return {
@@ -213,13 +251,13 @@ class PTRV6Tests(BaseViewTestCase, TestCase):
             'name': random_label()
         }
 
-class PTRV4Tests(BaseViewTestCase, TestCase):
+class PTRV4RecordTests(BaseViewTestCase, TestCase):
     test_type = PTR
     def setUp(self):
         Domain.objects.get_or_create(name='arpa')
         Domain.objects.get_or_create(name='in-addr.arpa')
         Domain.objects.get_or_create(name='11.in-addr.arpa')
-        super(PTRV4Tests, self).setUp()
+        super(PTRV4RecordTests, self).setUp()
 
     def post_data(self):
         return {
@@ -231,7 +269,7 @@ class PTRV4Tests(BaseViewTestCase, TestCase):
         }
 
 """
-class SOATests(BaseViewTestCase, TestCase):
+class SOARecordTests(BaseViewTestCase, TestCase):
     test_type = SOA
 
     def post_data(self):

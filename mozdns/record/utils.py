@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.util import ErrorList, ErrorDict
 from django.shortcuts import render
 from django.db.models import Q
-from django.http import HttpResponse
 from django.http import Http404
 
 import reversion
@@ -82,6 +81,7 @@ class RecordView(object):
             verb = "update"
         else:
             verb = "create"
+            object_ = new_object
 
         if errors:
             # Reload the object.
@@ -181,6 +181,10 @@ class A(RecordView):
     form = AddressRecordForm
     DisplayForm = AddressRecordFQDNForm
 
+@tag_rdtype
+class AAAA(A):
+    pass
+
 
 @tag_rdtype
 class CNAME(RecordView):
@@ -210,14 +214,15 @@ class NS(RecordView):
     DisplayForm = NameserverForm
 
     def modify_qd(self, qd):
-        domain_name = qd.pop('domain', '')[0]
+        domain_pk = qd.pop('domain', '')[0]
         try:
-            domain = Domain.objects.get(name=domain_name)
+            domain = Domain.objects.get(pk=domain_pk)
             qd['domain'] = str(domain.pk)
         except Domain.DoesNotExist, e:
-            error_message = "Could not find domain '{0}'".format(domain_name)
+            error_message = _("Could not find domain with pk "
+                              "'{0}'".format(domain_pk))
             errors = ErrorDict()
-            errors['domain'] = error_message
+            errors['domain'] = [error_message]
             return None, errors
         return qd, None
 
@@ -246,7 +251,6 @@ class SSHFP(RecordView):
     DisplayForm = FQDNSSHFPForm
 
 
-"""
 @tag_rdtype
 class SOA(RecordView):
     Klass = SOA
@@ -255,7 +259,6 @@ class SOA(RecordView):
 
     def modify_qd(self, qd):
         return qd, None
-"""
 
 
 @tag_rdtype

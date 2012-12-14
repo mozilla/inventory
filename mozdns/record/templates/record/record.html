@@ -13,21 +13,40 @@
     $(document).ready(function(){
         if ($('#dns-data').attr('record_pk')){
             select_state('update'); // There is a pk, initial state is edit
+            $('#delete-control').css('visibitily', 'visible');
         } else {
             select_state('create'); // Initial state is searching
+            $('#delete-control').css('visibitily', 'hidden');
         }
-        $('#create-new').click(function(){select_state('create')});
+        $('#create-button').click(function(){select_state('create')});
     });
     </script>
 
+    <div id="object-controls">
+        <div>
+        <label/>Search {{record_type}}s</label>
+        <a href="/mozdns/record/search/{{record_type}}/" class="dns-action-button" id="search-button"><img src="{{MEDIA_URL}}images/buttons/button-search-icon.png"/></a>
+        </div>
+
+        <div>
+        <label>Delete this {{record_type}}</label>
+            <a class="dns-action-button" id="delete-button"><img src="{{MEDIA_URL}}images/buttons/button-delete-icon.png"/></a>
+        </div>
+        <div>
+        <label/>Add new {{record_type}}</label>
+            <a class="dns-action-button" id="create-button"><img src="{{MEDIA_URL}}images/buttons/button-add-icon.png"/></a>
+        </div>
+    </div>
+
     <div id='dns-data' record_type="{{record_type}}" record_pk="{{record_pk}}"></div>
 
-    <span>Create new <a href="/mozdns/record/create/{{record_type}}/">{{record_type}}</a></span>
 
-
-    <div id="form-area" style=>
+    <div id="form-area">
         <div id="commit-dialog" style='display: none;'>
             <textarea id='commit-message'></textarea>
+        </div>
+        <div id="delete-dialog" style='display: none;'>
+            <textarea height="60px" id='delete-message'></textarea>
         </div>
 
         <label>Add commit message: <input type='checkbox' id='add-comment' value='' checked='checked'/></label>

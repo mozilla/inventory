@@ -88,10 +88,10 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
 # Because Jinja2 is the default template loader, add any non-Jinja templated
 # apps here:
 JINGO_EXCLUDE_APPS = [
+    'debug_toolbar',
     'build',
     'admin',
     'user_systems',
-    'debug_toolbar',
     'tastytools',
 ]
 

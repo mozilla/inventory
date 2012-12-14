@@ -10,5 +10,7 @@ urlpatterns = patterns('',
         name='record-search'),
     url(r'^create/(?P<record_type>[\w-]+)/$', record, name='record-record'),
     url(r'^update/(?P<record_type>[\w-]+)/(?P<record_pk>\d+)/$', record,
-        name='record-record'),
+        name='update-record'),
+    url(r'^delete/(?P<record_type>[\w-]+)/(?P<record_pk>\d+)/$', record_delete,
+        name='delete-record'),
 )
