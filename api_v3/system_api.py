@@ -125,6 +125,7 @@ class PortDataResource(CustomAPIResource):
                 'ip_address': ALL_WITH_RELATIONS,
                 'state': ALL_WITH_RELATIONS,
                 'service': ALL_WITH_RELATIONS,
+                'port': ALL_WITH_RELATIONS,
                 }
 
 class SystemStatusResource(CustomAPIResource):
