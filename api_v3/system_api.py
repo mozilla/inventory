@@ -115,6 +115,7 @@ class AdvisoryDataResource(CustomAPIResource):
                 'title': ALL_WITH_RELATIONS,
                 'severity': ALL_WITH_RELATIONS,
                 'references': ALL_WITH_RELATIONS,
+                'advisory': ALL_WITH_RELATIONS,
                 }
 
 class PortDataResource(CustomAPIResource):
