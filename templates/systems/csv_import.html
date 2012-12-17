@@ -2,7 +2,7 @@
 {% block content %}
 <div class="editform">
     {% if form %}
-    <h3>Allowed columns: ({{ allowed_columns|join:", " }})</h2>
+    <h3>Allowed columns: ({{ allowed_columns|join(", ") }})</h2>
     <form enctype="multipart/form-data" method="post">
         <table>
             {{ form }}

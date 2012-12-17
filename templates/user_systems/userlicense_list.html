@@ -1,4 +1,4 @@
-{% extends "jinja_base.html" %}
+{% extends "base.html" %}
 {% block content %}
 
     <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
@@ -65,7 +65,7 @@
 <script>
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{{ 'license-quicksearch'|url() }}");
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "{{ 'license-quicksearch'|url() }}");
 	});
 </script>
 {% endblock %}

@@ -133,8 +133,6 @@ ROOT_URLCONF = 'mozilla_inventory.urls'
 #                   MOZ DNS                             #
 #########################################################
 
-MOZDNS_BASE_URL = "/mozdns"
-CORE_BASE_URL = "/core"
 JINJA_CONFIG = {'autoescape': False}
 DEBUG_TOOLBAR_PANELS = (
     'debug_toolbar.panels.version.VersionDebugPanel',

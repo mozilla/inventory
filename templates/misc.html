@@ -3,9 +3,9 @@
 <h2>Other Sections:</h2>
 
 <ul>
-    <li><a href="{% url allocation-list %}">Allocations</a></li>
-    <li><a href="{% url location-list %}">Location</a></li>
-    <li><a href="{% url server_model-list %}">Server Models</a></li>
-    <li><a href="{% url system-csv-import %}">System CSV Import</a></li>
+    <li><a href="{{ "allocation-list"|url() }}">Allocations</a></li>
+    <li><a href="{{ "location-list"|url() }}">Location</a></li>
+    <li><a href="{{ "server_model-list"|url() }}">Server Models</a></li>
+    <li><a href="{{ "system-csv-import"|url() }}">System CSV Import</a></li>
 </ul>
 {% endblock %}
