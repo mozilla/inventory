@@ -1,4 +1,4 @@
-{% extends "jinja_base.html" %}
+{% extends "base.html" %}
 {% block content %}
 <script>
     function showUpgradeable($,t) {
@@ -16,7 +16,7 @@
 </script>
     <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
 <div style="margin-top: 1em; float:right;">
-    <form action="/en-US/owners/quicksearch/" onSubmit="return false;">
+    <form action="/owners/quicksearch/" onSubmit="return false;">
         <strong>Quick Search:</strong> <input id="quicksearch" type="text" name="quicksearch" /><input type='submit' name='submit' value='Go' />
     </form>
 </div>
@@ -51,7 +51,7 @@
 <script>
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{{ 'owners-quicksearch'|url() }}");
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "{{ 'owners-quicksearch'|url() }}");
 	});
 </script>
 {% endblock %}

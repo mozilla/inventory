@@ -1,10 +1,10 @@
-{% extends "jinja_base.html" %}
+{% extends "base.html" %}
 {% block subtitle %}: Create Key Value Store{% endblock %}
 {% block content %}
 <h2>Create Truth Store</h2>
 <form method="post" action=".">
     <table id='settings_table' cellpadding='2' class='settings_table' cellspacing='4'>
-    {% for field in form %}                                                                                                                                                                                                                          
+    {% for field in form %}
     {% if not field.is_hidden %}
     <tr><td class='label_td'>{{ field.label_tag() }}{% if field.field.required %}<span class="special_class">*</span>{% endif %}:</td><td class='input_td'>{{ field }}{{ field.errors }}</td></tr>
     {% else %}
