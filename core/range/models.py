@@ -39,6 +39,9 @@ class Range(models.Model, ObjectUrlMixin):
         *   The new `start` and `end` values are checked against all other
             existing range's `start` and `end` values to make sure that the new
             range does not overlap.
+
+    Ranges should try to enforce the host template found in Mana
+    https://mana.mozilla.org/wiki/display/NETOPS/Node+deployment
     """
     id = models.AutoField(primary_key=True)
 
