@@ -186,7 +186,7 @@ def build_moz_zone(soa, domain_type, NOWRITE=True, request=None):
     return stats
 
 
-def build_zone(ztype, soa, root_domain):
+def build_zone(ztype, soa, root_domain, RO=False):
     """This is where the magic happens.
     """
     soa.serial += 1
@@ -233,7 +233,8 @@ def build_zone(ztype, soa, root_domain):
     if not os.access(BUILD_PATH + zone_path, os.R_OK):
         os.makedirs(BUILD_PATH + zone_path)
     if private_data:
-        open(BUILD_PATH + private_file_path, "w+").write(soa_data + private_data)
+        if not RO:
+            open(BUILD_PATH + private_file_path, "w+").write(soa_data + private_data)
         DEBUG_STRING += ";{0} {1} View Data {0}\n".format("=" * 30, "Private")
         DEBUG_STRING += soa_data
         DEBUG_STRING += private_data
@@ -249,7 +250,8 @@ def build_zone(ztype, soa, root_domain):
         DEBUG_STRING += "; NO PRIVATE ZONE DATA\n"
 
     if public_data:
-        open(BUILD_PATH + public_file_path, "w+").write(soa_data + public_data)
+        if not RO:
+            open(BUILD_PATH + public_file_path, "w+").write(soa_data + public_data)
         DEBUG_STRING += ";{0} {1} View Data {0}\n".format("=" * 30, "Public")
         DEBUG_STRING += soa_data
         DEBUG_STRING += public_data
@@ -264,8 +266,9 @@ def build_zone(ztype, soa, root_domain):
         DEBUG_STRING += "; NO PUBLIC ZONE DATA\n"
 
     # We made it. Let's save the SOA to the db now.
-    soa.dirty = False
-    soa.save()
+    if not RO:
+        soa.dirty = False
+        soa.save()
 
     return ((master_public_zones, master_private_zones),
             (master_private_zones, slave_private_zones),
