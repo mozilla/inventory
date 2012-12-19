@@ -105,6 +105,30 @@ class SystemRackResource(CustomAPIResource):
                 'name': ALL_WITH_RELATIONS,
                 'id': ALL_WITH_RELATIONS,
                 }
+
+class AdvisoryDataResource(CustomAPIResource):
+    class Meta(CustomAPIResource.Meta):
+        resource_name = 'advisory_data'
+        queryset = system_model.AdvisoryData.objects.all()
+        filtering = {
+                'ip_address': ALL_WITH_RELATIONS,
+                'title': ALL_WITH_RELATIONS,
+                'severity': ALL_WITH_RELATIONS,
+                'references': ALL_WITH_RELATIONS,
+                'advisory': ALL_WITH_RELATIONS,
+                }
+
+class PortDataResource(CustomAPIResource):
+    class Meta(CustomAPIResource.Meta):
+        resource_name = 'port_data'
+        queryset = system_model.PortData.objects.all()
+        filtering = {
+                'ip_address': ALL_WITH_RELATIONS,
+                'state': ALL_WITH_RELATIONS,
+                'service': ALL_WITH_RELATIONS,
+                'port': ALL_WITH_RELATIONS,
+                }
+
 class SystemStatusResource(CustomAPIResource):
     class Meta(CustomAPIResource.Meta):
         resource_name = 'system_status'
