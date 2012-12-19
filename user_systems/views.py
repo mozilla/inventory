@@ -397,8 +397,9 @@ def unmanaged_system_delete(request, object_id):
         try:
             acl = UnmanagedSystemACL(request)
             acl.check_delete()
+            user_system_notes = user_system.notes
             user_system.delete()
-            send_mail('System Deleted', '%s Deleted by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
+            send_mail('System Deleted', '%s Deleted by %s\nSystem Notes:\n%s' % (user_system, request.user.username, user_system_notes), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)
             return HttpResponseRedirect( reverse('user-system-list') )
         except PermissionDenied, e:
             send_mail('Unauthorized System Delete Attempt', 'Unauthorized Attempt to Delete %s by %s' % (user_system, request.user.username), FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, fail_silently=False)

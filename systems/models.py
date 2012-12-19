@@ -130,6 +130,35 @@ class Location(models.Model):
     class Meta:
         db_table = u'locations'
         ordering = ['name']
+
+class PortData(models.Model):
+    ip_address = models.CharField(max_length=15, blank=True)
+    port = models.IntegerField(blank=True)
+    protocol = models.CharField(max_length=3, blank=True)
+    state = models.CharField(max_length=13, blank=True)
+    service = models.CharField(max_length=64, blank=True)
+    version = models.CharField(max_length=128, blank=True)
+
+    def __unicode__(self):
+        return self.ip_address
+
+    class Meta:
+        db_table = u'port_data'
+
+
+class AdvisoryData(models.Model):
+    ip_address = models.CharField(max_length=15, blank=True)
+    advisory = models.TextField(blank=True)
+    title = models.TextField(blank=True)
+    severity = models.FloatField(blank=True)
+    references = models.TextField(blank=True)
+
+    def __unicode__(self):
+        return self.ip_address
+
+    class Meta:
+        db_table = u'advisory_data'
+
 class ApiManager(models.Manager):
     def get_query_set(self):
         results = super(ApiManager, self).get_query_set()
