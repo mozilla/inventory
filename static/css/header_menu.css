@@ -31,6 +31,7 @@
 }
 .nav-bar ul li {
     float: left;
+    height: 3.7em;
 }
 .nav-bar ul li:hover {
     background: #4b545f;
@@ -40,10 +41,11 @@
 }
 .nav-bar ul li:hover a {
     color: #fff;
+    height: 0.9em;
 }
 
 .nav-bar ul li a {
-    display: block; padding: 13px 40px;
+    display: block; padding: 1.1em 3.7em;
     color: #757575; text-decoration: none;
 }
 .nav-bar ul ul {
@@ -55,10 +57,10 @@
     border-top: 1px solid #6b727c;
     border-bottom: 1px solid #575f6a;
     position: relative;
-    height: 40px;
+    height: 3.7em;
 }
 .nav-bar ul ul li a {
-    padding: 12px 40px;
+    padding: 1.5em 3.7em;
     color: #fff;
 }
 
