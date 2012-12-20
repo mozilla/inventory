@@ -127,6 +127,23 @@ class Location(models.Model):
         db_table = u'locations'
         ordering = ['name']
 
+class OncallAssignment(models.Model):
+    """
+        oncall_type are 1 of 3 choices currently
+        services, desktop, sysadmin
+        if more oncall categories need added
+        insert into oncall_assignment(oncall_type) values ('<new_oncall_type>');
+    """
+    user = models.ForeignKey(User)
+    oncall_type = models.CharField(max_length=128, blank=True)
+
+    def __unicode__(self):
+        return "%s - %s" % (self.oncall_type, self.oncall_user)
+
+    class Meta:
+        db_table = u'oncall_assignment'
+        ordering = ['oncall_type']
+
 class PortData(models.Model):
     ip_address = models.CharField(max_length=15, blank=True)
     port = models.IntegerField(blank=True)
