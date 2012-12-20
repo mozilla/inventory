@@ -9,7 +9,7 @@ from django.db import connection
 from django.http import HttpResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-from mozilla_inventory.middleware.restrict_to_remote import allow_build
+from middleware.restrict_to_remote import allow_build
 import models
 
 
