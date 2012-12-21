@@ -1,6 +1,7 @@
-from django.test.client import Client
 from django.views.decorators.csrf import csrf_exempt
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+import csv
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from django.db.models import Q
@@ -824,41 +825,22 @@ def racks(request):
            RequestContext(request))
 
 def getoncall(request, type):
-    from django.contrib.auth.models import User
     return_irc_nick = ''
     if type == 'desktop':
-        try:
-            return_irc_nick = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].get_profile().irc_nick
-        except:
-            return_irc_nick = ''
+        return_irc_nick = models.OncallAssignment.objects.get(oncall_type='desktop').user.get_profile().irc_nick
     elif type == 'sysadmin':
-        try:
-            return_irc_nick = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].get_profile().irc_nick
-        except:
-            return_irc_nick = ''
+        return_irc_nick = models.OncallAssignment.objects.get(oncall_type='sysadmin').user.get_profile().irc_nick
     elif type == 'services':
-        try:
-            return_irc_nick = User.objects.select_related().filter(userprofile__current_services_oncall=1)[0].get_profile().irc_nick
-        except:
-            return_irc_nick = ''
+        return_irc_nick = models.OncallAssignment.objects.get(oncall_type='services').user.get_profile().irc_nick
+
     return HttpResponse(return_irc_nick)
 def oncall(request):
     from forms import OncallForm
-    from django.contrib.auth.models import User
     #current_desktop_oncall = models.UserProfile.objects.get_current_desktop_oncall
     #import pdb; pdb.set_trace()
-    try:
-        current_desktop_oncall = User.objects.select_related().filter(userprofile__current_desktop_oncall=1)[0].username
-    except IndexError:
-        current_desktop_oncall = ''
-    try:
-        current_sysadmin_oncall = User.objects.select_related().filter(userprofile__current_sysadmin_oncall=1)[0].username
-    except IndexError:
-        current_sysadmin_oncall = ''
-    try:
-        current_services_oncall = User.objects.select_related().filter(userprofile__current_services_oncall=1)[0].username
-    except IndexError:
-        current_services_oncall = ''
+    current_desktop_oncall = models.OncallAssignment.objects.get(oncall_type='desktop').user.username
+    current_sysadmin_oncall = models.OncallAssignment.objects.get(oncall_type='sysadmin').user.username
+    current_services_oncall = models.OncallAssignment.objects.get(oncall_type='services').user.username
 
     initial = {
         'desktop_support':current_desktop_oncall,
@@ -874,12 +856,21 @@ def oncall(request):
             current_desktop_oncall = form.cleaned_data['desktop_support']
             current_sysadmin_oncall = form.cleaned_data['sysadmin_support']
             current_services_oncall = form.cleaned_data['services_support']
+            """
+                Set each of the 3 respective oncall areas to the posted values
+            """
+            tmp = models.OncallAssignment.objects.get(oncall_type='desktop')
+            tmp.user = User.objects.get(username=current_desktop_oncall)
+            tmp.save()
+            tmp = models.OncallAssignment.objects.get(oncall_type='sysadmin')
+            tmp.user = User.objects.get(username=current_sysadmin_oncall)
+            tmp.save()
+            tmp = models.OncallAssignment.objects.get(oncall_type='services')
+            tmp.user = User.objects.get(username=current_services_oncall)
+            tmp.save()
+            
             form.save()
-            if clear_oncall_orm():
-                set_oncall('desktop', current_desktop_oncall)
-                set_oncall('sysadmin', current_sysadmin_oncall)
-                set_oncall('services', current_services_oncall)
-                return HttpResponseRedirect('')
+            return HttpResponseRedirect('')
 
     else:
         form = OncallForm(initial = initial)
