@@ -138,6 +138,8 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
             for field in fields:
                 if getattr(db_self, field) != getattr(self, field):
                     self.dirty = True
+        else:  # No pk means we are a new object
+            self.dirty = True
         super(SOA, self).save(*args, **kwargs)
 
     def __str__(self):
