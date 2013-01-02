@@ -45,7 +45,7 @@ class DNSBuilder(object):
         # This is very specific to python 2.6
         syslog.openlog('dnsbuild', 0, syslog.LOG_USER)
 
-    def log(self, log_level, msg):
+    def log(self, log_level, msg, **kwargs):
         # Eventually log this stuff into bs
         # Let's get the callers name and log that
         curframe = inspect.currentframe()
@@ -88,11 +88,11 @@ class DNSBuilder(object):
                 shutil.rmtree(self.STAGE_DIR)
             except OSError, e:
                 if e.errno == 2:
-                    self.log('STAGE', 'LOG_WARNING', "Staging was "
+                    self.log('LOG_WARNING', "Staging was "
                              "not present.")
                 else:
                     raise
-            self.log('STAGE', 'LOG_INFO', "Staging area cleared")
+            self.log('LOG_INFO', "Staging area cleared")
         else:
             if not force:
                 raise BuildError("The DNS build scripts tried to remove the "
@@ -105,7 +105,7 @@ class DNSBuilder(object):
         """
         if os.path.isfile(self.LOCK_FILE):
             raise BuildError("DNS build script attemted to write it's lock "
-                             "file but another lock file was already in place")
+                             "file but another lock file was already in place.")
         lock_dir = os.path.dirname(self.LOCK_FILE)
         if not os.path.exists(lock_dir):
             os.makedirs(lock_dir)
@@ -215,7 +215,8 @@ class DNSBuilder(object):
         if not os.path.exists(stage_zone_dir):
             os.makedirs(stage_zone_dir)
         stage_zone_file = os.path.join(stage_zone_dir, fname)
-        self.log(soa, "Stage zone file is {0}".format(stage_zone_file))
+        self.log('LOG_INFO', "Stage zone file is {0}".format(stage_zone_file),
+                soa=soa)
         with open(stage_zone_file, 'w+') as fd:
             fd.write(data)
         return stage_zone_file
@@ -311,12 +312,12 @@ class DNSBuilder(object):
         # Look at the previous build and determine if we have seen this zone in
         # it's previous configuration. md5sum the zone and compare.
 
-    def _rebuild_zone(self, root_domain, soa):
+    def rebuild_zone(self, root_domain, soa):
         """
         This function will write the zone's zone file to the the staging area
         and call named-checkconf on the files before they are copied over to
-        PROD_DIR. If will return a tuple of files corresponding to where
-        the `privat_file` and `public_file` are written to. If a file is not
+        PROD_DIR. If will return a tuple of files corresponding to where the
+        `privat_file` and `public_file` are written to. If a file is not
         written to the file system `None` will be returned instead of the path
         to the file.
         """
@@ -324,7 +325,8 @@ class DNSBuilder(object):
         t_start = time.time()  # tic
         public_data, private_data = build_zone_data(root_domain, soa)
         build_time = time.time() - t_start  # toc
-        self.log('LOG_INFO', 'build_time_seconds', build_time)
+        self.log('LOG_INFO', 'Built {0} in {1} seconds '.format(soa,
+                 build_time), soa=soa, build_time=build_time)
 
         # write datas to files (in stage) and named-checkzone
         private_file, public_file = None, None
@@ -414,8 +416,16 @@ class DNSBuilder(object):
             # dirty.
             self.verify_prev(prev_run, zfiles, zhash, *zinfo)
             if soa.dirty:
-                zfiles = self._rebuild_zone(*zinfo)
+                self.log('LOG_INFO', "{0} is seen as dirty.".format(soa),
+                         soa=soa)
+                soa.serial += 1
+                self.log('LOG_INFO', "{0} incremented serial from {1} to "
+                         "{2}".format(soa, soa.serial - 1, soa.serial), soa=soa)
+                zfiles = self.rebuild_zone(*zinfo)
             else:
+                # Everything is being marked as dirty, wtf?
+                self.log('LOG_INFO', "{0} is seen as NOT dirty.".format(soa),
+                         soa=soa)
                 self.named_checkzone(zfiles[0], *zinfo)
                 self.named_checkzone(zfiles[1], *zinfo)
 
@@ -425,6 +435,10 @@ class DNSBuilder(object):
             if zfiles[1]:
                 public_zone_stmts.append(
                     self.render_zone_stmt(zinfo[0].name, zfiles[1]))
+
+            if soa.dirty: # we made it through the build successfully
+                self.log('LOG_INFO', "Saving {0}.".format(soa), soa=soa)
+                soa.save()
 
         return private_zone_stmts, public_zone_stmts
 
@@ -469,9 +483,8 @@ class DNSBuilder(object):
         try:
             self.lock()
         except BuildError, e:
-            print e
-            print _("There is probably another instance of the build script "
-                    "running")
+            raise BuildError("There is probably another instance of the build "
+                             "script running")
             return
 
         try:
@@ -502,10 +515,10 @@ class DNSBuilder(object):
                 self.clear_staging()
         # All errors are handled by caller
         except BuildError, e:
-            self.log('LOG_NOTICE', 'Not removing staging')
+            self.log('LOG_NOTICE', 'Error during build. Not removing staging')
             raise
         except Exception, e:
-            self.log('LOG_NOTICE', 'Not removing staging')
+            self.log('LOG_NOTICE', 'Error during build. Not removing staging')
             raise
         finally:
             # Clean up
