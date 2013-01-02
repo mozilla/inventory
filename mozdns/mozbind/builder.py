@@ -1,18 +1,18 @@
 #!/usr/bin/python
+from gettext import gettext as _
+import inspect
 import shutil
 import shlex
 import subprocess
 import sys
+import syslog
 import os
+import pdb
 import time
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                        os.pardir, os.pardir)))
-import manage
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
+
 from settings.dnsbuilds import STAGE_DIR, PROD_DIR, LOCK_FILE
 from settings.dnsbuilds import NAMED_CHECKZONE_OPTS
 
-import pdb
 
 from mozdns.domain.models import SOA
 from mozdns.mozbind.build import build_zone_data
@@ -23,22 +23,44 @@ class BuildError(Exception):
 
 
 class DNSBuilder(object):
-    def __init__(self, STAGE_DIR=STAGE_DIR, PROD_DIR=PROD_DIR,
-                 LOCK_FILE=LOCK_FILE, RO=False,
-                 NAMED_CHECKZONE_OPTS=NAMED_CHECKZONE_OPTS):
-        self.RO=RO
-        self.STAGE_DIR=STAGE_DIR
-        self.PROD_DIR=PROD_DIR
-        self.LOCK_FILE=LOCK_FILE
-        self.bs = DNSBuildRun()
-        self.MAX_ALLOWED_LINES_CHANGED = 500
-        self.NAMED_CHECKZONE_OPTS = NAMED_CHECKZONE_OPTS
+    def __init__(self, **kwargs):
+        defaults = {
+            'STAGE_DIR': STAGE_DIR,
+            'PROD_DIR': PROD_DIR,
+            'LOCK_FILE': LOCK_FILE,
+            'STAGE_ONLY': False,
+            'NAMED_CHECKZONE_OPTS': NAMED_CHECKZONE_OPTS,
+            'CLOBBER_STAGE': False,
+            'PUSH_TO_PROD': False,
+            'BUILD_ZONES': True,
+            'PRESERVE_STAGE': False,
+            'LOG_SYSLOG': True,
+            'DEBUG': False,
+            'MAX_ALLOWED_LINES_CHANGED': 500,
+            'bs': DNSBuildRun()  # Build statistic
+        }
+        for k, default in defaults.iteritems():
+            setattr(self, k, kwargs.get(k, default))
 
-    def log(self, soa, k, v):
+        # This is very specific to python 2.6
+        syslog.openlog('dnsbuild', 0, syslog.LOG_USER)
+
+    def log(self, log_level, msg):
         # Eventually log this stuff into bs
-        """
-        """
-        print "[{0}] --> {1}: {2}".format(soa, k, v)
+        # Let's get the callers name and log that
+        curframe = inspect.currentframe()
+        calframe = inspect.getouterframes(curframe, 2)
+        callername = calframe[1][3]
+        fmsg = "[{0}] {1}".format(callername, msg)
+        if hasattr(syslog, log_level):
+            ll = getattr(syslog, log_level)
+        else:
+            ll = syslog.LOG_INFO
+
+        if self.LOG_SYSLOG:
+            syslog.syslog(ll, fmsg)
+        if self.DEBUG:
+            print "{0} {1}".format(log_level, fmsg)
 
     def build_staging(self, force=False):
         """
@@ -59,11 +81,18 @@ class DNSBuilder(object):
         """
         rm -rf the staging area. Fail if the staging area doesn't exist.
         """
-        self.log('BUILD CLEAR STAGE', 'info', "Attempting rm -rf staging area."
-                              "({0})...".format(self.LOCK_FILE))
+        self.log('LOG_INFO', "Attempting rm -rf staging "
+                 "area. ({0})...".format(self.STAGE_DIR))
         if os.path.exists(self.STAGE_DIR) or force:
-            shutil.rmtree(self.STAGE_DIR)
-            self.log('BUILD CLEAR STAGE', 'info', "Staging area cleared")
+            try:
+                shutil.rmtree(self.STAGE_DIR)
+            except OSError, e:
+                if e.errno == 2:
+                    self.log('STAGE', 'LOG_WARNING', "Staging was "
+                             "not present.")
+                else:
+                    raise
+            self.log('STAGE', 'LOG_INFO', "Staging area cleared")
         else:
             if not force:
                 raise BuildError("The DNS build scripts tried to remove the "
@@ -80,12 +109,12 @@ class DNSBuilder(object):
         lock_dir = os.path.dirname(self.LOCK_FILE)
         if not os.path.exists(lock_dir):
             os.makedirs(lock_dir)
-        self.log('BUILD LOCK', 'info', "Attempting write lock "
+        self.log('LOG_INFO', "Attempting write lock "
                               "({0})...".format(self.LOCK_FILE))
         with open(self.LOCK_FILE, 'w+') as lock:
             lock.write("{0} # DO NOT TOUCH THE CONTENTS OF THIS "
                        "FILE!\n".format(time.time()))
-        self.log('BUILD_LOCK', 'info', "Lock written.")
+        self.log('LOG_INFO', "Lock written.")
 
     def unlock(self):
         """
@@ -95,10 +124,10 @@ class DNSBuilder(object):
         if not os.path.isfile(self.LOCK_FILE):
             raise BuildError("DNS build script attemted to unlock but no lock "
                              "file was found.")
-        self.log('UNLOCK', 'info', "Attempting Unlock "
+        self.log('LOG_INFO', "Attempting Unlock "
                               "({0})...".format(self.LOCK_FILE))
         os.remove(self.LOCK_FILE)
-        self.log('UNLOCK', 'info', "Unlock Complete.")
+        self.log('LOG_INFO', "Unlock Complete.")
 
     def ensure_build_keys(self, soa):
         """
@@ -186,10 +215,9 @@ class DNSBuilder(object):
         if not os.path.exists(stage_zone_dir):
             os.makedirs(stage_zone_dir)
         stage_zone_file = os.path.join(stage_zone_dir, fname)
-        self.log(soa, 'info', "Stage zone file is {0}".format(stage_zone_file))
-        if not self.RO:
-            with open(stage_zone_file, 'w+') as fd:
-                fd.write(data)
+        self.log(soa, "Stage zone file is {0}".format(stage_zone_file))
+        with open(stage_zone_file, 'w+') as fd:
+            fd.write(data)
         return stage_zone_file
 
     def _shell_out(self, command):
@@ -214,7 +242,7 @@ class DNSBuilder(object):
         command_str = "named-checkzone {0} {1} {2}".format(
                       self.NAMED_CHECKZONE_OPTS, root_domain.name,
                       zone_file)
-        self.log('VERIFY', 'info', "Calling named-checkzone on zone '{0}' with "
+        self.log('LOG_INFO', "Calling named-checkzone on zone '{0}' with "
                                    "zone file {1}".format(root_domain.name,
                                    zone_file))
         stdout, stderr, returncode = self._shell_out(command_str)
@@ -231,7 +259,7 @@ class DNSBuilder(object):
             raise BuildError("Couldn't find named-checkconf.")
 
         command_str = "named-checkconf {0}".format(conf_file)
-        self.log('VERIFY', 'info', "Calling named-checkconf {0}' ".
+        self.log('LOG_INFO', "Calling named-checkconf {0}' ".
                                    format(conf_file))
         stdout, stderr, returncode = self._shell_out(command_str)
         if returncode != 0:
@@ -240,13 +268,29 @@ class DNSBuilder(object):
                              format(conf_file, command_str, stdout,
                              stderr))
 
-    def stage_to_prod(self, files):
-        """Copy files over to PROD_DIR. Return the new location of the zone
-        files.
+    def stage_to_prod(self, src):
+        """Copy file over to PROD_DIR. Return the new location of the
+        file.
         """
-        # TODO
-        return [fname.replace(self.STAGE_DIR, self.PROD_DIR)
-                for fname in files]
+
+        if not src.startswith(self.STAGE_DIR):
+            raise BuildError("Improper file '{0}' passed to "
+                             "stage_to_prod".format(src))
+        dst = src.replace(self.STAGE_DIR, self.PROD_DIR)
+        dst_dir = os.path.dirname(dst)
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+        # copy2 will copy file metadata
+        try:
+            shutil.copy2(src, dst)
+        except (IOError, os.error) as why:
+            raise BuildError("cp -p {0} {1} caused {2}".format(src,
+                             dst, str(why)))
+        except shutil.Error:
+            pdb.set_trace()
+        return dst
+
+
 
     def write_stage_config(self, fname, data):
         """
@@ -271,41 +315,43 @@ class DNSBuilder(object):
         """
         This function will write the zone's zone file to the the staging area
         and call named-checkconf on the files before they are copied over to
-        PROD_DIR.
+        PROD_DIR. If will return a tuple of files corresponding to where
+        the `privat_file` and `public_file` are written to. If a file is not
+        written to the file system `None` will be returned instead of the path
+        to the file.
         """
-        self.log(soa, 'info', "{0} will be rebuilt.".format(soa))
+        self.log('LOG_INFO', "{0} will be rebuilt.".format(soa))
         t_start = time.time()  # tic
         public_data, private_data = build_zone_data(root_domain, soa)
         build_time = time.time() - t_start  # toc
-        self.log(soa, 'build_time_seconds', build_time)
+        self.log('LOG_INFO', 'build_time_seconds', build_time)
 
         # write datas to files (in stage) and named-checkzone
-        stage_files = []
+        private_file, public_file = None, None
         if private_data:
             fname = "{0}.{1}".format(root_domain.name, 'private')
-            stage_private_file = self.write_stage_zone(root_domain, soa, fname,
+            private_file = self.write_stage_zone(root_domain, soa, fname,
                                                        private_data)
-            stage_files.append(stage_private_file)
-            self.log(soa, 'info', "Built stage_private_file to "
-                     "{0}".format(stage_private_file))
-            self.named_checkzone(stage_private_file, root_domain, soa)
-        else:
-            stage_private_file = None
+            self.log('LOG_INFO', "Built stage_private_file to "
+                     "{0}".format(private_file))
+            self.named_checkzone(private_file, root_domain, soa)
 
         if public_data:
             fname = "{0}.{1}".format(root_domain.name, 'public')
-            stage_public_file = self.write_stage_zone(root_domain, soa, fname,
+            public_file = self.write_stage_zone(root_domain, soa, fname,
                                                        public_data)
-            stage_files.append(stage_public_file)
-            self.log(soa, 'info', "Built stage_public_file to "
-                     "{0}".format(stage_public_file))
-            self.named_checkzone(stage_public_file, root_domain, soa)
-        else:
-            stage_public_file = None
+            self.log('LOG_INFO', "Built stage_public_file to "
+                     "{0}".format(public_file))
+            self.named_checkzone(public_file, root_domain, soa)
 
-        # cp over (not new file for later svn ci)
-        self.stage_to_prod(stage_files)
-        return stage_private_file, stage_public_file
+        # cp over
+        if private_file:
+            private_file = self.stage_to_prod(private_file)
+
+        if public_file:
+            public_file = self.stage_to_prod(public_file)
+
+        return private_file, public_file
 
     def calc_fnames(self, root_domain, soa):
         return ("{0}.{1}".format(root_domain.name, 'private'),
@@ -384,7 +430,7 @@ class DNSBuilder(object):
 
     def build_config_files(self, private_zone_stmts, public_zone_stmts):
         # named-checkconf on config files
-        self.log('CONFIG BUILD', 'info', "Building config files.")
+        self.log('LOG_INFO', "Building config files.")
         for type_ in ('master',): # If we need slave configs, do it here
             zone_stmts = '\n'.join(private_zone_stmts).format(type_=type_)
             stage_private_file = self.write_stage_config(
@@ -414,25 +460,54 @@ class DNSBuilder(object):
             # rm lock.file
         return False
 
+    def rcs_checkin(self):
+        """TODO write a mixin class for svn."""
+        return
+
     def build_dns(self):
+        self.log('LOG_NOTICE', 'Building...')
         try:
             self.lock()
+        except BuildError, e:
+            print e
+            print _("There is probably another instance of the build script "
+                    "running")
+            return
+
+        try:
+            if self.CLOBBER_STAGE:
+                self.clear_staging(force=True)
             self.build_staging()
 
             # zone files
-            self.build_config_files(*self.build_zone_files())
+            if self.BUILD_ZONES:
+                self.build_config_files(*self.build_zone_files())
+            else:
+                self.log('LOG_INFO', "BUILD_ZONES is False. Not "
+                         "building zone files.")
             # Run sanity checks
             self.sanity_check()
-            self.clear_staging()
-
+            if self.BUILD_ZONES and self.PUSH_TO_PROD:
+                self.log('LOG_INFO', "PUSH_TO_PROD is True. Checking into "
+                         "rcs.")
+                self.rcs_checkin()
+            else:
+                self.log('LOG_INFO', "PUSH_TO_PROD is False. Not checking "
+                         "into rcs.")
+            if self.PRESERVE_STAGE:
+                self.log('LOG_INFO', "PRESERVE_STAGE is True. Not "
+                         "removing staging. You will need to use "
+                         "--clobber-stage on the next run.")
+            else:
+                self.clear_staging()
+        # All errors are handled by caller
         except BuildError, e:
-            self.log('BUILD MAIN', 'info', 'Not removing staging')
-            print e
+            self.log('LOG_NOTICE', 'Not removing staging')
             raise
         except Exception, e:
-            self.log('BUILD MAIN', 'info', 'Not removing staging')
-            print e
+            self.log('LOG_NOTICE', 'Not removing staging')
             raise
         finally:
             # Clean up
             self.unlock()
+        self.log('LOG_NOTICE', 'Successful build is successful.')
