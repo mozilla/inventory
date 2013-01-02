@@ -139,18 +139,18 @@ def render_forward_zone(view, mega_filter):
     return data
 
 
-def render_reverse_zone(view, forward_mega_filter, reverse_mega_filter):
+def render_reverse_zone(view, domain_mega_filter, rdomain_mega_filter):
     data = _render_reverse_zone(
             default_ttl=DEFAULT_TTL,
 
-            nameserver_set=Nameserver.objects.filter(forward_mega_filter
+            nameserver_set=Nameserver.objects.filter(domain_mega_filter
                 ).filter(views__name=view.name).order_by('server'),
 
-            interface_set=StaticInterface.objects.filter(reverse_mega_filter,
+            interface_set=StaticInterface.objects.filter(rdomain_mega_filter,
                 dns_enabled=True).filter(views__name=view.name).order_by(
                     'ip_type', 'label', 'ip_upper', 'ip_lower'),
 
-            ptr_set=PTR.objects.filter(reverse_mega_filter).filter(views__name=view.name
+            ptr_set=PTR.objects.filter(rdomain_mega_filter).filter(views__name=view.name
                 ).order_by('ip_upper').order_by('ip_lower'),
 
         )
@@ -186,55 +186,28 @@ def build_moz_zone(soa, domain_type, NOWRITE=True, request=None):
     return stats
 
 
-def build_zone(ztype, soa, root_domain, RO=False):
-    """This is where the magic happens.
+def build_zone(soa, RO=False):
+    """Given an SOA, this function will generate the BIND data files and config
+    statements (both for master and slave nameservers). This function also
+    updates an SOA's serial. All files built by this function are writen to the
+    stage directory. This function is responsible for calling
+    ``named-checkconf`` and ``named-checkzone`` on the zone and config files it
+    generates. If these checks fail this function will raise an exception.
+
+    :param soa: The soa of the zone that should be built.
+    :type soa: SOA
+    :param RO: If the build should be readonly (no writes to the file system
+               will be preformed)
+
+    :returns DEBUG_BUILD_STRING: For debugging
+    :type DEBUG_BUILD_STRING: str
     """
     soa.serial += 1
     # We are updating the local version of the soa. If this function succeeds
     # we will then save the SOA to the db.
-    domains = soa.domain_set.all().order_by('name')
-    zone_path = choose_zone_path(soa, root_domain)
-
-    DEBUG_STRING = ""
-    # Bulid the mega filter!
-    forward_mega_filter = Q(domain=root_domain)
-    for domain in domains:
-        forward_mega_filter = forward_mega_filter | Q(domain=domain)
-    reverse_mega_filter = Q(reverse_domain=root_domain)
-    for reverse_domain in domains:
-        reverse_mega_filter = reverse_mega_filter | Q(reverse_domain=reverse_domain)
-
-    soa_data = render_soa_only(soa=soa, root_domain=root_domain)
-    try:
-        public = View.objects.get(name="public")
-        if ztype == "forward":
-            public_data = render_forward_zone(public, forward_mega_filter)
-            public_file_path = zone_path + "public"
-        else:
-            public_data = render_reverse_zone(public, forward_mega_filter,
-                    reverse_mega_filter)
-            public_file_path = zone_path + root_domain.name + ".public"
-    except ObjectDoesNotExist, e:
-        data = "; The views public and private do not exist\n"
-        public_data = ""
-    try:
-        private = View.objects.get(name="private")
-        if ztype == "forward":
-            private_data = render_forward_zone(private, forward_mega_filter)
-            private_file_path = zone_path + "private"
-        else:
-            private_data = render_reverse_zone(private, forward_mega_filter,
-                    reverse_mega_filter)
-            private_file_path = zone_path + root_domain.name + ".private"
-    except ObjectDoesNotExist, e:
-        data = "; The views public and private do not exist\n"
-        private_data = ""
-
     if not os.access(BUILD_PATH + zone_path, os.R_OK):
         os.makedirs(BUILD_PATH + zone_path)
     if private_data:
-        if not RO:
-            open(BUILD_PATH + private_file_path, "w+").write(soa_data + private_data)
         DEBUG_STRING += ";{0} {1} View Data {0}\n".format("=" * 30, "Private")
         DEBUG_STRING += soa_data
         DEBUG_STRING += private_data
@@ -250,8 +223,6 @@ def build_zone(ztype, soa, root_domain, RO=False):
         DEBUG_STRING += "; NO PRIVATE ZONE DATA\n"
 
     if public_data:
-        if not RO:
-            open(BUILD_PATH + public_file_path, "w+").write(soa_data + public_data)
         DEBUG_STRING += ";{0} {1} View Data {0}\n".format("=" * 30, "Public")
         DEBUG_STRING += soa_data
         DEBUG_STRING += public_data
@@ -265,14 +236,75 @@ def build_zone(ztype, soa, root_domain, RO=False):
         slave_public_zones = ""
         DEBUG_STRING += "; NO PUBLIC ZONE DATA\n"
 
-    # We made it. Let's save the SOA to the db now.
-    if not RO:
-        soa.dirty = False
-        soa.save()
 
     return ((master_public_zones, master_private_zones),
             (master_private_zones, slave_private_zones),
             DEBUG_STRING)
+
+def build_zone_data(root_domain, soa):
+    """
+    This function does the heavy lifting of building a zone. It coordinates
+    getting all of the data out of the db into BIND format.
+
+    :param soa: The SOA corresponding to the zone being built.
+    :type soa: SOA
+
+    :param root_domain: The root domain of this zone.
+    :type root_domain: str
+
+    :returns public_file_path: The path to the zone file in the STAGEING dir
+    :type public_file_path: str
+    :returns public_data: The data that should be written to public_file_path
+    :type public_data: str
+
+    :returns private_zone_file: The path to the zone file in the STAGEING dir
+    :type private_zone_file: str
+    :param private_data: The data that should be written to private_zone_file
+    :type private_data: str
+    """
+    ztype = 'reverse' if root_domain.is_reverse else 'forward'
+
+    domains = soa.domain_set.all().order_by('name')
+
+    DEBUG_STRING = ""
+    # Bulid the mega filter!
+    domain_mega_filter = Q(domain=root_domain)
+    for domain in domains:
+        domain_mega_filter = domain_mega_filter | Q(domain=domain)
+    rdomain_mega_filter = Q(reverse_domain=root_domain)
+    for reverse_domain in domains:
+        rdomain_mega_filter = rdomain_mega_filter | Q(
+                                            reverse_domain=reverse_domain)
+
+    soa_data = render_soa_only(soa=soa, root_domain=root_domain)
+    try:
+        private = View.objects.get(name="private")
+        if ztype == "forward":
+            private_data = render_forward_zone(private, domain_mega_filter)
+        else:
+            private_data = render_reverse_zone(private, domain_mega_filter,
+                                               rdomain_mega_filter)
+    except ObjectDoesNotExist, e:
+        private_data = ""
+
+    try:
+        public = View.objects.get(name="public")
+        if ztype == "forward":
+            public_data = render_forward_zone(public, domain_mega_filter)
+        else:
+            public_data = render_reverse_zone(public, domain_mega_filter,
+                                              rdomain_mega_filter)
+    except ObjectDoesNotExist, e:
+        public_data = ""
+
+    if private_data:
+        private_data = soa_data + private_data
+
+    if public_data:
+        public_data = soa_data + public_data
+
+    return (private_data, public_data)
+
 
 def build_dns():
     master_public_zones = ""
