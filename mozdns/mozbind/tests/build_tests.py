@@ -3,15 +3,8 @@ import sys
 import shutil
 import pdb
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                        os.pardir, os.pardir)))
-import manage
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
-
 from unittest import TestCase
 from scripts.dnsbuilds.main import DNSBuilder, BuildError
-from mozdns.soa.models import SOA
-from mozdns.mozbind.models import DNSBuildRun
 
 import pdb
 

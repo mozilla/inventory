@@ -202,7 +202,6 @@ def build_zone(soa, RO=False):
     :returns DEBUG_BUILD_STRING: For debugging
     :type DEBUG_BUILD_STRING: str
     """
-    soa.serial += 1
     # We are updating the local version of the soa. If this function succeeds
     # we will then save the SOA to the db.
     if not os.access(BUILD_PATH + zone_path, os.R_OK):

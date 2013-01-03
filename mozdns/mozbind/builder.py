@@ -1,10 +1,9 @@
 #!/usr/bin/python
-from gettext import gettext as _
+import hashlib
 import inspect
 import shutil
 import shlex
 import subprocess
-import sys
 import syslog
 import os
 import pdb
@@ -17,6 +16,7 @@ from settings.dnsbuilds import NAMED_CHECKZONE_OPTS
 from mozdns.domain.models import SOA
 from mozdns.mozbind.build import build_zone_data
 from mozdns.mozbind.models import DNSBuildRun
+from mozdns.mozbind.serial_utils import get_serial
 
 class BuildError(Exception):
     """Exception raised when there is an error in the build process."""
@@ -72,7 +72,7 @@ class DNSBuilder(object):
                              " but area already exists.")
         try:
             os.makedirs(self.STAGE_DIR)
-        except OSError, e:
+        except OSError:
             if not force:
                 raise
 
@@ -129,33 +129,6 @@ class DNSBuilder(object):
         os.remove(self.LOCK_FILE)
         self.log('LOG_INFO', "Unlock Complete.")
 
-    def ensure_build_keys(self, soa):
-        """
-        Make sure that key's _private_zone_file and _public_zone_file exist.
-        If they don't exist or if the files that the key's point to do not
-        exist, mark the soa to be rebuilt.
-        """
-        if not soa.attrs:
-            raise BuildError("You called calc_target without calling "
-                             "update_attrs on the soa.")
-        if not (hasattr(soa.attrs, '_private_zone_file') and
-           os.path.exists(soa.attrs._private_zone_file) and
-           hasattr(soa.attrs, '_public_zone_file') and
-           os.path.exists(soa.attrs._public_zone_file)):
-            soa.dirty = True
-            soa.save()
-
-
-    def check_for_manual_changes(self, soa):
-        """
-        Shell out and run some svn commands on _private_zone_file and
-        _public_zone_file.
-        :returns changed: If someone clobbered the file, return True. No
-            changes means False
-        :type changed: bool
-        """
-        # How do we do this?
-        return False
 
     def calc_target(self, root_domain, soa):
         """
@@ -243,9 +216,8 @@ class DNSBuilder(object):
         command_str = "named-checkzone {0} {1} {2}".format(
                       self.NAMED_CHECKZONE_OPTS, root_domain.name,
                       zone_file)
-        self.log('LOG_INFO', "Calling named-checkzone on zone '{0}' with "
-                                   "zone file {1}".format(root_domain.name,
-                                   zone_file))
+        self.log('LOG_INFO', "Calling `named-checkzone '{0}' "
+                             "'{1}'".format(root_domain.name, zone_file))
         stdout, stderr, returncode = self._shell_out(command_str)
         if returncode != 0:
             raise BuildError("\nnamed-checkzone failed on zone {0}. "
@@ -260,7 +232,7 @@ class DNSBuilder(object):
             raise BuildError("Couldn't find named-checkconf.")
 
         command_str = "named-checkconf {0}".format(conf_file)
-        self.log('LOG_INFO', "Calling named-checkconf {0}' ".
+        self.log('LOG_INFO', "Calling `named-checkconf {0}` ".
                                    format(conf_file))
         stdout, stderr, returncode = self._shell_out(command_str)
         if returncode != 0:
@@ -284,6 +256,7 @@ class DNSBuilder(object):
         # copy2 will copy file metadata
         try:
             shutil.copy2(src, dst)
+            self.log('LOG_INFO', "Copied {0} to {1}".format(src, dst))
         except (IOError, os.error) as why:
             raise BuildError("cp -p {0} {1} caused {2}".format(src,
                              dst, str(why)))
@@ -306,13 +279,7 @@ class DNSBuilder(object):
             fd.write(data)
         return config_file
 
-    def dirty_if_new(self, prev_run, root_domain, soa):
-        if soa.dirty:
-            return
-        # Look at the previous build and determine if we have seen this zone in
-        # it's previous configuration. md5sum the zone and compare.
-
-    def rebuild_zone(self, root_domain, soa):
+    def rebuild_zone(self, private_data, public_data, root_domain, soa):
         """
         This function will write the zone's zone file to the the staging area
         and call named-checkconf on the files before they are copied over to
@@ -323,7 +290,6 @@ class DNSBuilder(object):
         """
         self.log('LOG_INFO', "{0} will be rebuilt.".format(soa))
         t_start = time.time()  # tic
-        public_data, private_data = build_zone_data(root_domain, soa)
         build_time = time.time() - t_start  # toc
         self.log('LOG_INFO', 'Built {0} in {1} seconds '.format(soa,
                  build_time), soa=soa, build_time=build_time)
@@ -382,18 +348,38 @@ class DNSBuilder(object):
         """Get the previous DNSBuildRun instance."""
         return None
 
-    def verify_prev(self, prev_run, zfiles, zhash, root_domain, soa):
-        if not prev_run:
-            soa.dirty = True  # It's a local copy, we we don't need to save it.
-        return None
+    def verify_prev(self, prev_run, private_info, public_info, zhash,
+                    root_domain, soa):
+        for zfile, zdata in (private_info, public_info):
+            if not zdata:
+                continue
+            serial = get_serial(os.path.join(self.PROD_DIR, zfile))
+            if not serial:
+                if not soa.serial:
+                    soa.serial = int(time.time())
+                soa.serial
+                soa.dirty = True
+                # it's a new serial
+                self.log('LOG_NOTICE', "{0} appears to be a new zone. Building"
+                         " {1} with initial serial {2}".format(soa, zfile,
+                         soa.serial), soa=soa)
+            elif int(serial) != soa.serial:
+                # Looks like someone made some changes... let's nuke them.
+                # We should probably email someone too.
+                self.log('LOG_NOTICE', "{0} has serial {1} in svn ({2}) and "
+                         "serial {3} in the database. SOA is being marked as "
+                         "dirty.".format(soa, serial, zfile, soa.serial),
+                         soa=soa)
+                soa.serial = int(serial)
+                soa.dirty = True
 
     def build_zone_files(self):
         """
         This function builds and then writes zone files to the file system.
         This function also returns a list of zone statements.
         """
+
         # Keep track of which zones we build and what they look like.
-        build_manifest = []
 
         private_zone_stmts, public_zone_stmts = [], []
 
@@ -408,36 +394,56 @@ class DNSBuilder(object):
             zfiles = [os.path.join(zdir, fname) for fname in fnames]
                     # zfiles[0] -> private_zone_file
                     # zfiles[1] -> public_zone_file
+            # We build the *_data here. If either private_data or public_data
+            # is '', that means we don't have to worry about it. There was a
+            # small bug with having it built in :func:`rebuild_zone`:: if
+            # either the public or private file had data in it then for some
+            # reason the zone didn't have data for that file anymore, the file
+            # wouldn't get written. The problem was that the serial in the
+            # unused file wasn't being changed which caused the zone to always
+            # be marked as dirty in :func:`verify_prev`. Passing the *_data
+            # variables to :func:`verify_prev` will allow us to avoid checking
+            # the stale files. Eventually, we should look into deleteing the
+            # unused files.
+            private_data, public_data = build_zone_data(*zinfo)
+
             zhash = self._calc_build_hash(zfiles)
-            # Pretty sure all new SOA's are marked as dirty but let's be
-            # paranoid.
-            self.dirty_if_new(prev_run, *zinfo)
             # If there is zomething different about the zone, mark the soa as
             # dirty.
-            self.verify_prev(prev_run, zfiles, zhash, *zinfo)
+            self.verify_prev(prev_run, (zfiles[0], private_data), (zfiles[1],
+                             public_data), zhash, *zinfo)
             if soa.dirty:
                 self.log('LOG_INFO', "{0} is seen as dirty.".format(soa),
                          soa=soa)
                 soa.serial += 1
                 self.log('LOG_INFO', "{0} incremented serial from {1} to "
                          "{2}".format(soa, soa.serial - 1, soa.serial), soa=soa)
-                zfiles = self.rebuild_zone(*zinfo)
+                zfiles = self.rebuild_zone(private_data, public_data, *zinfo)
             else:
                 # Everything is being marked as dirty, wtf?
                 self.log('LOG_INFO', "{0} is seen as NOT dirty.".format(soa),
                          soa=soa)
-                self.named_checkzone(zfiles[0], *zinfo)
-                self.named_checkzone(zfiles[1], *zinfo)
+                if private_data:
+                    self.named_checkzone(os.path.join(self.PROD_DIR, zfiles[0]),
+                                         *zinfo)
+                if public_data:
+                    self.named_checkzone(os.path.join(self.PROD_DIR, zfiles[1]),
+                                         *zinfo)
 
             if zfiles[0]:
                 private_zone_stmts.append(
-                    self.render_zone_stmt(zinfo[0].name, zfiles[0]))
+                    self.render_zone_stmt(zinfo[0].name,
+                                os.path.join(self.PROD_DIR, zfiles[0])))
             if zfiles[1]:
                 public_zone_stmts.append(
-                    self.render_zone_stmt(zinfo[0].name, zfiles[1]))
+                    self.render_zone_stmt(zinfo[0].name,
+                                os.path.join(self.PROD_DIR, zfiles[1])))
 
             if soa.dirty: # we made it through the build successfully
-                self.log('LOG_INFO', "Saving {0}.".format(soa), soa=soa)
+                self.log('LOG_INFO', "Marking {0} as NOT dirty.".format(soa),
+                         soa=soa)
+                soa.dirty = False
+                self.log('LOG_INFO', "Saving {0}".format(soa), soa=soa)
                 soa.save()
 
         return private_zone_stmts, public_zone_stmts
@@ -450,13 +456,13 @@ class DNSBuilder(object):
             stage_private_file = self.write_stage_config(
                                     '{0}.private'.format(type_), zone_stmts)
             self.named_checkconf(stage_private_file)
-            private_file = self.stage_to_prod(stage_private_file)
+            self.stage_to_prod(stage_private_file)
 
             zone_stmts = '\n'.join(public_zone_stmts).format(type_=type_)
             stage_public_file = self.write_stage_config(
                                     '{0}.public'.format(type_), zone_stmts)
             self.named_checkconf(stage_public_file)
-            public_file = self.stage_to_prod(stage_public_file)
+            self.stage_to_prod(stage_public_file)
 
     def _lines_changed(self):
         return 0
@@ -518,6 +524,7 @@ class DNSBuilder(object):
             self.log('LOG_NOTICE', 'Error during build. Not removing staging')
             raise
         except Exception, e:
+            print e
             self.log('LOG_NOTICE', 'Error during build. Not removing staging')
             raise
         finally:
