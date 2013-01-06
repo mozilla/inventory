@@ -1,6 +1,3 @@
-import ipaddr
-
-from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
@@ -10,8 +7,6 @@ from mozdns.nameserver.models import Nameserver
 from mozdns.soa.models import SOA
 from mozdns.tests.view_tests_template import  random_label, random_byte
 
-
-import pdb
 
 class CreateZoneTests(TestCase):
 

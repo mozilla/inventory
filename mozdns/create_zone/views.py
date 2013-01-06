@@ -1,22 +1,22 @@
 from gettext import gettext as _
-import pdb
 import simplejson as json
 import time
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import HttpResponse
-from django.forms.util import ErrorList, ErrorDict
 
 from mozdns.domain.models import Domain
 from mozdns.nameserver.models import Nameserver
 from mozdns.soa.models import SOA
+from mozdns.view.models import View
 from mozdns.utils import get_zones, ensure_domain, prune_tree
 
 
 def create_zone_ajax(request):
     """This view tries to create a new zone and returns an JSON with either
-    'success' = True or 'success' = False and some errors.
+    'success' = True or 'success' = False and some errors. By default all
+    records are created and added to the public view.
 
     Throughout this function note that objects that are created are recorded,
     and if an error is caught, the previously created objects are deleted. This
@@ -80,11 +80,14 @@ def create_zone_ajax(request):
     domain.purgeable = False
     domain.soa = soa
     domain.save()
+
+    private_view, _ = View.objects.get_or_create(name='private')
     saved_nss = [] # If these are errors, back out
     for i, ns in enumerate(nss):
         ns.domain = domain
         try:
             ns.save()
+            ns.views.add(private_view)
             saved_nss.append(ns)
         except ValidationError, e:
             suffixes = ["th", "st", "nd", "rd", ] + ["th"] * 16
