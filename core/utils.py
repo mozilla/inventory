@@ -111,12 +111,12 @@ def start_end_filter(start, end, ip_type):
     # Equal uppers. Lower must be within.
     if start_upper == end_upper:
         q = Q(ip_upper=start_upper,
-                ip_lower__gte=start_lower,
-                ip_lower__lte=end_lower,
-                ip_type=ip_type)
+              ip_lower__gte=start_lower,
+              ip_lower__lte=end_lower,
+              ip_type=ip_type)
     else:
         q = Q(ip_upper__gt=start_upper, ip_upper__lt=end_upper,
-                ip_type=ip_type)
+              ip_type=ip_type)
 
     return istart, iend, q
 
