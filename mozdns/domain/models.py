@@ -1,19 +1,14 @@
 from django.db import models
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 
-import mozdns
 from mozdns.soa.models import SOA
 from mozdns.mixins import ObjectUrlMixin
-from mozdns.validation import validate_domain_name, _name_type_check
+from mozdns.validation import validate_domain_name
 from mozdns.validation import do_zone_validation
 from mozdns.search_utils import smart_fqdn_exists
 from mozdns.ip.utils import ip_to_domain_name, nibbilize
 from mozdns.validation import validate_reverse_name
 from mozdns.domain.utils import name_to_domain
-
-from core.site.models import Site
-
-import pdb
 
 
 class Domain(models.Model, ObjectUrlMixin):
@@ -160,6 +155,11 @@ class Domain(models.Model, ObjectUrlMixin):
                 objects = qset.all()
                 raise ValidationError("Objects with this name already "
                                       "exist {0}".format(objects))
+        else:
+            db_self = Domain.objects.get(pk=self.pk)
+            if db_self.name != self.name and self.domain_set.exists():
+                raise ValidationError("Child domains rely on this domain's "
+                                      "name remaining the same.")
 
     def __str__(self):
         return "{0}".format(self.name)
@@ -168,7 +168,7 @@ class Domain(models.Model, ObjectUrlMixin):
         return "<Domain '{0}'>".format(self.name)
 
     def check_for_children(self):
-        if self.domain_set.all().exists():
+        if self.domain_set.exists():
             raise ValidationError("Before deleting this domain, please "
                                   "remove it's children.")
     ### Reverse Domain Functions

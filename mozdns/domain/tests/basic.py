@@ -144,8 +144,6 @@ class DomainTests(TestCase):
 
 
     def test_create_domain(self):
-        edu = Domain(name = 'edu')
-        Domain(name = 'oregonstate.edu')
         try:
             Domain(name = 'foo.bar.oregonstate.edu').save()
         except ValidationError, e:
@@ -159,6 +157,14 @@ class DomainTests(TestCase):
         f_c.save()
         Domain(name = 'boo.foo.com').save()
         self.assertRaises(ValidationError, f_c.delete)
+
+    def test_update_has_child_domain(self):
+        Domain(name = 'com99').save()
+        f_c = Domain(name = 'foo.com99')
+        f_c.save()
+        Domain(name = 'boo.foo.com99').save()
+        f_c.name = 'foobar.com99'
+        self.assertRaises(ValidationError, f_c.save)
 
     def test_remove_has_child_records(self):
         Domain(name = 'com').save()
