@@ -38,6 +38,9 @@ def main():
     parser.add_argument('--debug', dest='DEBUG',
                         action='store_true', default=False, help="Print "
                         "copious amounts of text.")
+    parser.add_argument('--first-run', dest='FIRST_RUN',
+                        action='store_true', default=False, help="Ignore "
+                        "all change delta threasholds.")
     nas = parser.parse_args(sys.argv[1:])
     b = DNSBuilder(**dict(nas._get_kwargs()))
     try:

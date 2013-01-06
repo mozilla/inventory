@@ -10,7 +10,7 @@ def get_serial(file_):
     :type file_: file
     """
     if not os.path.exists(file_):
-        return None
+        return ''
     with open(file_, 'r') as fd:
         return _str_get_serial(fd)
 
@@ -37,7 +37,7 @@ def _str_get_serial(text):
             if serial.isdigit():
                 return serial
             else:
-                return None
+                return ''
 
         if not line or line[0] == '$' or line[0] == ';':
             continue
@@ -87,7 +87,7 @@ def _str_get_serial(text):
         if serial.isdigit():
             return serial
         else:
-            return None
+            return ''
 
 def _lex_word(ll):
     word = ''

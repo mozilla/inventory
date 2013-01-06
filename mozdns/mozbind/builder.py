@@ -1,12 +1,12 @@
 #!/usr/bin/python
-import hashlib
+from gettext import gettext as _
 import inspect
 import shutil
 import shlex
 import subprocess
 import syslog
 import os
-import pdb
+import re
 import time
 
 from settings.dnsbuilds import STAGE_DIR, PROD_DIR, LOCK_FILE
@@ -194,11 +194,15 @@ class DNSBuilder(object):
             fd.write(data)
         return stage_zone_file
 
-    def _shell_out(self, command):
+    def shell_out(self, command, use_shlex=True):
         """A little helper function that will shell out and return stdout,
         stderr and the return code."""
-        p = subprocess.Popen(shlex.split(command),
-                             stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        if use_shlex:
+            command_args = shlex.split(command)
+        else:
+            command_args = command
+        p = subprocess.Popen(command_args, stderr=subprocess.PIPE,
+                             stdout=subprocess.PIPE)
         stdout, stderr = p.communicate()
         return stdout, stderr, p.returncode
 
@@ -208,7 +212,7 @@ class DNSBuilder(object):
         """
         # Make sure we have the write tools to do the job
         command_str = "which named-checkzone"
-        stdout, stderr, returncode = self._shell_out(command_str)
+        stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
             raise BuildError("Couldn't find named-checkzone.")
 
@@ -216,9 +220,9 @@ class DNSBuilder(object):
         command_str = "named-checkzone {0} {1} {2}".format(
                       self.NAMED_CHECKZONE_OPTS, root_domain.name,
                       zone_file)
-        self.log('LOG_INFO', "Calling `named-checkzone '{0}' "
-                             "'{1}'".format(root_domain.name, zone_file))
-        stdout, stderr, returncode = self._shell_out(command_str)
+        self.log('LOG_INFO', "Calling `named-checkzone {0} "
+                             "{1}`".format(root_domain.name, zone_file))
+        stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
             raise BuildError("\nnamed-checkzone failed on zone {0}. "
                              "\ncommand: {1}:\nstdout: {2}\nstderr:{3}".
@@ -227,14 +231,14 @@ class DNSBuilder(object):
 
     def named_checkconf(self, conf_file):
         command_str = "which named-checkconf"
-        stdout, stderr, returncode = self._shell_out(command_str)
+        stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
             raise BuildError("Couldn't find named-checkconf.")
 
         command_str = "named-checkconf {0}".format(conf_file)
         self.log('LOG_INFO', "Calling `named-checkconf {0}` ".
                                    format(conf_file))
-        stdout, stderr, returncode = self._shell_out(command_str)
+        stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
             raise BuildError("\nnamed-checkconf rejected config {0}. "
                              "\ncommand: {1}:\nstdout: {2}\nstderr:{3}".
@@ -261,7 +265,7 @@ class DNSBuilder(object):
             raise BuildError("cp -p {0} {1} caused {2}".format(src,
                              dst, str(why)))
         except shutil.Error:
-            pdb.set_trace()
+            raise
         return dst
 
 
@@ -325,18 +329,6 @@ class DNSBuilder(object):
         return ("{0}.{1}".format(root_domain.name, 'private'),
                 "{0}.{1}".format(root_domain.name, 'public'))
 
-    def _calc_build_hash(self, files):
-        """Given a list of files, hash them and return the hex digest of the
-        hash. If this function fails to open on of the files it will return
-        None."""
-        hashables = ""
-        for file_ in files:
-            try:
-                hashables += open(file_, 'r').read()
-            except IOError:
-                return None
-        return hashlib.md5(hashables).hexdigest()
-
     def render_zone_stmt(self, zone_name, file_path):
         zone_stmt = "zone \"{0}\" IN {{{{\n".format(zone_name)
         zone_stmt += "\ttype {type_};\n"  # We'll format this later
@@ -344,25 +336,21 @@ class DNSBuilder(object):
         zone_stmt += "}};\n"
         return zone_stmt
 
-    def get_prev(self):
-        """Get the previous DNSBuildRun instance."""
-        return None
-
-    def verify_prev(self, prev_run, private_info, public_info, zhash,
-                    root_domain, soa):
+    def verify_prev(self, private_info, public_info, root_domain,
+                    soa):
         for zfile, zdata in (private_info, public_info):
             if not zdata:
                 continue
             serial = get_serial(os.path.join(self.PROD_DIR, zfile))
-            if not serial:
+            if not serial.isdigit():
                 if not soa.serial:
                     soa.serial = int(time.time())
-                soa.serial
                 soa.dirty = True
                 # it's a new serial
                 self.log('LOG_NOTICE', "{0} appears to be a new zone. Building"
                          " {1} with initial serial {2}".format(soa, zfile,
                          soa.serial), soa=soa)
+                break
             elif int(serial) != soa.serial:
                 # Looks like someone made some changes... let's nuke them.
                 # We should probably email someone too.
@@ -370,8 +358,8 @@ class DNSBuilder(object):
                          "serial {3} in the database. SOA is being marked as "
                          "dirty.".format(soa, serial, zfile, soa.serial),
                          soa=soa)
-                soa.serial = int(serial)
                 soa.dirty = True
+                break
 
     def build_zone_files(self):
         """
@@ -385,15 +373,13 @@ class DNSBuilder(object):
 
         for soa in SOA.objects.all():
             zinfo = soa.root_domain, soa
-            prev_run = self.get_prev()
             # If someone has made manual changes to the zone files we must flag
             # the soa as dirty and email a warning.
             # Something is different. Let's nuke the change.
             zdir = self.calc_target(*zinfo)
             fnames = self.calc_fnames(*zinfo)
-            zfiles = [os.path.join(zdir, fname) for fname in fnames]
-                    # zfiles[0] -> private_zone_file
-                    # zfiles[1] -> public_zone_file
+            private_file, public_file = (os.path.join(zdir, fname) for fname in
+                                         fnames)
             # We build the *_data here. If either private_data or public_data
             # is '', that means we don't have to worry about it. There was a
             # small bug with having it built in :func:`rebuild_zone`:: if
@@ -407,20 +393,34 @@ class DNSBuilder(object):
             # unused files.
             private_data, public_data = build_zone_data(*zinfo)
 
-            zhash = self._calc_build_hash(zfiles)
-            # If there is zomething different about the zone, mark the soa as
-            # dirty.
-            self.verify_prev(prev_run, (zfiles[0], private_data), (zfiles[1],
-                             public_data), zhash, *zinfo)
+            # The *_data vars help us to decide whether we should build a zone.
+            # If there are no records in the public/private view the
+            # corresponding *_data var will be the emptry string. We will not
+            # build and write a zone file for a view that does not have any
+            # data.
+
+            # If there is zomething different about the zone, like it's new or
+            # it's serial doesn't match the one if the db, :func:`verify_prev`
+            # will mark the soa as dirty.
+            self.verify_prev((private_file, private_data), (public_file,
+                              public_data), *zinfo)
             if soa.dirty:
                 self.log('LOG_INFO', "{0} is seen as dirty.".format(soa),
                          soa=soa)
                 soa.serial += 1
                 self.log('LOG_INFO', "{0} incremented serial from {1} to "
-                         "{2}".format(soa, soa.serial - 1, soa.serial), soa=soa)
-                zfiles = self.rebuild_zone(private_data, public_data, *zinfo)
+                         "{2}".format(soa, soa.serial - 1, soa.serial),
+                         soa=soa)
+                # Update the new zone strings with the correct serial number.
+                zfiles = self.rebuild_zone(
+                                        private_data.format(serial=soa.serial),
+                                        public_data.format(serial=soa.serial),
+                                        *zinfo)
             else:
-                # Everything is being marked as dirty, wtf?
+                # private_data and public_data are not used, instead the data
+                # already in zfiles is checked again using named_checkzone.
+                # Later these files are pointed to by config file in the form
+                # of a zone statement (see render_zone_stmt).
                 self.log('LOG_INFO', "{0} is seen as NOT dirty.".format(soa),
                          soa=soa)
                 if private_data:
@@ -430,11 +430,11 @@ class DNSBuilder(object):
                     self.named_checkzone(os.path.join(self.PROD_DIR, zfiles[1]),
                                          *zinfo)
 
-            if zfiles[0]:
+            if private_data:
                 private_zone_stmts.append(
                     self.render_zone_stmt(zinfo[0].name,
                                 os.path.join(self.PROD_DIR, zfiles[0])))
-            if zfiles[1]:
+            if public_data:
                 public_zone_stmts.append(
                     self.render_zone_stmt(zinfo[0].name,
                                 os.path.join(self.PROD_DIR, zfiles[1])))
@@ -464,15 +464,65 @@ class DNSBuilder(object):
             self.named_checkconf(stage_public_file)
             self.stage_to_prod(stage_public_file)
 
-    def _lines_changed(self):
-        return 0
+    svn_ignore = [re.compile("---\s.+\s+\(revision\s\d+\)"),
+                  re.compile("\+\+\+\s.+\s+\(working copy\)")]
 
-    def sanity_check(self):
+    def rcs_lines_changed(self):
+        """This function will collect some metrics on how many lines were added
+        and removed during the build process.
+
+        :returns: (int, int) -> (lines_added, lines_removed)
+
+        The current implementation of this function uses the underlying svn
+        repo to generate a diff and then counts the number of lines that start
+        with '-' or '+'. This causes the accuracy of this function to have
+        slight errors because some lines in the diff output start with '-' or
+        '+' but aren't indicative of a line being removed or added. Since the
+        threashold of lines changing is in the hundreds of lines, an error of
+        tens of lines is not a large concern.
+        """
+        cwd = os.getcwd()
+        os.chdir(self.PROD_DIR)
+        try:
+            command_str = "svn add --force .".format(self.PROD_DIR)
+            stdout, stderr, returncode = self.shell_out(command_str)
+            if returncode != 0:
+                raise BuildError("\nFailed to add files to svn."
+                                 "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
+                                 format(command_str, stdout, stderr))
+            command_str = "svn diff --depth=infinity ."
+            stdout, stderr, returncode = self.shell_out(command_str)
+            if returncode != 0:
+                raise BuildError("\nFailed to add files to svn."
+                                 "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
+                                 format(command_str, stdout, stderr))
+        except Exception:
+            raise
+        finally:
+            os.chdir(cwd)  # go back!
+
+        la, lr = 0, 0
+        def svn_ignore(line):
+            for ignore in self.svn_ignore:
+                if ignore.match(line):
+                    return True
+            return False
+        for line in stdout.split('\n'):
+            if svn_ignore(line):
+                continue
+            if line.startswith('-'):
+                lr += 1
+            elif line.startswith('+'):
+                la += 1
+        return la, lr
+
+    def sanity_check(self, lines_changed):
         """If sanity checks fail, this function will return a string which is
         True-ish. If all sanity cheecks pass, a Falsy value will be
         returned."""
         # svn diff changes and react if changes are too large
-        if self._lines_changed() > self.MAX_ALLOWED_LINES_CHANGED:
+        if ((lambda x, y: x + y)(*lines_changed) >
+            self.MAX_ALLOWED_LINES_CHANGED):
             pass
         # email and fail
             # Make sure we can run the script again
@@ -480,9 +530,52 @@ class DNSBuilder(object):
             # rm lock.file
         return False
 
-    def rcs_checkin(self):
-        """TODO write a mixin class for svn."""
+    def rcs_checkin(self, lines_changed):
+        # svn add has already been called
+        cwd = os.getcwd()
+        os.chdir(self.PROD_DIR)
+        self.log('LOG_INFO', "Changing pwd to {0}".format(self.PROD_DIR))
+        try:
+            """
+            command_str = "svn add --force .".format(self.PROD_DIR)
+            stdout, stderr, returncode = self.shell_out(command_str)
+            if returncode != 0:
+                raise BuildError("\nFailed to add files to svn."
+                                 "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
+                                 format(command_str, stdout, stderr))
+            """
+
+            ci_message = _("Checking in DNS. {0} lines were added and {1} were"
+                           " removed".format(*lines_changed))
+            self.log('LOG_INFO', "Commit message: {0}".format(ci_message))
+            command_str = "svn ci {0} -m \"{1}\"".format(self.PROD_DIR, ci_message)
+            stdout, stderr, returncode = self.shell_out(command_str)
+            if returncode != 0:
+                raise BuildError("\nFailed to check in changes."
+                                 "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
+                                 format(command_str, stdout, stderr))
+            else:
+                self.log('LOG_INFO', "Changes have been checked in.")
+        finally:
+            os.chdir(cwd)  # go back!
+            self.log('LOG_INFO', "Changing pwd to {0}".format(cwd))
         return
+
+    def attempt_rcs_checkin(self):
+        lines_changed = self.rcs_lines_changed()
+        self.sanity_check(lines_changed)
+        if self.BUILD_ZONES and self.PUSH_TO_PROD:
+            if lines_changed == (0, 0):
+                self.log('LOG_INFO', "PUSH_TO_PROD is True but "
+                         "rcs_lines_changed found that no lines different "
+                         "from last rcs checkin.")
+            else:
+                self.log('LOG_INFO', "PUSH_TO_PROD is True. Checking into "
+                         "rcs.")
+                self.rcs_checkin(lines_changed)
+        else:
+            self.log('LOG_INFO', "PUSH_TO_PROD is False. Not checking "
+                     "into rcs.")
 
     def build_dns(self):
         self.log('LOG_NOTICE', 'Building...')
@@ -504,22 +597,15 @@ class DNSBuilder(object):
             else:
                 self.log('LOG_INFO', "BUILD_ZONES is False. Not "
                          "building zone files.")
-            # Run sanity checks
-            self.sanity_check()
-            if self.BUILD_ZONES and self.PUSH_TO_PROD:
-                self.log('LOG_INFO', "PUSH_TO_PROD is True. Checking into "
-                         "rcs.")
-                self.rcs_checkin()
-            else:
-                self.log('LOG_INFO', "PUSH_TO_PROD is False. Not checking "
-                         "into rcs.")
+
+            self.attempt_rcs_checkin()
             if self.PRESERVE_STAGE:
                 self.log('LOG_INFO', "PRESERVE_STAGE is True. Not "
                          "removing staging. You will need to use "
                          "--clobber-stage on the next run.")
             else:
                 self.clear_staging()
-        # All errors are handled by caller
+        # All errors are handled by caller (this function)
         except BuildError, e:
             self.log('LOG_NOTICE', 'Error during build. Not removing staging')
             raise
