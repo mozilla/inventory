@@ -153,63 +153,49 @@ def _has_include(text, include_file=None):
     return False
 
 
-def increment_soa(file_):
-    """This function wil take a file with an SOA a in it, parse the file,
-    incriment the SOA and write the new contents back to the file.
+def get_serial(file_):
+    """
+    Retrieve the serial number of a zone.
 
     :param file_: The file with the SOA in it.
     :type file_: file
     """
-    # TODO. Totally a bug right here. What happens if the _str_inc fucntion
-    # fails? Currently everything will be borked. The original contents of the
-    # file should be restored.
-    fd = open(file_, 'r+')
-    try:
-        new_content = _str_increment_soa(fd)
-        fd.close()
-        fd = open(file_, 'w+')
-        fd.write(new_content)
-    except Exception, e:
-        raise Exception
+    with open(file_, 'r') as fd:
+        return _str_get_soa(fd)
     finally:
-        fd.close()
+        return None
 
-def _str_increment_soa(text):
-    """Read in a zone file and incriment the SOA. Return the zone file with the
-    inc'ed SOA as a string.
+def _str_get_serial(text):
+    """Read in a zone file and find the serial number.
 
     :param text: the zone file.
-    :type text: A file-ish object (StringIO or actual file)
-    :returns new_text: this is the file with the serial inc'ed.
+    :type text: A file-ish object (StringIO or actual file descriptor)
+    :returns serial: The serial number
+    :serial: str
     """
-    new_text = ''
     # We already know it's in valid format.
     isSOA = False
     done = False
     for raw_line in text.readlines():
         if done:
-            new_text += raw_line
-            continue
+            break
 
         line = raw_line.strip()
         ll = LexLine(line)
         if isSOA:
             # If we made it here, this should be the serial.
             serial = _lex_word(ll)
-            assert(serial.isdigit() == True)
-            new_text += raw_line.replace(serial, str(int(serial) + 1))
-            done = True
-            continue
+            if serial.isdigit():
+                return serial
+            else:
+                return None
 
         if not line or line[0] == '$' or line[0] == ';':
-            # It's a directive
-            new_text += raw_line
             continue
 
         # name        ttl class rr    name-server email-addr  (sn ref ret ex min)
         # 1           2   3     4     5           6            7  8   9   10 11
         # Everything up through 6 needs to be on the same line.
-        state = 1
         _lex_word(ll)  # name
         _lex_ws(ll)
 
@@ -225,7 +211,6 @@ def _str_increment_soa(text):
 
         rr = _lex_word(ll)
         if rr.upper() != 'SOA':
-            new_text += raw_line
             continue # It's not an soa, keep going.
 
         isSOA = True
@@ -247,16 +232,13 @@ def _str_increment_soa(text):
         _lex_ws(ll)
         serial = _lex_word(ll)
         if not serial:
-            new_text += raw_line
             # The serial must be on the next line
             continue
 
-        assert(serial.isdigit() == True)
-        new_text += raw_line.replace(serial, str(int(serial) + 1))
-        done = True
-
-
-    return new_text
+        if serial.isdigit():
+            return serial
+        else:
+            return None
 
 def _lex_word(ll):
     word = ''
