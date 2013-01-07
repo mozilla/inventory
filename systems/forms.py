@@ -124,6 +124,12 @@ class RackFilterForm(forms.Form):
         required=False,
         choices=[('', 'All')] + [(m.id, m)
                     for m in models.Allocation.objects.all()])
+    def __init__(self, *args, **kwargs):
+        super(RackFilterForm, self).__init__(*args, **kwargs)
+        self.fields['location'].choices = [('0', 'All')] + [(m.id, m) for m in models.Location.objects.all()]
+        self.fields['status'].choices = [('', 'All')] + [(m.id, m) for m in models.SystemStatus.objects.all()]
+        self.fields['rack'].choices = [(m.id, m.location.name + ' ' +  m.name) for m in models.SystemRack.objects.all().order_by('location','name')]
+        self.fields['allocation'].choices = [('', 'All')] + [(m.id, m) for m in models.Allocation.objects.all()]
 
 
 def return_data_if_true(f):
