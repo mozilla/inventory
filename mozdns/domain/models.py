@@ -190,7 +190,7 @@ class Domain(models.Model, ObjectUrlMixin):
         ptrs = self.ptr_set.iterator()
         for ptr in ptrs:
             ptr.reverse_domain = self.master_domain
-            ptr.save()
+            ptr.save(update_reverse_domain=False)
 
     def has_record_set(self):
         if self.mx_set.exists():

@@ -63,6 +63,8 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
             self.reverse_domain.soa.dirty = True
             self.reverse_domain.soa.save()
             # The reverse_domain field is in the Ip class.
+        self.clean(update_reverse_domain=kwargs.pop('update_reverse_domain',
+                                                    True))
         super(PTR, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
