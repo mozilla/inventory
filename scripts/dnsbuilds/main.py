@@ -1,17 +1,15 @@
 #!/usr/bin/python
 import argparse
-import shutil
-import shlex
+from gettext import gettext as _
 import sys
-import argparse
 import os
 import pdb
-import time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
 import manage
 from mozdns.mozbind.builder import DNSBuilder, BuildError
+from core.utils import fail_mail
 
 
 def main():
@@ -40,15 +38,19 @@ def main():
                         "copious amounts of text.")
     parser.add_argument('--first-run', dest='FIRST_RUN',
                         action='store_true', default=False, help="Ignore "
-                        "all change delta threasholds.")
+                        "all change delta thresholds.")
     nas = parser.parse_args(sys.argv[1:])
     b = DNSBuilder(**dict(nas._get_kwargs()))
     try:
         b.build_dns()
     except BuildError as why:
         b.log('LOG_ERR', why)
+        message = _("DNS Build Error. Error: '{0}'. The build was "
+                    "unsuccessful.".format(why))
+        fail_mail(message)
     except Exception as err:
         # Make some noise
+        fail_mail(str(err))
         b.log('LOG_CRIT', err)
         raise
 

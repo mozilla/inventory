@@ -1,6 +1,5 @@
 from django.db.models import Q
 
-from mozdns.mozbind.generators.bind_soa_generator import render_soa_only
 from mozdns.address_record.models import AddressRecord
 from mozdns.cname.models import CNAME
 from mozdns.mx.models import MX
@@ -15,21 +14,31 @@ from core.interface.static_intr.models import StaticInterface
 from gettext import gettext as _
 DEFAULT_TTL = 3600
 
+
+def render_soa_only(soa, root_domain):
+    BUILD_STR = "{root_domain}.     IN      SOA     {primary}. {contact}. (\n\
+                            {{serial:20}}     ; Serial\n\
+                            {refresh:20}     ; Refresh\n\
+                            {retry:20}     ; Retry\n\
+                            {expire:20}     ; Expire\n\
+                            {minimum:20}     ; Minimum\n\
+                )\n\n".format(root_domain=root_domain.name,
+                              primary=soa.primary, contact=soa.contact,
+                              refresh=str(soa.refresh), retry=str(soa.retry),
+                              expire=str(soa.expire), minimum=soa.minimum)
+    return BUILD_STR
+
+
 def render_rdtype(rdtype_set, **kwargs):
     BUILD_STR = ""
     for obj in rdtype_set:
         BUILD_STR += _(obj.bind_render_record(**kwargs) + "\n")
     return BUILD_STR
 
-def _render_reverse_zone(default_ttl, nameserver_set, interface_set, ptr_set):
-    BUILD_STR = ''
-    BUILD_STR += render_rdtype(nameserver_set)
-    BUILD_STR += render_rdtype(ptr_set)
-    BUILD_STR += render_rdtype(interface_set, reverse=True, rdtype='PTR')
-    return BUILD_STR
 
-def _render_forward_zone(default_ttl, nameserver_set, mx_set, addressrecord_set,
-                interface_set, cname_set, srv_set, txt_set, sshfp_set):
+def _render_forward_zone(default_ttl, nameserver_set, mx_set,
+        addressrecord_set, interface_set, cname_set, srv_set, txt_set,
+        sshfp_set):
     BUILD_STR = ""
     BUILD_STR += render_rdtype(nameserver_set)
     BUILD_STR += render_rdtype(mx_set)
@@ -40,6 +49,7 @@ def _render_forward_zone(default_ttl, nameserver_set, mx_set, addressrecord_set,
     BUILD_STR += render_rdtype(interface_set, rdtype='A')
     BUILD_STR += render_rdtype(addressrecord_set)
     return BUILD_STR
+
 
 def render_forward_zone(view, mega_filter):
     data = _render_forward_zone(
@@ -74,6 +84,14 @@ def render_forward_zone(view, mega_filter):
     return data
 
 
+def _render_reverse_zone(default_ttl, nameserver_set, interface_set, ptr_set):
+    BUILD_STR = ''
+    BUILD_STR += render_rdtype(nameserver_set)
+    BUILD_STR += render_rdtype(ptr_set)
+    BUILD_STR += render_rdtype(interface_set, reverse=True, rdtype='PTR')
+    return BUILD_STR
+
+
 def render_reverse_zone(view, domain_mega_filter, rdomain_mega_filter):
     data = _render_reverse_zone(
             default_ttl=DEFAULT_TTL,
@@ -85,11 +103,13 @@ def render_reverse_zone(view, domain_mega_filter, rdomain_mega_filter):
                 dns_enabled=True).filter(views__name=view.name).order_by(
                     'ip_type', 'label', 'ip_upper', 'ip_lower'),
 
-            ptr_set=PTR.objects.filter(rdomain_mega_filter).filter(views__name=view.name
-                ).order_by('ip_upper').order_by('ip_lower'),
+            ptr_set=PTR.objects.filter(rdomain_mega_filter).filter(
+                    views__name=view.name).order_by('ip_upper'
+                    ).order_by('ip_lower'),
 
         )
     return data
+
 
 def build_zone_data(root_domain, soa):
     """

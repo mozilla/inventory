@@ -1,7 +1,3 @@
-import sys
-import os
-import pdb
-
 from django.test import TestCase
 
 from mozdns.domain.models import Domain
@@ -14,10 +10,8 @@ from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
 from mozdns.nameserver.models import Nameserver
 from core.interface.static_intr.models import StaticInterface
-from mozdns.mozbind.build import *
 
 from systems.models import System
-import pdb
 
 class DirtySOATests(TestCase):
     def setUp(self):

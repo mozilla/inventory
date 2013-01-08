@@ -1,18 +1,18 @@
 # These tests are similar to the ones in the scripts directory. They not ran on
 # real data so the testing db needs to be filled with info.
+import os
 from django.test.client import Client
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
 from mozdns.domain.models import Domain
-from mozdns.mozbind.build import *
+from mozdns.address_record.models import AddressRecord
+from mozdns.view.models import View
 from mozdns.tests.view_tests_template import  random_label, random_byte
 from mozdns.mozbind.builder import DNSBuilder
 
 from scripts.dnsbuilds.tests.build_tests import BuildScriptTests
 
-from gettext import gettext as _
-import pdb
 
 class MockBuildScriptTests(BuildScriptTests, TestCase):
     def setUp(self):

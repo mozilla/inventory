@@ -2,7 +2,22 @@ from django.db.models import Q
 from django.core.exceptions import ValidationError
 
 import ipaddr
+import smtplib
+from email.mime.text import MIMEText
+from settings.local import people_who_need_to_know_about_failures
+from settings.local import inventorys_email
 import pdb
+
+def fail_mail(content, subject='Inventory is having issues.',
+        to=people_who_need_to_know_about_failures, from_=inventorys_email):
+    """Send email about a failure."""
+    msg = MIMEText(content)
+    msg['Subject'] = subject
+    msg['From'] = inventorys_email
+    #msg['To'] = to
+    s = smtplib.SMTP('localhost')
+    s.sendmail(from_, to, msg.as_string())
+    s.quit()
 
 
 class IPFilterSet(object):
