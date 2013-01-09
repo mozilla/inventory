@@ -162,8 +162,6 @@ def get_serial(file_):
     """
     with open(file_, 'r') as fd:
         return _str_get_soa(fd)
-    finally:
-        return None
 
 def _str_get_serial(text):
     """Read in a zone file and find the serial number.

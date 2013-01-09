@@ -119,12 +119,6 @@ def _clean_domain_tree(domain):
         domain.purgeable = True
         prune_tree(domain)  # prune_tree will delete this domain
 
-def _error_out(errors):
-    return HttpResponse(json.dumps(
-                {
-                    'success': False,
-                    'success_url': '/core/?search=zone=:{0}'.format(domain.name)
-                }))
 
 def create_zone(request):
     template_zone = request.GET.get('template_zone', '').strip('"')

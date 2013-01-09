@@ -190,7 +190,6 @@ class DNSBuilder(SVNBuilderMixin):
             if not force:
                 raise
 
-
     def clear_staging(self, force=False):
         """
         rm -rf the staging area. Fail if the staging area doesn't exist.
@@ -366,8 +365,6 @@ class DNSBuilder(SVNBuilderMixin):
             raise
         return dst
 
-
-
     def write_stage_config(self, config_fname, stmts):
         """
         Write config files to the correct area in staging.
@@ -381,7 +378,7 @@ class DNSBuilder(SVNBuilderMixin):
             fd.write(stmts)
         return stage_config
 
-    def rebuild_zone(self, view, rel_fname, view_data, root_domain, soa):
+    def build_zone(self, view, rel_fname, view_data, root_domain, soa):
         """
         This function will write the zone's zone file to the the staging area
         and call named-checkconf on the files before they are copied over to
@@ -452,10 +449,9 @@ class DNSBuilder(SVNBuilderMixin):
             self.log('LOG_INFO', "{0} is seen as dirty.".format(soa),
                                  soa=soa)
             self.log('LOG_INFO', "Prev serial was {0}. Using serial "
-                                 "{1} in new zone file.".format(
-                                 soa.serial, soa.serial + 1),
-                                 soa=soa)
-            self.rebuild_zone(view, rel_fname,
+                                 "new serial {1}.".format(soa.serial,
+                                  soa.serial + 1), soa=soa)
+            self.build_zone(view, rel_fname,
                               view_data.format(serial=soa.serial + 1),
                               root_domain, soa)
         else:
@@ -504,6 +500,10 @@ class DNSBuilder(SVNBuilderMixin):
             if public_data:
                 public_zone_stmts.append(self.build_view(public_view,
                                                          public_data, *zinfo))
+            if soa.dirty:
+                soa.serial += 1
+                soa.dirty = False
+                soa.save()
 
         return private_zone_stmts, public_zone_stmts
 
@@ -564,6 +564,6 @@ class DNSBuilder(SVNBuilderMixin):
             raise
         finally:
             # Clean up
-            #self.unlock()
+            self.unlock()
             pass
         self.log('LOG_NOTICE', 'Successful build is successful.')

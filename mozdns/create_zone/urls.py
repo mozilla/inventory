@@ -1,7 +1,6 @@
-from django.conf.urls.defaults import *
-from django.views.decorators.csrf import csrf_exempt
+from django.conf.urls.defaults import patterns, url
 
-from mozdns.create_zone.views import *
+from mozdns.create_zone.views import create_zone, create_zone_ajax
 
 urlpatterns = patterns('',
     url(r'^$', create_zone, name='create-zone'),
