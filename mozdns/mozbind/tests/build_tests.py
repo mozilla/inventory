@@ -66,7 +66,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                        FIRST_RUN=True, PUSH_TO_PROD=False)
         b.build_dns()
-        self.assertEqual((15, 0), b.rcs_lines_changed())
+        self.assertEqual((15, 0), b.svn_lines_changed())
         b.PUSH_TO_PROD = True
         b.build_dns()
 
@@ -81,7 +81,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b.PUSH_TO_PROD = False
         b.build_dns()
         # added new record and new serial, old serial removed.
-        self.assertEqual((2, 1), b.rcs_lines_changed())
+        self.assertEqual((2, 1), b.svn_lines_changed())
 
     def test_one_file_svn_lines_changed(self):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
@@ -90,23 +90,23 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         test_file = os.path.join(self.prod_dir, 'test')
         with open(test_file, 'w+') as fd:
             fd.write('line 1\n')
-        lc = b.rcs_lines_changed()
+        lc = b.svn_lines_changed()
         self.assertEqual((1, 0), lc)
-        b.rcs_checkin(lc)
+        b.svn_checkin(lc)
 
         with open(test_file, 'w+') as fd:
             fd.write('line 1\nline 2\n')
 
-        lc = b.rcs_lines_changed()
+        lc = b.svn_lines_changed()
         self.assertEqual((1, 0), lc)
-        b.rcs_checkin(lc)
+        b.svn_checkin(lc)
 
         with open(test_file, 'w+') as fd:
             fd.write('line 1\n')
 
-        lc = b.rcs_lines_changed()
+        lc = b.svn_lines_changed()
         self.assertEqual((0, 1), lc)
-        b.rcs_checkin(lc)
+        b.svn_checkin(lc)
 
     def test_two_file_svn_lines_changed(self):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
@@ -117,31 +117,31 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         with open(test1_file, 'w+') as fd:
             fd.write('line 1.1\n')
 
-        lc = b.rcs_lines_changed()
+        lc = b.svn_lines_changed()
         self.assertEqual((1, 0), lc)
-        b.rcs_checkin(lc)
+        b.svn_checkin(lc)
 
         with open(test1_file, 'w+') as fd:
             fd.write('line 1.1\nline 1.2\n')
         with open(test2_file, 'w+') as fd:
             fd.write('line 2.1\nline 2.2\n')
 
-        lc = b.rcs_lines_changed()
+        lc = b.svn_lines_changed()
         self.assertEqual((3, 0), lc)
-        b.rcs_checkin(lc)
+        b.svn_checkin(lc)
 
         with open(test1_file, 'w+') as fd:
             fd.write('line 1\n')
 
-        lc = b.rcs_lines_changed()
+        lc = b.svn_lines_changed()
         self.assertEqual((1, 2), lc)
-        b.rcs_checkin(lc)
+        b.svn_checkin(lc)
 
         with open(test1_file, 'w+') as fd:
             fd.write('line 1.1\nline 1.2\n')
         with open(test2_file, 'w+') as fd:
             fd.write('line 2.3\nline 2.4\n')
 
-        lc = b.rcs_lines_changed()
+        lc = b.svn_lines_changed()
         self.assertEqual((4, 3), lc)
-        b.rcs_checkin(lc)
+        b.svn_checkin(lc)

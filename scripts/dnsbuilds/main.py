@@ -41,16 +41,15 @@ def main():
                         "all change delta thresholds.")
     nas = parser.parse_args(sys.argv[1:])
     b = DNSBuilder(**dict(nas._get_kwargs()))
+    message = "DNS Build Error. Error: '{0}'. The build was unsuccessful."
     try:
         b.build_dns()
     except BuildError as why:
         b.log('LOG_ERR', why)
-        message = _("DNS Build Error. Error: '{0}'. The build was "
-                    "unsuccessful.".format(why))
-        fail_mail(message)
+        fail_mail(message.format(why))
     except Exception as err:
         # Make some noise
-        fail_mail(str(err))
+        fail_mail(message.format(err))
         b.log('LOG_CRIT', err)
         raise
 

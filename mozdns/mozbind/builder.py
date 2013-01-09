@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from gettext import gettext as _
 import inspect
+import fcntl
 import shutil
 import shlex
 import subprocess
@@ -10,7 +11,7 @@ import re
 import time
 
 from settings.dnsbuilds import STAGE_DIR, PROD_DIR, LOCK_FILE
-from settings.dnsbuilds import NAMED_CHECKZONE_OPTS
+from settings.dnsbuilds import NAMED_CHECKZONE_OPTS, MAX_ALLOWED_LINES_CHANGED
 
 
 from mozdns.domain.models import SOA
@@ -26,7 +27,9 @@ class SVNBuilderMixin(object):
     svn_ignore = [re.compile("---\s.+\s+\(revision\s\d+\)"),
                   re.compile("\+\+\+\s.+\s+\(working copy\)")]
 
-    def rcs_lines_changed(self):
+    vcs_type = 'svn'
+
+    def svn_lines_changed(self):
         """This function will collect some metrics on how many lines were added
         and removed during the build process.
 
@@ -75,13 +78,13 @@ class SVNBuilderMixin(object):
                 la += 1
         return la, lr
 
-    def sanity_check(self, lines_changed):
+    def svn_sanity_check(self, lines_changed):
         """If sanity checks fail, this function will return a string which is
         True-ish. If all sanity cheecks pass, a Falsy value will be
         returned."""
         # svn diff changes and react if changes are too large
         if ((lambda x, y: x + y)(*lines_changed) >
-            self.MAX_ALLOWED_LINES_CHANGED):
+             MAX_ALLOWED_LINES_CHANGED):
             pass
         # email and fail
             # Make sure we can run the script again
@@ -89,7 +92,7 @@ class SVNBuilderMixin(object):
             # rm lock.file
         return False
 
-    def rcs_checkin(self, lines_changed):
+    def svn_checkin(self, lines_changed):
         # svn add has already been called
         cwd = os.getcwd()
         os.chdir(self.PROD_DIR)
@@ -120,21 +123,17 @@ class SVNBuilderMixin(object):
             self.log('LOG_INFO', "Changing pwd to {0}".format(cwd))
         return
 
-    def attempt_rcs_checkin(self):
-        lines_changed = self.rcs_lines_changed()
-        self.sanity_check(lines_changed)
-        if self.BUILD_ZONES and self.PUSH_TO_PROD:
-            if lines_changed == (0, 0):
-                self.log('LOG_INFO', "PUSH_TO_PROD is True but "
-                         "rcs_lines_changed found that no lines different "
-                         "from last rcs checkin.")
-            else:
-                self.log('LOG_INFO', "PUSH_TO_PROD is True. Checking into "
-                         "rcs.")
-                self.rcs_checkin(lines_changed)
+    def vcs_checkin(self):
+        lines_changed = self.svn_lines_changed()
+        self.svn_sanity_check(lines_changed)
+        if lines_changed == (0, 0):
+            self.log('LOG_INFO', "PUSH_TO_PROD is True but "
+                     "svn_lines_changed found that no lines different "
+                     "from last svn checkin.")
         else:
-            self.log('LOG_INFO', "PUSH_TO_PROD is False. Not checking "
-                     "into rcs.")
+            self.log('LOG_INFO', "PUSH_TO_PROD is True. Checking into "
+                     "svn.")
+            self.svn_checkin(lines_changed)
 
 
 class DNSBuilder(SVNBuilderMixin):
@@ -151,7 +150,6 @@ class DNSBuilder(SVNBuilderMixin):
             'PRESERVE_STAGE': False,
             'LOG_SYSLOG': True,
             'DEBUG': False,
-            'MAX_ALLOWED_LINES_CHANGED': 500,
             'bs': DNSBuildRun()  # Build statistic
         }
         for k, default in defaults.iteritems():
@@ -159,6 +157,7 @@ class DNSBuilder(SVNBuilderMixin):
 
         # This is very specific to python 2.6
         syslog.openlog('dnsbuild', 0, syslog.LOG_USER)
+        self.lock_fd = None
 
     def log(self, log_level, msg, **kwargs):
         # Eventually log this stuff into bs
@@ -218,32 +217,31 @@ class DNSBuilder(SVNBuilderMixin):
         """
         Try to write a lock file. Fail if the lock already exists.
         """
-        if os.path.isfile(self.LOCK_FILE):
-            raise BuildError("DNS build script attemted to write it's lock "
-                             "file but another lock file was already in place.")
-        lock_dir = os.path.dirname(self.LOCK_FILE)
-        if not os.path.exists(lock_dir):
-            os.makedirs(lock_dir)
-        self.log('LOG_INFO', "Attempting write lock "
-                              "({0})...".format(self.LOCK_FILE))
-        with open(self.LOCK_FILE, 'w+') as lock:
-            lock.write("{0} # DO NOT TOUCH THE CONTENTS OF THIS "
-                       "FILE!\n".format(time.time()))
-        self.log('LOG_INFO', "Lock written.")
+        try:
+            if not os.path.exists(os.path.dirname(self.LOCK_FILE)):
+                os.makedirs(os.path.dirname(self.LOCK_FILE))
+            self.log('LOG_INFO', "Attempting aquire mutext "
+                                  "({0})...".format(self.LOCK_FILE))
+            self.lock_fd = open(self.LOCK_FILE, 'w+')
+            fcntl.flock(self.lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            self.log('LOG_INFO', "Lock written.")
+        except IOError, exc_value:
+            #  IOError: [Errno 11] Resource temporarily unavailable
+            if exc_value[0] == 11:
+                raise BuildError("DNS build script attemted to aquire the "
+                        "build mutux but another process already has it.")
+            else:
+                raise
 
     def unlock(self):
         """
         Try to remove the lock file. Fail very loudly if the lock doesn't exist
         and this function is called.
         """
-        if not os.path.isfile(self.LOCK_FILE):
-            raise BuildError("DNS build script attemted to unlock but no lock "
-                             "file was found.")
-        self.log('LOG_INFO', "Attempting Unlock "
+        self.log('LOG_INFO', "Attempting release mutex "
                               "({0})...".format(self.LOCK_FILE))
-        os.remove(self.LOCK_FILE)
+        fcntl.flock(self.lock_fd, fcntl.LOCK_UN)
         self.log('LOG_INFO', "Unlock Complete.")
-
 
     def calc_target(self, root_domain, soa):
         """
@@ -394,10 +392,6 @@ class DNSBuilder(SVNBuilderMixin):
         """
         self.log('LOG_INFO', "{0} for view '{1}' will be rebuilt.".format(soa,
                              view))
-        t_start = time.time()  # tic
-        build_time = time.time() - t_start  # toc
-        self.log('LOG_INFO', 'Built {0} in {1} seconds '.format(soa,
-                 build_time), soa=soa, view=view, build_time=build_time)
 
         stage_fname = os.path.join(self.STAGE_DIR, rel_fname)
         self.write_stage_zone(stage_fname, root_domain, soa, rel_fname,
@@ -440,6 +434,9 @@ class DNSBuilder(SVNBuilderMixin):
                      "dirty.".format(soa, serial, prod_fname, soa.serial),
                      soa=soa)
             soa.dirty = True
+            # Choose the highest serial so any slave nameservers don't get
+            # confused.
+            soa.serial = max(int(serial), soa.serial)
 
     def build_view(self, view, view_data, root_domain, soa):
         rel_zdir = self.calc_target(root_domain, soa)
@@ -491,7 +488,13 @@ class DNSBuilder(SVNBuilderMixin):
             # corresponding *_data var will be the emptry string. We will not
             # build and write a zone file for a view that does not have any
             # data.
+
+            t_start = time.time()  # tic
             private_data, public_data = build_zone_data(*zinfo)
+            build_time = time.time() - t_start  # toc
+            self.log('LOG_INFO', 'Built {0} in {1} seconds '.format(soa,
+                     build_time), soa=soa, build_time=build_time)
+
             private_view = View.objects.get_or_create(name='private')[0]
             public_view = View.objects.get_or_create(name='public')[0]
             if private_data:
@@ -526,13 +529,7 @@ class DNSBuilder(SVNBuilderMixin):
 
     def build_dns(self):
         self.log('LOG_NOTICE', 'Building...')
-        try:
-            self.lock()
-        except BuildError, e:
-            raise BuildError("There is probably another instance of the build "
-                             "script running")
-            return
-
+        self.lock()
         try:
             if self.CLOBBER_STAGE:
                 self.clear_staging(force=True)
@@ -545,7 +542,12 @@ class DNSBuilder(SVNBuilderMixin):
                 self.log('LOG_INFO', "BUILD_ZONES is False. Not "
                          "building zone files.")
 
-            self.attempt_rcs_checkin()
+            if self.BUILD_ZONES and self.PUSH_TO_PROD:
+                self.vcs_checkin()
+            else:
+                self.log('LOG_INFO', "PUSH_TO_PROD is False. Not checking "
+                         "into {0}".format(self.vcs_type))
+
             if self.PRESERVE_STAGE:
                 self.log('LOG_INFO', "PRESERVE_STAGE is True. Not "
                          "removing staging. You will need to use "
@@ -562,5 +564,6 @@ class DNSBuilder(SVNBuilderMixin):
             raise
         finally:
             # Clean up
-            self.unlock()
+            #self.unlock()
+            pass
         self.log('LOG_NOTICE', 'Successful build is successful.')
