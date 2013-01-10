@@ -173,16 +173,39 @@ class CNAMETests(TestCase):
         cn = CNAME(label = label, domain = dom, target = data)
         self.assertRaises(ValidationError, cn.full_clean)
 
+    def test_address_record_exists_upper_case(self):
+        label = "testyfoo"
+        data = "wat"
+        dom,_ = Domain.objects.get_or_create(name="cd")
+        dom,_ = Domain.objects.get_or_create(name="what.cd")
+
+        rec, _ = AddressRecord.objects.get_or_create(label=label, domain=dom, ip_type='4', ip_str="128.193.1.1")
+
+        cn = CNAME(label=label.title(), domain=dom, target=data)
+        self.assertRaises(ValidationError, cn.full_clean)
+
     def test_address_record_cname_exists(self):
         label = "testyfoo"
         data = "wat"
         dom,_ = Domain.objects.get_or_create(name="cd")
         dom,_ = Domain.objects.get_or_create(name="what.cd")
 
-        cn = CNAME.objects.get_or_create(label = label, domain = dom, target = data)
+        CNAME.objects.get_or_create(label = label, domain = dom, target = data)
         rec = AddressRecord(label=label, domain=dom, ip_str="128.193.1.1")
 
         self.assertRaises(ValidationError, rec.save)
+
+    def test_address_record_cname_exists_upper(self):
+        label = "testyfoo"
+        data = "wat"
+        dom,_ = Domain.objects.get_or_create(name="cd")
+        dom,_ = Domain.objects.get_or_create(name="what.cd")
+
+        CNAME.objects.get_or_create(label = label, domain = dom, target = data)
+        rec = AddressRecord(label=label.title(), domain=dom, ip_str="128.193.1.1")
+
+        self.assertRaises(ValidationError, rec.save)
+
 
     def test_srv_exists(self):
         label = "_testyfoo"
@@ -344,7 +367,7 @@ class CNAMETests(TestCase):
         dom,_ = Domain.objects.get_or_create(name="cd")
         dom,_ = Domain.objects.get_or_create(name="what.cd")
 
-        cn = CNAME.objects.get_or_create(label = label, domain = dom, target = data)
+        CNAME.objects.get_or_create(label = label, domain = dom, target = data)
         rec = PTR(ip_str="10.193.1.1", ip_type='4', name='testyfoo.what.cd')
 
         self.assertRaises(ValidationError, rec.clean)
