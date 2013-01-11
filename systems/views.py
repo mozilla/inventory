@@ -661,7 +661,8 @@ def racks(request):
     system_query = Q()
     if request.GET and filter_form.is_valid():
         if filter_form.cleaned_data['rack']:
-            racks = [filter_form.cleaned_data['rack']]
+            racks = [models.SystemRack.objects.get(
+                                    pk=filter_form.cleaned_data['rack'])]
         else:
             racks = SystemRack.objects.all()
             if filter_form.cleaned_data['location']:
@@ -690,11 +691,11 @@ def racks(request):
         racks = []
 
     return render_to_response('systems/racks.html', {
-            'racks': racks,
-            'filter_form': filter_form,
-            'read_only': getattr(request, 'read_only', False),
-           },
-           RequestContext(request))
+        'racks': racks,
+        'filter_form': filter_form,
+        'read_only': getattr(request, 'read_only', False),
+    },
+        RequestContext(request))
 
 def getoncall(request, type):
     return_irc_nick = ''

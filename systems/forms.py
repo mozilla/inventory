@@ -107,20 +107,28 @@ class AllocationForm(forms.ModelForm):
     class Meta:
         model = models.Allocation
 
+
+def gen_choices(Klass):
+    """Helper function for RackFilterForm."""
+    return [('', 'All')] + [(o.pk, o) for o in Klass.objects.all()]
+
+
 class RackFilterForm(forms.Form):
-    location = forms.ModelChoiceField(
-                    queryset=models.Location.objects.all(), empty_label="All",
-                    required=False)
-    status = forms.ModelChoiceField(
-                    queryset=models.SystemStatus.objects.all(),
-                    empty_label="All", required=False)
-    rack = forms.ModelChoiceField(
-                    queryset=models.SystemRack.objects.all().order_by(
-                                                            'location','name'),
-                    empty_label="All", required=False)
-    allocation = forms.ModelChoiceField(
-                    queryset=models.Allocation.objects.all(),
-                    empty_label="All", required=False)
+    allocation = forms.ChoiceField(required=False,
+                    choices=gen_choices(models.Allocation))
+    location = forms.ChoiceField(required=False,
+                    choices=gen_choices(models.Location))
+    rack = forms.ChoiceField(required=False,
+                    choices=gen_choices(models.SystemRack))
+    status = forms.ChoiceField(required=False,
+                    choices=gen_choices(models.SystemStatus))
+
+    def __init__(self, *args, **kwargs):
+        super(RackFilterForm, self).__init__(*args, **kwargs)
+        self.fields['allocation'].choices = gen_choices(models.Allocation)
+        self.fields['location'].choices = gen_choices(models.Location)
+        self.fields['rack'].choices = gen_choices(models.SystemRack)
+        self.fields['status'].choices = gen_choices(models.SystemStatus)
 
 
 def return_data_if_true(f):
@@ -141,7 +149,7 @@ class SystemForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'size': '3'}))
     purchase_date = forms.DateField(
             required=False,
-            widget=SelectDateWidget(years=range(1999,datetime.today().year + 2)), 
+            widget=SelectDateWidget(years=range(1999,datetime.today().year + 2)),
             initial=datetime.now()
             )
     change_password = forms.DateField(
