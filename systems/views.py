@@ -16,8 +16,6 @@ import _mysql_exceptions
 
 import models
 from middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
-from forms import RackFilterForm
-from systems.models import SystemRack, SystemStatus
 
 import re
 from django.test.client import Client
@@ -654,48 +652,51 @@ def racks_by_location(request, location=0):
 
 @allow_anyone
 def racks(request):
+    from forms import RackFilterForm
     filter_form = RackFilterForm(request.GET)
 
     racks = models.SystemRack.objects.select_related('location')
 
     system_query = Q()
-    if request.GET and filter_form.is_valid():
-        if filter_form.cleaned_data['rack']:
-            racks = [models.SystemRack.objects.get(
-                                    pk=filter_form.cleaned_data['rack'])]
-        else:
-            racks = SystemRack.objects.all()
-            if filter_form.cleaned_data['location']:
-                racks = racks.filter(
-                        location=filter_form.cleaned_data['location'])
-            if filter_form.cleaned_data['allocation']:
-                system_query &= Q(
-                        allocation=filter_form.cleaned_data['allocation'])
-            if filter_form.cleaned_data['status']:
-                system_query &= Q(
-                        system_status=filter_form.cleaned_data['status'])
-        # This function returns a list of tuples containing:
-        #       (rack,  [<list of systems in the rack>)
-        # The following finds all systems for a givin rack and excludes any
-        # systems that are of status 'decommissioned'.
-        decommissioned = SystemStatus.objects.get(status='decommissioned')
-        racks = [(k, list(k.system_set.select_related(
-                        'server_model',
-                        'allocation',
-                        'system_status',
-                        ).filter(system_query)
-                        .exclude(system_status=decommissioned)
-                        .order_by('rack_order')))
-                    for k in racks]
+    if 'location' in request.GET:
+        location_id = request.GET['location']
+        has_query = True
+        if len(location_id) > 0 and int(location_id) > 0:
+            loc = models.Location.objects.get(id=location_id)
+            filter_form.fields['rack'].choices = [('','ALL')] + [(m.id, m.location.name + ' ' +  m.name) for m in models.SystemRack.objects.filter(location=loc).order_by('name')]
     else:
+        has_query = False
+    if filter_form.is_valid():
+
+        if filter_form.cleaned_data['rack']:
+            racks = racks.filter(id=filter_form.cleaned_data['rack'])
+            has_query = True
+        if filter_form.cleaned_data['location'] and int(filter_form.cleaned_data['location']) > 0:
+            racks = racks.filter(location=filter_form.cleaned_data['location'])
+            has_query = True
+        if filter_form.cleaned_data['allocation']:
+            system_query &= Q(allocation=filter_form.cleaned_data['allocation'])
+            has_query = True
+        if filter_form.cleaned_data['status']:
+            system_query &= Q(system_status=filter_form.cleaned_data['status'])
+            has_query = True
+    ##Here we create an object to hold decommissioned systems for the following filter
+    if not has_query:
         racks = []
+    else:
+        decommissioned = models.SystemStatus.objects.get(status='decommissioned')
+        racks = [(k, list(k.system_set.select_related(
+            'server_model',
+            'allocation',
+            'system_status',
+        ).filter(system_query).exclude(system_status=decommissioned).order_by('rack_order'))) for k in racks]
 
     return render_to_response('systems/racks.html', {
-        'racks': racks,
-        'filter_form': filter_form,
-        'read_only': getattr(request, 'read_only', False),
-    },
-        RequestContext(request))
+            'racks': racks,
+            'filter_form': filter_form,
+            'read_only': getattr(request, 'read_only', False),
+           },
+           RequestContext(request))
 
 def getoncall(request, type):
     return_irc_nick = ''
@@ -788,14 +789,12 @@ def set_oncall(type, username):
         new_oncall.save()
     except Exception, e:
         print e
-
-@csrf_exempt
 def rack_delete(request, object_id):
     from models import SystemRack
     rack = get_object_or_404(SystemRack, pk=object_id)
     if request.method == "POST":
         rack.delete()
-        return redirect('/systems/racks/')
+        return HttpResponseRedirect('/systems/racks/')
     else:
         return render_to_response('systems/rack_confirm_delete.html', {
                 'rack': rack,

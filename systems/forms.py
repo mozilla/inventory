@@ -106,29 +106,30 @@ class LocationForm(forms.ModelForm):
 class AllocationForm(forms.ModelForm):
     class Meta:
         model = models.Allocation
-
-
-def gen_choices(Klass):
-    """Helper function for RackFilterForm."""
-    return [('', 'All')] + [(o.pk, o) for o in Klass.objects.all()]
-
-
 class RackFilterForm(forms.Form):
-    allocation = forms.ChoiceField(required=False,
-                    choices=gen_choices(models.Allocation))
-    location = forms.ChoiceField(required=False,
-                    choices=gen_choices(models.Location))
-    rack = forms.ChoiceField(required=False,
-                    choices=gen_choices(models.SystemRack))
-    status = forms.ChoiceField(required=False,
-                    choices=gen_choices(models.SystemStatus))
 
+    location = forms.ChoiceField(
+        required=False,
+        choices=[('', 'All')] + [(m.id, m)
+                    for m in models.Location.objects.all()])
+    status = forms.ChoiceField(
+        required=False,
+        choices=[('', 'All')] + [(m.id, m)
+                    for m in models.SystemStatus.objects.all()])
+    rack = forms.ChoiceField(
+        required=False,
+        choices=[('', 'All')] + [(m.id, m.location.name + ' ' +  m.name)
+                    for m in models.SystemRack.objects.all().order_by('location','name')])
+    allocation = forms.ChoiceField(
+        required=False,
+        choices=[('', 'All')] + [(m.id, m)
+                    for m in models.Allocation.objects.all()])
     def __init__(self, *args, **kwargs):
         super(RackFilterForm, self).__init__(*args, **kwargs)
-        self.fields['allocation'].choices = gen_choices(models.Allocation)
-        self.fields['location'].choices = gen_choices(models.Location)
-        self.fields['rack'].choices = gen_choices(models.SystemRack)
-        self.fields['status'].choices = gen_choices(models.SystemStatus)
+        self.fields['location'].choices = [('', 'All')] + [(m.id, m) for m in models.Location.objects.all()]
+        self.fields['status'].choices = [('', 'All')] + [(m.id, m) for m in models.SystemStatus.objects.all()]
+        self.fields['rack'].choices = [('', 'All')] + [(m.id, m.location.name + ' ' +  m.name) for m in models.SystemRack.objects.all().order_by('location','name')]
+        self.fields['allocation'].choices = [('', 'All')] + [(m.id, m) for m in models.Allocation.objects.all()]
 
 
 def return_data_if_true(f):
@@ -149,7 +150,7 @@ class SystemForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'size': '3'}))
     purchase_date = forms.DateField(
             required=False,
-            widget=SelectDateWidget(years=range(1999,datetime.today().year + 2)),
+            widget=SelectDateWidget(years=range(1999,datetime.today().year + 2)), 
             initial=datetime.now()
             )
     change_password = forms.DateField(
