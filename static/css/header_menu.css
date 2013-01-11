@@ -1,7 +1,4 @@
 /*credit --> http://line25.com/tutorials/how-to-create-a-pure-css-dropdown-menu*/
-.nav-bar  {
-    display: inline;
-}
 .nav-bar ul {
     margin:0px;
 }
@@ -23,7 +20,7 @@
     padding: 0 13px;
     list-style: none;
     position: relative;
-    display: inline-table;
+    display: table;
 }
 
 .nav-bar ul:after {
@@ -31,7 +28,7 @@
 }
 .nav-bar ul li {
     float: left;
-    height: 3.7em;
+    height: auto;
 }
 .nav-bar ul li:hover {
     background: #4b545f;
@@ -41,11 +38,11 @@
 }
 .nav-bar ul li:hover a {
     color: #fff;
-    height: 0.9em;
+    height: auto;
 }
 
 .nav-bar ul li a {
-    display: block; padding: 1.1em 3.7em;
+    display: block; padding: 1em 3.7em;
     color: #757575; text-decoration: none;
 }
 .nav-bar ul ul {
@@ -57,14 +54,13 @@
     border-top: 1px solid #6b727c;
     border-bottom: 1px solid #575f6a;
     position: relative;
-    height: 3.7em;
+    height: auto;
 }
 .nav-bar ul ul li a {
-    padding: 1.5em 3.7em;
+    padding: 1.0em 3.7em;
     color: #fff;
 }
 
 .nav-bar ul ul li a:hover {
     background: #4b545f;
 }
-
