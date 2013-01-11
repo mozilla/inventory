@@ -106,30 +106,21 @@ class LocationForm(forms.ModelForm):
 class AllocationForm(forms.ModelForm):
     class Meta:
         model = models.Allocation
-class RackFilterForm(forms.Form):
 
-    location = forms.ChoiceField(
-        required=False,
-        choices=[('0', 'All')] + [(m.id, m)
-                    for m in models.Location.objects.all()])
-    status = forms.ChoiceField(
-        required=False,
-        choices=[('', 'All')] + [(m.id, m)
-                    for m in models.SystemStatus.objects.all()])
-    rack = forms.ChoiceField(
-        required=False,
-        choices=[('', 'All')] + [(m.id, m.location.name + ' ' +  m.name)
-                    for m in models.SystemRack.objects.all().order_by('location','name')])
-    allocation = forms.ChoiceField(
-        required=False,
-        choices=[('', 'All')] + [(m.id, m)
-                    for m in models.Allocation.objects.all()])
-    def __init__(self, *args, **kwargs):
-        super(RackFilterForm, self).__init__(*args, **kwargs)
-        self.fields['location'].choices = [('0', 'All')] + [(m.id, m) for m in models.Location.objects.all()]
-        self.fields['status'].choices = [('', 'All')] + [(m.id, m) for m in models.SystemStatus.objects.all()]
-        self.fields['rack'].choices = [(m.id, m.location.name + ' ' +  m.name) for m in models.SystemRack.objects.all().order_by('location','name')]
-        self.fields['allocation'].choices = [('', 'All')] + [(m.id, m) for m in models.Allocation.objects.all()]
+class RackFilterForm(forms.Form):
+    location = forms.ModelChoiceField(
+                    queryset=models.Location.objects.all(), empty_label="All",
+                    required=False)
+    status = forms.ModelChoiceField(
+                    queryset=models.SystemStatus.objects.all(),
+                    empty_label="All", required=False)
+    rack = forms.ModelChoiceField(
+                    queryset=models.SystemRack.objects.all().order_by(
+                                                            'location','name'),
+                    empty_label="All", required=False)
+    allocation = forms.ModelChoiceField(
+                    queryset=models.Allocation.objects.all(),
+                    empty_label="All", required=False)
 
 
 def return_data_if_true(f):
