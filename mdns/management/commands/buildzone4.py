@@ -1,6 +1,5 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from mdns.private_public_import import do_import
-import pdb
 
 
 class Command(BaseCommand):
