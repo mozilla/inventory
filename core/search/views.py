@@ -1,14 +1,10 @@
-from django.db.models import Q
 from django.shortcuts import render
 from django.http import HttpResponse
 
 from mozdns.api.v1.api import v1_dns_api
 from mozdns.utils import get_zones
 
-import pdb
 from core.search.compiler.django_compile import compile_to_django
-from core.search.compiler.django_compile import compile_q_objects
-from core.search.compiler.invfilter import BadDirective
 import simplejson as json
 from gettext import gettext as _
 
@@ -53,7 +49,6 @@ def search_ajax(request):
     return _search(request, html_response)
 
 def search_dns_text(request):
-    template = env.get_template('search/core_search_results.txt')
     def render_rdtype(rdtype_set, **kwargs):
         response_str = ""
         for obj in rdtype_set:
@@ -62,6 +57,7 @@ def search_dns_text(request):
         return response_str
     def text_response(**kwargs):
         response_str = ""
+        # XXX make this a for loop you noob
         response_str += render_rdtype(kwargs['soas'])
         response_str += render_rdtype(kwargs['nss'])
         response_str += render_rdtype(kwargs['mxs'])
@@ -104,30 +100,30 @@ def _search(request, response):
                 }
             }
     return HttpResponse(response(
-                                    **{
-                                        "misc": misc,
-                                        "addrs": addrs,
-                                        "cnames": cnames,
-                                        "domains": domains,
-                                        "intrs": intrs,
-                                        "sys": sys,
-                                        "mxs": mxs,
-                                        "nss": nss,
-                                        "ptrs": ptrs,
-                                        "soas": soas,
-                                        "sshfps": sshfps,
-                                        "srvs": srvs,
-                                        "txts": txts,
-                                        "meta": meta,
-                                        "search": search
-                                    }
-                        ))
+        **{
+            "misc": misc,
+            "addrs": addrs,
+            "cnames": cnames,
+            "domains": domains,
+            "intrs": intrs,
+            "sys": sys,
+            "mxs": mxs,
+            "nss": nss,
+            "ptrs": ptrs,
+            "soas": soas,
+            "sshfps": sshfps,
+            "srvs": srvs,
+            "txts": txts,
+            "meta": meta,
+            "search": search
+        }
+     ))
 def search(request):
     """Search page"""
     search = request.GET.get('search','')
     return render(request, "search/core_search.html", {
         "search": search,
-        "zones": [z.name for z in get_zones()]
+        "zones": sorted([z.name for z in get_zones()], reverse=True)
     })
 
 def get_zones_json(request):

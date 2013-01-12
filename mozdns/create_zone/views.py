@@ -1,4 +1,4 @@
-from gettext import gettext as _
+from gettext import gettext as gt
 import simplejson as json
 import time
 
@@ -35,7 +35,7 @@ def create_zone_ajax(request):
         return HttpResponse(json.dumps({'success': False, 'error': error }))
 
     if Domain.objects.filter(name=root_domain).exists():
-        error = _("<b>{0}</b> is already a domain. To make it a new zone, "
+        error = gt("<b>{0}</b> is already a domain. To make it a new zone, "
                   "assign it a newly created SOA.".format(root_domain))
         return HttpResponse(json.dumps({'success': False, 'error': error }))
 
@@ -59,7 +59,7 @@ def create_zone_ajax(request):
 
     if not nss:
         # They must create at least one nameserver
-        error = _("You must choose an authoritative nameserver to serve this "
+        error = gt("You must choose an authoritative nameserver to serve this "
                   "zone")
         return HttpResponse(json.dumps({'success': False, 'error': error }))
 
@@ -136,7 +136,7 @@ def create_zone(request):
                 'nss': root_domain.nameserver_set.all(),
             }
         except ObjectDoesNotExist:
-            message = _('When trying to use {0} as a template, no zone '
+            message = gt('When trying to use {0} as a template, no zone '
                         'named {0} was found.'.format(template_zone))
     if not context:
         context = {
