@@ -555,15 +555,13 @@ class DNSBuilder(SVNBuilderMixin):
             else:
                 self.clear_staging()
         # All errors are handled by caller (this function)
-        except BuildError, e:
+        except BuildError:
             self.log('LOG_NOTICE', 'Error during build. Not removing staging')
             raise
-        except Exception, e:
-            print e
+        except Exception:
             self.log('LOG_NOTICE', 'Error during build. Not removing staging')
             raise
         finally:
             # Clean up
             self.unlock()
-            pass
         self.log('LOG_NOTICE', 'Successful build is successful.')

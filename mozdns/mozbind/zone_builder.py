@@ -140,6 +140,7 @@ def build_zone_data(root_domain, soa):
     domain_mega_filter = Q(domain=root_domain)
     for domain in domains:
         domain_mega_filter = domain_mega_filter | Q(domain=domain)
+
     rdomain_mega_filter = Q(reverse_domain=root_domain)
     for reverse_domain in domains:
         rdomain_mega_filter = rdomain_mega_filter | Q(
