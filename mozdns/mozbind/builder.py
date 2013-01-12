@@ -486,7 +486,7 @@ class DNSBuilder(SVNBuilderMixin):
             # data.
 
             t_start = time.time()  # tic
-            private_data, public_data = build_zone_data(*zinfo)
+            private_data, public_data = build_zone_data(*zinfo, logf=self.log)
             build_time = time.time() - t_start  # toc
             self.log('LOG_INFO', 'Built {0} in {1} seconds '.format(soa,
                      build_time), soa=soa, build_time=build_time)
