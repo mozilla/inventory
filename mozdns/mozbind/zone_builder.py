@@ -111,10 +111,16 @@ def render_reverse_zone(view, domain_mega_filter, rdomain_mega_filter):
     return data
 
 
-def build_zone_data(root_domain, soa):
+def build_zone_data(root_domain, soa, logger=None):
     """
     This function does the heavy lifting of building a zone. It coordinates
     getting all of the data out of the db into BIND format.
+
+    .. note::
+        If a zone's root_domain does not have any :class:`Nameserver`
+        object associated with it this function will not build zone data for
+        that zone (BIND will fail if an NS record for a zone's root domain does
+        not exist). This function will also log that it encountered this case.
 
     :param soa: The SOA corresponding to the zone being built.
     :type soa: SOA
@@ -133,6 +139,8 @@ def build_zone_data(root_domain, soa):
     :type private_data: str
     """
     ztype = 'reverse' if root_domain.is_reverse else 'forward'
+    if not root_domain.nameserver_set.exists():
+        return '', ''
 
     domains = soa.domain_set.all().order_by('name')
 

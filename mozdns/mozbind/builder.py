@@ -322,7 +322,7 @@ class DNSBuilder(SVNBuilderMixin):
         stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
             raise BuildError("\nnamed-checkzone failed on zone {0}. "
-                             "\ncommand: {1}:\nstdout: {2}\nstderr:{3}".
+                             "\ncommand: {1}\nstdout: {2}\nstderr:{3}\n".
                              format(root_domain.name, command_str, stdout,
                              stderr))
 
@@ -338,7 +338,7 @@ class DNSBuilder(SVNBuilderMixin):
         stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
             raise BuildError("\nnamed-checkconf rejected config {0}. "
-                             "\ncommand: {1}:\nstdout: {2}\nstderr:{3}".
+                             "\ncommand: {1}\nstdout: {2}\nstderr:{3}\n".
                              format(conf_file, command_str, stdout,
                              stderr))
 
