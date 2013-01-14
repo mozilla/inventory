@@ -76,8 +76,10 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
         return ['fqdn', 'ttl', 'description', 'views']
 
     def clean(self):
-        set_fqdn(self)
-        check_TLD_condition(self)
+        self.set_fqdn()
+        self.check_TLD_condition()
+        self.check_no_ns_soa_condition()
+        self.check_for_delegation()
 
     def delete(self, *args, **kwargs):
         from mozdns.utils import prune_tree
@@ -113,11 +115,14 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
     def check_for_cname(self):
         check_for_cname(self)
 
-    def check_for_delegation(self):
-        check_for_delegation(self)
-
     def check_TLD_condition(self):
         _check_TLD_condition(self)
+
+    def check_no_ns_soa_condition(self):
+        check_no_ns_soa_condition(self)
+
+    def check_for_delegation(self):
+        check_for_delegation(self)
 
 
 #####
@@ -168,3 +173,14 @@ def check_for_delegation(record):
 
 def check_TLD_condition(record):
     _check_TLD_condition(record)
+
+
+def check_no_ns_soa_condition(record):
+    if record.domain.soa:
+        root_domain = record.domain.soa.root_domain
+        if root_domain and not root_domain.nameserver_set.exists():
+            raise ValidationError("The zone you are trying to assign this "
+                    "record into does not have an NS record, thus cannnot "
+                    "support other records.")
+
+

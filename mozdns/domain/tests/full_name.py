@@ -1,23 +1,16 @@
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.test import TestCase
 
 from mozdns.address_record.models import AddressRecord
 from mozdns.cname.models import CNAME
-from mozdns.ptr.models import PTR
 from mozdns.txt.models import TXT
 from mozdns.mx.models import MX
 from mozdns.srv.models import SRV
 from mozdns.domain.models import Domain
-from mozdns.domain.models import ValidationError, _name_to_domain
-from mozdns.ip.models import ipv6_to_longs, Ip
 from mozdns.nameserver.models import Nameserver
-from mozdns.domain.models import Domain
 from mozdns.utils import ensure_label_domain, prune_tree
 from mozdns.soa.models import SOA
 
-from core.site.models import Site
-
-import pdb
+from mozdns.tests.utils import create_fake_zone
 
 class FullNameTests(TestCase):
 
@@ -114,14 +107,7 @@ class FullNameTests(TestCase):
     def test_basic_add_remove3(self):
         # MAke sure that if a domain is set to not purgeable the prune stops at
         # that domain when a record exists in a domain
-        c = Domain(name = 'foo')
-        c.save()
-        self.assertFalse(c.purgeable)
-        f_c = Domain(name = 'foo.foo')
-        s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
-                description="foo.foo")
-        f_c.soa = s
-        f_c.save()
+        f_c = create_fake_zone("foo.foo", suffix="")
         self.assertFalse(f_c.purgeable)
         fqdn = "bar.x.y.z.foo.foo"
         label, the_domain = ensure_label_domain(fqdn)
@@ -143,14 +129,7 @@ class FullNameTests(TestCase):
     def test_basic_add_remove4(self):
         # Move a record down the tree testing prune's ability to not delete
         # stuff.
-        c = Domain(name = 'goo')
-        c.save()
-        self.assertFalse(c.purgeable)
-        f_c = Domain(name = 'foo.goo')
-        s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
-                description="foo.goo")
-        f_c.soa = s
-        f_c.save()
+        f_c = create_fake_zone("foo.goo", suffix="")
         self.assertFalse(f_c.purgeable)
         fqdn = "bar.x.y.z.foo.goo"
         label, the_domain = ensure_label_domain(fqdn)
@@ -192,14 +171,7 @@ class FullNameTests(TestCase):
 
     def test_basic_add_remove5(self):
         # Make sure all record types block
-        c = Domain(name = 'foo22')
-        c.save()
-        self.assertFalse(c.purgeable)
-        f_c = Domain(name = 'foo.foo22')
-        s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
-                description="foo.foo22")
-        f_c.soa = s
-        f_c.save()
+        f_c = create_fake_zone("foo.foo22", suffix="")
         self.assertFalse(f_c.purgeable)
         fqdn = "bar.x.y.z.foo.foo22"
         label, the_domain = ensure_label_domain(fqdn)
@@ -237,13 +209,7 @@ class FullNameTests(TestCase):
 
     def test_basic_add_remove6(self):
         # Make sure CNAME record block
-        c = Domain(name = 'foo1')
-        c.save()
-        self.assertFalse(c.purgeable)
-        f_c = Domain(name = 'foo.foo1')
-        s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
-                description="foo.foo1")
-        f_c.soa = s
+        f_c = create_fake_zone("foo.foo1", suffix="")
         f_c.save()
         self.assertFalse(f_c.purgeable)
         fqdn = "cname.x.y.z.foo.foo1"

@@ -2,15 +2,14 @@ from django.db import models
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 import mozdns
-from mozdns.domain.models import Domain, _name_to_domain
 from mozdns.models import MozdnsRecord
-from mozdns.validation import validate_name, find_root_domain
+from mozdns.validation import validate_name
 from mozdns.search_utils import smart_fqdn_exists
 
 import reversion
 
 from gettext import gettext as _
-import pdb
+
 
 class CNAME(MozdnsRecord):
     """CNAMES can't point to an any other records. Said another way,
@@ -57,7 +56,6 @@ class CNAME(MozdnsRecord):
 
     def clean(self, *args, **kwargs):
         super(CNAME, self).clean(*args, **kwargs)
-        super(CNAME, self).check_for_delegation()
         if self.fqdn == self.target:
             raise ValidationError("CNAME loop detected.")
         self.check_SOA_condition()
@@ -76,13 +74,14 @@ class CNAME(MozdnsRecord):
             self.domain
         except ObjectDoesNotExist:
             return # Validation will fail eventually
-        root_domain = find_root_domain(self.domain.soa)
+        if not self.domain.soa:
+            return
+        root_domain = self.domain.soa.root_domain
         if root_domain is None:
             return
         if self.fqdn == root_domain.name:
-            raise ValidationError("You cannot create a CNAME that points to "
-                                  "the root of a zone.")
-        return
+            raise ValidationError("You cannot create a CNAME who's left hand "
+                                  "side is at the same level as an SOA")
 
     def existing_node_check(self):
         """Make sure no other nodes exist at the level of this CNAME.

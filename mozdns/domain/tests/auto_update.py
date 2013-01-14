@@ -1,35 +1,21 @@
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.test import TestCase
 
 from mozdns.address_record.models import AddressRecord
 from mozdns.cname.models import CNAME
-from mozdns.ptr.models import PTR
 from mozdns.txt.models import TXT
 from mozdns.mx.models import MX
 from mozdns.srv.models import SRV
 from mozdns.domain.models import Domain
-from mozdns.domain.models import ValidationError, _name_to_domain
-from mozdns.ip.models import ipv6_to_longs, Ip
 from mozdns.nameserver.models import Nameserver
-from mozdns.domain.models import Domain
-from mozdns.utils import ensure_label_domain, prune_tree
-from mozdns.soa.models import SOA
+from mozdns.utils import ensure_label_domain
 
-from core.site.models import Site
-
-import pdb
+from mozdns.tests.utils import create_fake_zone
 
 class UpdateRecordDeleteDomainTests(TestCase):
 
     def generic_check(self, obj, do_label=True, label_prefix=""):
         # Make sure all record types block
-        c, _ = Domain.objects.get_or_create(name = 'foo22')
-        self.assertFalse(c.purgeable)
-        f_c, _ = Domain.objects.get_or_create(name = 'foo.foo22')
-        s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
-                description="foo.foo22")
-        f_c.soa = s
-        f_c.save()
+        f_c = create_fake_zone("foo.foo22", suffix="")
         self.assertFalse(f_c.purgeable)
         fqdn = "bar.x.y.z.foo.foo22"
         label, the_domain = ensure_label_domain(fqdn)

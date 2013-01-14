@@ -3,10 +3,7 @@ from django.test.client import RequestFactory
 from django.test.client import Client
 
 
-from systems.models import System
-from core.interface.static_intr.models import StaticInterface
-from mozdns.utils import ensure_label_domain, prune_tree
-from mozdns.tests.view_tests_template import GenericViewTests, random_label
+from mozdns.tests.view_tests_template import random_label
 from mozdns.tests.view_tests_template import random_byte
 from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
@@ -14,33 +11,17 @@ from mozdns.domain.models import Domain
 from mozdns.mx.models import MX
 from mozdns.ptr.models import PTR
 from mozdns.nameserver.models import Nameserver
-from mozdns.soa.models import SOA
 from mozdns.srv.models import SRV
 from mozdns.txt.models import TXT
 from mozdns.sshfp.models import SSHFP
 from mozdns.view.models import View
-from mozdns.record.views import record_ajax
 
-import simplejson as json
-from urlparse import urlparse, urlsplit
-import pdb
+from mozdns.tests.utils import create_fake_zone
 
 
-def build_sample_domain():
-    domain_name = ''
-    for i in range(2):
-        domain_name = random_label()
-        domain = Domain(name=domain_name)
-    soa = SOA(primary=random_label(), contact="asf",
-              description=random_label())
-    soa.save()
-    domain.soa = soa
-    domain.save()
-    return domain
 
 class BaseViewTestCase(object):
     record_base_url = "/mozdns/record"
-
 
     def setUp(self):
         self.rdtype = self.test_type().rdtype
@@ -50,9 +31,10 @@ class BaseViewTestCase(object):
 
         self.c = Client()
         self.factory = RequestFactory()
-        self.domain = build_sample_domain()
-        View(name='public').save()
-        View(name='private').save()
+        self.domain = create_fake_zone("{0}.{1}.{2}".format(random_label(),
+                                       random_label(), random_label()))
+        View.objects.get_or_create(name='public')
+        View.objects.get_or_create(name='private')
 
 
     # Add an rdtype to the dict

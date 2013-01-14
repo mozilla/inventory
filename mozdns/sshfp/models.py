@@ -60,7 +60,6 @@ class SSHFP(MozdnsRecord):
 
     def clean(self):
         super(SSHFP, self).clean()
-        super(SSHFP, self).check_for_delegation()
         super(SSHFP, self).check_for_cname()
 
     class Meta:

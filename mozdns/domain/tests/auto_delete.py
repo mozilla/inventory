@@ -1,37 +1,25 @@
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.test import TestCase
 
 from systems.models import System
 from mozdns.address_record.models import AddressRecord
 from core.interface.static_intr.models import StaticInterface
 from mozdns.cname.models import CNAME
-from mozdns.ptr.models import PTR
 from mozdns.txt.models import TXT
 from mozdns.mx.models import MX
 from mozdns.srv.models import SRV
 from mozdns.domain.models import Domain
-from mozdns.domain.models import ValidationError, _name_to_domain
-from mozdns.ip.models import ipv6_to_longs, Ip
 from mozdns.nameserver.models import Nameserver
-from mozdns.domain.models import Domain
 from mozdns.utils import ensure_label_domain, prune_tree
-from mozdns.soa.models import SOA
+from mozdns.tests.utils import create_fake_zone
 
-from core.site.models import Site
-
-import pdb
 
 class AutoDeleteTests(TestCase):
-
     def setUp(self):
-        s, _ = SOA.objects.get_or_create(primary="foo", contact="Foo",
-                description="foo")
-        self.c = Domain(name = 'poo')
-        self.c.save()
-        self.assertFalse(self.c.purgeable)
-        self.f_c = Domain(name = 'foo.poo')
-        self.f_c.soa = s
-        self.f_c.save()
+        c = Domain(name = 'poo')
+        c.save()
+        self.assertFalse(c.purgeable)
+        self.f_c  = create_fake_zone('foo.poo', suffix="")
+        self.assertEqual(self.f_c.name, 'foo.poo')
 
     def test_cleanup_txt(self):
         self.assertFalse(Domain.objects.filter(name="x.y.z.foo.poo"))
@@ -132,11 +120,8 @@ class AutoDeleteTests(TestCase):
         c = Domain(name = 'foo1')
         c.save()
         self.assertFalse(c.purgeable)
-        s, _ = SOA.objects.get_or_create(primary="foo", contact="Foo",
-                description="dddfoo")
-        f_c = Domain(name = 'foo.foo1')
-        f_c.soa = s
-        f_c.save()
+        f_c = create_fake_zone('foo.foo1', suffix="")
+        self.assertEqual(f_c.name, 'foo.foo1')
 
         self.assertFalse(Domain.objects.filter(name="x.y.z.foo.foo1"))
         self.assertFalse(Domain.objects.filter(name="y.z.foo.foo1"))

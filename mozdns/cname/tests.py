@@ -22,8 +22,7 @@ from core.interface.static_intr.models import StaticInterface
 from mozdns.ip.utils import ip_to_domain_name
 
 from systems.models import System
-
-import pdb
+from mozdns.tests.utils import create_fake_zone
 
 
 class CNAMETests(TestCase):
@@ -42,26 +41,11 @@ class CNAMETests(TestCase):
 
 
     def setUp(self):
-        primary = "ns5.oregonstate.edu"
-        contact = "admin.oregonstate.edu"
-        retry = 1234
-        refresh = 1234123
-        self.soa = SOA(primary = primary, contact = contact, retry = retry, refresh = refresh)
-        self.soa.save()
+        self.g = create_fake_zone("gz", suffix="")
+        self.c_g = create_fake_zone("coo.gz", suffix="")
+        self.d = create_fake_zone("dz", suffix="")
 
-        self.g = Domain(name = "gz")
-        self.g.save()
-        self.c_g = Domain(name = "coo.gz")
-        self.c_g.soa = self.soa
-        self.c_g.save()
-        self.d = Domain(name = "dz")
-        self.d.save()
-
-        self.arpa = self.create_domain( name = 'arpa')
-        self.arpa.save()
-        self.i_arpa = self.create_domain( name = 'in-addr.arpa')
-        self.i_arpa.save()
-        self.r1 = self.create_domain(name="10")
+        self.r1 = create_fake_zone("10.in-addr.arpa", suffix="")
         self.r1.save()
 
         self.s = System()
@@ -86,7 +70,7 @@ class CNAMETests(TestCase):
         label = "foo"
         domain = self.g
         data = "foo.com"
-        x = self.do_add(label, domain, data)
+        self.do_add(label, domain, data)
 
         label = "boo"
         domain = self.c_g
@@ -99,8 +83,8 @@ class CNAMETests(TestCase):
         self.do_add(label, domain, data)
         self.assertRaises(ValidationError, self.do_add, *(label, domain, data))
 
-        label = ""
-        domain = self.g
+        label = "adsf"
+        domain = self.c_g
         data = "foo.com"
         self.do_add(label, domain, data)
 
@@ -108,7 +92,7 @@ class CNAMETests(TestCase):
         label = "*foo"
         domain = self.g
         data = "foo.com"
-        x = self.do_add(label, domain, data)
+        self.do_add(label, domain, data)
 
         label = "*"
         domain = self.c_g
@@ -129,12 +113,12 @@ class CNAMETests(TestCase):
         label = "*coo"
         domain = self.g
         data = "foo.com"
-        x = self.do_add(label, domain, data)
+        self.do_add(label, domain, data)
 
         label = "*"
         domain = self.c_g
         data = "foo.com"
-        x = self.do_add(label, domain, data)
+        self.do_add(label, domain, data)
 
     def test_soa_condition(self):
         label = ""

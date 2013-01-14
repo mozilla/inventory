@@ -16,7 +16,6 @@ from gettext import gettext as _
 from string import Template
 import time
 import os
-import pdb
 
 
 #TODO, put these defaults in a config file.
@@ -123,7 +122,8 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     def delete(self, *args, **kwargs):
         if self.domain_set.exists():
             raise ValidationError("Domains exist in this SOA's zone. Delete "
-                                  "those domains before deleting this SOA.")
+                    "those domains or remove them from this zone before "
+                    "deleting this SOA.")
         super(SOA, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):

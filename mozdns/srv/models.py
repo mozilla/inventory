@@ -1,10 +1,12 @@
 from django.db import models
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-import mozdns
+
 from mozdns.domain.models import Domain
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.view.models import View
 from mozdns.soa.utils import update_soa
+from mozdns.models import (check_for_cname, check_TLD_condition,
+                           check_no_ns_soa_condition)
 
 from mozdns.validation import validate_srv_label, validate_srv_port
 from mozdns.validation import validate_srv_priority, validate_srv_weight
@@ -107,7 +109,9 @@ class SRV(models.Model, ObjectUrlMixin, DisplayMixin):
 
     def clean(self):
         self.set_fqdn()
-        self.check_for_cname()
+        check_for_cname(self)
+        check_TLD_condition(self)
+        check_no_ns_soa_condition(self)
         self.check_for_delegation()
 
     def __str__(self):
@@ -139,18 +143,5 @@ class SRV(models.Model, ObjectUrlMixin, DisplayMixin):
                                    "domain. It is delegated.".
                                    format(self.domain.name))
 
-    def check_for_cname(self):
-        """"If a CNAME RR is preent at a node, no other data should be
-        present; this ensures    that the data for a canonical name and
-        its aliases cannot be different."
-
-        -- `RFC 1034 <http://tools.ietf.org/html/rfc1034>`_
-
-        Call this function in models that can't overlap with an existing
-        CNAME.
-        """
-        CNAME = mozdns.cname.models.CNAME
-        if CNAME.objects.filter(fqdn=self.fqdn).exists():
-            raise ValidationError("A CNAME with this name already exists.")
 
 reversion.register(SRV)

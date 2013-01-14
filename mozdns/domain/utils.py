@@ -1,5 +1,4 @@
-from mozdns.validation import validate_domain_name, _name_type_check
-import mozdns
+from mozdns.validation import _name_type_check
 
 def name_to_domain(fqdn):
     """

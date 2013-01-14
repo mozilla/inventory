@@ -56,7 +56,6 @@ class MX(MozdnsRecord):
 
     def clean(self, *args, **kwargs):
         super(MX, self).clean(*args, **kwargs)
-        super(MX, self).check_for_delegation()
         super(MX, self).check_for_cname()
         self.no_point_to_cname()
 

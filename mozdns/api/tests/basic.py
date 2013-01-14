@@ -1,12 +1,7 @@
-from django.test import TestCase
-from django.test.client import Client, FakePayload, MULTIPART_CONTENT, encode_multipart, BOUNDARY
-from django.utils.encoding import smart_str
-
 from tastypie.test import ResourceTestCase
 
 from systems.models import System
 from core.interface.static_intr.models import StaticInterface
-from mozdns.utils import ensure_label_domain, prune_tree
 from mozdns.tests.view_tests_template import  random_label, random_byte
 from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
@@ -14,28 +9,16 @@ from mozdns.domain.models import Domain
 from mozdns.mx.models import MX
 from mozdns.ptr.models import PTR
 from mozdns.nameserver.models import Nameserver
-from mozdns.soa.models import SOA
 from mozdns.srv.models import SRV
 from mozdns.txt.models import TXT
 from mozdns.sshfp.models import SSHFP
 from mozdns.view.models import View
+from mozdns.tests.utils import create_fake_zone as create_zone
 
 import simplejson as json
-from urlparse import urlparse, urlsplit
-import pdb
 
 API_VERSION = '1'
 
-def build_sample_domain():
-    domain_name = ''
-    for i in range(2):
-        domain_name = random_label()
-        domain = Domain(name=domain_name)
-    soa = SOA(primary=random_label(), contact="asf", description=random_label())
-    soa.save()
-    domain.soa = soa
-    domain.save()
-    return domain
 
 class MozdnsAPITests(object):
     object_list_url = "/mozdns/api/v{0}_dns/{1}/"
@@ -43,9 +26,9 @@ class MozdnsAPITests(object):
 
     def setUp(self):
         super(MozdnsAPITests, self).setUp()
-        self.domain = build_sample_domain()
-        View(name='public').save()
-        View(name='private').save()
+        self.domain = create_zone(self.__class__.__name__.lower())
+        View.objects.get_or_create(name='public')
+        View.objects.get_or_create(name='private')
 
     def test_create(self):
         resp, post_data = self.generic_create(self.post_data())
@@ -179,9 +162,9 @@ class MangleTests(ResourceTestCase):
 
     def setUp(self):
         super(MangleTests, self).setUp()
-        self.domain = build_sample_domain()
-        View(name='public').save()
-        View(name='private').save()
+        self.domain = create_zone(self.__class__.__name__.lower())
+        View.objects.get_or_create(name='public')
+        View.objects.get_or_create(name='private')
 
     def test_missing_key(self):
         post_data = self.post_data()
@@ -243,7 +226,7 @@ class DomainLeakTests(ResourceTestCase):
 
     def setUp(self):
         super(DomainLeakTests, self).setUp()
-        self.domain = build_sample_domain()
+        self.domain = create_zone(self.__class__.__name__.lower())
 
     def test_leak1(self):
         # Check how many are there first.

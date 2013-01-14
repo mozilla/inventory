@@ -1,11 +1,11 @@
+from gettext import gettext as _
+
 from django.db import models
 
 from mozdns.models import MozdnsRecord
 
-import reversion
 
-import pdb
-from gettext import gettext as _
+import reversion
 
 
 class TXT(MozdnsRecord):

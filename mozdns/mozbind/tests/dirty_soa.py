@@ -1,6 +1,5 @@
 from django.test import TestCase
 
-from mozdns.domain.models import Domain
 from mozdns.soa.models import SOA
 from mozdns.srv.models import SRV
 from mozdns.txt.models import TXT
@@ -9,39 +8,29 @@ from mozdns.mx.models import MX
 from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
 from mozdns.nameserver.models import Nameserver
+from mozdns.tests.utils import create_fake_zone
+
 from core.interface.static_intr.models import StaticInterface
 
 from systems.models import System
 
+
 class DirtySOATests(TestCase):
     def setUp(self):
-        Domain.objects.get_or_create(name="arpa")
-        Domain.objects.get_or_create(name="in-addr.arpa")
-        self.r1, _ = Domain.objects.get_or_create(name="10.in-addr.arpa")
-        self.sr, sr_c = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact =
-                "hostmaster.foo", description="123foo.gazsdi2")
-        self.r1.soa = self.sr
-        self.r1.save()
+        self.r1 = create_fake_zone("10.in-addr.arpa", suffix="")
+        self.sr = self.r1.soa
+        self.sr.dirty = False
+        self.sr.save()
 
-        s1, s1_c = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact =
-                "hostmaster.dfdfoo", description="123fooasdfsdfasdfsa.gaz2")
-        self.soa = s1
-        d, _ = Domain.objects.get_or_create(name="bgaz")
-        d.soa = s1
-        d.save()
-        self.dom = d
+        self.dom = create_fake_zone("bgaz", suffix="")
+        self.soa = self.dom.soa
         self.soa.dirty = False
-        self.dom.dirty = False
+        self.soa.save()
 
-        s2, s1_c = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact =
-                "hostmaster.foo", description="123fooasdfsdf.gaz2")
-        self.rsoa = s2
-        rd, _ = Domain.objects.get_or_create(name="123.in-addr.arpa")
-        rd.soa = s2
-        rd.save()
-        self.rdom = rd
+        self.rdom = create_fake_zone("123.in-addr.arpa", suffix="")
+        self.rsoa = self.r1.soa
         self.rsoa.dirty = False
-        self.rdom.dirty = False
+        self.rsoa.save()
 
         self.s = System()
         self.s.save()
@@ -70,7 +59,6 @@ class DirtySOATests(TestCase):
         rec.save()
         local_soa = SOA.objects.get(pk=local_soa.pk)
         self.assertTrue(local_soa.dirty)
-
 
 
     def test_dirty_a(self):
