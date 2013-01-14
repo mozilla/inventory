@@ -171,6 +171,25 @@ class Domain(models.Model, ObjectUrlMixin):
         if self.domain_set.exists():
             raise ValidationError("Before deleting this domain, please "
                                   "remove it's children.")
+    def has_record_set(self):
+        if self.mx_set.exists():
+            return True
+        if self.nameserver_set.exists():
+            return True
+        if self.addressrecord_set.exists():
+            return True
+        if self.staticinterface_set.exists():
+            return True
+        if self.srv_set.exists():
+            return True
+        if self.cname_set.exists():
+            return True
+        if self.txt_set.exists():
+            return True
+        if self.sshfp_set.exists():
+            return True
+        return False
+
     ### Reverse Domain Functions
 
     def reassign_ptr_delete(self):
@@ -191,25 +210,6 @@ class Domain(models.Model, ObjectUrlMixin):
         for ptr in ptrs:
             ptr.reverse_domain = self.master_domain
             ptr.save(update_reverse_domain=False)
-
-    def has_record_set(self):
-        if self.mx_set.exists():
-            return True
-        if self.nameserver_set.exists():
-            return True
-        if self.addressrecord_set.exists():
-            return True
-        if self.staticinterface_set.exists():
-            return True
-        if self.srv_set.exists():
-            return True
-        if self.cname_set.exists():
-            return True
-        if self.txt_set.exists():
-            return True
-        if self.sshfp_set.exists():
-            return True
-        return False
 
 
 def boot_strap_ipv6_reverse_domain(ip, soa=None):
@@ -244,15 +244,15 @@ def reassign_reverse_ptrs(reverse_domain_1, reverse_domain_2, ip_type):
     to the 128.193 domain. We need to re-asign the ip to it's correct
     reverse domain.
 
-    :param reverse_domain_1: The domain which could possible have
+    :param reverse_domain_1: The domain which could possibly have
         addresses added to it.
 
-    :type reverse_domain_1: str
+    :type reverse_domain_1: :class:`Domain`
 
     :param reverse_domain_2: The domain that has ip's which might not
         belong to it anymore.
 
-    :type reverse_domain_2: str
+    :type reverse_domain_2: :class:`Domain`
     """
 
     if reverse_domain_2 is None or ip_type is None:

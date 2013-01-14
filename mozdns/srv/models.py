@@ -1,9 +1,7 @@
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 import mozdns
 from mozdns.domain.models import Domain
-from mozdns.models import MozdnsRecord
-from mozdns.validation import validate_name
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.view.models import View
 from mozdns.soa.utils import update_soa
@@ -16,7 +14,7 @@ from mozdns.validation import validate_srv_target
 import reversion
 
 from gettext import gettext as _
-import pdb
+
 
 # Rhetorical Question: Why is SRV not a common record?  SRV records have
 # a '_' in their label. Most domain names do not allow this.  Mozdns

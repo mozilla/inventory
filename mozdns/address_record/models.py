@@ -2,21 +2,18 @@ from django.db import models
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 import mozdns
-import core as core
 from mozdns.cname.models import CNAME
 from mozdns.view.models import View
 from mozdns.ip.models import Ip
-from mozdns.models import set_fqdn, check_for_cname, check_for_delegation
+from mozdns.models import set_fqdn, check_for_cname
 from mozdns.models import check_TLD_condition
-from mozdns.validation import validate_first_label, validate_name
-from mozdns.validation import validate_ttl, validate_views
+from mozdns.validation import validate_first_label, validate_name, validate_ttl
 from mozdns.domain.models import Domain
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.soa.utils import update_soa
 
 import reversion
 from gettext import gettext as _
-import pdb
 
 
 class BaseAddressRecord(Ip, DisplayMixin):

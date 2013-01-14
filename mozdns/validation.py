@@ -1,7 +1,6 @@
 from django.core.exceptions import ValidationError
 
 import string
-import pdb
 import ipaddr
 
 
@@ -31,7 +30,6 @@ def do_zone_validation(domain):
         >>> do_zone_validation(self, self.master_reverse_domain)
 
     """
-    from mozdns.domain.models import Domain
 
     check_for_master_delegation(domain, domain.master_domain)
     validate_zone_soa(domain, domain.master_domain)

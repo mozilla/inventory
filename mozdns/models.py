@@ -1,17 +1,13 @@
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
-from django.dispatch import receiver
-from django.db.models.signals import m2m_changed
 
 import mozdns
 from mozdns.domain.models import Domain, _check_TLD_condition
 from mozdns.view.models import View
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.validation import validate_first_label, validate_name
-from mozdns.validation import validate_ttl, is_rfc1918, is_rfc4193
-from settings import MOZDNS_BASE_URL
+from mozdns.validation import validate_ttl
 
-import pdb
 
 class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
     """
