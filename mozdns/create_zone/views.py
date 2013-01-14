@@ -93,7 +93,7 @@ def create_zone_ajax(request):
             suffixes = ["th", "st", "nd", "rd", ] + ["th"] * 16
             suffixed_i = str(i + 1) + suffixes[i + 1 % 100]
             error_field, error_val = e.message_dict.items()[0]
-            error = _("When trying to create the {0} nameserver entry, the "
+            error = gt("When trying to create the {0} nameserver entry, the "
                       "nameserver field '{1}' returned the error '{2}'".format(
                       suffixed_i, error_field, error_val[0]))
 
