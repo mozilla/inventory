@@ -1,26 +1,14 @@
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from mozdns.address_record.models import AddressRecord
-from mozdns.cname.models import CNAME
-from mozdns.ptr.models import PTR
-from mozdns.txt.models import TXT
-from mozdns.mx.models import MX
-from mozdns.srv.models import SRV
 from mozdns.domain.models import Domain
-from mozdns.domain.models import ValidationError, _name_to_domain
-from mozdns.ip.models import ipv6_to_longs, Ip
-from mozdns.nameserver.models import Nameserver
-from mozdns.domain.models import Domain
-from mozdns.utils import ensure_label_domain, prune_tree
+from mozdns.utils import ensure_label_domain
 from mozdns.soa.models import SOA
 
-from core.site.models import Site
-
-import pdb
 
 class AutoCreateTests(TestCase):
-    """These tests should cover zone insurance and delegation blocking.
+    """
+    These tests should cover zone insurance and delegation blocking.
     Purgeable Domains
     """
 

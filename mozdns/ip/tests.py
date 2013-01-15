@@ -14,7 +14,6 @@ from mozdns.ip.models import ipv6_to_longs, Ip
 from mozdns.domain.models import boot_strap_ipv6_reverse_domain, Domain
 from mozdns.ip.utils import ip_to_domain_name
 
-import pdb
 
 class SimpleTest(TestCase):
     def setUp(self):
@@ -45,13 +44,13 @@ class SimpleTest(TestCase):
         rd = self.create_domain(name='192', ip_type='4')
         rd.save()
         ip_str = '192.168.1.1'
-        ip = ipaddr.IPv4Address(ip_str)
+        ipaddr.IPv4Address(ip_str)
         Ip( ip_str = ip_str, ip_type='4' ).clean_ip()
 
         rd = self.create_domain(name='128', ip_type='4')
         rd.save()
         ip_str = '128.168.1.1'
-        ip = ipaddr.IPv4Address(ip_str)
+        ipaddr.IPv4Address(ip_str)
         Ip( ip_str = ip_str, ip_type = '4' ).clean_ip()
 
     def test_update_ipv4_str(self):
@@ -71,7 +70,7 @@ class SimpleTest(TestCase):
         self.assertEqual(ip.ip_lower, int(v_ip))
 
     def test_ipv6_str(self):
-        rd = boot_strap_ipv6_reverse_domain('1.2.3.4')
+        boot_strap_ipv6_reverse_domain('1.2.3.4')
 
         ip_str = '1234:1234:1243:1243:1243::'
         new_ip = Ip( ip_str = ip_str, ip_type='6' )
@@ -90,11 +89,7 @@ class SimpleTest(TestCase):
         self.assertEqual(new_ip.ip_lower, ip_lower)
 
     def test_large_ipv6(self):
-        try:
-            rd = boot_strap_ipv6_reverse_domain('f')
-            rd.save()
-        except ValidationError, e:
-            pass
+        boot_strap_ipv6_reverse_domain('f')
         ip_str = 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff'
         ip = ipaddr.IPv6Address(ip_str)
         ip_upper, ip_lower = ipv6_to_longs(ip_str)
@@ -133,9 +128,10 @@ class SimpleTest(TestCase):
             pass
         self.assertEqual( ValidationError, type(e))
 
-        ip = Ip( ip_str = "130.193.1.2", ip_type='4' )
+        ip = Ip(ip_str = "130.193.1.2", ip_type='4')
         self.assertFalse( ip.ip_upper and ip.ip_lower and ip.reverse_domain )
         ip.clean_ip()
+        ip.update_reverse_domain()
         self.assertTrue( ip.ip_upper==0 and ip.ip_lower and ip.reverse_domain )
 
     def test_bad_create(self):
@@ -165,7 +161,7 @@ class SimpleTest(TestCase):
         self.assertEqual(hex(ip_lower).lower(), "0x%sl" % (ip_lower_str.lower()
             .replace(':','')))
 
-    def test2_ipv6_to_longs(self):
+    def test2_ipv6_to_longs2(self):
         ip_upper_str = "aFFF:FaFF:FFaF:FFFa"
         ip_lower_str = "0000:0000:0000:0000"
         ip_upper, ip_lower = ipv6_to_longs(ip_upper_str + ":" + ip_lower_str)

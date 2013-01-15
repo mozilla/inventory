@@ -142,16 +142,15 @@ class StaticInterface(BaseAddressRecord):
             return "{0}{1}.{2}".format(itype, primary, alias)
 
     def clean(self, *args, **kwargs):
-        #if not isinstance(self.mac, basestring):
-        #    raise ValidationError("Mac Address not of valid type.")
-        #self.mac = self.mac.lower()
+        self.mac = self.mac.lower()
         if not self.system:
             raise ValidationError("An interface means nothing without it's "
                 "system.")
         from mozdns.ptr.models import PTR
+        from mozdns.address_record.models import AddressRecord
+
         if PTR.objects.filter(ip_str=self.ip_str, name=self.fqdn).exists():
             raise ValidationError("A PTR already uses this Name and IP")
-        from mozdns.address_record.models import AddressRecord
         if AddressRecord.objects.filter(ip_str=self.ip_str, fqdn=self.fqdn
                 ).exists():
             raise ValidationError("An A record already uses this Name and IP")
@@ -159,15 +158,9 @@ class StaticInterface(BaseAddressRecord):
         if kwargs.pop("validate_glue", True):
             self.check_glue_status()
 
+        self.update_reverse_domain()
         super(StaticInterface, self).clean(validate_glue=False,
-                update_reverse_domain=True, ignore_interface=True)
-
-        if self.pk and self.ip_str.startswith("10."):
-            p = View.objects.filter(name="private")
-            if p:
-                self.views.add(p[0])
-                super(StaticInterface, self).clean(validate_glue=False,
-                        update_reverse_domain=True, ignore_interface=True)
+                                           ignore_interface=True)
 
     def check_glue_status(self):
         """If this interface is a 'glue' record for a Nameserver instance,

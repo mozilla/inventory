@@ -2,19 +2,17 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 from mozdns.view.models import View
-from mozdns.domain.models import Domain, _name_to_domain
+from mozdns.domain.models import Domain
 from mozdns.ip.models import Ip
 from mozdns.cname.models import CNAME
 from mozdns.ip.utils import ip_to_dns_form
 from mozdns.validation import validate_name, validate_ttl
-from mozdns.validation import validate_views
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from core.interface.static_intr.models import StaticInterface
 
 import reversion
 
 from gettext import gettext as _
-import pdb
 
 
 class PTR(Ip, ObjectUrlMixin, DisplayMixin):
@@ -98,15 +96,16 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
 
 
     def clean(self, *args, **kwargs):
-        urd = kwargs.pop('update_reverse_domain', True)
         self.validate_no_cname()
-        self.clean_ip(update_reverse_domain=urd)
+        self.clean_ip()
         # We need to check if there is an interface using our ip and name
         # because that interface will generate a ptr record.
         if (StaticInterface.objects.filter(fqdn=self.name,
             ip_upper=self.ip_upper, ip_lower=self.ip_lower).exists()):
             raise ValidationError("An Interface has already used this IP and "
                 "Name.")
+        if kwargs.pop('update_reverse_domain', True):
+            self.update_reverse_domain()
 
     def __str__(self):
         return "{0} {1} {2}".format(str(self.ip_str), 'PTR', self.name)

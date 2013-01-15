@@ -301,14 +301,3 @@ def name_to_master_domain(name):
 
 def _name_to_domain(fqdn):
     return name_to_domain(fqdn)
-
-
-def _check_TLD_condition(record):
-    domain = Domain.objects.filter(name=record.fqdn)
-    if not domain:
-        return
-    if record.label == '' and domain[0] == record.domain:
-        return  # This is allowed
-    else:
-        raise ValidationError("You cannot create an record that points "
-                              "to the top level of another domain.")

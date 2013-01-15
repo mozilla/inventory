@@ -2,7 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 
 import mozdns
-from mozdns.domain.models import Domain, _check_TLD_condition
+from mozdns.domain.models import Domain
 from mozdns.view.models import View
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.validation import validate_first_label, validate_name
@@ -49,39 +49,6 @@ class LabelDomainMixin(models.Model):
         abstract = True
 
 class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
-    """
-    This class provides common functionality that many DNS record
-    classes share.  This includes a foreign key to the ``domain`` table
-    and a ``label`` CharField.  This class also inherits from the
-    ``ObjectUrlMixin`` class to provide the ``get_absolute_url``,
-    ``get_edit_url``, and ``get_delete_url`` functions.
-
-    This class does validation on the ``label`` field. Call
-    ``clean_all`` to trigger the validation functions. Failure to
-    validate will raise a ``ValidationError``.
-
-    If you plan on using the ``unique_together`` constraint on a Model
-    that inherits from ``MozdnsRecord``, you must include ``domain`` and
-    ``label`` explicitly if you need them to.  ``MozdnsRecord`` will not
-    enforce uniqueness for you.
-
-    All common records have a ``fqdn`` field. This field is updated
-    every time the object is saved::
-
-        fqdn = name + domain.name
-
-        or if name == ''
-
-        fqdn = domain.name
-
-    This field makes searching for records much easier. Instead of
-    looking at ``obj.label`` together with ``obj.domain.name``, you can
-    just search the ``obj.fqdn`` field.
-
-    "the total number of octets that represent a name (i.e., the sum of
-    all label octets and label lengths) is limited to 255" - RFC 4471
-    """
-
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
             validators=[validate_ttl],
             help_text="Time to Live of this record")
@@ -103,7 +70,8 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
 
     @classmethod
     def get_api_fields(cls):
-        """The purpose of this is to help the API decide which fields to expose
+        """
+        The purpose of this is to help the API decide which fields to expose
         to the user when they are creating and updateing an Object. This
         function should be implemented in inheriting models and overriden to
         provide additional fields. Tastypie ignores any relational fields on
@@ -189,7 +157,8 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
                         "support other records.")
 
     def check_for_delegation(self):
-        """If an object's domain is delegated it should not be able to
+        """
+        If an object's domain is delegated it should not be able to
         be changed.  Delegated domains cannot have objects created in
         them.
         """

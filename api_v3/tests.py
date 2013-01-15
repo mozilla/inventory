@@ -343,7 +343,7 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(adapters[0].attrs.primary, '0')
         self.assertEqual(adapters[0].attrs.alias, '0')
         self.assertEqual(adapters[0].ip_str, '10.99.99.1')
-        self.assertEqual(adapters[0].mac, 'AA:AA:AA:AA:AA:AA')
+        self.assertEqual(adapters[0].mac, 'aa:aa:aa:aa:aa:aa')
 
     def test11_test_system_model_delete_by_adapter_via_api(self):
         self.create_domains()
@@ -383,4 +383,4 @@ class Tasty2SystemNetworkAdapterTest(ResourceTestCase):
         self.assertEqual(adapters[0].attrs.primary, '0')
         self.assertEqual(adapters[0].attrs.alias, '0')
         self.assertEqual(adapters[0].ip_str, '10.99.99.1')
-        self.assertEqual(adapters[0].mac, 'AA:AA:AA:AA:AA:AA')
+        self.assertEqual(adapters[0].mac, 'aa:aa:aa:aa:aa:aa')

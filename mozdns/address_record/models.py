@@ -44,13 +44,11 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
         validate_glue = kwargs.pop("validate_glue", True)
         if validate_glue:
             self.check_glue_status()
+        self.clean_ip()
         self.set_fqdn()
         self.check_TLD_condition()
         self.validate_delegation_conditions()
         self.check_for_cname()
-
-        urd = kwargs.pop("update_reverse_domain", False)
-        self.clean_ip(update_reverse_domain=urd)
 
         if not kwargs.pop("ignore_interface", False):
             from core.interface.static_intr.models import StaticInterface

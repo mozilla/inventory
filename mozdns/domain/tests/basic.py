@@ -1,22 +1,12 @@
-import ipaddr
-
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from mozdns.address_record.models import AddressRecord
 from mozdns.cname.models import CNAME
-from mozdns.ptr.models import PTR
 from mozdns.domain.models import Domain
-from mozdns.domain.models import ValidationError, _name_to_domain
-from mozdns.ip.models import ipv6_to_longs, Ip
 from mozdns.nameserver.models import Nameserver
-from mozdns.domain.models import Domain
-from mozdns.domain.models import boot_strap_ipv6_reverse_domain
 from mozdns.soa.models import SOA
 
-from core.site.models import Site
-
-import pdb
 
 class DomainTests(TestCase):
 
@@ -108,7 +98,8 @@ class DomainTests(TestCase):
         self.assertRaises(ValidationError, m.save)
 
     def test_2_soa_validators(self):
-        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact = "hostmaster.foo", description="foo.gaz2")
+        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact =
+                "hostmaster.foo", description="foo.gaz2")
         d, _ = Domain.objects.get_or_create(name="gaz")
         d.soa = None
         d.save()
@@ -117,7 +108,8 @@ class DomainTests(TestCase):
         d1.save()
 
     def test_3_soa_validators(self):
-        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo2.gaz", contact = "hostmaster.foo", description="foo.gaz2")
+        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo2.gaz", contact =
+                "hostmaster.foo", description="foo.gaz2")
 
         r, _ = Domain.objects.get_or_create(name='9.in-addr.arpa')
         r.soa = s1
@@ -215,7 +207,8 @@ class DomainTests(TestCase):
 
 
         # Creating objects in the domain should be locked.
-        arec = AddressRecord(label="ns1", domain=dom, ip_str="128.193.99.9", ip_type='4')
+        arec = AddressRecord(label="ns1", domain=dom, ip_str="128.193.99.9",
+                ip_type='4')
         self.assertRaises(ValidationError, arec.save)
 
         ns = Nameserver(domain=dom, server="ns1."+dom.name)
@@ -250,7 +243,8 @@ class DomainTests(TestCase):
 
         # Adding new A records that have the same name as an NS should
         # be allows.
-        arec1 = AddressRecord(label="ns1", domain=dom, ip_str="128.193.100.10", ip_type='4')
+        arec1 = AddressRecord(label="ns1", domain=dom, ip_str="128.193.100.10",
+                ip_type='4')
         arec1.save()
 
     def test_existing_record_new_domain(self):
@@ -260,7 +254,8 @@ class DomainTests(TestCase):
         name = "to.bo"
         t_dom,_ = Domain.objects.get_or_create(name = name, delegated=False)
 
-        arec1 = AddressRecord(label="no", domain=t_dom, ip_str="128.193.99.9", ip_type='4')
+        arec1 = AddressRecord(label="no", domain=t_dom, ip_str="128.193.99.9",
+                ip_type='4')
         arec1.save()
 
         name = "no.to.bo"

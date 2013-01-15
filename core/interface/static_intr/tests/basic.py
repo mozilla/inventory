@@ -8,9 +8,8 @@ from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
 from mozdns.view.models import View
 
-from mozdns.ip.utils import ip_to_domain_name, nibbilize
+from mozdns.ip.utils import ip_to_domain_name
 
-import pdb
 
 class StaticInterTests(TestCase):
     def create_domain(self, name, ip_type=None, delegated=False):
@@ -37,6 +36,9 @@ class StaticInterTests(TestCase):
         self.f_c.save()
         self.r1 = self.create_domain(name="10")
         self.r1.save()
+
+        self.r2 = self.create_domain(name="128")
+        self.r2.save()
         self.n = System()
         self.n.clean()
         self.n.save()
@@ -79,12 +81,12 @@ class StaticInterTests(TestCase):
         def bad_assign():
             i.attrs.interface_type = "wee"
         self.assertRaises(ValidationError, bad_assign)
-        def bad_assign():
+        def bad_assign1():
             i.attrs.primary = "wee"
-        self.assertRaises(ValidationError, bad_assign)
-        def bad_assign():
+        self.assertRaises(ValidationError, bad_assign1)
+        def bad_assign2():
             i.attrs.alias = "wee"
-        self.assertRaises(ValidationError, bad_assign)
+        self.assertRaises(ValidationError, bad_assign2)
 
 
     def test2_create_basic(self):
@@ -94,12 +96,14 @@ class StaticInterTests(TestCase):
         ip_str = "10.0.0.1"
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
         i = self.do_add(**kwargs)
+        self.assertEqual(self.r1, i.reverse_domain)
 
         i.dhcp_enabled = False
         i.clean()
         i.save()
         i2 = StaticInterface.objects.get(pk=i.pk)
         self.assertFalse(i2.dhcp_enabled)
+        self.assertEqual(self.r1, i2.reverse_domain)
 
         i.dhcp_enabled = True
         i.clean()
@@ -129,12 +133,21 @@ class StaticInterTests(TestCase):
         domain = self.f_c
         ip_str = "10.0.0.2"
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
-        r = self.do_add(**kwargs)
+        self.do_add(**kwargs)
 
         # Change the mac by one.
         mac = "00:00:00:00:00:01"
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
-        r = self.do_add(**kwargs)
+        self.do_add(**kwargs)
+
+    def test6_create_basic(self):
+        mac = "11:22:33:44:55:66"
+        label = "foo1"
+        domain = self.f_c
+        ip_str = "128.0.0.2"
+        kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
+        i = self.do_add(**kwargs)
+        self.assertEqual(self.r2, i.reverse_domain)
 
     def test1_delete(self):
         mac = "12:22:33:44:55:66"
@@ -144,8 +157,6 @@ class StaticInterTests(TestCase):
         kwargs = {'mac':mac, 'label':label, 'domain':domain, 'ip_str':ip_str}
         r = self.do_add(**kwargs)
         self.do_delete(r)
-
-
 
     def test1_dup_create_basic(self):
         mac = "11:22:33:44:55:66"
@@ -207,5 +218,5 @@ class StaticInterTests(TestCase):
         ip_str = "10.0.0.1"
         ip_type = '4'
         r = StaticInterface(label=label, domain=domain, ip_str=ip_str,
-                ip_type=ip_type, system=None)
+                ip_type=ip_type, system=None, mac=mac)
         self.assertRaises(ValidationError,r.clean)
