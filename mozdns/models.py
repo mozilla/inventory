@@ -81,7 +81,8 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
         return ['fqdn', 'ttl', 'description', 'views']
 
     def clean(self):
-        # The Nameserver class does not call this function
+        # The Nameserver and subclasses of BaseAddressRecord do not call this
+        # function
         self.set_fqdn()
         self.check_TLD_condition()
         self.check_no_ns_soa_condition()

@@ -39,7 +39,6 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
     def get_api_fields(cls):
         return super(BaseAddressRecord, cls).get_api_fields() + ['ip_str',
                                                                   'ip_type']
-
     def clean(self, *args, **kwargs):
         validate_glue = kwargs.pop("validate_glue", True)
         if validate_glue:
@@ -48,6 +47,7 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
         self.set_fqdn()
         self.check_TLD_condition()
         self.validate_delegation_conditions()
+        self.check_no_ns_soa_condition()
         self.check_for_cname()
 
         if not kwargs.pop("ignore_interface", False):

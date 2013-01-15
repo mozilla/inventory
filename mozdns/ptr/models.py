@@ -57,12 +57,12 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
         return super(PTR, self).bind_render_record(pk=pk, **kwargs)
 
     def save(self, *args, **kwargs):
+        self.clean(update_reverse_domain=kwargs.pop('update_reverse_domain',
+                                                    True))
         if self.reverse_domain and self.reverse_domain.soa:
             self.reverse_domain.soa.dirty = True
             self.reverse_domain.soa.save()
             # The reverse_domain field is in the Ip class.
-        self.clean(update_reverse_domain=kwargs.pop('update_reverse_domain',
-                                                    True))
         super(PTR, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
@@ -106,6 +106,15 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
                 "Name.")
         if kwargs.pop('update_reverse_domain', True):
             self.update_reverse_domain()
+        self.check_no_ns_soa_condition()
+
+    def check_no_ns_soa_condition(self):
+        if self.reverse_domain.soa:
+            root_domain = self.reverse_domain.soa.root_domain
+            if root_domain and not root_domain.nameserver_set.exists():
+                raise ValidationError("The zone you are trying to assign this "
+                        "record into does not have an NS record, thus cannnot "
+                        "support other records.")
 
     def __str__(self):
         return "{0} {1} {2}".format(str(self.ip_str), 'PTR', self.name)

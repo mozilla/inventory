@@ -4,11 +4,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.validation import validate_label, validate_name
-from mozdns.mixins import ObjectUrlMixin, DisplayMixin
-from mozdns.view.models import View
-from mozdns.validation import validate_ttl
 from mozdns.models import MozdnsRecord
-from mozdns.soa.utils import update_soa
 
 from core.interface.static_intr.models import StaticInterface
 
@@ -113,7 +109,12 @@ class Nameserver(MozdnsRecord):
 
     glue = property(get_glue, set_glue, del_glue, "The Glue property.")
 
+    def delete(self, *args, **kwargs):
+        self.check_no_ns_soa_condition()
+        super(Nameserver, self).delete(*args, **kwargs)
+
     def clean(self):
+        # We are a MozdnsRecord, our clean method is called during save()!
         self.check_for_cname()
 
         if not self.needs_glue():
@@ -146,6 +147,15 @@ class Nameserver(MozdnsRecord):
                         self.glue = addr_glue[0]
                     else:
                         self.glue = intr_glue[0]
+
+    def check_no_ns_soa_condition(self):
+        if (self.domain.soa and
+            self.domain.soa.root_domain == self.domain and
+            self.domain.nameserver_set.count() == 1 and  # We are it!
+            self.domain.soa.has_record_set(exclude_ns=True)):
+            raise ValidationError("Other records in this nameserver's zone are"
+                    " relying on it's existance as it is the only nameserver at"
+                    " the root of the zone.")
 
     def needs_glue(self):
         # Replace the domain portion of the server with "".

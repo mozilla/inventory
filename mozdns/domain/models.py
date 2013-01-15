@@ -110,20 +110,37 @@ class Domain(models.Model, ObjectUrlMixin):
 
     def delete(self, *args, **kwargs):
         self.check_for_children()
+        if self.is_reverse:
+            self.reassign_ptr_delete()
         if self.has_record_set():
             raise ValidationError("There are records associated with this "
                                   "domain. Delete them before deleting this "
                                   "domain.")
-        if self.is_reverse:
-            self.reassign_ptr_delete()
         super(Domain, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        if self.pk is None:
+        if not self.pk:
             new_domain = True
         else:
             new_domain = False
+            db_self = Domain.objects.get(pk=self.pk)
+            # Raise an exception...
+            # If our soa is different AND it's non-null AND we have records in
+            # this domain AND EITHER
+            #       the new soa has a record domain with no nameservers
+            #   OR
+            #       it has no root domain, which means we are going to
+            #       be the root domain, and we have no nameserver records.
+            if (db_self.soa != self.soa and
+                self.soa and self.has_record_set() and
+                (self.soa.root_domain and
+                not self.soa.root_domain.nameserver_set.exists() or
+                not self.soa.root_domain and
+                not self.nameserver_set.all().exists())):
+                    raise ValidationError("By changing this domain's SOA you are "
+                            "attempting to create a zone whos root domain has no "
+                            "NS record.")
         super(Domain, self).save(*args, **kwargs)
         if self.is_reverse and new_domain:
             # Collect any ptr's that belong to this new domain.
@@ -171,24 +188,27 @@ class Domain(models.Model, ObjectUrlMixin):
         if self.domain_set.exists():
             raise ValidationError("Before deleting this domain, please "
                                   "remove it's children.")
-    def has_record_set(self):
-        if self.mx_set.exists():
-            return True
-        if self.nameserver_set.exists():
-            return True
+    def has_record_set(self, exclude_ns=False):
         if self.addressrecord_set.exists():
-            return True
-        if self.staticinterface_set.exists():
-            return True
-        if self.srv_set.exists():
             return True
         if self.cname_set.exists():
             return True
-        if self.txt_set.exists():
+        if self.mx_set.exists():
+            return True
+        if not exclude_ns and self.nameserver_set.exists():
+            return True
+        if self.srv_set.exists():
             return True
         if self.sshfp_set.exists():
             return True
+        if self.staticinterface_set.exists():
+            return True
+        if self.txt_set.exists():
+            return True
+        if self.ptr_set.exists():
+            return True
         return False
+
 
     ### Reverse Domain Functions
 

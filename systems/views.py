@@ -109,7 +109,6 @@ def create_adapter(request, system_id):
         return HttpResponse("Ajax only homie.")
 
     from api_v3.system_api import SystemResource
-    from mozdns.domain.models import Domain
     from mozdns.view.models import View
     system = get_object_or_404(models.System, id=system_id)
     ip_address = request.POST.get('ip_address', '')

@@ -15,10 +15,9 @@ sys.path.append(site_root)
 import manage
 from django.test import TestCase
 from django.test.client import Client
-from models import KeyValue, System
+from models import System
 from core.range.models import Range
 from mozdns.domain.models import Domain
-from mozdns.soa.models import SOA
 from core.network.models import Network
 from mozdns.view.models import View
 from core.vlan.models import Vlan
@@ -28,9 +27,10 @@ try:
 except:
     from django.utils import simplejson as json
 
+from mozdns.tests.utils import create_fake_zone
 from inventory.systems import models
-from test_utils import setup_test_environment, TestCase
-import pdb
+from test_utils import setup_test_environment
+
 setup_test_environment()
 
 
@@ -272,7 +272,7 @@ class SystemAdapterTest(TestCase):
             'interface': 'eth0.0',
             'system_id': '1',
             'is_ajax': '1',
-            'fqdn': 'fake-hostname.mozilla.com',
+            'fqdn': 'fake-hostname.dc.mozilla.com',
             'range': Range.objects.all()[0].id,
             'mac_address': '00:00:00:00:00:00',
             'ip_address': '10.99.99.99',
@@ -323,7 +323,7 @@ class SystemAdapterTest(TestCase):
         post_dict = {
             'system_id': '1',
             'interface': 'eth2.4',
-            'fqdn': 'fake-hostname.mozilla.com',
+            'fqdn': 'fake-hostname.dc.mozilla.com',
             'is_ajax': '1',
             'range': Range.objects.all()[0].id,
             'ip_address': '66.66.66.66',
@@ -349,7 +349,7 @@ class SystemAdapterTest(TestCase):
         public = View.objects.get(name='public')
         self.assertEqual(
             private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.mozilla.com')
+            u'fake-hostname.dc.mozilla.com')
         self.assertEqual(
             private.staticinterface_set.all()[0].mac, u'00:00:00:00:00:00')
         self.assertEqual(
@@ -363,7 +363,7 @@ class SystemAdapterTest(TestCase):
         post_dict = {
             'system_id': '1',
             'interface': "eth1.2",
-            'fqdn': 'fake-hostname.mozilla.com',
+            'fqdn': 'fake-hostname.dc.mozilla.com',
             'range': Range.objects.all()[0].id,
             'is_ajax': '1',
             'ip_address': '66.66.66.66',
@@ -389,7 +389,7 @@ class SystemAdapterTest(TestCase):
         public = View.objects.get(name='public')
         self.assertEqual(
             private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.mozilla.com')
+            u'fake-hostname.dc.mozilla.com')
         self.assertEqual(
             private.staticinterface_set.all()[0].mac,
             u'00:00:00:00:00:00')
@@ -409,7 +409,7 @@ class SystemAdapterTest(TestCase):
         post_dict = {
             'system_id': '1',
             'range': Range.objects.all()[0].id,
-            'fqdn': 'fake-hostname.mozilla.com',
+            'fqdn': 'fake-hostname.dc.mozilla.com',
             'is_ajax': '1',
             'interface': 'eth0.0',
             'ip_address': '66.66.66.66',
@@ -434,7 +434,7 @@ class SystemAdapterTest(TestCase):
         private = View.objects.get(name='private')
         public = View.objects.get(name='public')
         self.assertEqual(private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.mozilla.com')
+            u'fake-hostname.dc.mozilla.com')
         self.assertEqual(
             private.staticinterface_set.all()[0].mac, u'00:00:00:00:00:00')
         self.assertEqual(
@@ -450,7 +450,7 @@ class SystemAdapterTest(TestCase):
             'interface': 'eth0.0',
             'system_id': '1',
             'range': Range.objects.all()[0].id,
-            'fqdn': 'fake-hostname.mozilla.com',
+            'fqdn': 'fake-hostname.dc.mozilla.com',
             'is_ajax': '1',
             'ip_address': '10.99.99.10',
             'mac_address': '00:00:00:00:00:00',
@@ -475,7 +475,7 @@ class SystemAdapterTest(TestCase):
         public = View.objects.get(name='public')
         self.assertEqual(
             private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.mozilla.com')
+            u'fake-hostname.dc.mozilla.com')
         self.assertEqual(
             private.staticinterface_set.all()[0].mac, u'00:00:00:00:00:00')
         self.assertEqual(
@@ -491,7 +491,7 @@ class SystemAdapterTest(TestCase):
             'interface': 'eth0.0',
             'system_id': '1',
             'range': Range.objects.all()[0].id,
-            'fqdn': 'fake-hostname.mozilla.com',
+            'fqdn': 'fake-hostname.dc.mozilla.com',
             'is_ajax': '1',
             'ip_address': '10.99.99.10',
             'mac_address': '00:00:00:00:00:00',
@@ -523,7 +523,7 @@ class SystemAdapterTest(TestCase):
             'interface': 'eth0.0',
             'system_id': '1',
             'range': Range.objects.all()[0].id,
-            'fqdn': 'fake-hostname.mozilla.com',
+            'fqdn': 'fake-hostname.dc.mozilla.com',
             'is_ajax': '1',
             'ip_address': '10.99.99.10',
             'mac_address': '00:00:00:00:00:00',
@@ -565,7 +565,7 @@ class SystemAdapterTest(TestCase):
             'system_id': '1',
             'interface': 'asdfasfdasfdasdfasdf',
             'range': Range.objects.all()[0].id,
-            'fqdn': 'fake-hostname.mozilla.com',
+            'fqdn': 'fake-hostname.dc.mozilla.com',
             'is_ajax': '1',
             'ip_address': '10.99.99.10',
             'mac_address': '00:00:00:00:00:00',
@@ -607,16 +607,8 @@ class SystemAdapterTest(TestCase):
         private.save()
         public = View(name="public")
         public.save()
-        Domain(name='com').save()
-        d0 = Domain(name='mozilla.com')
-        d0.save()
-        s = SOA(primary="foo", description="bar", contact="asdf")
-        s.save()
-        d0.soa = s
-        d0.save()
-        d = Domain(name='dc.mozilla.com')
-        d.soa = s
-        d.save()
+        d0 = create_fake_zone("dc.mozilla.com", suffix="")
+        s = d0.soa
         d = Domain(name='vlan.dc.mozilla.com')
         d.save()
         d.soa = s
@@ -625,17 +617,9 @@ class SystemAdapterTest(TestCase):
         Domain(name='in-addr.arpa').save()
 
         # Create Reverse Domains
-        s = SOA(primary="foo", description="bar", contact="asdfasdf")
-        s.save()
-        d = Domain(name='10.in-addr.arpa')
-        d.soa = s
-        d.save()
+        d = create_fake_zone("10.in-addr.arpa", suffix="")
 
-        s = SOA(primary="foo.reverse", description="bar", contact="asdfasdf")
-        s.save()
-        d = Domain(name='66.in-addr.arpa')
-        d.soa = s
-        d.save()
+        d = create_fake_zone("66.in-addr.arpa", suffix="")
 
         vlan = Vlan(name='vlan', number=99)
         vlan.save()

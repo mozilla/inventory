@@ -126,6 +126,12 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
                     "deleting this SOA.")
         super(SOA, self).delete(*args, **kwargs)
 
+    def has_record_set(self, exclude_ns=False):
+        for domain in self.domain_set.all():
+            if domain.has_record_set(exclude_ns=exclude_ns):
+                return True
+        return False
+
     def save(self, *args, **kwargs):
         # Look a the value of this object in the db. Did anything change? If
         # yes, mark yourself as 'dirty'.
@@ -148,17 +154,12 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     def __repr__(self):
         return "<'{0}'>".format(str(self))
 
+
 reversion.register(SOA)
+
 
 class SOAKeyValue(KeyValue):
     soa = models.ForeignKey(SOA, null=False)
-
-    def _aa_dir_path(self):
-        """Filepath - Where should the build scripts put the zone file for this
-        zone?"""
-        if not os.access(self.value, os.R_OK):
-            raise ValidationError("Couldn't find {0} on the system running "
-                    "this code. Please create this path.".format(self.value))
 
     def _aa_disabled(self):
         """Disabled - The Value of this Key determines whether or not an SOA will
@@ -176,5 +177,6 @@ class SOAKeyValue(KeyValue):
             raise ValidationError("Disabled should be set to either {0} OR "
                         "{1}".format(", ".join(true_values),
                         ", ".join(false_values)))
+
 
 reversion.register(SOAKeyValue)

@@ -3,7 +3,6 @@
 import os
 from django.test.client import Client
 from django.test import TestCase
-from django.core.urlresolvers import reverse
 
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
@@ -11,6 +10,8 @@ from mozdns.view.models import View
 from mozdns.tests.view_tests_template import  random_label, random_byte
 from mozdns.mozbind.builder import DNSBuilder
 from mozdns.mozbind.zone_builder import build_zone_data
+
+from mozdns.tests.utils import create_fake_zone
 
 from scripts.dnsbuilds.tests.build_tests import BuildScriptTests
 
@@ -40,40 +41,33 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
             'ttl_3': random_byte(),
         }
 
-    def build_zone(self, random_str):
-        # Let's use the view that should be used by a user who is creating a
-        # zone. Assume it works.
-        post_data = self.get_post_data(random_str)
-        self.client.post(reverse('create-zone-ajax'), post_data)
-        return post_data
-
     def test_build_zone(self):
-        self.build_zone('asdf1')
+        create_fake_zone('asdf1')
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                        FIRST_RUN=True, PUSH_TO_PROD=False)
         b.build_dns()
-        self.build_zone('asdf2')
+        create_fake_zone('asdf2')
         b.build_dns()
-        self.build_zone('asdf3')
-        self.build_zone('asdf4')
+        create_fake_zone('asdf3')
+        create_fake_zone('asdf4')
         b.build_dns()
-        self.build_zone('asdf5')
+        create_fake_zone('asdf5')
         b.build_dns()
 
     def test_change_a_record(self):
-        post_data = self.build_zone('asdfz1')
+        root_domain = create_fake_zone('asdfz1')
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                        FIRST_RUN=True, PUSH_TO_PROD=False)
         b.build_dns()
-        self.assertEqual((15, 0), b.svn_lines_changed())
+        self.assertEqual((13, 0), b.svn_lines_changed())
         b.PUSH_TO_PROD = True
         b.build_dns()
 
         # Now add a record.
         a, c = AddressRecord.objects.get_or_create(label='',
-                        domain=Domain.objects.get(name=post_data['root_domain']),
+                        domain=root_domain,
                         ip_str="10.0.0.1", ip_type='4')
         a.views.add(View.objects.get_or_create(name='private')[0])
         if not c:
@@ -148,16 +142,11 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b.svn_checkin(lc)
 
     def test_build_zone_no_nameserver(self):
-        post_data = self.build_zone('asdf6')
-        root_domain = Domain.objects.get(name=post_data['root_domain'])
+        root_domain = create_fake_zone('asdf6')
         x, y = build_zone_data(root_domain, root_domain.soa)
         self.assertTrue(x)
         self.assertFalse(y)
         root_domain.nameserver_set.all().delete()
-        a = AddressRecord(label='', domain=root_domain, ip_type='6',
-                          ip_str='1::')
-        a.save()
-        a.views.add(View.objects.get_or_create(name='private')[0])
 
         x, y = build_zone_data(root_domain, root_domain.soa)
         self.assertFalse(x)
