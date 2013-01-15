@@ -98,7 +98,7 @@ def validate_zone_soa(domain, master_domain):
         return
 
     zone_domains = domain.soa.domain_set.all()
-    root_domain = find_root_domain(domain.soa)
+    root_domain = domain.soa.root_domain
 
     if not root_domain:  # No one is using this domain.
         return

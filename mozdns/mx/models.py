@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from mozdns.models import MozdnsRecord
+from mozdns.models import MozdnsRecord, LabelDomainMixin
 from mozdns.cname.models import CNAME
 
 from mozdns.validation import validate_mx_priority
@@ -11,7 +11,7 @@ import reversion
 
 from gettext import gettext as _
 
-class MX(MozdnsRecord):
+class MX(MozdnsRecord, LabelDomainMixin):
     """
     >>> MX(label=label, domain=domain, server=server, priority=prio,
     ...     ttl=tll)

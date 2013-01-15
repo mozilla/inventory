@@ -6,23 +6,17 @@ from systems.models import System
 import mozdns
 from core.keyvalue.models import KeyValue
 from core.keyvalue.utils import AuxAttr
-from core.mixins import ObjectUrlMixin
 from core.validation import validate_mac
 from mozdns.address_record.models import BaseAddressRecord
-from mozdns.models import MozdnsRecord
 from mozdns.view.models import View
 from mozdns.domain.models import Domain
-from mozdns.cname.models import CNAME
-from mozdns.ip.models import Ip
 from mozdns.ip.utils import ip_to_dns_form
-from settings import CORE_BASE_URL
 
 import re
 from gettext import gettext as _
-import pdb
 
 
-class StaticInterface(BaseAddressRecord, models.Model, ObjectUrlMixin):
+class StaticInterface(BaseAddressRecord):
     """The StaticInterface Class.
 
         >>> s = StaticInterface(label=label, domain=domain, ip_str=ip_str,

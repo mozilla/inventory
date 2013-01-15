@@ -1,7 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from mozdns.models import MozdnsRecord
+from mozdns.models import MozdnsRecord, LabelDomainMixin
 
 import reversion
 
@@ -16,7 +16,7 @@ def validate_fingerprint(number):
     if number not in (1,):
         raise ValidationError("Fingerprint type must be 1 (SHA-1)")
 
-class SSHFP(MozdnsRecord):
+class SSHFP(MozdnsRecord, LabelDomainMixin):
     """
     >>> SSHFP(label=label, domain=domain, key=key_data,
     ... algorithm_number=algo_num, fingerprint_type=fing_type)
@@ -54,13 +54,6 @@ class SSHFP(MozdnsRecord):
     @property
     def rdtype(self):
         return 'SSHFP'
-
-    def save(self, *args, **kwargs):
-        super(SSHFP, self).save(*args, **kwargs)
-
-    def clean(self):
-        super(SSHFP, self).clean()
-        super(SSHFP, self).check_for_cname()
 
     class Meta:
         db_table = "sshfp"

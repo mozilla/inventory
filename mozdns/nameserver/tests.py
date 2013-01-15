@@ -1,17 +1,17 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase
-from django.test.client import Client
+from django.test import TestCase, RequestFactory
 
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.nameserver.models import Nameserver
-from mozdns.ip.models import ipv6_to_longs, Ip
+from mozdns.soa.models import SOA
 from mozdns.ip.utils import ip_to_domain_name
 
 from core.interface.static_intr.models import StaticInterface
 from systems.models import System
 
-import pdb
+from mozdns.tests.utils import create_fake_zone
+
 
 class NSTestsModels(TestCase):
     def create_domain(self, name, ip_type=None, delegated=False):
@@ -27,6 +27,7 @@ class NSTestsModels(TestCase):
         return d
 
     def setUp(self):
+        self.factory = RequestFactory()
         self.arpa = self.create_domain(name = 'arpa')
         self.arpa.save()
         self.i_arpa = self.create_domain(name = 'in-addr.arpa')
@@ -99,7 +100,8 @@ class NSTestsModels(TestCase):
         self.assertEqual(ns.server, ns.glue.fqdn)
         self.assertRaises(ValidationError, glue.delete)
 
-        glue = AddressRecord(label='ns3', domain = self.f_r, ip_str = '128.193.1.10', ip_type='4')
+        glue = AddressRecord(label='ns3', domain = self.f_r, ip_str =
+                             '128.193.1.10', ip_type='4')
         glue.save()
         data = {'domain':self.f_r , 'server':'ns3.foo.ru'}
         ns = self.do_add(**data)
@@ -109,7 +111,7 @@ class NSTestsModels(TestCase):
     def test_disallow_name_update_of_glue_A(self):
         # Glue records should not be allowed to change their name.
         glue = AddressRecord(label='ns39', domain = self.f_r, ip_str =
-                '128.193.1.77', ip_type='4')
+                             '128.193.1.77', ip_type='4')
         glue.clean()
         glue.save()
         data = {'domain':self.f_r , 'server':'ns39.foo.ru'}
@@ -284,3 +286,133 @@ class NSTestsModels(TestCase):
         self.do_add(**data)
 
         self.assertRaises(ValidationError, self.do_add, **data)
+
+    def _get_post_data(self, random_str):
+        """Return a valid set of data"""
+        return {
+            'root_domain': '{0}.mozilla.com'.format(random_str),
+            'soa_primary': 'ns1.mozilla.com',
+            'soa_contact': 'noc.mozilla.com',
+            'nameserver_1': 'ns1.mozilla.com',
+            'ttl_1': '1234'
+        }
+
+    def test_bad_nameserver_soa_state_case_1_0(self):
+        # This is Case 1
+        root_domain = create_fake_zone("asdf10")
+        for ns in root_domain.nameserver_set.all():
+            ns.delete()
+
+        # At his point we should have a domain at the root of a zone with no
+        # other records in it.
+
+        # Adding a record shouldn't be allowed because there is no NS record on
+        # the zone's root domain.
+        a = AddressRecord(label='', domain=root_domain, ip_type="6", ip_str="1::")
+        self.assertRaises(ValidationError, a.save)
+
+    def test_bad_nameserver_soa_state_case_1_1(self):
+        # This is Case 1
+        root_domain = create_fake_zone("asdf111")
+        for ns in root_domain.nameserver_set.all():
+            ns.delete()
+
+        # At his point we should have a domain at the root of a zone with no
+        # other records in it.
+
+        # Let's create a child domain and try to add a record there.
+        cdomain = Domain(name="test." + root_domain.name)
+        cdomain.save()
+
+        # Adding a record shouldn't be allowed because there is no NS record on
+        # the zone's root domain.
+        a = AddressRecord(label='', domain=cdomain, ip_type="6", ip_str="1::")
+        self.assertRaises(ValidationError, a.save)
+
+
+    def test_bad_nameserver_soa_state_case_2_0(self):
+        # This is Case 2
+        root_domain = create_fake_zone("asdf20")
+        self.assertEqual(root_domain.nameserver_set.count(), 1)
+        ns = root_domain.nameserver_set.all()[0]
+
+        # At his point we should have a domain at the root of a zone with one
+        # ns record associated to the domain.
+
+        a = AddressRecord(label='', domain=root_domain, ip_type="6", ip_str="1::")
+        a.save()
+
+        self.assertRaises(ValidationError, ns.delete)
+
+    def test_bad_nameserver_soa_state_case_2_1(self):
+        # This is Case 2
+        root_domain = create_fake_zone("asdf21")
+        self.assertEqual(root_domain.nameserver_set.count(), 1)
+        ns = root_domain.nameserver_set.all()[0]
+
+        # At his point we should have a domain at the root of a zone with one
+        # ns record associated to the domain.
+
+        # Let's create a child domain and add a record there, then try to
+        # delete the NS record
+        cdomain = Domain(name="test." + root_domain.name)
+        cdomain.save()
+
+        a = AddressRecord(label='', domain=cdomain, ip_type="6", ip_str="1::")
+        a.save()
+
+        self.assertRaises(ValidationError, ns.delete)
+
+    def test_bad_nameserver_soa_state_case_3_0(self):
+        # This is Case 3
+        root_domain = create_fake_zone("asdf30")
+        for ns in root_domain.nameserver_set.all():
+            ns.delete()
+
+        soa = ns.domain.soa
+        ns.domain.soa = None
+        root_domain.soa = None  # Shit's getting cached
+        ns.domain.save()
+        soa.delete()
+
+        # At his point we should have a domain pointed at no SOA record with no
+        # records attached to it. It also has no child domains.
+
+        # Add a record to the domain.
+        a = AddressRecord(label='', domain=root_domain, ip_type="6", ip_str="1::")
+        a.save()
+
+        s = SOA(primary="asdf.asdf", contact="asdf.asdf", description="asdf")
+        s.save()
+        root_domain.soa = s
+
+        self.assertRaises(ValidationError, root_domain.save)
+
+    def test_bad_nameserver_soa_state_case_3_1(self):
+        # This is Case 3
+        root_domain = create_fake_zone("asdf31")
+        for ns in root_domain.nameserver_set.all():
+            ns.delete()
+
+        soa = ns.domain.soa
+        ns.domain.soa = None
+        root_domain.soa = None  # Shit's getting cached
+        ns.domain.save()
+        soa.delete()
+
+        # At his point we should have a domain pointed at no SOA record with no
+        # records attached to it. It also has no child domains.
+
+        # Try case 3 but add a record to a child domain of root_domain
+        cdomain = Domain(name="test." + root_domain.name)
+        cdomain.save()
+
+        # Add a record to the domain.
+        a = AddressRecord(label='', domain=cdomain, ip_type="6", ip_str="1::")
+        a.save()
+
+        s = SOA(primary="asdf.asdf", contact="asdf.asdf", description="asdf")
+        s.save()
+        root_domain.soa = s
+
+        self.assertRaises(ValidationError, root_domain.save)

@@ -1,49 +1,23 @@
 from django.db import models
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 
 import mozdns
 from mozdns.cname.models import CNAME
-from mozdns.view.models import View
 from mozdns.ip.models import Ip
-from mozdns.models import set_fqdn, check_for_cname
-from mozdns.models import check_TLD_condition
-from mozdns.validation import validate_first_label, validate_name, validate_ttl
-from mozdns.domain.models import Domain
-from mozdns.mixins import ObjectUrlMixin, DisplayMixin
-from mozdns.soa.utils import update_soa
+from mozdns.models import MozdnsRecord, LabelDomainMixin
 
 import reversion
 from gettext import gettext as _
 
 
-class BaseAddressRecord(Ip, DisplayMixin):
+class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
     """AddressRecord is the class that generates A and AAAA records
 
         >>> AddressRecord(label=label, domain=domain_object, ip_str=ip_str,
         ... ip_type=ip_type)
 
     """
-    ############################
-    # See Ip for all ip fields #
-    ############################
-
-    label = models.CharField(max_length=63, blank=True, null=True,
-                validators=[validate_first_label],
-                help_text="The short hostname goes here. If this is a record "
-                "for the selected domain, leave this field blank")
-    domain = models.ForeignKey(Domain, null=False, help_text="FQDN of the "
-                "domain after the short hostname. "
-                "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
-    fqdn = models.CharField(max_length=255, blank=True, null=True,
-                validators=[validate_name])
-    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-            validators=[validate_ttl], help_text="Time to Live of the record")
-    description = models.CharField(max_length=1000, blank=True, null=True,
-                help_text="A description of this record.")
-    views = models.ManyToManyField(View, blank=True)
-
     search_fields = ("fqdn", "ip_str")
-
 
     class Meta:
         abstract = True
@@ -63,39 +37,17 @@ class BaseAddressRecord(Ip, DisplayMixin):
 
     @classmethod
     def get_api_fields(cls):
-        return  ['fqdn', 'ip_str', 'ip_type', 'description', 'ttl']
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        set_fqdn(self)
-        check_TLD_condition(self)
-        update_soa(self)
-        if self.pk:
-            # We need to get the domain from the db. If it's not our current
-            # domain, call prune_tree on the domain in the db later.
-            db_domain = self.__class__.objects.get(pk=self.pk).domain
-            if self.domain == db_domain:
-                db_domain = None
-        else:
-            db_domain = None
-        super(BaseAddressRecord, self).save(*args, **kwargs)
-        if db_domain:
-            from mozdns.utils import prune_tree
-            prune_tree(db_domain)
+        return super(BaseAddressRecord, cls).get_api_fields() + ['ip_str',
+                                                                  'ip_type']
 
     def clean(self, *args, **kwargs):
         validate_glue = kwargs.pop("validate_glue", True)
         if validate_glue:
             self.check_glue_status()
-        set_fqdn(self)
-        check_TLD_condition(self)
-        try:
-            if self.domain and self.domain.delegated:
-                self.validate_delegation_conditions()
-        except ObjectDoesNotExist:
-            pass
-        check_for_cname(self)
-
+        self.set_fqdn()
+        self.check_TLD_condition()
+        self.validate_delegation_conditions()
+        self.check_for_cname()
 
         urd = kwargs.pop("update_reverse_domain", False)
         self.clean_ip(update_reverse_domain=urd)
@@ -121,17 +73,13 @@ class BaseAddressRecord(Ip, DisplayMixin):
                     "Change the CNAME before deleting this record.".
                     format(self.record_type()))
 
-        from mozdns.utils import prune_tree
-        objs_domain = self.domain
         super(BaseAddressRecord, self).delete(*args, **kwargs)
-        prune_tree(objs_domain)
-
-    def set_fqdn(self):
-        set_fqdn(self)
 
     def validate_delegation_conditions(self):
         """If our domain is delegated then an A record can only have a
         name that is the same as a nameserver in that domain (glue)."""
+        if not (self.domain and self.domain.delegated):
+            return
         if self.domain.nameserver_set.filter(server=self.fqdn).exists():
             return
         else:
@@ -175,7 +123,7 @@ class BaseAddressRecord(Ip, DisplayMixin):
 
 
 
-class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
+class AddressRecord(BaseAddressRecord):
     """AddressRecord is the class that generates A and AAAA records
 
         >>> AddressRecord(label=label, domain=domain_object, ip_str=ip_str,
@@ -186,8 +134,6 @@ class AddressRecord(BaseAddressRecord, ObjectUrlMixin):
     # See Ip for all ip fields #
     ############################
     id = models.AutoField(primary_key=True)
-    reverse_domain = models.ForeignKey(Domain, null=True, blank=True,
-            related_name="addressrecordomain_set")
 
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {ip_str:$rhs_just}")

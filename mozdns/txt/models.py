@@ -2,13 +2,13 @@ from gettext import gettext as _
 
 from django.db import models
 
-from mozdns.models import MozdnsRecord
+from mozdns.models import MozdnsRecord, LabelDomainMixin
 
 
 import reversion
 
 
-class TXT(MozdnsRecord):
+class TXT(MozdnsRecord, LabelDomainMixin):
     """
     >>> TXT(label=label, domain=domain, txt_data=txt_data)
     """
@@ -38,14 +38,6 @@ class TXT(MozdnsRecord):
     def rdtype(self):
         return 'TXT'
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super(TXT, self).save(*args, **kwargs)
-
-    def clean(self):
-        super(TXT, self).clean()
-        super(TXT, self).check_for_delegation()
-        super(TXT, self).check_for_cname()
 
     class Meta:
         db_table = "txt"
@@ -54,12 +46,6 @@ class TXT(MozdnsRecord):
         # _mysql_exceptions.OperationalError: (1170, "BLOB/TEXT column
         # "txt_data" used in key specification without a key length")
         # Fix that ^
-
-    def __str__(self):
-        return "{0} TXT {1}".format(self.fqdn, self.txt_data)
-
-    def __repr__(self):
-        return "<TXT {0}>".format(self)
 
 
 reversion.register(TXT)

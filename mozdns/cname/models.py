@@ -2,7 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 import mozdns
-from mozdns.models import MozdnsRecord
+from mozdns.models import MozdnsRecord, LabelDomainMixin
 from mozdns.validation import validate_name
 from mozdns.search_utils import smart_fqdn_exists
 
@@ -11,7 +11,7 @@ import reversion
 from gettext import gettext as _
 
 
-class CNAME(MozdnsRecord):
+class CNAME(MozdnsRecord, LabelDomainMixin):
     """CNAMES can't point to an any other records. Said another way,
     CNAMES can't be at the samle level as any other record. This means
     that when you are creating a CNAME every other record type must be

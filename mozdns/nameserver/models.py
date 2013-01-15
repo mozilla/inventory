@@ -7,7 +7,7 @@ from mozdns.validation import validate_label, validate_name
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.view.models import View
 from mozdns.validation import validate_ttl
-from mozdns.models import check_for_cname
+from mozdns.models import MozdnsRecord
 from mozdns.soa.utils import update_soa
 
 from core.interface.static_intr.models import StaticInterface
@@ -16,10 +16,9 @@ import reversion
 
 from string import Template
 from gettext import gettext as _
-import pdb
 
 
-class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
+class Nameserver(MozdnsRecord):
     """Name server for forward domains::
 
         >>> Nameserver(domain = domain, server = server)
@@ -40,22 +39,20 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
                 "record is for.")
     server = models.CharField(max_length=255, validators=[validate_name],
                 help_text="The name of the server this records points to.")
-    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-            validators=[validate_ttl])
     # "If the name server does lie within the domain it should have a
     # corresponding A record."
     addr_glue = models.ForeignKey(AddressRecord, null=True, blank=True,
             related_name="nameserver_set")
     intr_glue = models.ForeignKey(StaticInterface, null=True, blank=True,
             related_name="intrnameserver_set")
-    views = models.ManyToManyField(View, blank=True)
-    description = models.CharField(max_length=1000, null=True, blank=True,
-                help_text="A description of this record.")
 
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {server:$rhs_just}.")
 
     search_fields = ("server", "domain__name")
+
+    def __str__(self):
+        return self.bind_render_record()
 
     class Meta:
         db_table = "nameserver"
@@ -77,34 +74,11 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
                                 **self.__dict__)
 
     def details(self):
-        details = [
+        return (
             ("Server", self.server),
             ("Domain", self.domain.name),
             ("Glue", self.get_glue()),
-        ]
-        return tuple(details)
-
-    def delete(self, *args, **kwargs):
-        from mozdns.utils import prune_tree
-        objs_domain = self.domain
-        super(Nameserver, self).delete(*args, **kwargs)
-        prune_tree(objs_domain)
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        update_soa(self)
-        if self.pk:
-            # We need to get the domain from the db. If it's not our current
-            # domain, call prune_tree on the domain in the db later.
-            db_domain = self.__class__.objects.get(pk=self.pk).domain
-            if self.domain == db_domain:
-                db_domain = None
-        else:
-            db_domain = None
-        super(Nameserver, self).save(*args, **kwargs)
-        if db_domain:
-            from mozdns.utils import prune_tree
-            prune_tree(db_domain)
+        )
 
     def get_glue(self):
         if self.addr_glue:
@@ -140,9 +114,9 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
     glue = property(get_glue, set_glue, del_glue, "The Glue property.")
 
     def clean(self):
-        check_for_cname(self)
+        self.check_for_cname()
 
-        if not self._needs_glue():
+        if not self.needs_glue():
             self.glue = None
         else:
             # Try to find any glue record. It will be the first elligible
@@ -173,13 +147,7 @@ class Nameserver(models.Model, ObjectUrlMixin, DisplayMixin):
                     else:
                         self.glue = intr_glue[0]
 
-    def __repr__(self):
-        return "<Forward '{0}'>".format(str(self))
-
-    def __str__(self):
-        return "{0} {1} {2}".format(self.domain.name, "NS", self.server)
-
-    def _needs_glue(self):
+    def needs_glue(self):
         # Replace the domain portion of the server with "".
         # if domain == foo.com and server == ns1.foo.com.
         #       ns1.foo.com --> ns1
