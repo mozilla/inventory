@@ -60,6 +60,15 @@ class DirtySOATests(TestCase):
         local_soa = SOA.objects.get(pk=local_soa.pk)
         self.assertTrue(local_soa.dirty)
 
+        # Now delete
+        local_soa.dirty = False
+        local_soa.save()
+        local_soa = SOA.objects.get(pk=local_soa.pk)
+        self.assertFalse(local_soa.dirty)
+        rec.delete()
+        local_soa = SOA.objects.get(pk=local_soa.pk)
+        self.assertTrue(local_soa.dirty)
+
 
     def test_dirty_a(self):
         create_data = {

@@ -4,7 +4,6 @@ import shutil
 import shlex
 import sys
 import unittest
-import pdb
 
 from unittest import TestCase
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -16,10 +15,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
 
 import manage
+manage  # For pep8
+
 
 from mozdns.mozbind.builder import DNSBuilder, BuildError
 from mozdns.soa.models import SOA
-
 
 
 class BuildScriptTests(object):
@@ -34,6 +34,7 @@ class BuildScriptTests(object):
         self.prod_dir = '/tmp/fake/dnsconfig/inv_zones/'
         self.svn_repo = '/tmp/fake/svn_repo'
         self.lock_file = '/tmp/fake/lock.fake'
+        self.stop_update = '/tmp/fake/stop.update'
         if os.path.isdir('/tmp/fake/'):
             shutil.rmtree('/tmp/fake')
             os.makedirs('/tmp/fake')
@@ -128,6 +129,21 @@ class BuildScriptTests(object):
 
         b.unlock()
         self.assertTrue(os.path.exists(self.lock_file))
+
+    def test_stop_update(self):
+        if os.path.exists(self.stop_update):
+            os.remove(self.stop_update)
+        b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                       LOCK_FILE=self.lock_file,
+                       STOP_UPDATE_FILE=self.stop_update)
+        open(self.stop_update, 'w+').close()
+        try:
+            b.build_dns()
+            self.fail("The script didn't respect the stop.update file")
+        except BuildError, e:
+            self.assertTrue(str(e).find('stop.update') > 0)
+        finally:
+            os.remove(self.stop_update)
 
 
 class LiveBuildScriptTests(BuildScriptTests, TestCase):

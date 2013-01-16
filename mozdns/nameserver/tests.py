@@ -91,7 +91,7 @@ class NSTestsModels(TestCase):
         data = {'domain':self.f_r , 'server':''}
         self.assertRaises(ValidationError, self.do_add, **data )
 
-    def testtest_add_ns_in_domain(self):
+    def test_add_ns_in_domain(self):
         # Use an A record as a glue record.
         glue = AddressRecord(label='ns2', domain = self.r, ip_str = '128.193.1.10', ip_type='4')
         glue.clean()
@@ -190,7 +190,7 @@ class NSTestsModels(TestCase):
         glue.delete()
 
 
-    def testtest_add_ns_in_domain_intr(self):
+    def test_add_ns_in_domain_intr(self):
         # Use an Interface as a glue record.
         glue = StaticInterface(label='ns232', domain = self.r, ip_str =
                 '128.193.99.10', ip_type='4', system=self.s,
@@ -253,8 +253,6 @@ class NSTestsModels(TestCase):
         ns.server = "ns4.wee"
         ns.save()
         self.assertTrue(ns.glue == None)
-
-
 
     def test_delete_ns(self):
         glue = AddressRecord(label='ns4', domain = self.f_r, ip_str = '128.196.1.10', ip_type='4')

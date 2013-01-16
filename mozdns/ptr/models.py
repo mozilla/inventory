@@ -66,6 +66,9 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
         super(PTR, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
+        if self.reverse_domain.soa:
+            self.reverse_domain.soa.dirty = True
+            self.reverse_domain.soa.save()
         super(PTR, self).delete(*args, **kwargs)
 
     def validate_no_cname(self):

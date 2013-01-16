@@ -9,7 +9,6 @@ from mozdns.address_record.models import AddressRecord
 from mozdns.view.models import View
 from mozdns.tests.view_tests_template import  random_label, random_byte
 from mozdns.mozbind.builder import DNSBuilder
-from mozdns.mozbind.zone_builder import build_zone_data
 
 from mozdns.tests.utils import create_fake_zone
 
@@ -140,14 +139,3 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         lc = b.svn_lines_changed()
         self.assertEqual((4, 3), lc)
         b.svn_checkin(lc)
-
-    def test_build_zone_no_nameserver(self):
-        root_domain = create_fake_zone('asdf6')
-        x, y = build_zone_data(root_domain, root_domain.soa)
-        self.assertTrue(x)
-        self.assertFalse(y)
-        root_domain.nameserver_set.all().delete()
-
-        x, y = build_zone_data(root_domain, root_domain.soa)
-        self.assertFalse(x)
-        self.assertFalse(y)

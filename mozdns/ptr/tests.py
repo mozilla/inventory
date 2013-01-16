@@ -13,13 +13,8 @@ from mozdns.ip.utils import ip_to_domain_name
 from mozdns.domain.models import Domain, boot_strap_ipv6_reverse_domain
 
 from mozdns.ptr.models import PTR
-from mozdns.cname.models import CNAME
-from mozdns.address_record.models import AddressRecord
-from mozdns.ip.models import ipv6_to_longs, Ip
-from mozdns.ip.utils import ip_to_domain_name
 
-import ipaddr
-import pdb
+
 class PTRTests(TestCase):
     def setUp(self):
         self.arpa = self.create_domain( name = 'arpa')

@@ -16,16 +16,16 @@ DEFAULT_TTL = 3600
 
 
 def render_soa_only(soa, root_domain):
-    BUILD_STR = "{root_domain}.     IN      SOA     {primary}. {contact}. (\n\
-                            {{serial:20}}     ; Serial\n\
-                            {refresh:20}     ; Refresh\n\
-                            {retry:20}     ; Retry\n\
-                            {expire:20}     ; Expire\n\
-                            {minimum:20}     ; Minimum\n\
-                )\n\n".format(root_domain=root_domain.name,
+    BUILD_STR = _("{root_domain}.     IN   SOA     {primary}. {contact}. (\n"
+                  "\t\t{{serial}}     ; Serial\n"
+                  "\t\t{refresh}     ; Refresh\n"
+                  "\t\t{retry}     ; Retry\n"
+                  "\t\t{expire}     ; Expire\n"
+                  "\t\t{minimum}     ; Minimum\n"
+                  ")\n\n".format(root_domain=root_domain.name,
                               primary=soa.primary, contact=soa.contact,
                               refresh=str(soa.refresh), retry=str(soa.retry),
-                              expire=str(soa.expire), minimum=soa.minimum)
+                              expire=str(soa.expire), minimum=soa.minimum))
     return BUILD_STR
 
 
@@ -62,24 +62,24 @@ def render_forward_zone(view, mega_filter):
                 ).order_by('server'),
 
             addressrecord_set=AddressRecord.objects.filter(mega_filter).filter(
-                views__name=view.name).order_by('ip_type', 'label', 'ip_upper',
+                views__name=view.name).order_by('pk', 'ip_type', 'fqdn', 'ip_upper',
                     'ip_lower'),
 
             interface_set=StaticInterface.objects.filter(mega_filter,
                 dns_enabled=True).filter(views__name=view.name).order_by(
-                    'ip_type', 'label', 'ip_upper', 'ip_lower'),
+                    'pk', 'ip_type', 'fqdn', 'ip_upper', 'ip_lower'),
 
             cname_set=CNAME.objects.filter(mega_filter).filter(
-                views__name=view.name).order_by('label'),
+                views__name=view.name).order_by('fqdn'),
 
             srv_set=SRV.objects.filter(mega_filter).filter(views__name=view.name
-                ).order_by('label'),
+                ).order_by('pk', 'fqdn'),
 
             txt_set=TXT.objects.filter(mega_filter).filter(views__name=view.name
-                ).order_by('label'),
+                ).order_by('pk', 'fqdn'),
 
             sshfp_set=SSHFP.objects.filter(mega_filter).filter(views__name=view.name
-                ).order_by('label'),
+                ).order_by('pk', 'fqdn'),
         )
     return data
 
@@ -101,11 +101,11 @@ def render_reverse_zone(view, domain_mega_filter, rdomain_mega_filter):
 
             interface_set=StaticInterface.objects.filter(rdomain_mega_filter,
                 dns_enabled=True).filter(views__name=view.name).order_by(
-                    'ip_type', 'label', 'ip_upper', 'ip_lower'),
+                    'pk', 'ip_type', 'label', 'ip_upper', 'ip_lower'),
 
             ptr_set=PTR.objects.filter(rdomain_mega_filter).filter(
-                    views__name=view.name).order_by('ip_upper'
-                    ).order_by('ip_lower'),
+                    views__name=view.name).order_by('pk', 'ip_upper',
+                        'ip_lower'),
 
         )
     return data
@@ -139,13 +139,6 @@ def build_zone_data(root_domain, soa, logf=None):
     :type private_data: str
     """
     ztype = 'reverse' if root_domain.is_reverse else 'forward'
-    if not root_domain.nameserver_set.exists():
-        if logf:
-            logf('LOG_WARNING', "The SOA '{0}' has a root_domain of {1} which "
-                    "doesn't have any nameservers. No attempt to build it's "
-                    "zone files will be made built.".format(soa, root_domain),
-                    soa=soa)
-        return '', ''
 
     domains = soa.domain_set.all().order_by('name')
 

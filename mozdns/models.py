@@ -8,6 +8,8 @@ from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.validation import validate_first_label, validate_name
 from mozdns.validation import validate_ttl
 
+a = 1
+
 class LabelDomainMixin(models.Model):
     """
     This class provides common functionality that many DNS record
@@ -91,6 +93,9 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
             self.check_for_cname()
 
     def delete(self, *args, **kwargs):
+        if self.domain.soa:
+            self.domain.soa.dirty = True
+            self.domain.soa.save()
         from mozdns.utils import prune_tree
         objs_domain = self.domain
         super(MozdnsRecord, self).delete(*args, **kwargs)

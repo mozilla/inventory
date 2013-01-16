@@ -10,15 +10,15 @@ import os
 import re
 import time
 
-from settings.dnsbuilds import STAGE_DIR, PROD_DIR, LOCK_FILE
+from settings.dnsbuilds import STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE
 from settings.dnsbuilds import NAMED_CHECKZONE_OPTS, MAX_ALLOWED_LINES_CHANGED
-
 
 from mozdns.domain.models import SOA
 from mozdns.view.models import View
 from mozdns.mozbind.zone_builder import build_zone_data
 from mozdns.mozbind.models import DNSBuildRun
 from mozdns.mozbind.serial_utils import get_serial
+
 
 class BuildError(Exception):
     """Exception raised when there is an error in the build process."""
@@ -142,6 +142,7 @@ class DNSBuilder(SVNBuilderMixin):
             'STAGE_DIR': STAGE_DIR,
             'PROD_DIR': PROD_DIR,
             'LOCK_FILE': LOCK_FILE,
+            'STOP_UPDATE_FILE': STOP_UPDATE_FILE,
             'STAGE_ONLY': False,
             'NAMED_CHECKZONE_OPTS': NAMED_CHECKZONE_OPTS,
             'CLOBBER_STAGE': False,
@@ -527,7 +528,20 @@ class DNSBuilder(SVNBuilderMixin):
                                            public_zone_stmts)
         return private_config, public_config
 
+    def check_stop_update(self):
+        """
+        Look for a file referenced by `STOP_UPDATE_FILE` and if it exists,
+        cancel the build.
+        """
+        if os.path.exists(self.STOP_UPDATE_FILE):
+            msg = "The STOP_UPDATE_FILE ({0}) exists. Build canceled".format(
+                                                        self.STOP_UPDATE_FILE)
+            self.log('LOG_INFO', msg)
+            raise BuildError(msg)
+
+
     def build_dns(self):
+        self.check_stop_update()
         self.log('LOG_NOTICE', 'Building...')
         self.lock()
         try:

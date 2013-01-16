@@ -1,9 +1,8 @@
 #!/usr/bin/python
 import argparse
-from gettext import gettext as _
 import sys
 import os
-import pdb
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
