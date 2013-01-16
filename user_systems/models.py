@@ -39,11 +39,11 @@ class UnmanagedSystemType(models.Model):
 
 
 class CostCenter(models.Model):
-    cost_center_id = models.IntegerField()
+    cost_center_number = models.IntegerField()
     name = models.CharField(max_length=255, blank=True)
 
     def __unicode__(self):
-        return '%s - %s' % (self.cost_center_id, self.name)
+        return '%s - %s' % (self.cost_center_number, self.name)
 
     class Meta:
         db_table = 'cost_centers'
