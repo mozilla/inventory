@@ -2,7 +2,6 @@ from django.core.exceptions import ValidationError
 from mozdns.validation import validate_ip_type
 
 import ipaddr
-import pdb
 
 
 def ip_to_dns_form(ip, uppercase=False):
@@ -23,6 +22,7 @@ def ip_to_dns_form(ip, uppercase=False):
     name = '.'.join(list(reversed(octets))) + name + "."
     return name
 
+
 def ip_to_domain_name(ip, ip_type='4', uppercase=False):
     """Convert an ip to dns zone form. The ip is assumed to be in valid
     format."""
@@ -39,7 +39,6 @@ def ip_to_domain_name(ip, ip_type='4', uppercase=False):
 
     name = '.'.join(list(reversed(octets))) + name
     return name
-
 
 
 """
@@ -72,6 +71,7 @@ def nibbilize(addr):
 
 def i64_to_i128(upper_int, lower_int):
     return upper_int << 64 + lower_int
+
 
 def i128_to_i64(bigint):
     ip_upper = bigint >> 64

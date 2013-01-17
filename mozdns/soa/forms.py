@@ -1,4 +1,3 @@
-from django.forms import ModelForm
 from mozdns.soa.models import SOA
 from mozdns.forms import BaseForm
 

@@ -30,13 +30,13 @@ class SRV(MozdnsRecord):
     # fqdn = label + domain.name <--- see set_fqdn
 
     target = models.CharField(max_length=100,
-                validators=[validate_srv_target])
+                              validators=[validate_srv_target])
 
     port = models.PositiveIntegerField(null=False,
-            validators=[validate_srv_port])
+                                       validators=[validate_srv_port])
 
     priority = models.PositiveIntegerField(null=False,
-                validators=[validate_srv_priority])
+                                           validators=[validate_srv_priority])
 
     weight = models.PositiveIntegerField(null=False,
                                          validators=[validate_srv_weight])
@@ -49,14 +49,14 @@ class SRV(MozdnsRecord):
     search_fields = ("fqdn", "target")
 
     def details(self):
-        return  (
-                    ("FQDN", self.fqdn),
-                    ("Record Type", "SRV"),
-                    ("Targer", self.target),
-                    ("Port", self.port),
-                    ("Priority", self.priority),
-                    ("Weight", self.weight),
-                )
+        return (
+            ("FQDN", self.fqdn),
+            ("Record Type", "SRV"),
+            ("Targer", self.target),
+            ("Port", self.port),
+            ("Priority", self.priority),
+            ("Weight", self.weight),
+        )
 
     class Meta:
         db_table = "srv"
@@ -64,8 +64,8 @@ class SRV(MozdnsRecord):
 
     @classmethod
     def get_api_fields(cls):
-        return super(SRV, cls).get_api_fields() + ['port',
-                                            'weight', 'priority', 'target']
+        return super(SRV, cls).get_api_fields() + [
+            'port', 'weight', 'priority', 'target']
 
     @property
     def rdtype(self):

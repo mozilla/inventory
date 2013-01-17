@@ -1,7 +1,3 @@
-from core.network.models import Network
-import pdb
-
-
 def get_networks(site):
     return site.network_set.filter(site=site)
 

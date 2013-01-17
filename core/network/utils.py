@@ -1,8 +1,5 @@
 from core.network.models import Network
 
-import ipaddr
-import pdb
-
 
 def calc_networks(network):
     network.update_network()
@@ -27,6 +24,7 @@ def calc_parent(network):
         return []
     parent = list(reversed(sorted(eldars, key=lambda n: n.prefixlen)))[0]
     return parent
+
 
 def calc_parent_str(network_str, ip_type):
     network = Network(network_str=network_str, ip_type=ip_type)

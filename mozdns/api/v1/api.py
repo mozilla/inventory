@@ -1,12 +1,7 @@
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.forms.util import ErrorList, ErrorDict
-from django.db import IntegrityError
 
-from tastypie import fields, utils
-from tastypie.exceptions import HydrationError
-from tastypie.resources import Resource, DeclarativeMetaclass
+from tastypie import fields
 from tastypie.resources import ModelResource
-from tastypie.bundle import Bundle
 from tastypie.authorization import Authorization
 from tastypie.api import Api
 
@@ -22,22 +17,15 @@ from mozdns.srv.models import SRV
 from mozdns.mx.models import MX
 from mozdns.nameserver.models import Nameserver
 from mozdns.sshfp.models import SSHFP
-from mozdns.txt.forms import TXTForm
 from mozdns.cname.models import CNAME
-from mozdns.cname.forms import CNAMEForm
-from mozdns.domain.forms import DomainForm
 from mozdns.view.models import View
 
-from tastypie.validation import FormValidation
 
 import reversion
 
-import pdb
-import sys
 import re
-import traceback
 import simplejson as json
-from gettext import gettext as _, ngettext
+from gettext import gettext as _
 
 
 class CommonDNSResource(ModelResource):
@@ -82,7 +70,7 @@ class CommonDNSResource(ModelResource):
         else:
             errors = {}
             errors['fqdn'] = _("Couldn't determine a label and "
-                    "domain for this record.")
+                               "domain for this record.")
             bundle.errors['error_messages'] = json.dumps(errors)
 
         return bundle
@@ -150,7 +138,7 @@ class CommonDNSResource(ModelResource):
         creates an object. We then clean it and then save it. Finally we save
         any views that were in bundle.
         """
-        Klass = self._meta.object_class
+        self._meta.object_class
 
         kv = self.extract_kv(bundle)
         # KV pairs should be saved after the object has been created
@@ -224,8 +212,9 @@ class ObjectListMixin(ModelResource):
         bundle = self.build_bundle(obj=model, request=request)
         return self.full_dehydrate(bundle).data
 
-from api_v3.system_api import SystemResource
+
 v1_dns_api.register(SystemResource())
+
 
 class CNAMEResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
@@ -311,7 +300,7 @@ class NameserverResource(CommonDNSResource, ObjectListMixin):
             try:
                 domain = Domain.objects.get(name=domain_name)
                 bundle.data['domain'] = domain
-            except ObjectDoesNotExist, e:
+            except ObjectDoesNotExist:
                 error = "Couldn't find domain {0}".format(domain_name)
                 bundle.errors['domain'] = error
         return bundle
@@ -362,21 +351,22 @@ v1_dns_api.register(PTRResource())
 
 
 class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
-                                ModelResource):
+                              ModelResource):
     system = fields.ToOneField(SystemResource, 'system', null=False, full=True)
 
     def hydrate(self, bundle):
         if 'system_hostname' in bundle.data and 'system' in bundle.data:
             bundle.errors = _("Please only specify a system via the 'system' "
-                "xor the 'system_hostname' parameter")
+                              "xor the 'system_hostname' parameter")
         if 'system_hostname' in bundle.data:
             system_hostname = bundle.data.get('system_hostname')
             try:
                 system = System.objects.get(hostname=system_hostname)
                 bundle.data['system'] = system
-            except ObjectDoesNotExist, e:
-                bundle.errors['system'] = _("Couldn't find system with "
-                    "hostname {0}".format(system_hostname))
+            except ObjectDoesNotExist:
+                bundle.errors['system'] = _(
+                    "Couldn't find system with  hostname {0}"
+                    .format(system_hostname))
         super(StaticInterfaceResource, self).hydrate(bundle)
         return bundle
 
@@ -395,19 +385,19 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
             # It's key and value. Nothing else is allowed in the bundle.
             if set('key', 'value') != set(bundle.data):
                 error = _("key and value must be the only keys in your "
-                    "request when you are updating KV pairs.")
+                          "request when you are updating KV pairs.")
                 bundle.errors['keyvalue'] = error
                 return []
             else:
                 kv.append((bundle.data['key'], bundle.data['value']))
         elif 'key' in bundle.data and 'value' not in bundle.data:
             error = _("When specifying a key you must also specify a value "
-                    "for that key")
+                      "for that key")
             bundle.errors['keyvalue'] = error
             return []
         elif 'value' in bundle.data and 'key' not in bundle.data:
             error = _("When specifying a value you must also specify a key "
-                    "for that value")
+                      "for that value")
             bundle.errors['keyvalue'] = error
             return []
         elif 'iname' in bundle.data:
@@ -415,8 +405,8 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
             del bundle.data['iname']
             if not iname:
                 error = _("Could not parse iname {0} into interface_type and "
-                        "primary (or possible not an "
-                        "alias).".format(bundle.data['iname']))
+                          "primary (or possible not an "
+                          "alias).".format(bundle.data['iname']))
                 bundle.errors['iname'] = error
                 return []
             kv.append(('interface_type', iname.group(1)))
@@ -426,7 +416,6 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
             else:
                 kv.append(('alias', '0'))
         return kv
-
 
     class Meta:
         always_return_data = True

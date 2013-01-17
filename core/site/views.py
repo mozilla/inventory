@@ -1,15 +1,12 @@
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
-from django.contrib import messages
 from django.forms.util import ErrorList, ErrorDict
-from django.http import HttpResponse
 
 from core.site.models import Site, SiteKeyValue
 from core.site.forms import SiteForm
 from core.site.utils import get_vlans
 
-from core.vlan.models import Vlan
 from core.network.models import Network
 from core.keyvalue.utils import get_attrs, update_attrs
 
@@ -17,8 +14,6 @@ from core.views import CoreDeleteView, CoreListView
 from core.views import CoreCreateView, CoreUpdateView
 
 import re
-import pdb
-import ipaddr
 
 
 class SiteView(object):
@@ -35,7 +30,7 @@ class SiteDeleteView(SiteView, CoreDeleteView):
 
 
 def delete_site(request, site_pk):
-    site = get_object_or_404(Site, pk=site_pk)
+    get_object_or_404(Site, pk=site_pk)
     if request.method == "POST":
         return render(request, "site/site_confirm_delete.html")
 

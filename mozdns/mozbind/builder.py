@@ -23,6 +23,7 @@ from mozdns.mozbind.serial_utils import get_serial
 class BuildError(Exception):
     """Exception raised when there is an error in the build process."""
 
+
 class SVNBuilderMixin(object):
     svn_ignore = [re.compile("---\s.+\s+\(revision\s\d+\)"),
                   re.compile("\+\+\+\s.+\s+\(working copy\)")]
@@ -64,6 +65,7 @@ class SVNBuilderMixin(object):
             os.chdir(cwd)  # go back!
 
         la, lr = 0, 0
+
         def svn_ignore(line):
             for ignore in self.svn_ignore:
                 if ignore.match(line):
@@ -84,7 +86,7 @@ class SVNBuilderMixin(object):
         returned."""
         # svn diff changes and react if changes are too large
         if ((lambda x, y: x + y)(*lines_changed) >
-             MAX_ALLOWED_LINES_CHANGED):
+                MAX_ALLOWED_LINES_CHANGED):
             pass
         # email and fail
             # Make sure we can run the script again
@@ -110,7 +112,8 @@ class SVNBuilderMixin(object):
             ci_message = _("Checking in DNS. {0} lines were added and {1} were"
                            " removed".format(*lines_changed))
             self.log('LOG_INFO', "Commit message: {0}".format(ci_message))
-            command_str = "svn ci {0} -m \"{1}\"".format(self.PROD_DIR, ci_message)
+            command_str = "svn ci {0} -m \"{1}\"".format(
+                self.PROD_DIR, ci_message)
             stdout, stderr, returncode = self.shell_out(command_str)
             if returncode != 0:
                 raise BuildError("\nFailed to check in changes."
@@ -221,15 +224,16 @@ class DNSBuilder(SVNBuilderMixin):
             if not os.path.exists(os.path.dirname(self.LOCK_FILE)):
                 os.makedirs(os.path.dirname(self.LOCK_FILE))
             self.log('LOG_INFO', "Attempting aquire mutext "
-                                  "({0})...".format(self.LOCK_FILE))
+                     "({0})...".format(self.LOCK_FILE))
             self.lock_fd = open(self.LOCK_FILE, 'w+')
             fcntl.flock(self.lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             self.log('LOG_INFO', "Lock written.")
         except IOError, exc_value:
             #  IOError: [Errno 11] Resource temporarily unavailable
             if exc_value[0] == 11:
-                raise BuildError("DNS build script attemted to aquire the "
-                        "build mutux but another process already has it.")
+                raise BuildError(
+                    "DNS build script attemted to aquire the "
+                    "build mutux but another process already has it.")
             else:
                 raise
 
@@ -239,7 +243,7 @@ class DNSBuilder(SVNBuilderMixin):
         and this function is called.
         """
         self.log('LOG_INFO', "Attempting release mutex "
-                              "({0})...".format(self.LOCK_FILE))
+                 "({0})...".format(self.LOCK_FILE))
         fcntl.flock(self.lock_fd, fcntl.LOCK_UN)
         self.log('LOG_INFO', "Unlock Complete.")
 
@@ -273,7 +277,7 @@ class DNSBuilder(SVNBuilderMixin):
                 zone_path = "reverse/in-addr.arpa/"
             else:
                 raise Exception("WTF type of reverse domain is this "
-                        "{0}?!?".format(root_domain))
+                                "{0}?!?".format(root_domain))
         else:
             tmp_path = '/'.join(reversed(root_domain.name.split('.')))
             zone_path = tmp_path + '/'
@@ -287,7 +291,7 @@ class DNSBuilder(SVNBuilderMixin):
         if not os.path.exists(os.path.dirname(stage_fname)):
             os.makedirs(os.path.dirname(stage_fname))
         self.log('LOG_INFO', "Stage zone file is {0}".format(stage_fname,
-                soa=soa))
+                                                             soa=soa))
         with open(stage_fname, 'w+') as fd:
             fd.write(data)
         return stage_fname
@@ -335,7 +339,7 @@ class DNSBuilder(SVNBuilderMixin):
 
         command_str = "named-checkconf {0}".format(conf_file)
         self.log('LOG_INFO', "Calling `named-checkconf {0}` ".
-                                   format(conf_file))
+                 format(conf_file))
         stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
             raise BuildError("\nnamed-checkconf rejected config {0}. "
@@ -393,7 +397,7 @@ class DNSBuilder(SVNBuilderMixin):
 
         stage_fname = os.path.join(self.STAGE_DIR, rel_fname)
         self.write_stage_zone(stage_fname, root_domain, soa, rel_fname,
-                                             view_data)
+                              view_data)
         self.log('LOG_INFO', "Built stage_{0}_file to "
                              "{1}".format(view.name, stage_fname))
         self.named_checkzone(stage_fname, root_domain, soa)
@@ -451,10 +455,10 @@ class DNSBuilder(SVNBuilderMixin):
                                  soa=soa)
             self.log('LOG_INFO', "Prev serial was {0}. Using serial "
                                  "new serial {1}.".format(soa.serial,
-                                  soa.serial + 1), soa=soa)
+                                 soa.serial + 1), soa=soa)
             self.build_zone(view, rel_fname,
-                              view_data.format(serial=soa.serial + 1),
-                              root_domain, soa)
+                            view_data.format(serial=soa.serial + 1),
+                            root_domain, soa)
         else:
             # private_data and public_data are not used because the soa
             # was not dirty and doesn't have any new changes in it,
@@ -497,10 +501,10 @@ class DNSBuilder(SVNBuilderMixin):
             if private_data:
                 # The private view has data. let's build it.
                 private_zone_stmts.append(self.build_view(private_view,
-                                                         private_data, *zinfo))
+                                          private_data, *zinfo))
             if public_data:
                 public_zone_stmts.append(self.build_view(public_view,
-                                                         public_data, *zinfo))
+                                         public_data, *zinfo))
             if soa.dirty:
                 soa.serial += 1
                 soa.dirty = False
@@ -522,10 +526,10 @@ class DNSBuilder(SVNBuilderMixin):
         public_view = View.objects.get_or_create(name='public')[0]
         # If we need slave configs, do it here
         private_config = self.build_view_config(private_view, 'master',
-                                           private_zone_stmts)
+                                                private_zone_stmts)
 
         public_config = self.build_view_config(public_view, 'master',
-                                           public_zone_stmts)
+                                               public_zone_stmts)
         return private_config, public_config
 
     def check_stop_update(self):
@@ -535,10 +539,9 @@ class DNSBuilder(SVNBuilderMixin):
         """
         if os.path.exists(self.STOP_UPDATE_FILE):
             msg = "The STOP_UPDATE_FILE ({0}) exists. Build canceled".format(
-                                                        self.STOP_UPDATE_FILE)
+                self.STOP_UPDATE_FILE)
             self.log('LOG_INFO', msg)
             raise BuildError(msg)
-
 
     def build_dns(self):
         self.check_stop_update()

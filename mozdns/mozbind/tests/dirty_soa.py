@@ -69,75 +69,74 @@ class DirtySOATests(TestCase):
         local_soa = SOA.objects.get(pk=local_soa.pk)
         self.assertTrue(local_soa.dirty)
 
-
     def test_dirty_a(self):
         create_data = {
-                        'label': 'asdf',
-                        'domain': self.dom,
-                        'ip_str': '10.2.3.1',
-                        'ip_type': '4'
-                    }
+            'label': 'asdf',
+            'domain': self.dom,
+            'ip_str': '10.2.3.1',
+            'ip_type': '4'
+        }
         update_data = {
-                        'label': 'asdfx',
-                    }
+            'label': 'asdfx',
+        }
         self.generic_dirty(AddressRecord, create_data, update_data, self.soa)
 
     def test_dirty_intr(self):
         create_data = {
-                        'label': 'asdf1',
-                        'domain': self.dom,
-                        'ip_str': '10.2.3.1',
-                        'ip_type': '4',
-                        'system': self.s,
-                        'mac': '11:22:33:44:55:66'
-                    }
+            'label': 'asdf1',
+            'domain': self.dom,
+            'ip_str': '10.2.3.1',
+            'ip_type': '4',
+            'system': self.s,
+            'mac': '11:22:33:44:55:66'
+        }
         update_data = {
-                        'label': 'asdfx1',
-                    }
+            'label': 'asdfx1',
+        }
         self.generic_dirty(StaticInterface, create_data, update_data, self.soa)
 
     def test_dirty_cname(self):
         create_data = {
-                        'label': 'asdf2',
-                        'domain': self.dom,
-                        'target': 'foo.bar.com',
-                    }
+            'label': 'asdf2',
+            'domain': self.dom,
+            'target': 'foo.bar.com',
+        }
         update_data = {
-                        'label': 'asdfx2',
-                    }
+            'label': 'asdfx2',
+        }
         self.generic_dirty(CNAME, create_data, update_data, self.soa)
 
     def test_dirty_ptr(self):
         create_data = {
-                        'ip_str': '10.2.3.4',
-                        'ip_type': '4',
-                        'name': 'foo.bar.com',
-                    }
+            'ip_str': '10.2.3.4',
+            'ip_type': '4',
+            'name': 'foo.bar.com',
+        }
         update_data = {
-                        'label': 'asdfx2',
-                    }
+            'label': 'asdfx2',
+        }
         self.generic_dirty(PTR, create_data, update_data, local_soa=self.sr)
 
     def test_dirty_mx(self):
         create_data = {
-                        'label': '',
-                        'domain': self.dom,
-                        'priority': 10,
-                        'server': 'foo.bar.com',
-                    }
+            'label': '',
+            'domain': self.dom,
+            'priority': 10,
+            'server': 'foo.bar.com',
+        }
         update_data = {
-                        'label': 'asdfx3',
-                    }
+            'label': 'asdfx3',
+        }
         self.generic_dirty(MX, create_data, update_data, self.soa)
 
     def test_dirty_ns(self):
         create_data = {
-                        'domain': self.dom,
-                        'server': 'foo.bar.com',
-                    }
+            'domain': self.dom,
+            'server': 'foo.bar.com',
+        }
         update_data = {
-                        'label': 'asdfx4',
-                    }
+            'label': 'asdfx4',
+        }
         self.generic_dirty(Nameserver, create_data, update_data, self.soa)
 
     def test_dirty_soa(self):
@@ -148,25 +147,25 @@ class DirtySOATests(TestCase):
 
     def test_dirty_srv(self):
         create_data = {
-                        'label': '_asdf7',
-                        'domain': self.dom,
-                        'priority': 10,
-                        'port': 10,
-                        'weight': 10,
-                        'target': 'foo.bar.com',
-                    }
+            'label': '_asdf7',
+            'domain': self.dom,
+            'priority': 10,
+            'port': 10,
+            'weight': 10,
+            'target': 'foo.bar.com',
+        }
         update_data = {
-                        'label': '_asdfx4',
-                    }
+            'label': '_asdfx4',
+        }
         self.generic_dirty(SRV, create_data, update_data, self.soa)
 
     def test_dirty_txt(self):
         create_data = {
-                        'label': 'asdf8',
-                        'domain': self.dom,
-                        'txt_data': 'some shit',
-                    }
+            'label': 'asdf8',
+            'domain': self.dom,
+            'txt_data': 'some shit',
+        }
         update_data = {
-                        'label': 'asdfx5',
-                    }
+            'label': 'asdfx5',
+        }
         self.generic_dirty(TXT, create_data, update_data, self.soa)

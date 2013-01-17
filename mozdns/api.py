@@ -1,15 +1,11 @@
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.db import IntegrityError
-from tastypie import fields, utils
+from tastypie import fields
 from tastypie.exceptions import HydrationError
-from tastypie.resources import Resource, DeclarativeMetaclass
+from tastypie.resources import Resource
 from tastypie.resources import ModelResource
 from mozdns.domain.models import Domain
-from mozdns.txt.models import TXT
-from mozdns.txt.forms import TXTForm
 from mozdns.cname.models import CNAME
 from mozdns.cname.forms import CNAMEForm
-from mozdns.domain.forms import DomainForm
 from mozdns.view.models import View
 from tastypie.validation import FormValidation
 
@@ -18,13 +14,13 @@ from tastypie.authorization import Authorization
 from tastypie.api import Api
 
 import pdb
-import sys
-import traceback
+
 
 class CommonDNSResource(Resource):
     domain = fields.CharField()  # User passes string, in hydrate we find a
                                  # domain
-    views = fields.ListField(null=True, blank=True)  # User passes list of view names, in hydrate we
+    views = fields.ListField(null=True, blank=True)
+                             # User passes list of view names, in hydrate we
                                 # make these the actual views
 
     def dehydrate(self, bundle):
@@ -33,24 +29,14 @@ class CommonDNSResource(Resource):
         bundle.data['domain'] = bundle.obj.domain.name
         return bundle
 
-    def hydrate_m2m(self, bundle):
-        pdb.set_trace()
-        for view_name in bundle.data['views']:
-            try:
-                view = View.objects.get(name=view_name)
-            except ObjectDoesNotExist, e:
-                raise HydrationError("Couldn't find the view "
-                        "{0}".format(view_name))
-        return bundle
-
     def hydrate(self, bundle):
         # Every DNS Resource should have a domain
         domain_name = bundle.data.get('domain', '')
         try:
             domain = Domain.objects.get(name=domain_name)
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist:
             raise HydrationError("Couldn't find domain "
-                    "{0}".format(domain_name))
+                                 "{0}".format(domain_name))
         bundle.data['domain'] = domain
         return bundle
 
@@ -62,8 +48,10 @@ class CommonDNSResource(Resource):
 
         if bundle.errors:
             self.error_response(bundle.errors, request)
-        self.apply_commit(obj, bundle.data)  # bundle should only have valid data.
-                                                   # If it doesn't errors will be thrown
+        self.apply_commit(
+            obj, bundle.data)  # bundle should only have valid data.
+                                                   # If it doesn't errors will
+                                                   # be thrown
         self.apply_custom_hydrate(obj, bundle, action='update')
         return self.save_commit(request, obj, bundle, views)
 
@@ -71,12 +59,12 @@ class CommonDNSResource(Resource):
         views = []
         # We have to remove views from data because those need to be added
         # later in a seperate step
-        for view_name in bundle.data.pop('views',[]):
+        for view_name in bundle.data.pop('views', []):
             try:
                 views.append(View.objects.get(name=view_name))
-            except ObjectDoesNotExist, e:
+            except ObjectDoesNotExist:
                 raise HydrationError("Couldn't find the view "
-                        "{0}".format(view_name))
+                                     "{0}".format(view_name))
         return views
 
     def apply_commit(self, obj, commit_data):

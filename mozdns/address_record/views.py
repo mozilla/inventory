@@ -7,8 +7,6 @@ from mozdns.views import MozdnsDeleteView, MozdnsDetailView
 from mozdns.views import MozdnsCreateView, MozdnsUpdateView, MozdnsListView
 from core.network.utils import calc_parent_str
 
-import pdb
-
 
 class AddressRecordView(object):
     model = AddressRecord
@@ -23,7 +21,7 @@ class AddressRecordDeleteView(AddressRecordView, MozdnsDeleteView):
 class AddressRecordDetailView(AddressRecordView, MozdnsDetailView):
     def get_context_data(self, **kwargs):
         context = super(AddressRecordDetailView, self).get_context_data(
-                **kwargs)
+            **kwargs)
         context['form_title'] = "{0} Details".format(
             self.form_class.Meta.model.__name__
         )
@@ -49,12 +47,12 @@ class AddressRecordCreateView(AddressRecordView, MozdnsCreateView):
                     network.site.get_site_path())
                 try:
                     domain = Domain.objects.get(name=expected_name)
-                except ObjectDoesNotExist, e:
+                except ObjectDoesNotExist:
                     domain = None
 
             if domain:
                 initial['initial'] = {'ip_str': ip_str, 'domain': domain,
-                        'ip_type': ip_type}
+                                      'ip_type': ip_type}
             else:
                 initial['initial'] = {'ip_str': ip_str, 'ip_type': ip_type}
         return AddressRecordForm(**initial)

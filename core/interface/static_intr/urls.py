@@ -1,4 +1,3 @@
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns
 
-urlpatterns = patterns('',
-)   
+urlpatterns = patterns('',)

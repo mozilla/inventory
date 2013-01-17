@@ -14,6 +14,7 @@ def get_serial(file_):
     with open(file_, 'r') as fd:
         return _str_get_serial(fd)
 
+
 def _str_get_serial(text):
     """Read in a zone file and find the serial number.
 
@@ -42,8 +43,8 @@ def _str_get_serial(text):
         if not line or line[0] == '$' or line[0] == ';':
             continue
 
-        # name        ttl class rr    name-server email-addr  (sn ref ret ex min)
-        # 1           2   3     4     5           6            7  8   9   10 11
+        # name    ttl class rr    name-server email-addr  (sn ref ret ex min)
+        # 1       2   3     4     5           6            7  8   9   10 11
         # Everything up through 6 needs to be on the same line.
         _lex_word(ll)  # name
         _lex_ws(ll)
@@ -60,7 +61,7 @@ def _str_get_serial(text):
 
         rr = _lex_word(ll)
         if rr.upper() != 'SOA':
-            continue # It's not an soa, keep going.
+            continue  # It's not an soa, keep going.
 
         isSOA = True
         _lex_ws(ll)
@@ -89,6 +90,7 @@ def _str_get_serial(text):
         else:
             return ''
 
+
 def _lex_word(ll):
     word = ''
     while True:
@@ -105,6 +107,7 @@ def _lex_word(ll):
         else:
             word = word + c
     return word
+
 
 def _lex_ws(ll):
     while True:

@@ -11,6 +11,7 @@ from mozdns.utils import ensure_label_domain
 
 from mozdns.tests.utils import create_fake_zone
 
+
 class UpdateRecordDeleteDomainTests(TestCase):
 
     def generic_check(self, obj, do_label=True, label_prefix=""):
@@ -57,7 +58,7 @@ class UpdateRecordDeleteDomainTests(TestCase):
 
     def test_srv_update(self):
         srv = SRV(target="foo", priority=4,
-                weight=4, port=34)
+                  weight=4, port=34)
         self.generic_check(srv, label_prefix="_")
 
     def test_cname_update(self):

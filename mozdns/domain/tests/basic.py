@@ -16,20 +16,20 @@ class DomainTests(TestCase):
         Domain.objects.get_or_create(name="128.in-addr.arpa")
 
     def test_remove_domain(self):
-        c = Domain(name = 'com')
+        c = Domain(name='com')
         c.save()
-        f_c = Domain(name = 'foo.com')
+        f_c = Domain(name='foo.com')
         f_c.save()
         f_c.delete()
-        foo = Domain(name = 'foo.com')
+        foo = Domain(name='foo.com')
         str(foo)
         foo.__repr__()
 
     def test1_add_domain(self):
-        c = Domain(name = 'com')
+        c = Domain(name='com')
         c.save()
 
-        f_c = Domain(name = 'foo.com')
+        f_c = Domain(name='foo.com')
         f_c.save()
         f_c.save()
         f_c.details()
@@ -38,35 +38,35 @@ class DomainTests(TestCase):
         self.assertTrue(f_c.get_delete_url())
         self.assertTrue(f_c.master_domain == c)
 
-        b_c = Domain(name = 'bar.com')
+        b_c = Domain(name='bar.com')
         b_c.save()
         self.assertTrue(b_c.master_domain == c)
 
-        b_b_c = Domain(name = 'baz.bar.com')
+        b_b_c = Domain(name='baz.bar.com')
         b_b_c.save()
         self.assertTrue(b_b_c.master_domain == b_c)
 
     def test2_add_domain(self):
         # Some domains have '_' in their name. Make sure validation allows
         # this.
-        c = Domain(name = 'cz')
+        c = Domain(name='cz')
         c.save()
-        c1 = Domain(name = '_foo.cz')
+        c1 = Domain(name='_foo.cz')
         c1.save()
-        c2 = Domain(name = 'moo_foo._foo.cz')
+        c2 = Domain(name='moo_foo._foo.cz')
         c2.save()
 
     def test_soa_validators(self):
-        m = Domain(name = 'moo')
+        m = Domain(name='moo')
         m.save()
 
-        f_m = Domain(name = 'foo.moo')
+        f_m = Domain(name='foo.moo')
         f_m.save()
 
-        n_f_m = Domain(name = 'noo.foo.moo')
+        n_f_m = Domain(name='noo.foo.moo')
         n_f_m.save()
 
-        b_m = Domain(name = 'baz.moo')
+        b_m = Domain(name='baz.moo')
         b_m.save()
 
         s = SOA(primary="ns1.foo.com", contact="asdf", description="test")
@@ -78,7 +78,7 @@ class DomainTests(TestCase):
         b_m.soa = s
         self.assertRaises(ValidationError, b_m.save)
 
-        n_f_m = Domain.objects.get(pk=n_f_m.pk) #Refresh object
+        n_f_m = Domain.objects.get(pk=n_f_m.pk)  # Refresh object
         n_f_m.soa = s
         n_f_m.save()
 
@@ -98,8 +98,9 @@ class DomainTests(TestCase):
         self.assertRaises(ValidationError, m.save)
 
     def test_2_soa_validators(self):
-        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo.gaz", contact =
-                "hostmaster.foo", description="foo.gaz2")
+        s1, _ = SOA.objects.get_or_create(
+            primary="ns1.foo.gaz", contact="hostmaster.foo",
+            description="foo.gaz2")
         d, _ = Domain.objects.get_or_create(name="gaz")
         d.soa = None
         d.save()
@@ -108,8 +109,9 @@ class DomainTests(TestCase):
         d1.save()
 
     def test_3_soa_validators(self):
-        s1, _ = SOA.objects.get_or_create(primary = "ns1.foo2.gaz", contact =
-                "hostmaster.foo", description="foo.gaz2")
+        s1, _ = SOA.objects.get_or_create(
+            primary="ns1.foo2.gaz", contact=
+            "hostmaster.foo", description="foo.gaz2")
 
         r, _ = Domain.objects.get_or_create(name='9.in-addr.arpa')
         r.soa = s1
@@ -121,46 +123,45 @@ class DomainTests(TestCase):
 
     def test__name_to_master_domain(self):
         try:
-            Domain(name = 'foo.cn').save()
+            Domain(name='foo.cn').save()
         except ValidationError, e:
             pass
         self.assertEqual(ValidationError, type(e))
         str(e)
         e = None
 
-        Domain(name = 'cn').save()
-        d = Domain(name = 'foo.cn')
+        Domain(name='cn').save()
+        d = Domain(name='foo.cn')
         d.save()
-        d = Domain(name = 'foo.cn')
+        d = Domain(name='foo.cn')
         self.assertRaises(ValidationError, d.save)
-
 
     def test_create_domain(self):
         try:
-            Domain(name = 'foo.bar.oregonstate.edu').save()
+            Domain(name='foo.bar.oregonstate.edu').save()
         except ValidationError, e:
             pass
         self.assertEqual(ValidationError, type(e))
         e = None
 
     def test_remove_has_child_domain(self):
-        Domain(name = 'com').save()
-        f_c = Domain(name = 'foo.com')
+        Domain(name='com').save()
+        f_c = Domain(name='foo.com')
         f_c.save()
-        Domain(name = 'boo.foo.com').save()
+        Domain(name='boo.foo.com').save()
         self.assertRaises(ValidationError, f_c.delete)
 
     def test_update_has_child_domain(self):
-        Domain(name = 'com99').save()
-        f_c = Domain(name = 'foo.com99')
+        Domain(name='com99').save()
+        f_c = Domain(name='foo.com99')
         f_c.save()
-        Domain(name = 'boo.foo.com99').save()
+        Domain(name='boo.foo.com99').save()
         f_c.name = 'foobar.com99'
         self.assertRaises(ValidationError, f_c.save)
 
     def test_remove_has_child_records(self):
-        Domain(name = 'com').save()
-        f_c = Domain(name = 'foo.com')
+        Domain(name='com').save()
+        f_c = Domain(name='foo.com')
         f_c.save()
 
         cn = CNAME(domain=f_c, label="no", target="asdf")
@@ -172,49 +173,48 @@ class DomainTests(TestCase):
     def test_invalid_add(self):
 
         bad = "asfda.as df"
-        dom = Domain(name = bad)
+        dom = Domain(name=bad)
         self.assertRaises(ValidationError, dom.save)
 
         bad = "."
-        dom = Domain(name = bad)
+        dom = Domain(name=bad)
         self.assertRaises(ValidationError, dom.save)
 
         bad = "edu. "
-        dom = Domain(name = bad)
+        dom = Domain(name=bad)
         self.assertRaises(ValidationError, dom.save)
 
         bad = ""
-        dom = Domain(name = bad)
+        dom = Domain(name=bad)
         self.assertRaises(ValidationError, dom.save)
 
         bad = "!@#$"
-        dom = Domain(name = bad)
+        dom = Domain(name=bad)
         self.assertRaises(ValidationError, dom.save)
 
     def test_delegation_add_domain(self):
         name = "boom1"
-        dom = Domain(name = name, delegated=True)
+        dom = Domain(name=name, delegated=True)
         dom.save()
 
         name = "boom.boom1"
-        dom = Domain(name = name, delegated=False)
+        dom = Domain(name=name, delegated=False)
         self.assertRaises(ValidationError, dom.save)
 
     def test_delegation(self):
         name = "boom"
-        dom = Domain(name = name, delegated=True)
+        dom = Domain(name=name, delegated=True)
         dom.save()
-
 
         # Creating objects in the domain should be locked.
         arec = AddressRecord(label="ns1", domain=dom, ip_str="128.193.99.9",
-                ip_type='4')
+                             ip_type='4')
         self.assertRaises(ValidationError, arec.save)
 
-        ns = Nameserver(domain=dom, server="ns1."+dom.name)
+        ns = Nameserver(domain=dom, server="ns1." + dom.name)
         self.assertRaises(ValidationError, ns.save)
 
-        cn = CNAME(label = "999asdf", domain = dom, target = "asdf.asdf")
+        cn = CNAME(label="999asdf", domain=dom, target="asdf.asdf")
         self.assertRaises(ValidationError, cn.full_clean)
 
         # Undelegate (unlock) the domain.
@@ -230,10 +230,11 @@ class DomainTests(TestCase):
         dom.save()
 
         # Creation should still be locked
-        arec1 = AddressRecord(label="ns2", domain=dom, ip_str="128.193.99.9", ip_type='4')
+        arec1 = AddressRecord(
+            label="ns2", domain=dom, ip_str="128.193.99.9", ip_type='4')
         self.assertRaises(ValidationError, arec1.save)
 
-        cn1 = CNAME(label = "1000asdf", domain = dom, target = "asdf.asdf")
+        cn1 = CNAME(label="1000asdf", domain=dom, target="asdf.asdf")
         self.assertRaises(ValidationError, cn1.full_clean)
 
         # Editing should be allowed.
@@ -244,35 +245,35 @@ class DomainTests(TestCase):
         # Adding new A records that have the same name as an NS should
         # be allows.
         arec1 = AddressRecord(label="ns1", domain=dom, ip_str="128.193.100.10",
-                ip_type='4')
+                              ip_type='4')
         arec1.save()
 
     def test_existing_record_new_domain(self):
         name = "bo"
-        b_dom,_ = Domain.objects.get_or_create(name = name, delegated=False)
+        b_dom, _ = Domain.objects.get_or_create(name=name, delegated=False)
 
         name = "to.bo"
-        t_dom,_ = Domain.objects.get_or_create(name = name, delegated=False)
+        t_dom, _ = Domain.objects.get_or_create(name=name, delegated=False)
 
         arec1 = AddressRecord(label="no", domain=t_dom, ip_str="128.193.99.9",
-                ip_type='4')
+                              ip_type='4')
         arec1.save()
 
         name = "no.to.bo"
-        n_dom = Domain(name = name, delegated=False)
+        n_dom = Domain(name=name, delegated=False)
         self.assertRaises(ValidationError, n_dom.save)
 
     def test_existing_cname_new_domain(self):
         name = "bo"
-        b_dom,_ = Domain.objects.get_or_create(name = name, delegated=False)
+        b_dom, _ = Domain.objects.get_or_create(name=name, delegated=False)
 
         name = "to.bo"
-        t_dom,_ = Domain.objects.get_or_create(name = name, delegated=False)
+        t_dom, _ = Domain.objects.get_or_create(name=name, delegated=False)
 
         cn = CNAME(domain=t_dom, label="no", target="asdf")
         cn.full_clean()
         cn.save()
 
         name = "no.to.bo"
-        n_dom = Domain(name = name, delegated=False)
+        n_dom = Domain(name=name, delegated=False)
         self.assertRaises(ValidationError, n_dom.save)

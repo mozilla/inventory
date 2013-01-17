@@ -3,54 +3,53 @@ from core.vlan.models import Vlan
 from core.network.models import Network
 from core.network.utils import calc_parent
 from core.range.models import Range
-import pdb
 import ipaddr
 
 
 sites = []
 
 site_name = "scl1"
-s,_ = Site.objects.get_or_create(name=site_name)
+s, _ = Site.objects.get_or_create(name=site_name)
 sites.append(s)
 
 site_name = "scl2"
-s,_ = Site.objects.get_or_create(name=site_name)
+s, _ = Site.objects.get_or_create(name=site_name)
 sites.append(s)
 
 site_name = "scl3"
-s,_ = Site.objects.get_or_create(name=site_name)
+s, _ = Site.objects.get_or_create(name=site_name)
 scl3 = s
 sites.append(s)
 
 site_name = "ams1"
-s,_ = Site.objects.get_or_create(name=site_name)
+s, _ = Site.objects.get_or_create(name=site_name)
 sites.append(s)
 
 site_name = "phx1"
-s,_ = Site.objects.get_or_create(name=site_name)
+s, _ = Site.objects.get_or_create(name=site_name)
 phx1 = s
 sites.append(s)
 
 site_name = "sjc1"
-s,_ = Site.objects.get_or_create(name=site_name)
+s, _ = Site.objects.get_or_create(name=site_name)
 sites.append(s)
 
 site_name = "releng"
-s,_ = Site.objects.get_or_create(name=site_name)
+s, _ = Site.objects.get_or_create(name=site_name)
 s.parent = scl3
 s.save()
 sites.append(s)
 
 site_name = "mtv1"
-s,_ = Site.objects.get_or_create(name=site_name)
+s, _ = Site.objects.get_or_create(name=site_name)
 sites.append(s)
 
 site_name = "pek1"
-s,_ = Site.objects.get_or_create(name=site_name)
+s, _ = Site.objects.get_or_create(name=site_name)
 sites.append(s)
 
 site_name = "corp"
-s,_ = Site.objects.get_or_create(name=site_name)
+s, _ = Site.objects.get_or_create(name=site_name)
 s.parent = phx1
 s.save()
 sites.append(s)
@@ -175,12 +174,13 @@ site_networks.append(n)
 
 def create_network_vlan(v_num, v_name, n_str, site_octs, router_label=None):
     print "##### {0} {1} ##### {2} #####".format(v_num, v_name, n_str,
-        site_octs)
+                                                 site_octs)
 
-    v, _ = Vlan.objects.get_or_create(number = v_num, name=v_name)
+    v, _ = Vlan.objects.get_or_create(number=v_num, name=v_name)
 
     for so in site_octs:
-        n, _ = Network.objects.get_or_create(network_str=n_str.format(so), ip_type='4')
+        n, _ = Network.objects.get_or_create(
+            network_str=n_str.format(so), ip_type='4')
         n.vlan = v
         parent = calc_parent(n)
         if parent:
@@ -191,10 +191,10 @@ def create_network_vlan(v_num, v_name, n_str, site_octs, router_label=None):
             n.save()
         ip = ipaddr.IPv4Network(n_str.format(so))
         if int(n_str[-2:]) >= 22:
-            r, _ = Range.objects.get_or_create(start_str =
-                    str(ipaddr.IPv4Address(int(ip.network) + 10)), end_str =
-                    str(ipaddr.IPv4Address(int(ip.broadcast)
-                    - 2)), network = n)
+            r, _ = Range.objects.get_or_create(
+                start_str=str(ipaddr.IPv4Address(int(ip.network) + 10)),
+                end_str=str(ipaddr.IPv4Address(int(ip.broadcast) - 2)),
+                network=n)
 
 
 ##### 17 console ##### 10.DC.17.0/24 #####
@@ -271,7 +271,7 @@ n_str = "10.{0}.70.0/24"
 site_octs = [pek1_oct, phx1_oct, corp_phx1_oct]
 create_network_vlan(v_num, v_name, n_str, site_octs)
 
-net = Network.objects.get(network_str = n_str.format(corp_phx1_oct))
+net = Network.objects.get(network_str=n_str.format(corp_phx1_oct))
 phx1 = Site.objects.get(name="phx1")
 correct_site = Site.objects.get(name="corp", parent=phx1)
 net.site = correct_site
@@ -286,7 +286,7 @@ v_name = "shared"
 router_label = "corpdmz"
 
 n_str = "10.{0}.72.0/24"
-#site_octs = [sjc1_oct, scl3_oct, corp_phx1_oct]
+# site_octs = [sjc1_oct, scl3_oct, corp_phx1_oct]
 site_octs = [scl3_oct, corp_phx1_oct]
 create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
 
@@ -297,7 +297,7 @@ v_name = "qa"
 router_label = None
 
 n_str = "10.{0}.72.0/24"
-#site_octs = [sjc1_oct, scl2_oct, scl3_oct, phx1]
+# site_octs = [sjc1_oct, scl2_oct, scl3_oct, phx1]
 site_octs = [scl2_oct, scl3_oct, phx1_oct]
 # NOTE: "see 273?" The fuck does that mean?
 create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
@@ -412,7 +412,7 @@ v_name = "metrics"
 router_label = None
 
 n_str = "10.{0}.100.0/23"
-#site_octs = [mtv1_oct, phx1_oct]
+# site_octs = [mtv1_oct, phx1_oct]
 # TODO, what is the mtv network?
 site_octs = [phx1_oct]
 create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
@@ -424,9 +424,9 @@ v_name = "labs"
 router_label = "labs-pancake"
 
 n_str = "10.{0}.100.0/24"
-#site_octs = [sjc1_oct]
+# site_octs = [sjc1_oct]
 # TODO, no sjc1 network
-#create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
+# create_network_vlan(v_num, v_name, n_str, site_octs, router_label)
 
 ##### 120 ateam ##### 10.DC.120.0/24 #####
 
@@ -435,7 +435,7 @@ v_name = "ateam"
 router_label = None
 
 n_str = "10.{0}.120.0/24"
-#site_octs = [mtv1_oct, phx1_oct]
+# site_octs = [mtv1_oct, phx1_oct]
 # TODO, what is the mtv network?
 site_octs = [phx1_oct]
 create_network_vlan(v_num, v_name, n_str, site_octs, router_label)

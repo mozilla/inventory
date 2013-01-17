@@ -1,5 +1,4 @@
 from django import forms
-from django.forms import ModelForm
 from mozdns.mx.models import MX
 from mozdns.forms import BaseForm
 
@@ -9,6 +8,7 @@ class MXForm(BaseForm):
         model = MX
         exclude = ('fqdn',)
         widgets = {'views': forms.CheckboxSelectMultiple}
+
 
 class FQDNMXForm(BaseForm):
     class Meta:

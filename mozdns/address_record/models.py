@@ -29,16 +29,17 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
         return 'A'
 
     def details(self):
-        return  (
-                    ("FQDN", self.fqdn),
-                    ("Record Type", self.record_type()),
-                    ("IP", str(self.ip_str)),
-                )
+        return (
+            ("FQDN", self.fqdn),
+            ("Record Type", self.record_type()),
+            ("IP", str(self.ip_str)),
+        )
 
     @classmethod
     def get_api_fields(cls):
         return super(BaseAddressRecord, cls).get_api_fields() + ['ip_str',
-                                                                  'ip_type']
+                                                                 'ip_type']
+
     def clean(self, *args, **kwargs):
         validate_glue = kwargs.pop("validate_glue", True)
         if validate_glue:
@@ -52,10 +53,11 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
 
         if not kwargs.pop("ignore_interface", False):
             from core.interface.static_intr.models import StaticInterface
-            if StaticInterface.objects.filter(fqdn=self.fqdn,
-                    ip_upper=self.ip_upper, ip_lower=self.ip_lower).exists():
+            if StaticInterface.objects.filter(
+                    fqdn=self.fqdn, ip_upper=self.ip_upper,
+                    ip_lower=self.ip_lower).exists():
                 raise ValidationError("A Static Interface has already "
-                    "reserved this A record.")
+                                      "reserved this A record.")
 
     def delete(self, *args, **kwargs):
         """Address Records that are glue records or that are pointed to
@@ -63,13 +65,14 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
         """
         if kwargs.pop("validate_glue", True):
             if self.nameserver_set.exists():
-                raise ValidationError("Cannot delete the record {0}. It is "
-                    "a glue record.".format(self.record_type()))
+                raise ValidationError(
+                    "Cannot delete the record {0}. It is a glue "
+                    "record.".format(self.record_type()))
         if kwargs.pop("check_cname", True):
             if CNAME.objects.filter(target=self.fqdn):
-                raise ValidationError("A CNAME points to this {0} record. "
-                    "Change the CNAME before deleting this record.".
-                    format(self.record_type()))
+                raise ValidationError(
+                    "A CNAME points to this {0} record. Change the CNAME "
+                    "before deleting this record.".format(self.record_type()))
 
         super(BaseAddressRecord, self).delete(*args, **kwargs)
 
@@ -82,7 +85,8 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
             return
         else:
             # Confusing error messege?
-            raise ValidationError("You can only create A records in a "
+            raise ValidationError(
+                "You can only create A records in a "
                 "delegated domain that have an NS record pointing to them.")
 
     def check_glue_status(self):
@@ -101,8 +105,9 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
         # The label of the domain changed. Make sure it's not a glue record
         Nameserver = mozdns.nameserver.models.Nameserver
         if Nameserver.objects.filter(addr_glue=self).exists():
-            raise ValidationError("This record is a glue record for a"
-                    "Nameserver. Change the Nameserver to edit this record.")
+            raise ValidationError(
+                "This record is a glue record for a"
+                "Nameserver. Change the Nameserver to edit this record.")
 
     def record_type(self):
         # If PTR didn't share this field, we would use 'A' and 'AAAA'
@@ -118,7 +123,6 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
 
     def __repr__(self):
         return "<Address Record '{0}'>".format(str(self))
-
 
 
 class AddressRecord(BaseAddressRecord):
@@ -139,6 +143,6 @@ class AddressRecord(BaseAddressRecord):
     class Meta:
         db_table = "address_record"
         unique_together = ("label", "domain", "fqdn", "ip_upper", "ip_lower",
-                "ip_type")
+                           "ip_type")
 
 reversion.register(AddressRecord)

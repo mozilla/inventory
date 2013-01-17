@@ -1,26 +1,21 @@
 from django import forms
-from django.db.models.query import EmptyQuerySet
 
 from core.site.models import Site
 from core.vlan.models import Vlan
 from core.network.models import Network
-from core.network.utils import calc_networks, calc_parent
-
-import pdb
 
 
 class NetworkForm(forms.ModelForm):
     site = forms.ModelChoiceField(
-            queryset=Site.objects.all(),
-            empty_label="(Defaults to parent's site.)",
-            required=False
-            )
+        queryset=Site.objects.all(),
+        empty_label="(Defaults to parent's site.)",
+        required=False)
 
     def __init__(self, *args, **kwargs):
         super(NetworkForm, self).__init__(*args, **kwargs)
         self.fields['dhcpd_raw_include'].label = "DHCP Config Extras"
-        self.fields['dhcpd_raw_include'].widget.attrs.update({'cols': '80',
-            'style': 'display: none;width: 680px'})
+        self.fields['dhcpd_raw_include'].widget.attrs.update(
+            {'cols': '80', 'style': 'display: none;width: 680px'})
 
     class Meta:
         model = Network
@@ -35,25 +30,25 @@ class NetworkForm_network(forms.Form):
 
 class NetworkForm_site(forms.Form):
     site = forms.ModelChoiceField(
-            queryset=Site.objects.all(),
-            required=True
-            )
+        queryset=Site.objects.all(),
+        required=True
+    )
 
 
 class NetworkForm_vlan(forms.Form):
     vlan = forms.ModelChoiceField(
-            queryset=Vlan.objects.all(),
-            required=True
-            )
+        queryset=Vlan.objects.all(),
+        required=True
+    )
 
     CREATE_CHOICE = (
-            ("existing", "Use existing VLAN template."),
-            ("new", "Create New Vlan"),
-            ("none", "Don't assign a vlan"),
-            )
+        ("existing", "Use existing VLAN template."),
+        ("new", "Create New Vlan"),
+        ("none", "Don't assign a vlan"),
+    )
 
     create_choice = forms.ChoiceField(widget=forms.RadioSelect, initial='e',
-            choices=CREATE_CHOICE)
+                                      choices=CREATE_CHOICE)
 
     name = forms.CharField()
     number = forms.IntegerField()

@@ -32,15 +32,16 @@ class Nameserver(MozdnsRecord):
     """
     id = models.AutoField(primary_key=True)
     domain = models.ForeignKey(Domain, null=False, help_text="The domain this "
-                "record is for.")
+                               "record is for.")
     server = models.CharField(max_length=255, validators=[validate_name],
-                help_text="The name of the server this records points to.")
+                              help_text="The name of the server this records "
+                              "points to.")
     # "If the name server does lie within the domain it should have a
     # corresponding A record."
     addr_glue = models.ForeignKey(AddressRecord, null=True, blank=True,
-            related_name="nameserver_set")
+                                  related_name="nameserver_set")
     intr_glue = models.ForeignKey(StaticInterface, null=True, blank=True,
-            related_name="intrnameserver_set")
+                                  related_name="intrnameserver_set")
 
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {server:$rhs_just}.")
@@ -66,8 +67,8 @@ class Nameserver(MozdnsRecord):
         # We need to override this because fqdn is actually self.domain.name
         template = Template(self.template).substitute(**self.justs)
         return template.format(rdtype=self.rdtype, rdclass='IN',
-                                bind_name=self.domain.name + '.',
-                                **self.__dict__)
+                               bind_name=self.domain.name + '.',
+                               **self.__dict__)
 
     def details(self):
         return (
@@ -127,15 +128,15 @@ class Nameserver(MozdnsRecord):
             # AddressRecords take higher priority over interface records.
             glue_label = self.server.split('.')[0]  # foo.com -> foo
             if (self.glue and self.glue.label == glue_label and
-                self.glue.domain == self.domain):
+                    self.glue.domain == self.domain):
                 # Our glue record is valid. Don't go looking for a new one.
                 pass
             else:
                 # Ok, our glue record wasn't valid, let's find a new one.
                 addr_glue = AddressRecord.objects.filter(label=glue_label,
-                        domain=self.domain)
+                                                         domain=self.domain)
                 intr_glue = StaticInterface.objects.filter(label=glue_label,
-                        domain=self.domain)
+                                                           domain=self.domain)
                 if not (addr_glue or intr_glue):
                     raise ValidationError(
                         "This NS needs a glue record. Create a glue "
@@ -152,10 +153,11 @@ class Nameserver(MozdnsRecord):
         if (self.domain.soa and
             self.domain.soa.root_domain == self.domain and
             self.domain.nameserver_set.count() == 1 and  # We are it!
-            self.domain.soa.has_record_set(exclude_ns=True)):
-            raise ValidationError("Other records in this nameserver's zone are"
-                    " relying on it's existance as it is the only nameserver at"
-                    " the root of the zone.")
+                self.domain.soa.has_record_set(exclude_ns=True)):
+            raise ValidationError(
+                "Other records in this nameserver's zone are"
+                " relying on it's existance as it is the only nameserver "
+                "at the root of the zone.")
 
     def needs_glue(self):
         # Replace the domain portion of the server with "".

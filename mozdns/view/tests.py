@@ -1,12 +1,4 @@
-"""
-This file demonstrates writing tests using the unittest module. These will pass
-when you run "manage.py test".
-
-Replace this with more appropriate tests for your application.
-"""
-
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 
 from mozdns.view.models import View
 from mozdns.domain.models import Domain
@@ -14,7 +6,6 @@ from mozdns.ptr.models import PTR
 from mozdns.address_record.models import AddressRecord
 from systems.models import System
 from core.interface.static_intr.models import StaticInterface
-import pdb
 
 
 class ViewTests(TestCase):
@@ -30,9 +21,9 @@ class ViewTests(TestCase):
         * clean, save, ValidationError raised
     """
     def setUp(self):
-        self.o = Domain(name = "org")
+        self.o = Domain(name="org")
         self.o.save()
-        self.f_o = Domain(name = "foo.org")
+        self.f_o = Domain(name="foo.org")
         self.f_o.save()
         self.s = System()
 
@@ -45,10 +36,9 @@ class ViewTests(TestCase):
         self.public, _ = View.objects.get_or_create(name="public")
         self.private, _ = View.objects.get_or_create(name="private")
 
-
     def test_private_view_case_1_addr(self):
         a = AddressRecord(label="asf", domain=self.f_o, ip_str="10.0.0.1",
-                ip_type="4")
+                          ip_type="4")
         a.clean()
         a.save()
         # Object has to exist before views can be assigned.
@@ -57,7 +47,7 @@ class ViewTests(TestCase):
 
     def test_private_view_case_1_ptr(self):
         ptr = PTR(name="asf", ip_str="10.0.0.1",
-                ip_type="4")
+                  ip_type="4")
         ptr.clean()
         ptr.save()
         # Object has to exist before views can be assigned.
@@ -66,7 +56,8 @@ class ViewTests(TestCase):
 
     def test_private_view_case_1_intr(self):
         intr = StaticInterface(label="asf", domain=self.f_o, ip_str="10.0.0.1",
-                ip_type="4", mac="00:11:22:33:44:55", system=self.s)
+                               ip_type="4", mac="00:11:22:33:44:55",
+                               system=self.s)
         intr.clean()
         intr.save()
         # Object has to exist before views can be assigned.
@@ -75,7 +66,7 @@ class ViewTests(TestCase):
 
     def test_private_view_case_2_addr(self):
         a = AddressRecord(label="asf1", domain=self.f_o, ip_str="10.0.0.1",
-                ip_type="4")
+                          ip_type="4")
         a.clean()
         a.save()
         # Object has to exist before views can be assigned.
@@ -83,7 +74,7 @@ class ViewTests(TestCase):
         self.assertFalse(a.views.filter(name="public"))
 
         a = AddressRecord(label="asf1", domain=self.f_o, ip_str="172.30.0.1",
-                ip_type="4")
+                          ip_type="4")
         a.clean()
         a.save()
         # Object has to exist before views can be assigned.
@@ -91,7 +82,7 @@ class ViewTests(TestCase):
         self.assertFalse(a.views.filter(name="public"))
 
         a = AddressRecord(label="asf1", domain=self.f_o, ip_str="192.168.0.1",
-                ip_type="4")
+                          ip_type="4")
         a.clean()
         a.save()
         # Object has to exist before views can be assigned.
@@ -122,15 +113,17 @@ class ViewTests(TestCase):
 
     def test_private_view_case_2_intr(self):
         intr = StaticInterface(label="asf", domain=self.f_o, ip_str="10.0.0.1",
-                ip_type="4", mac="01:11:22:33:44:55", system=self.s)
+                               ip_type="4", mac="01:11:22:33:44:55",
+                               system=self.s)
         intr.clean()
         intr.save()
         # Object has to exist before views can be assigned.
         intr.views.add(self.public)
         self.assertFalse(intr.views.filter(name="public"))
 
-        intr = StaticInterface(label="asf", domain=self.f_o, ip_str="172.31.255.254",
-                ip_type="4", mac="01:11:22:33:44:55", system=self.s)
+        intr = StaticInterface(
+            label="asf", domain=self.f_o, ip_str="172.31.255.254",
+            ip_type="4", mac="01:11:22:33:44:55", system=self.s)
         intr.clean()
         intr.save()
         # Object has to exist before views can be assigned.
@@ -138,18 +131,18 @@ class ViewTests(TestCase):
         self.assertFalse(intr.views.filter(name="public"))
 
         intr = StaticInterface(label="asf", domain=self.f_o,
-                ip_str="192.168.255.254",
-                ip_type="4", mac="01:11:22:33:44:55", system=self.s)
+                               ip_str="192.168.255.254",
+                               ip_type="4", mac="01:11:22:33:44:55",
+                               system=self.s)
         intr.clean()
         intr.save()
         # Object has to exist before views can be assigned.
         intr.views.add(self.public)
         self.assertFalse(intr.views.filter(name="public"))
 
-
     def test_private_view_case_3_addr(self):
         a = AddressRecord(label="asf3", domain=self.f_o, ip_str="10.0.0.1",
-                ip_type="4")
+                          ip_type="4")
         a.clean()
         a.save()
         a.views.add(self.private)
@@ -159,7 +152,7 @@ class ViewTests(TestCase):
         self.assertFalse(a.views.filter(name="public"))
 
         a = AddressRecord(label="asf3", domain=self.f_o, ip_str="172.30.0.1",
-                ip_type="4")
+                          ip_type="4")
         a.clean()
         a.save()
         a.views.add(self.private)
@@ -169,7 +162,7 @@ class ViewTests(TestCase):
         self.assertFalse(a.views.filter(name="public"))
 
         a = AddressRecord(label="asf3", domain=self.f_o, ip_str="192.168.0.1",
-                ip_type="4")
+                          ip_type="4")
         a.clean()
         a.save()
         a.views.add(self.private)
@@ -207,8 +200,9 @@ class ViewTests(TestCase):
         self.assertFalse(ptr.views.filter(name="public"))
 
     def test_private_view_case_3_intr(self):
-        intr = StaticInterface(label="asf3", domain=self.f_o, ip_str="10.0.0.1",
-                ip_type="4", mac="01:11:22:33:44:55", system=self.s)
+        intr = StaticInterface(
+            label="asf3", domain=self.f_o, ip_str="10.0.0.1",
+            ip_type="4", mac="01:11:22:33:44:55", system=self.s)
         intr.clean()
         intr.save()
         intr.views.add(self.private)
@@ -217,8 +211,9 @@ class ViewTests(TestCase):
         intr.views.add(self.public)
         self.assertFalse(intr.views.filter(name="public"))
 
-        intr = StaticInterface(label="asf3", domain=self.f_o, ip_str="172.31.255.254",
-                ip_type="4", mac="01:11:22:33:44:55", system=self.s)
+        intr = StaticInterface(
+            label="asf3", domain=self.f_o, ip_str="172.31.255.254",
+            ip_type="4", mac="01:11:22:33:44:55", system=self.s)
         intr.clean()
         intr.save()
         intr.views.add(self.private)
@@ -228,8 +223,9 @@ class ViewTests(TestCase):
         self.assertFalse(intr.views.filter(name="public"))
 
         intr = StaticInterface(label="asf3", domain=self.f_o,
-                ip_str="192.168.255.254",
-                ip_type="4", mac="01:11:22:33:44:55", system=self.s)
+                               ip_str="192.168.255.254",
+                               ip_type="4", mac="01:11:22:33:44:55",
+                               system=self.s)
         intr.clean()
         intr.save()
         intr.views.add(self.private)

@@ -21,13 +21,12 @@ class TXT(MozdnsRecord, LabelDomainMixin):
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} \"{txt_data:$rhs_just}\"")
 
-
     def details(self):
         return (
-                ("FQDN", self.fqdn),
-                ("Record Type", "TXT"),
-                ("Text", self.txt_data)
-               )
+            ("FQDN", self.fqdn),
+            ("Record Type", "TXT"),
+            ("Text", self.txt_data)
+        )
 
     @classmethod
     def get_api_fields(cls):
@@ -37,7 +36,6 @@ class TXT(MozdnsRecord, LabelDomainMixin):
     @property
     def rdtype(self):
         return 'TXT'
-
 
     class Meta:
         db_table = "txt"

@@ -1,5 +1,4 @@
 from django import forms
-from django.forms import ModelForm
 
 from mozdns.srv.models import SRV
 from mozdns.forms import BaseForm
@@ -17,4 +16,3 @@ class FQDNSRVForm(BaseForm):
         model = SRV
         exclude = ('label', 'domain')
         widgets = {'views': forms.CheckboxSelectMultiple}
-

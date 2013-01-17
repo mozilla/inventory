@@ -1,6 +1,6 @@
 import operator
+import re
 import ipaddr
-import pdb
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.exceptions import ValidationError
@@ -20,29 +20,28 @@ from mozdns.view.models import View
 
 from core.interface.static_intr.models import StaticInterface
 from core.site.models import Site
-from core.utils import two_to_four, IPFilter
-from core.utils import start_end_filter, one_to_two, two_to_one
-
+from core.utils import IPFilter
 from core.vlan.models import Vlan
+from core.utils import start_end_filter
 
 from systems.models import System
-import re
 
 
 searchables = (
-        ('A', AddressRecord),
-        ('CNAME', CNAME),
-        ('DOMAIN', Domain),
-        ('MX', MX),
-        ('NS', Nameserver),
-        ('PTR', PTR),
-        ('SOA', SOA),
-        ('SRV', SRV),
-        ('SSHFP', SSHFP),
-        ('INTR', StaticInterface),
-        ('SYSTEM', System),
-        ('TXT', TXT),
+    ('A', AddressRecord),
+    ('CNAME', CNAME),
+    ('DOMAIN', Domain),
+    ('MX', MX),
+    ('NS', Nameserver),
+    ('PTR', PTR),
+    ('SOA', SOA),
+    ('SRV', SRV),
+    ('SSHFP', SSHFP),
+    ('INTR', StaticInterface),
+    ('SYSTEM', System),
+    ('TXT', TXT),
 )
+
 
 def get_managers():
     managers = []
@@ -54,10 +53,12 @@ def get_managers():
             managers.append(Klass.objects)
     return managers
 
+
 class _Filter(object):
     """The Base class of different filters. Implement these methods
     """
     ntype = "FILTER"
+
     def __str__(self):
         return self.value
 
@@ -72,8 +73,8 @@ def build_filter(filter_, fields, filter_type):
     # rtucker++
     final_filter = Q()
     for t in fields:
-        final_filter = final_filter | Q(**{"{0}__{1}".format(t,
-            filter_type): filter_})
+        final_filter = final_filter | Q(
+            **{"{0}__{1}".format(t, filter_type): filter_})
 
     return final_filter
 
@@ -87,7 +88,8 @@ class TextFilter(_Filter):
         # Value is the search term
         result = []
         for name, Klass in searchables:
-            result.append(build_filter(value, Klass.search_fields, 'icontains'))
+            result.append(
+                build_filter(value, Klass.search_fields, 'icontains'))
         return result
 
 
@@ -142,12 +144,9 @@ class DirectiveFilter(_Filter):
             raise BadDirective("Unknown Directive '{0}'".format(directive))
 
 
-
 ##############################################################################
 ##########################  Directive Filters  ###############################
 ##############################################################################
-
-
 class BadDirective(Exception):
     pass
 
@@ -158,7 +157,7 @@ def build_rdtype_qsets(rdtype):
     the fact that every object has a pk > -1. When a qset is negated the query
     becomes pk <= -1.
     """
-    rdtype = rdtype.upper() # Let's get consistent
+    rdtype = rdtype.upper()  # Let's get consistent
     select = Q(pk__gt=-1)
     no_select = Q(pk__lte=-1)
     result = []
@@ -169,6 +168,7 @@ def build_rdtype_qsets(rdtype):
             result.append(no_select)
     return result
 
+
 def build_view_qsets(view_name):
     """Filter based on DNS views."""
     view_name = view_name.lower()  # Let's get consistent
@@ -176,7 +176,7 @@ def build_view_qsets(view_name):
         view = View.objects.get(name=view_name)
     except ObjectDoesNotExist:
         raise BadDirective("'{0}' isn't a valid view.".format(view_name))
-    view_filter = Q(views=view) # This will slow queries down due to joins
+    view_filter = Q(views=view)  # This will slow queries down due to joins
     q_sets = []
     select = Q(pk__gt=-1)
     for name, Klass in searchables:
@@ -187,6 +187,7 @@ def build_view_qsets(view_name):
         else:
             q_sets.append(None)
     return q_sets
+
 
 def build_ipf_qsets(q):
     """Filter based on IP address views.
@@ -229,18 +230,18 @@ def build_network_qsets(network_str):
     try:
         network = Klass(network_str)
         ipf = IPFilter(network.network, network.broadcast, ip_type)
-    except (ipaddr.AddressValueError, ipaddr.NetmaskValueError), e:
+    except (ipaddr.AddressValueError, ipaddr.NetmaskValueError):
         raise BadDirective("{0} isn't a valid "
-                "network.".format(network_str))
+                           "network.".format(network_str))
     return build_ipf_qsets(ipf.Q)
 
 
 def build_site_qsets(site_name):
     try:
         site = Site.objects.get(name=site_name)
-    except ObjectDoesNotExist, e:
+    except ObjectDoesNotExist:
         raise BadDirective("{0} isn't a valid "
-                "site.".format(site_name))
+                           "site.".format(site_name))
     return build_ipf_qsets(site.compile_Q())
 
 
@@ -250,12 +251,12 @@ def build_vlan_qsets(vlan_name):
             vlan = Vlan.objects.get(number=vlan_name)
         else:
             vlan = Vlan.objects.get(name=vlan_name)
-    except ObjectDoesNotExist, e:
+    except ObjectDoesNotExist:
         raise BadDirective("{0} isn't a valid "
-                "vlan identifier.".format(vlan_name))
-    except MultipleObjectsReturned, e:
+                           "vlan identifier.".format(vlan_name))
+    except MultipleObjectsReturned:
         raise BadDirective("{0} doesn't uniquely identify"
-                "a vlan.".format(vlan_name))
+                           "a vlan.".format(vlan_name))
     return build_ipf_qsets(vlan.compile_Q())
 
 

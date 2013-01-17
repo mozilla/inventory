@@ -32,22 +32,22 @@ def create_zone_ajax(request):
 
     if not root_domain:
         error = "Please specify a root_domain"
-        return HttpResponse(json.dumps({'success': False, 'error': error }))
+        return HttpResponse(json.dumps({'success': False, 'error': error}))
 
     if Domain.objects.filter(name=root_domain).exists():
         error = gt("<b>{0}</b> is already a domain. To make it a new zone, "
-                  "assign it a newly created SOA.".format(root_domain))
-        return HttpResponse(json.dumps({'success': False, 'error': error }))
+                   "assign it a newly created SOA.".format(root_domain))
+        return HttpResponse(json.dumps({'success': False, 'error': error}))
 
     primary = qd.get('soa_primary', None)
     if not primary:
         error = "Please specify a primary nameserver for the SOA record."
-        return HttpResponse(json.dumps({'success': False, 'error': error }))
+        return HttpResponse(json.dumps({'success': False, 'error': error}))
     contact = qd.get('soa_contact', None)
     if not contact:
         error = "Please specify a contact address for the SOA record."
-        return HttpResponse(json.dumps({'success': False, 'error': error }))
-    contact.replace('@','.')
+        return HttpResponse(json.dumps({'success': False, 'error': error}))
+    contact.replace('@', '.')
 
     # Find all the NS entries
     nss = []
@@ -60,14 +60,15 @@ def create_zone_ajax(request):
     if not nss:
         # They must create at least one nameserver
         error = gt("You must choose an authoritative nameserver to serve this "
-                  "zone")
-        return HttpResponse(json.dumps({'success': False, 'error': error }))
+                   "zone")
+        return HttpResponse(json.dumps({'success': False, 'error': error}))
 
     # We want all domains created up to this point to inherit their
     # master_domain's soa. We will override the return domain's SOA.
     # Everything under this domain can be purgeable becase we will set this
     # domain to non-purgeable. This will also allow us to call prune tree.
-    domain = ensure_domain(root_domain, purgeable=True, inherit_soa=False, force=True)
+    domain = ensure_domain(
+        root_domain, purgeable=True, inherit_soa=False, force=True)
 
     soa = SOA(primary=primary, contact=contact, serial=int(time.time()),
               description="SOA for {0}".format(root_domain))
@@ -82,7 +83,7 @@ def create_zone_ajax(request):
     domain.save()
 
     private_view, _ = View.objects.get_or_create(name='private')
-    saved_nss = [] # If these are errors, back out
+    saved_nss = []  # If these are errors, back out
     for i, ns in enumerate(nss):
         ns.domain = domain
         try:
@@ -94,8 +95,8 @@ def create_zone_ajax(request):
             suffixed_i = str(i + 1) + suffixes[i + 1 % 100]
             error_field, error_val = e.message_dict.items()[0]
             error = gt("When trying to create the {0} nameserver entry, the "
-                      "nameserver field '{1}' returned the error '{2}'".format(
-                      suffixed_i, error_field, error_val[0]))
+                       "nameserver field '{1}' returned the error "
+                       "'{2}'".format(suffixed_i, error_field, error_val[0]))
 
             for s_ns in saved_nss:
                 s_ns.delete()
@@ -104,12 +105,12 @@ def create_zone_ajax(request):
             return HttpResponse(json.dumps({'success': False,
                                             'error': error}))
 
-
     return HttpResponse(json.dumps(
-                {
-                    'success': True,
-                    'success_url': '/core/?search=zone=:{0}'.format(domain.name)
-                }))
+        {
+            'success': True,
+            'success_url': '/core/?search=zone=:{0}'.format(domain.name)
+        }))
+
 
 def _clean_domain_tree(domain):
     if not domain.master_domain:
@@ -137,7 +138,7 @@ def create_zone(request):
             }
         except ObjectDoesNotExist:
             message = gt('When trying to use {0} as a template, no zone '
-                        'named {0} was found.'.format(template_zone))
+                         'named {0} was found.'.format(template_zone))
     if not context:
         context = {
             'message': message,

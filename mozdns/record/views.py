@@ -1,21 +1,16 @@
-import operator
 import MySQLdb
+import simplejson as json
 
 from django.shortcuts import render
-from django.db.models import Q
-from django.forms.util import ErrorList, ErrorDict
 from django.http import HttpResponse
 from django.http import Http404
+from django.core.exceptions import ValidationError
 
 from mozdns.domain.models import Domain
-from mozdns.utils import slim_form
 from core.search.compiler.django_compile import search_type
 
 from mozdns.record.utils import get_obj_meta
 
-import simplejson as json
-
-import pdb
 
 def record_search(request, record_type=None):
     if not record_type:
@@ -23,6 +18,7 @@ def record_search(request, record_type=None):
     return render(request, 'record/record_search.html', {
         'record_type': record_type
     })
+
 
 def record(request, record_type='', record_pk=''):
     domains = Domain.objects.filter(is_reverse=False)
@@ -34,6 +30,7 @@ def record(request, record_type='', record_pk=''):
         'domains': json.dumps([domain.name for domain in domains]),
     })
 
+
 def record_delete(request, record_type='', record_pk=''):
     if request.method != 'POST':
         raise Http404
@@ -43,17 +40,15 @@ def record_delete(request, record_type='', record_pk=''):
         object_ = obj_meta.Klass.objects.get(pk=record_pk)
     except obj_meta.Klass.DoesNotExist:
         error = "Could not find that object."
-        return HttpResponse(json.dumps({'success': False, 'error': error }))
+        return HttpResponse(json.dumps({'success': False, 'error': error}))
 
     try:
         object_.delete()
     except ValidationError, e:
         error = e.messages[0]
-        return HttpResponse(json.dumps({'success': False, 'error': error }))
+        return HttpResponse(json.dumps({'success': False, 'error': error}))
 
-    return HttpResponse(json.dumps({'success': True }))
-
-
+    return HttpResponse(json.dumps({'success': True}))
 
 
 def record_search_ajax(request):
@@ -92,6 +87,7 @@ def record_search_ajax(request):
         'objs': records,
         'record_type': record_type,
     })
+
 
 def record_ajax(request):
     # This function is pretty much a router

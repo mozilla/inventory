@@ -3,8 +3,7 @@ from django.test.client import RequestFactory
 from django.test.client import Client
 
 
-from mozdns.tests.view_tests_template import random_label
-from mozdns.tests.view_tests_template import random_byte
+from mozdns.tests.utils import random_label, random_byte
 from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
 from mozdns.domain.models import Domain
@@ -17,7 +16,6 @@ from mozdns.sshfp.models import SSHFP
 from mozdns.view.models import View
 
 from mozdns.tests.utils import create_fake_zone
-
 
 
 class BaseViewTestCase(object):
@@ -35,7 +33,6 @@ class BaseViewTestCase(object):
                                        random_label(), random_label()))
         View.objects.get_or_create(name='public')
         View.objects.get_or_create(name='private')
-
 
     # Add an rdtype to the dict
     def update_rdtype(self, data):
@@ -83,12 +80,13 @@ class BaseViewTestCase(object):
 
         # Get the most recent object
         new_obj = self.test_type.objects.all().order_by('pk')[0]
-        obj_ = self.test_type.objects.all()[0]
+        self.test_type.objects.all()[0]
 
         resp = self.c.post('/mozdns/record/delete/{0}/{1}/'.format(
                            self.rdtype, new_obj.pk))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(0, self.test_type.objects.filter(pk=new_obj.pk).count())
+        self.assertEqual(
+            0, self.test_type.objects.filter(pk=new_obj.pk).count())
 
         delete_obj_count = self.test_type.objects.all().count()
         self.assertEqual(start_obj_count, delete_obj_count)
@@ -103,12 +101,13 @@ class BaseViewTestCase(object):
 
         # Get the most recent object
         new_obj = self.test_type.objects.all().order_by('pk')[0]
-        obj_ = self.test_type.objects.all()[0]
+        self.test_type.objects.all()[0]
 
         resp = self.c.post('/mozdns/record/delete/{0}/{1}/'.format(
                            self.rdtype, new_obj.pk + 1))
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(1, self.test_type.objects.filter(pk=new_obj.pk).count())
+        self.assertEqual(
+            1, self.test_type.objects.filter(pk=new_obj.pk).count())
 
 
 class CNAMERecordTests(BaseViewTestCase, TestCase):
@@ -116,7 +115,7 @@ class CNAMERecordTests(BaseViewTestCase, TestCase):
 
     def post_data(self):
         return {
-            'description':random_label(),
+            'description': random_label(),
             'ttl': random_byte(),
             'fqdn': 'd' + random_label() + "." + self.domain.name,
             'target': random_label()
@@ -130,28 +129,31 @@ class MXRecordTests(BaseViewTestCase, TestCase):
         return {
             'description': random_label(),
             'ttl': random_byte(),
-            'fqdn':  'e' + random_label() + "." + self.domain.name,
+            'fqdn': 'e' + random_label() + "." + self.domain.name,
             'server': random_label(),
-            'priority':123,
-            'ttl':213
+            'priority': 123,
+            'ttl': 213
         }
+
 
 class SRVRecordTests(BaseViewTestCase, TestCase):
     test_type = SRV
+
     def post_data(self):
         return {
             'description': random_label(),
             'ttl': random_byte(),
-            'fqdn':"_"+random_label() + "." + self.domain.name,
+            'fqdn': "_" + random_label() + "." + self.domain.name,
             'target': random_label(),
-            'priority':2 ,
-            'weight':2222 ,
+            'priority': 2,
+            'weight': 2222,
             'port': 222
         }
 
 
 class TXTRecordTests(BaseViewTestCase, TestCase):
     test_type = TXT
+
     def post_data(self):
         return {
             'description': random_label(),
@@ -160,19 +162,22 @@ class TXTRecordTests(BaseViewTestCase, TestCase):
             'txt_data': random_label()
         }
 
+
 class NameserverRecordTests(BaseViewTestCase, TestCase):
     test_type = Nameserver
+
     def post_data(self):
         return {
             'server': 'g' + random_label(),
             'description': random_label(),
             'ttl': random_byte(),
-            'domain':self.domain.pk,
+            'domain': self.domain.pk,
         }
 
 
 class SSHFPRecordTests(BaseViewTestCase, TestCase):
     test_type = SSHFP
+
     def post_data(self):
         return {
             'description': random_label(),
@@ -183,8 +188,10 @@ class SSHFPRecordTests(BaseViewTestCase, TestCase):
             'key': random_label()
         }
 
+
 class AdderessRecordV4RecordTests(BaseViewTestCase, TestCase):
     test_type = AddressRecord
+
     def setUp(self):
         super(AdderessRecordV4RecordTests, self).setUp()
 
@@ -193,12 +200,15 @@ class AdderessRecordV4RecordTests(BaseViewTestCase, TestCase):
             'description': random_label(),
             'ttl': random_byte(),
             'fqdn': 'i' + random_label() + "." + self.domain.name,
-            'ip_str': "11.{0}.{1}.{2}".format(random_byte(), random_byte(), random_byte()),
+            'ip_str': "11.{0}.{1}.{2}".format(random_byte(), random_byte(),
+                                              random_byte()),
             'ip_type': '4'
         }
 
+
 class AdderessRecordV6RecordTests(BaseViewTestCase, TestCase):
     test_type = AddressRecord
+
     def setUp(self):
         Domain.objects.get_or_create(name='arpa')
         Domain.objects.get_or_create(name='ip6.arpa')
@@ -211,12 +221,14 @@ class AdderessRecordV6RecordTests(BaseViewTestCase, TestCase):
             'ttl': random_byte(),
             'fqdn': 'j' + random_label() + "." + self.domain.name,
             'ip_str': "1000:{0}:{1}:{2}::".format(random_byte(), random_byte(),
-                random_byte()),
+                                                  random_byte()),
             'ip_type': '6'
         }
 
+
 class PTRV6RecordTests(BaseViewTestCase, TestCase):
     test_type = PTR
+
     def setUp(self):
         Domain.objects.get_or_create(name='arpa')
         Domain.objects.get_or_create(name='ip6.arpa')
@@ -227,14 +239,17 @@ class PTRV6RecordTests(BaseViewTestCase, TestCase):
         return {
             'description': 'k' + random_label(),
             'ttl': random_byte(),
-            'ip_str': "1000:{0}:{1}:{2}:{3}:{4}::".format(random_byte(), random_byte(),
-                random_byte(),random_byte(),random_byte()),
+            'ip_str': "1000:{0}:{1}:{2}:{3}:{4}::".format(
+                random_byte(), random_byte(), random_byte(), random_byte(),
+                random_byte()),
             'ip_type': '6',
             'name': random_label()
         }
 
+
 class PTRV4RecordTests(BaseViewTestCase, TestCase):
     test_type = PTR
+
     def setUp(self):
         Domain.objects.get_or_create(name='arpa')
         Domain.objects.get_or_create(name='in-addr.arpa')
@@ -245,7 +260,8 @@ class PTRV4RecordTests(BaseViewTestCase, TestCase):
         return {
             'description': random_label(),
             'ttl': random_byte(),
-            'ip_str': "11.{0}.{1}.{2}".format(random_byte(), random_byte(), random_byte()),
+            'ip_str': "11.{0}.{1}.{2}".format(
+                random_byte(), random_byte(), random_byte()),
             'ip_type': '4',
             'name': random_label()
         }
@@ -258,8 +274,10 @@ class SOARecordTests(BaseViewTestCase, TestCase):
         return {
             'primary': random_label() + '.' + random_label(),
             'ttl': random_byte(),
-            'contact': "{0}.{1}.{2}".format(random_byte(), random_byte(), random_byte()),
+            'contact': "{0}.{1}.{2}".format(random_byte(), random_byte(),
+                                            random_byte()),
             'name': random_label(),
-            'comment': "{0}{1}{2}".format(random_byte(), random_byte(), random_byte())
+            'comment': "{0}{1}{2}".format(random_byte(), random_byte(),
+                                          random_byte())
         }
 """

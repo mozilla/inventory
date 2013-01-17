@@ -1,5 +1,3 @@
-from django.test import TestCase
-
 from mozdns.address_record.tests import *
 from mozdns.domain.tests.all import *
 from mozdns.ip.tests import *

@@ -1,11 +1,10 @@
 import copy
 import simplejson as json
+from gettext import gettext as _
 
-from django.http import QueryDict
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.forms.util import ErrorList, ErrorDict
 from django.shortcuts import render
-from django.db.models import Q
 from django.http import Http404
 
 import reversion
@@ -32,8 +31,6 @@ from mozdns.domain.forms import DomainForm
 from mozdns.nameserver.models import Nameserver
 from mozdns.nameserver.forms import NameserverForm
 from mozdns.utils import ensure_label_domain, prune_tree
-
-import pdb
 
 
 class RecordView(object):
@@ -75,7 +72,7 @@ class RecordView(object):
             object_ = None
 
         new_object, errors = self.post_handler(object_, record_type,
-                request.POST.copy())
+                                               request.POST.copy())
 
         if object_:
             verb = "update"
@@ -111,7 +108,7 @@ class RecordView(object):
     def modify_qd(self, qd):
         fqdn = qd.pop('fqdn', [''])[0]
         domain = None
-        #if record_type not in ('PTR', 'NS', 'DOMAIN', 'SOA'):
+        # if record_type not in ('PTR', 'NS', 'DOMAIN', 'SOA'):
         try:
             label, domain = ensure_label_domain(fqdn)
             # If something goes bad latter on you must call prune_tree on
@@ -125,7 +122,8 @@ class RecordView(object):
 
     def post_handler(self, object_, record_type, orig_qd):
         """Create or update object_. qd is a QueryDict."""
-        qd = copy.deepcopy(orig_qd)  # If there are ever errors, we have to preserver
+        qd = copy.deepcopy(
+            orig_qd)  # If there are ever errors, we have to preserver
                                      # the original qd
         comment = qd.pop('comment', [''])[0].strip()
 
@@ -158,14 +156,16 @@ class RecordView(object):
                 prune_tree(Domain.objects.get(pk=qd['domain']))
             return None, object_form._errors
 
+
 def make_rdtype_tagger(tagged_klasses):
     def tag(Klass):
-        tagged_klasses[Klass.__name__] = Klass
+        tagged_klasses[Klass.__name__.strip('_')] = Klass
         return Klass
     return tag
 
 obj_meta = {}
 tag_rdtype = make_rdtype_tagger(obj_meta)
+
 
 def get_obj_meta(record_type):
     return obj_meta[record_type]
@@ -176,39 +176,40 @@ Name the class the same as the rdtype it's standing for.
 
 
 @tag_rdtype
-class A(RecordView):
+class A_(RecordView):
     Klass = AddressRecord
     form = AddressRecordForm
     DisplayForm = AddressRecordFQDNForm
 
+
 @tag_rdtype
-class AAAA(A):
+class AAAA_(A_):
     pass
 
 
 @tag_rdtype
-class CNAME(RecordView):
+class CNAME_(RecordView):
     Klass = CNAME
     form = CNAMEForm
     DisplayForm = CNAMEFQDNForm
 
 
 @tag_rdtype
-class DOMAIN(RecordView):
+class DOMAIN_(RecordView):
     Klass = Domain
     form = DomainForm
     DisplayForm = DomainForm
 
 
 @tag_rdtype
-class MX(RecordView):
+class MX_(RecordView):
     Klass = MX
     form = MXForm
     DisplayForm = FQDNMXForm
 
 
 @tag_rdtype
-class NS(RecordView):
+class NS_(RecordView):
     Klass = Nameserver
     form = NameserverForm
     DisplayForm = NameserverForm
@@ -218,7 +219,7 @@ class NS(RecordView):
         try:
             domain = Domain.objects.get(pk=domain_pk)
             qd['domain'] = str(domain.pk)
-        except Domain.DoesNotExist, e:
+        except Domain.DoesNotExist:
             error_message = _("Could not find domain with pk "
                               "'{0}'".format(domain_pk))
             errors = ErrorDict()
@@ -228,7 +229,7 @@ class NS(RecordView):
 
 
 @tag_rdtype
-class PTR(RecordView):
+class PTR_(RecordView):
     Klass = PTR
     form = PTRForm
     DisplayForm = PTRForm
@@ -238,21 +239,21 @@ class PTR(RecordView):
 
 
 @tag_rdtype
-class TXT(RecordView):
+class TXT_(RecordView):
     Klass = TXT
     form = TXTForm
     DisplayForm = FQDNTXTForm
 
 
 @tag_rdtype
-class SSHFP(RecordView):
+class SSHFP_(RecordView):
     Klass = SSHFP
     form = SSHFPForm
     DisplayForm = FQDNSSHFPForm
 
 
 @tag_rdtype
-class SOA(RecordView):
+class SOA_(RecordView):
     Klass = SOA
     form = SOAForm
     DisplayForm = SOAForm
@@ -262,7 +263,7 @@ class SOA(RecordView):
 
 
 @tag_rdtype
-class SRV(RecordView):
+class SRV_(RecordView):
     Klass = SRV
     form = SRVForm
     DisplayForm = FQDNSRVForm

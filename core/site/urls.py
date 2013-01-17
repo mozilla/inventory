@@ -1,12 +1,14 @@
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns, url
 
-from core.site.views import *
+from core.site.views import (SiteListView, SiteCreateView, site_detail,
+                             update_site, SiteDeleteView)
 
 urlpatterns = patterns('',
-    url(r'^$', SiteListView.as_view()),
-    url(r'^create/$', SiteCreateView.as_view()),
-    url(r'^(?P<site_pk>[\w-]+)/$', site_detail),
-    url(r'^(?P<site_pk>[\w-]+)/update/$', update_site),
-    url(r'^(?P<pk>[\w-]+)/delete/$', SiteDeleteView.as_view()),
+                       url(r'^$', SiteListView.as_view()),
+                       url(r'^create/$', SiteCreateView.as_view()),
+                       url(r'^(?P<site_pk>[\w-]+)/$', site_detail),
+                       url(r'^(?P<site_pk>[\w-]+)/update/$', update_site),
+                       url(r'^(?P<pk>[\w-]+)/delete/$',
+                           SiteDeleteView.as_view()),
 
-)
+                       )

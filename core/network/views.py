@@ -1,29 +1,18 @@
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
-from django.contrib import messages
 from django.forms.util import ErrorList, ErrorDict
 from django.http import HttpResponse
 
 from core.network.models import Network, NetworkKeyValue
-from core.network.forms import *
-from core.network.utils import calc_networks, calc_parent_str
-from core.vlan.models import Vlan
-from core.site.models import Site
-from core.site.forms import SiteForm
+from core.network.utils import calc_parent, calc_networks
+from core.network.forms import NetworkForm
 from core.keyvalue.utils import get_attrs, update_attrs, get_dhcp_aa
 from core.keyvalue.utils import get_dhcp_docstrings, dict_to_kv
-from core.range.forms import RangeForm
 
 from core.views import CoreDeleteView, CoreListView
-from core.views import CoreCreateView
-from mozdns.ip.models import ipv6_to_longs
-from django.forms.formsets import formset_factory
 
 import re
-import pdb
-import ipaddr
 import simplejson as json
 
 
@@ -66,7 +55,7 @@ def create_network(request):
                         network.site = parent.site
                 network.save()
             return redirect(network)
-        except ValidationError, e:
+        except ValidationError:
             return render(request, 'core/core_form.html', {
                 'object': network,
                 'form': form,
@@ -138,4 +127,4 @@ def network_detail(request, network_pk):
         'eldars': eldars,
         'sub_networks': sub_networks,
         'attrs': attrs,
-        })
+    })

@@ -65,7 +65,7 @@ def check_for_master_delegation(domain, master_domain):
     if not domain.pk:  # We don't exist yet.
         raise ValidationError("No subdomains can be created in the {0} "
                               "domain. It is delegated."
-                                .format(master_domain.name))
+                              .format(master_domain.name))
 
 
 def validate_zone_soa(domain, master_domain):
@@ -156,12 +156,13 @@ def check_for_soa_partition(domain, child_domains):
             if i_domain == j_domain:
                 continue
             if i_domain.soa == j_domain.soa and i_domain.soa is not None:
-                raise ValidationError("Changing the SOA for the {0} "
-                        "domain would cause the child domains {1} and {2} to "
-                        "become two zones that share the same SOA. Change "
-                        "{3} or {4}'s SOA before changing this  SOA".
-                        format(domain.name, i_domain.name, j_domain.name,
-                            i_domain.name, j_domain.name))
+                raise ValidationError(
+                    "Changing the SOA for the {0} "
+                    "domain would cause the child domains {1} and {2} to "
+                    "become two zones that share the same SOA. Change "
+                    "{3} or {4}'s SOA before changing this  SOA".
+                    format(domain.name, i_domain.name, j_domain.name,
+                    i_domain.name, j_domain.name))
 
 
 def find_root_domain(soa):
@@ -268,7 +269,7 @@ def validate_label(label, valid_chars=None):
         if char == '.':
             raise ValidationError("Invalid name {0}. Please do not span "
                                   "multiple domains when creating records."
-                                    .format(label))
+                                  .format(label))
         if valid_chars.find(char) < 0:
             raise ValidationError("Ivalid name {0}. Character '{1}' is "
                                   "invalid.".format(label, char))
@@ -286,7 +287,7 @@ def validate_domain_name(name):
     for label in name.split('.'):
         if not label:
             raise ValidationError("Error: Ivalid name {0}. Empty label."
-                                    .format(name))
+                                  .format(name))
         valid_chars = string.ascii_letters + "0123456789" + "-_"
         validate_label(label, valid_chars=valid_chars)
 
@@ -336,7 +337,7 @@ def validate_name(fqdn):
     for label in fqdn.split('.'):
         if not label:
             raise ValidationError("Ivalid name {0}. Empty label."
-                                    .format(fqdn))
+                                  .format(fqdn))
         validate_label(label)
 
 
@@ -363,12 +364,12 @@ def validate_reverse_name(reverse_name, ip_type):
             if valid_ipv6.find(nibble) < 0:
                 raise ValidationError("Error: Ivalid Ipv6 name {0}. Character "
                                       "'{1}' is invalid."
-                                        .format(reverse_name, nibble))
+                                      .format(reverse_name, nibble))
         else:
             if not(int(nibble) <= 255 and int(nibble) >= 0):
                 raise ValidationError("Error: Ivalid Ipv4 name {0}. Character "
                                       "'{1}' is invalid."
-                                        .format(reverse_name, nibble))
+                                      .format(reverse_name, nibble))
 
 
 def validate_ttl(ttl):
@@ -403,7 +404,7 @@ def validate_srv_port(port):
         raise ValidationError("SRV port must be within 0 and 65535. "
                               "See RFC 1035")
 
-#TODO, is this a duplicate of MX ttl?
+# TODO, is this a duplicate of MX ttl?
 
 
 def validate_srv_priority(priority):
@@ -441,6 +442,7 @@ def validate_srv_name(srv_name):
         raise ValidationError("Error: SRV label must not be None")
     mod_srv_name = srv_name[1:]  # Get rid of '_'
     validate_name(mod_srv_name)
+
 
 def validate_srv_target(srv_target):
     if srv_target == ".":
@@ -487,12 +489,13 @@ def is_rfc1918(ip_str):
     private_networks = ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
     try:
         ip_str_network = ipaddr.IPv4Network(ip_str)
-    except ipaddr.AddressValueError, e:
+    except ipaddr.AddressValueError:
         raise ValidationError("{0} is not a valid IPv4 address".format(ip_str))
     for network in private_networks:
         if ipaddr.IPv4Network(network).overlaps(ip_str_network):
             return True
     return False
+
 
 def is_rfc4193(ip_str):
     """Returns True if the IP is private. If the IP isn't a valid IPv6 address
@@ -501,7 +504,7 @@ def is_rfc4193(ip_str):
     private_networks = ["fc00::/7"]
     try:
         ip_str_network = ipaddr.IPv6Network(ip_str)
-    except ipaddr.AddressValueError, e:
+    except ipaddr.AddressValueError:
         raise ValidationError("{0} is not a valid IPv6 address".format(ip_str))
     for network in private_networks:
         if ipaddr.IPv6Network(network).overlaps(ip_str_network):
@@ -515,23 +518,28 @@ def validate_views(views, ip_str, ip_type):
     """
     if views.filter(name="public").exists():
         if ip_type == '4' and is_rfc1918(ip_str):
-            raise ValidationError("{0} is a private IP address. You"
-                    "cannot put a record that contains private data into"
-                    "a public view.")
+            raise ValidationError(
+                "{0} is a private IP address. You"
+                "cannot put a record that contains private data into"
+                "a public view.")
         if ip_type == '6' and is_rfc4193(ip_str):
-            raise ValidationError("{0} is a private IP address. You"
-                    "cannot put a record that contains private data into"
-                    "a public view.")
+            raise ValidationError(
+                "{0} is a private IP address. You"
+                "cannot put a record that contains private data into"
+                "a public view.")
+
 
 def validate_view(view, ip_str, ip_type):
     """If view is the private view and ``ip_str`` is
     in one of the RFC 1918 networks, raise a :class:`ValidationError`.
     """
     if ip_type == '4' and is_rfc1918(ip_str):
-        raise ValidationError("{0} is a private IP address. You"
-                "cannot put a record that contains private data into"
-                "a public view.")
+        raise ValidationError(
+            "{0} is a private IP address. You"
+            "cannot put a record that contains private data into"
+            "a public view.")
     if ip_type == '6' and is_rfc4193(ip_str):
-        raise ValidationError("{0} is a private IP address. You"
-                "cannot put a record that contains private data into"
-                "a public view.")
+        raise ValidationError(
+            "{0} is a private IP address. You"
+            "cannot put a record that contains private data into"
+            "a public view.")

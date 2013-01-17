@@ -25,18 +25,18 @@ class CNAME(MozdnsRecord, LabelDomainMixin):
     # TODO cite an RFC for that ^ (it's around somewhere)
     id = models.AutoField(primary_key=True)
     target = models.CharField(max_length=100, validators=[validate_name],
-            help_text="CNAME Target")
+                              help_text="CNAME Target")
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
-                "{rdtype:$rdtype_just} {target:$rhs_just}.")
+                 "{rdtype:$rdtype_just} {target:$rhs_just}.")
 
     search_fields = ('fqdn', 'target')
 
     def details(self):
-        return  (
-                    ('FQDN', self.fqdn),
-                    ('Record Type', 'CNAME'),
-                    ('Target', self.target),
-               )
+        return (
+            ('FQDN', self.fqdn),
+            ('Record Type', 'CNAME'),
+            ('Target', self.target),
+        )
 
     class Meta:
         db_table = 'cname'
@@ -73,7 +73,7 @@ class CNAME(MozdnsRecord, LabelDomainMixin):
         try:
             self.domain
         except ObjectDoesNotExist:
-            return # Validation will fail eventually
+            return  # Validation will fail eventually
         if not self.domain.soa:
             return
         root_domain = self.domain.soa.root_domain
@@ -124,8 +124,8 @@ class CNAME(MozdnsRecord, LabelDomainMixin):
                                   " this name!")
         # There are preexisting records that break this rule. We can't support
         # this requirement until those records are fixed
-        #PTR = mozdns.ptr.models.PTR
-        #if PTR.objects.filter(name=self.fqdn):
+        # PTR = mozdns.ptr.models.PTR
+        # if PTR.objects.filter(name=self.fqdn):
         #    raise ValidationError("RFC 1034 says you shouldn't point PTR "
         #                          "records at CNAMEs, and a PTR points to"
         #                          " this name!")

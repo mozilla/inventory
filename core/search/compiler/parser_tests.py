@@ -1,4 +1,3 @@
-import pdb
 from django.test import TestCase
 from core.search.compiler.invparse import build_parser
 from core.search.compiler.utils import make_stack
@@ -134,16 +133,12 @@ class TestParser(TestCase):
         exp = 'a b AND d AND c f AND g AND OR'
         self.compare(ss, exp)
 
-    def test24(self):
-        ss = "type=:foo.bar -type=:baz"
-        exp = 'type=:foo.bar type=:baz NOT AND'
-        self.compare(ss, exp)
-
     def test25(self):
         ss = "foo-bar baz"
         exp = 'foo-bar baz AND'
         self.compare(ss, exp)
 
-
-if __name__ == "__main__":
-    unittest.main()
+    def test26(self):
+        ss = "type=:foo.bar -type=:baz"
+        exp = 'type=:foo.bar type=:baz NOT AND'
+        self.compare(ss, exp)

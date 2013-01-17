@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from mozdns.domain.models import Domain
 from mozdns.nameserver.models import Nameserver
 from mozdns.soa.models import SOA
-from mozdns.tests.view_tests_template import  random_label, random_byte
+from mozdns.tests.view_tests_template import random_label, random_byte
 
 
 class CreateZoneTests(TestCase):
@@ -19,7 +19,7 @@ class CreateZoneTests(TestCase):
         """Return a valid set of data"""
         return {
             'root_domain': '{0}.{0}.mozilla.com'.format(
-                                            random_label()+random_label()),
+            random_label() + random_label()),
             'soa_primary': 'ns1.mozilla.com',
             'soa_contact': 'noc.mozilla.com',
             'nameserver_1': 'ns1.mozilla.com',
@@ -94,7 +94,8 @@ class CreateZoneTests(TestCase):
         # Now create a new zone under the created zone. Make sure the tree
         # under the new zone is preserved.
 
-        second_root_domain = "{0}.{1}".format(random_label(),first_root_domain)
+        second_root_domain = "{0}.{1}".format(
+            random_label(), first_root_domain)
         post_data['root_domain'] = second_root_domain
         resp = self.c.post(reverse('create-zone-ajax'), post_data)
         self.assertEqual(200, resp.status_code)

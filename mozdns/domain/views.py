@@ -1,35 +1,18 @@
-from operator import itemgetter
+import simplejson as json
 
-from django.forms.util import ErrorList
 from django.contrib import messages
 from django.forms import ValidationError
 from django.shortcuts import render
-from django.shortcuts import render_to_response
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
 from django.views.generic import UpdateView
 from django.views.generic import DetailView
-from django.views.generic import ListView
 from django.views.generic import CreateView
 
-from core.interface.static_intr.models import StaticInterface
-from mozdns.address_record.models import AddressRecord
-from mozdns.cname.models import CNAME
 from mozdns.utils import tablefy
-from mozdns.views import MozdnsCreateView, MozdnsDeleteView, MozdnsListView
+from mozdns.views import MozdnsDeleteView, MozdnsListView
 from mozdns.domain.models import Domain
 from mozdns.domain.forms import DomainForm, DomainUpdateForm
-from mozdns.mx.models import MX
-from mozdns.nameserver.models import Nameserver
-from mozdns.ptr.models import PTR
-from mozdns.soa.models import SOA
-from mozdns.srv.models import SRV
-from mozdns.txt.models import TXT
-from mozdns.view.models import View
-
-import pdb
-import simplejson as json
 
 
 def domain_sort(domains):
@@ -53,10 +36,10 @@ def build_tree(root, domains):
         ordered += build_tree(child, domains)
     return ordered
 
+
 def get_all_domains(request):
     domains = [domain.name for domain in Domain.objects.all()]
     return HttpResponse(json.dumps(domains))
-
 
 
 class DomainView(object):
@@ -106,16 +89,15 @@ class DomainDetailView(DomainView, DetailView):
         else:
             cname_views = True
         cname_headers, cname_matrix, cname_urls = tablefy(cname_objects,
-                cname_views)
+                                                          cname_views)
 
         # TODO, include Static Registrations
         ptr_objects = domain.ptr_set.all().order_by('ip_str')
         ptr_headers, ptr_matrix, ptr_urls = tablefy(ptr_objects)
 
         # TODO, include Static Registrations
-        all_static_intr = StaticInterface.objects.all()
         intr_objects = domain.staticinterface_set.all().order_by(
-                'name').order_by('ip_str')
+            'name').order_by('ip_str')
         intr_headers, intr_matrix, intr_urls = tablefy(intr_objects)
 
         address_objects = domain.addressrecord_set.all().order_by('label')
@@ -181,19 +163,19 @@ class DomainCreateView(DomainView, CreateView):
         # Try to create the domain. Catch all exceptions.
         try:
             domain = domain_form.save()
-        except ValueError, e:
+        except ValueError:
             return render(request, "mozdns/mozdns_form.html", {
                 'form': domain_form,
                 'form_title': 'Create Domain'
-        })
+            })
 
         try:
             if domain.master_domain and domain.master_domain.soa:
                 domain.soa = domain.master_domain.soa
                 domain.save()
-        except ValidationError, e:
+        except ValidationError:
             return render(request, "mozdns/mozdns_form.html", {'form':
-                domain_form, 'form_title': 'Create Domain'})
+                          domain_form, 'form_title': 'Create Domain'})
         # Success. Redirect.
         messages.success(request, "{0} was successfully created.".
                          format(domain.name))
@@ -201,8 +183,8 @@ class DomainCreateView(DomainView, CreateView):
 
     def get(self, request, *args, **kwargs):
         domain_form = DomainForm()
-        return render(request, "mozdns/mozdns_form.html", {'form': domain_form,
-            'form_title': 'Create Domain'})
+        return render(request, "mozdns/mozdns_form.html",
+                      {'form': domain_form, 'form_title': 'Create Domain'})
 
 
 class DomainUpdateView(DomainView, UpdateView):

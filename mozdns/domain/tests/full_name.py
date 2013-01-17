@@ -12,15 +12,16 @@ from mozdns.soa.models import SOA
 
 from mozdns.tests.utils import create_fake_zone
 
+
 class FullNameTests(TestCase):
 
     def test_basic_add_remove1(self):
-        c = Domain(name = 'com')
+        c = Domain(name='com')
         c.save()
         self.assertFalse(c.purgeable)
-        f_c = Domain(name = 'foo.com')
+        f_c = Domain(name='foo.com')
         s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
-                description="foo.zfoo.comom")
+                                         description="foo.zfoo.comom")
         f_c.soa = s
         f_c.save()
         self.assertFalse(f_c.purgeable)
@@ -31,10 +32,14 @@ class FullNameTests(TestCase):
         self.assertTrue(the_domain.purgeable)
         self.assertEqual(the_domain.master_domain.name, "y.z.foo.com")
         self.assertTrue(the_domain.master_domain.purgeable)
-        self.assertEqual(the_domain.master_domain.master_domain.name, "z.foo.com")
+        self.assertEqual(
+            the_domain.master_domain.master_domain.name, "z.foo.com")
         self.assertTrue(the_domain.master_domain.master_domain.purgeable)
-        self.assertEqual(the_domain.master_domain.master_domain.master_domain.name, "foo.com")
-        self.assertFalse(the_domain.master_domain.master_domain.master_domain.purgeable)
+        self.assertEqual(
+            the_domain.master_domain.master_domain.master_domain.name,
+            "foo.com")
+        self.assertFalse(
+            the_domain.master_domain.master_domain.master_domain.purgeable)
 
         # Now call prune tree one the_domain
         self.assertTrue(prune_tree(the_domain))
@@ -53,12 +58,12 @@ class FullNameTests(TestCase):
     def test_basic_add_remove2(self):
         # MAke sure that if a domain is set to not purgeable the prune stops at
         # that domain.
-        c = Domain(name = 'edu')
+        c = Domain(name='edu')
         c.save()
         self.assertFalse(c.purgeable)
-        f_c = Domain(name = 'foo.edu')
+        f_c = Domain(name='foo.edu')
         s, _ = SOA.objects.get_or_create(primary="foo", contact="foo",
-            description="foo.edu")
+                                         description="foo.edu")
         f_c.soa = s
         f_c.save()
         self.assertFalse(f_c.purgeable)
@@ -69,10 +74,14 @@ class FullNameTests(TestCase):
         self.assertTrue(the_domain.purgeable)
         self.assertEqual(the_domain.master_domain.name, "y.z.foo.edu")
         self.assertTrue(the_domain.master_domain.purgeable)
-        self.assertEqual(the_domain.master_domain.master_domain.name, "z.foo.edu")
+        self.assertEqual(
+            the_domain.master_domain.master_domain.name, "z.foo.edu")
         self.assertTrue(the_domain.master_domain.master_domain.purgeable)
-        self.assertEqual(the_domain.master_domain.master_domain.master_domain.name, "foo.edu")
-        self.assertFalse(the_domain.master_domain.master_domain.master_domain.purgeable)
+        self.assertEqual(
+            the_domain.master_domain.master_domain.master_domain.name,
+            "foo.edu")
+        self.assertFalse(
+            the_domain.master_domain.master_domain.master_domain.purgeable)
 
         # See if purgeable stops prune
         the_domain.purgeable = False
@@ -183,7 +192,7 @@ class FullNameTests(TestCase):
 
         label, the_domain = ensure_label_domain(fqdn)
         addr = AddressRecord(label=label, domain=the_domain,
-                ip_type='4', ip_str="10.2.3.4")
+                             ip_type='4', ip_str="10.2.3.4")
         addr.save()
         self.assertFalse(prune_tree(the_domain))
         addr.delete()
@@ -201,8 +210,9 @@ class FullNameTests(TestCase):
         ns.delete()
 
         label, the_domain = ensure_label_domain(fqdn)
-        srv = SRV(label='_'+label, domain=the_domain, target="foo", priority=4,
-                weight=4, port=34)
+        srv = SRV(
+            label='_' + label, domain=the_domain, target="foo", priority=4,
+            weight=4, port=34)
         srv.save()
         self.assertFalse(prune_tree(the_domain))
         srv.delete()

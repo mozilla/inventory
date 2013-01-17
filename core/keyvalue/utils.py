@@ -2,7 +2,6 @@ from django.core.exceptions import ValidationError
 from django.core.exceptions import ObjectDoesNotExist
 
 import re
-import pdb
 
 is_attr = re.compile("^attr_\d+$")
 
@@ -15,6 +14,7 @@ def get_dhcp_aa(obj):
             member_name = member[4:].replace('_', '-')
             aa.append(member_name)
     return aa
+
 
 def get_aa(obj):
     members = dir(obj)
@@ -29,7 +29,7 @@ def get_attrs(query_dict):
     kv = {}
     for param, values in query_dict.iteritems():
         if (is_attr.match(param) and
-            "{0}_value".format(param) in query_dict):
+                "{0}_value".format(param) in query_dict):
                 # u'attr_0': [u'<attr>']
                 # u'key_attr_0': [u'<attr_value>']
                 key = query_dict[param]
@@ -37,7 +37,7 @@ def get_attrs(query_dict):
 
                 if key in kv:
                     raise ValidationError("{0} is already an "
-                        "attribute.".format(key))
+                                          "attribute.".format(key))
                 kv[key] = value
 
     return kv
@@ -138,10 +138,10 @@ class AuxAttr(object):
         else:
             try:
                 kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
-                    self.obj})
-            except ObjectDoesNotExist, e:
+                                                 self.obj})
+            except ObjectDoesNotExist:
                 raise AttributeError("{0} AuxAttr has no attribute "
-                        "{1}".format(self.KVClass, attr))
+                                     "{1}".format(self.KVClass, attr))
             self.cache[attr] = kv.value
             return kv.value
         raise AttributeError()
@@ -164,8 +164,8 @@ class AuxAttr(object):
             pass
         try:
             kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
-                self.obj})
-        except ObjectDoesNotExist, e:
+                                             self.obj})
+        except ObjectDoesNotExist:
             kv = self.KVClass(**{'key': attr, self.obj_name: self.obj})
         kv.value = value
         kv.clean()
@@ -182,9 +182,9 @@ class AuxAttr(object):
         if hasattr(self, attr):
             self.cache.pop(attr)
             kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
-                self.obj})
+                                             self.obj})
             kv.delete()
             return
         else:
             raise AttributeError("{0} AuxAttr has no attribute "
-                    "{1}".format(self.KVClass, attr))
+                                 "{1}".format(self.KVClass, attr))

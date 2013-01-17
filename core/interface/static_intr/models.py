@@ -8,7 +8,6 @@ from core.keyvalue.models import KeyValue
 from core.keyvalue.utils import AuxAttr
 from core.validation import validate_mac
 from mozdns.address_record.models import BaseAddressRecord
-from mozdns.view.models import View
 from mozdns.domain.models import Domain
 from mozdns.ip.utils import ip_to_dns_form
 
@@ -36,9 +35,9 @@ class StaticInterface(BaseAddressRecord):
 
     In terms of DNS, a static interface represents a PTR and A record and must
     adhear to the requirements of those classes. The interface inherits from
-    BaseAddressRecord and will call it's clean method with 'update_reverse_domain'
-    set to True. This will ensure that it's A record is valid *and* that it's
-    PTR record is valid.
+    BaseAddressRecord and will call it's clean method with
+    'update_reverse_domain' set to True. This will ensure that it's A record is
+    valid *and* that it's PTR record is valid.
 
 
     Using the 'attrs' attribute.
@@ -78,16 +77,19 @@ class StaticInterface(BaseAddressRecord):
     """
     id = models.AutoField(primary_key=True)
     mac = models.CharField(max_length=17, validators=[validate_mac],
-            help_text="Mac address in format XX:XX:XX:XX:XX:XX")
+                           help_text="Mac address in format XX:XX:XX:XX:XX:XX")
     reverse_domain = models.ForeignKey(Domain, null=True, blank=True,
-                        related_name="staticintrdomain_set")
+                                       related_name="staticintrdomain_set")
 
     system = models.ForeignKey(System, null=True, blank=True,
-                help_text="System to associate the interface with")
+                               help_text="System to associate the interface "
+                               "with")
     dhcp_enabled = models.BooleanField(default=True,
-                    help_text="Enable dhcp for this interface?")
+                                       help_text="Enable dhcp for this "
+                                       "interface?")
     dns_enabled = models.BooleanField(default=True,
-                    help_text="Enable dns for this interface?")
+                                      help_text="Enable dns for this "
+                                      "interface?")
 
     attrs = None
 
@@ -98,10 +100,10 @@ class StaticInterface(BaseAddressRecord):
 
     def details(self):
         return (
-                ("Name", self.fqdn),
-                ("DNS Type", "A/PTR"),
-                ("IP", self.ip_str),
-                )
+            ("Name", self.fqdn),
+            ("DNS Type", "A/PTR"),
+            ("IP", self.ip_str),
+        )
 
     class Meta:
         db_table = "static_interface"
@@ -109,8 +111,8 @@ class StaticInterface(BaseAddressRecord):
 
     @classmethod
     def get_api_fields(cls):
-        return super(StaticInterface, cls).get_api_fields() + ['mac',
-                    'dhcp_enabled', 'dns_enabled']
+        return super(StaticInterface, cls).get_api_fields() + [
+            'mac', 'dhcp_enabled', 'dns_enabled']
 
     @property
     def rdtype(self):
@@ -145,14 +147,14 @@ class StaticInterface(BaseAddressRecord):
         self.mac = self.mac.lower()
         if not self.system:
             raise ValidationError("An interface means nothing without it's "
-                "system.")
+                                  "system.")
         from mozdns.ptr.models import PTR
         from mozdns.address_record.models import AddressRecord
 
         if PTR.objects.filter(ip_str=self.ip_str, name=self.fqdn).exists():
             raise ValidationError("A PTR already uses this Name and IP")
         if AddressRecord.objects.filter(ip_str=self.ip_str, fqdn=self.fqdn
-                ).exists():
+                                        ).exists():
             raise ValidationError("An A record already uses this Name and IP")
 
         if kwargs.pop("validate_glue", True):
@@ -178,9 +180,10 @@ class StaticInterface(BaseAddressRecord):
         # The label of the domain changed. Make sure it's not a glue record
         Nameserver = mozdns.nameserver.models.Nameserver
         if Nameserver.objects.filter(intr_glue=self).exists():
-            raise ValidationError("This Interface represents a glue record "
-                    "for a Nameserver. Change the Nameserver to edit this "
-                    "record.")
+            raise ValidationError(
+                "This Interface represents a glue record "
+                "for a Nameserver. Change the Nameserver to edit this "
+                "record.")
 
     A_template = _("{bind_name:$rhs_just} {ttl} {rdclass:$rdclass_just}"
                    "{rdtype_clob:$rdtype_just} {ip_str:$lhs_just}")
@@ -202,20 +205,21 @@ class StaticInterface(BaseAddressRecord):
     def delete(self, *args, **kwargs):
         if kwargs.pop("validate_glue", True):
             if self.intrnameserver_set.exists():
-                raise ValidationError("Cannot delete the record {0}. It is a "
+                raise ValidationError(
+                    "Cannot delete the record {0}. It is a "
                     "glue record.".format(self.record_type()))
         check_cname = kwargs.pop("check_cname", True)
         super(StaticInterface, self).delete(validate_glue=False,
-                check_cname=check_cname)
+                                            check_cname=check_cname)
 
     def __repr__(self):
         return "<StaticInterface: {0}>".format(str(self))
 
     def __str__(self):
-        #return "IP:{0} Full Name:{1} Mac:{2}".format(self.ip_str,
+        # return "IP:{0} Full Name:{1} Mac:{2}".format(self.ip_str,
         #        self.fqdn, self.mac)
         return "IP:{0} Full Name:{1}".format(self.ip_str,
-                self.fqdn)
+                                             self.fqdn)
 
 
 is_eth = re.compile("^eth$")
@@ -230,8 +234,10 @@ class StaticIntrKeyValue(KeyValue):
         unique_together = ("key", "value", "intr")
 
     def _aa_primary(self):
-        """The primary number of this interface (I.E. eth1.0 would have a primary
-        number of '1')"""
+        """
+        The primary number of this interface (I.E. eth1.0 would have a primary
+        number of '1')
+        """
         if not self.value.isdigit():
             raise ValidationError("The primary number must be a number.")
 
@@ -269,4 +275,4 @@ class StaticIntrKeyValue(KeyValue):
         """Either eth (ethernet) or mgmt (mgmt)."""
         if not (is_eth.match(self.value) or is_mgmt.match(self.value)):
             raise ValidationError("Interface type must either be 'eth' "
-                "or 'mgmt'")
+                                  "or 'mgmt'")

@@ -1,4 +1,3 @@
-from django.forms import ModelForm
 from django import forms
 from mozdns.forms import BaseForm
 from mozdns.address_record.models import AddressRecord
@@ -9,8 +8,9 @@ class AddressRecordForm(BaseForm):
         model = AddressRecord
         exclude = ('ip_upper', 'ip_lower', 'reverse_domain', 'fqdn')
         fields = ('label', 'domain', 'ip_type', 'ip_str', 'views', 'ttl',
-                'description')
+                  'description')
         widgets = {'views': forms.CheckboxSelectMultiple}
+
 
 class AddressRecordFQDNForm(BaseForm):
     class Meta:

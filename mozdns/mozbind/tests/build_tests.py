@@ -7,7 +7,7 @@ from django.test import TestCase
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.view.models import View
-from mozdns.tests.view_tests_template import  random_label, random_byte
+from mozdns.tests.utils import random_label, random_byte
 from mozdns.mozbind.builder import DNSBuilder
 
 from mozdns.tests.utils import create_fake_zone
@@ -29,7 +29,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         """Return a valid set of data"""
         return {
             'root_domain': '{0}.{0}.mozilla.com'.format(
-                                            random_label()+random_str),
+            random_label() + random_str),
             'soa_primary': 'ns1.mozilla.com',
             'soa_contact': 'noc.mozilla.com',
             'nameserver_1': 'ns1.mozilla.com',
@@ -65,9 +65,8 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b.build_dns()
 
         # Now add a record.
-        a, c = AddressRecord.objects.get_or_create(label='',
-                        domain=root_domain,
-                        ip_str="10.0.0.1", ip_type='4')
+        a, c = AddressRecord.objects.get_or_create(
+            label='', domain=root_domain, ip_str="10.0.0.1", ip_type='4')
         a.views.add(View.objects.get_or_create(name='private')[0])
         if not c:
             a.ttl = 8

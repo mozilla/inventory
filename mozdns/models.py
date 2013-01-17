@@ -10,6 +10,7 @@ from mozdns.validation import validate_ttl
 
 a = 1
 
+
 class LabelDomainMixin(models.Model):
     """
     This class provides common functionality that many DNS record
@@ -37,26 +38,27 @@ class LabelDomainMixin(models.Model):
     all label octets and label lengths) is limited to 255" - RFC 4471
     """
     domain = models.ForeignKey(Domain, null=False, help_text="FQDN of the "
-                "domain after the short hostname. "
-                "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
+                               "domain after the short hostname. "
+                               "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
     # "The length of any one label is limited to between 1 and 63 octets."
     # -- RFC218
     label = models.CharField(max_length=63, blank=True, null=True,
-                validators=[validate_first_label],
-                help_text="Short name of the fqdn")
+                             validators=[validate_first_label],
+                             help_text="Short name of the fqdn")
     fqdn = models.CharField(max_length=255, blank=True, null=True,
-                validators=[validate_name], db_index=True)
+                            validators=[validate_name], db_index=True)
 
     class Meta:
         abstract = True
 
+
 class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-            validators=[validate_ttl],
-            help_text="Time to Live of this record")
+                                      validators=[validate_ttl],
+                                      help_text="Time to Live of this record")
     views = models.ManyToManyField(View, blank=True)
     description = models.CharField(max_length=1000, blank=True, null=True,
-                help_text="A description of this record.")
+                                   help_text="A description of this record.")
     # fqdn = label + domain.name <--- see set_fqdn
 
     def __str__(self):
@@ -65,7 +67,6 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
 
     def __repr__(self):
         return "<{0} '{1}'>".format(self.rdtype, str(self))
-
 
     class Meta:
         abstract = True
@@ -148,7 +149,7 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
         CNAME = mozdns.cname.models.CNAME
         if hasattr(self, 'label'):
             if CNAME.objects.filter(domain=self.domain,
-                    label=self.label).exists():
+                                    label=self.label).exists():
                 raise ValidationError("A CNAME with this name already exists.")
         else:
             if CNAME.objects.filter(label='', domain=self.domain).exists():
@@ -158,9 +159,10 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
         if self.domain.soa:
             root_domain = self.domain.soa.root_domain
             if root_domain and not root_domain.nameserver_set.exists():
-                raise ValidationError("The zone you are trying to assign this "
-                        "record into does not have an NS record, thus cannnot "
-                        "support other records.")
+                raise ValidationError(
+                    "The zone you are trying to assign this record into does "
+                    "not have an NS record, thus cannnot support other "
+                    "records.")
 
     def check_for_delegation(self):
         """

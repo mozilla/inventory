@@ -1,4 +1,3 @@
-import pdb
 from core.search.compiler.invlex import InvLexer
 import ply.yacc as yacc
 
@@ -18,7 +17,7 @@ class BOP(object):
 
 class UOP(object):
     def __init__(self, value, child):
-        self.value , self.ntype = value, value
+        self.value, self.ntype = value, value
         self.child = child
 
     def __str__(self):
@@ -103,8 +102,11 @@ def p_error(p):
 def build_parser():
     lexer = InvLexer()
     lexer.build_lexer()
+    # TODO, ply is wierd and needs these 4 lines?
     tokens = lexer.tokens
+    tokens
     p = yacc.yacc()
+    p
 
     def parse(s):
         return yacc.parse(s, lexer=lexer.lexer)

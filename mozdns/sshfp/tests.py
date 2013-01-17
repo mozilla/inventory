@@ -1,12 +1,4 @@
-"""
-This file demonstrates writing tests using the unittest module. These will pass
-when you run "manage.py test".
-
-Replace this with more appropriate tests for your application.
-"""
-
 from django.test import TestCase
-from django.core.exceptions import ValidationError
 
 from mozdns.sshfp.models import SSHFP
 from mozdns.domain.models import Domain
@@ -14,9 +6,9 @@ from mozdns.domain.models import Domain
 
 class SSHFPTests(TestCase):
     def setUp(self):
-        self.o = Domain(name = "org")
+        self.o = Domain(name="org")
         self.o.save()
-        self.o_e = Domain(name = "mozilla.org")
+        self.o_e = Domain(name="mozilla.org")
         self.o_e.save()
 
     def do_generic_add(self, data):
@@ -42,31 +34,30 @@ class SSHFPTests(TestCase):
         data = "asdf"
         s_type = 1
         a_type = 1
-        data = { 'label':label, 'key':data ,'domain':self.o_e ,
+        data = {'label': label, 'key': data, 'domain': self.o_e,
                 'algorithm_number': a_type, 'fingerprint_type': s_type}
-        sshfp1 = self.do_generic_add(data)
+        self.do_generic_add(data)
 
         label = "asdf"
         data = "asdfasfd"
         s_type = 1
         a_type = 1
-        data = { 'label':label, 'key':data ,'domain':self.o_e ,
+        data = {'label': label, 'key': data, 'domain': self.o_e,
                 'algorithm_number': a_type, 'fingerprint_type': s_type}
-        sshfp1 = self.do_generic_add(data)
+        self.do_generic_add(data)
 
         label = "df"
         data = "aasdf"
         s_type = 1
         a_type = 1
-        data = { 'label':label, 'key':data ,'domain':self.o_e ,
+        data = {'label': label, 'key': data, 'domain': self.o_e,
                 'algorithm_number': a_type, 'fingerprint_type': s_type}
-        sshfp1 = self.do_generic_add(data)
+        self.do_generic_add(data)
 
         label = "12314"
         data = "dd"
         s_type = 1
         a_type = 1
-        data = { 'label':label, 'key':data ,'domain':self.o ,
+        data = {'label': label, 'key': data, 'domain': self.o,
                 'algorithm_number': a_type, 'fingerprint_type': s_type}
-        sshfp1 = self.do_generic_add(data)
-
+        self.do_generic_add(data)

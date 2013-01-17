@@ -1,6 +1,3 @@
-import pdb
-
-
 def make_stack(node):
     def _make_stack(stack, node):
         if not node:

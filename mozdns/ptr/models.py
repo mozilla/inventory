@@ -23,9 +23,9 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
     """
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, validators=[validate_name],
-                help_text="The name that this record points to.")
+                            help_text="The name that this record points to.")
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-            validators=[validate_ttl])
+                                      validators=[validate_ttl])
     reverse_domain = models.ForeignKey(Domain, null=False, blank=True)
     views = models.ManyToManyField(View, blank=True)
     description = models.CharField(max_length=1000, null=True, blank=True)
@@ -39,10 +39,10 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
 
     def details(self):
         return (
-                    ('Ip', str(self.ip_str)),
-                    ('Record Type', 'PTR'),
-                    ('Name', self.name),
-               )
+            ('Ip', str(self.ip_str)),
+            ('Record Type', 'PTR'),
+            ('Name', self.name),
+        )
 
     class Meta:
         db_table = 'ptr'
@@ -97,16 +97,16 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
                                   "record, not a alias defined by a CNAME."
                                   " -- RFC 1034")
 
-
     def clean(self, *args, **kwargs):
         self.validate_no_cname()
         self.clean_ip()
         # We need to check if there is an interface using our ip and name
         # because that interface will generate a ptr record.
         if (StaticInterface.objects.filter(fqdn=self.name,
-            ip_upper=self.ip_upper, ip_lower=self.ip_lower).exists()):
+                                           ip_upper=self.ip_upper,
+                                           ip_lower=self.ip_lower).exists()):
             raise ValidationError("An Interface has already used this IP and "
-                "Name.")
+                                  "Name.")
         if kwargs.pop('update_reverse_domain', True):
             self.update_reverse_domain()
         self.check_no_ns_soa_condition()
@@ -115,9 +115,10 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
         if self.reverse_domain.soa:
             root_domain = self.reverse_domain.soa.root_domain
             if root_domain and not root_domain.nameserver_set.exists():
-                raise ValidationError("The zone you are trying to assign this "
-                        "record into does not have an NS record, thus cannnot "
-                        "support other records.")
+                raise ValidationError(
+                    "The zone you are trying to assign this "
+                    "record into does not have an NS record, thus cannnot "
+                    "support other records.")
 
     def __str__(self):
         return "{0} {1} {2}".format(str(self.ip_str), 'PTR', self.name)

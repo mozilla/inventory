@@ -6,15 +6,16 @@ import smtplib
 from email.mime.text import MIMEText
 from settings.local import people_who_need_to_know_about_failures
 from settings.local import inventorys_email
-import pdb
+
 
 def fail_mail(content, subject='Inventory is having issues.',
-        to=people_who_need_to_know_about_failures, from_=inventorys_email):
+              to=people_who_need_to_know_about_failures,
+              from_=inventorys_email):
     """Send email about a failure."""
     msg = MIMEText(content)
     msg['Subject'] = subject
     msg['From'] = inventorys_email
-    #msg['To'] = to
+    # msg['To'] = to
     s = smtplib.SMTP('localhost')
     s.sendmail(from_, to, msg.as_string())
     s.quit()
@@ -82,14 +83,14 @@ class IPFilterSet(object):
             # r2 |---------|
             # rx    |------|
             return IPFilter(None, ip_type, r1.start_upper, r1.start_lower,
-                    r2.end_upper, r2.end_lower)
+                            r2.end_upper, r2.end_lower)
         if r1.start < r2.start and r1.end < r2.end:
             # Low                   High
             # r1 |---------|
             # r2    |---------|
             # rx    |------|
             return IPFilter(None, ip_type, r2.start_upper, r2.start_lower,
-                    r1.end_upper, r1.end_lower)
+                            r1.end_upper, r1.end_lower)
 
 
 class IPFilter(object):

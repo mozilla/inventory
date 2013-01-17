@@ -1,6 +1,4 @@
-import pdb
 from itertools import izip
-
 
 from core.search.compiler.invparse import build_parser
 from core.search.compiler.invfilter import BadDirective
@@ -14,6 +12,7 @@ def compile_to_django(search):
         return None, error
     return filter_objects(compiled_qs), ""
 
+
 def search_type(search, rtype):
     """A simple wrapper for returning an objects Q object."""
     qs, error = compile_q_objects(search)
@@ -24,6 +23,7 @@ def search_type(search, rtype):
             return q, None
     return None, None
 
+
 def compile_q_objects(search):
     parse = build_parser()
     try:
@@ -32,7 +32,7 @@ def compile_q_objects(search):
         return None, str(e)
     exec_stack = list(reversed(make_stack(root_node)))
     qs = compile_Q(exec_stack)[0]
-    qs.append([]) # This last list is for misc objects
+    qs.append([])  # This last list is for misc objects
     return qs, None
 
 
@@ -57,7 +57,7 @@ def compile_Q(stack):
                 if istype(top, 'AND'):
                     if qi and qj:
                         q_result.append(qi & qj)
-                    else: # Something AND nothing is nothing
+                    else:  # Something AND nothing is nothing
                         q_result.append(None)
                 elif istype(top, 'OR'):
                     if qi and qj:
@@ -78,5 +78,5 @@ def filter_objects(qs):
             search_result.append([])
         else:
             search_result.append(manager.filter(q))
-    search_result.append([]) # This last list is for misc objects
+    search_result.append([])  # This last list is for misc objects
     return search_result

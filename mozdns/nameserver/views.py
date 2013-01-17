@@ -1,20 +1,18 @@
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.shortcuts import render_to_response
-from django.shortcuts import get_object_or_404, redirect
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.forms.util import ErrorList, ErrorDict
-from django.contrib import messages
 
 
 from mozdns.nameserver.forms import NameserverForm
 from mozdns.nameserver.forms import NSDelegated
 from mozdns.nameserver.models import Nameserver
-from mozdns.views import *
+from mozdns.views import (MozdnsDeleteView, MozdnsDetailView, MozdnsListView,
+                          MozdnsCreateView, MozdnsUpdateView)
 
 from mozdns.address_record.models import AddressRecord
 from mozdns.domain.models import Domain
-
-import pdb
+from core.interface.static_intr.models import StaticInterface
 
 
 class NSView(object):
@@ -57,7 +55,7 @@ def update_ns(request, nameserver_pk):
                             glue = AddressRecord.objects.get(pk=glue_pk)
                         elif glue_type == 'intr':
                             glue = StaticInterface.objects.get(pk=glue_pk)
-                    except ObjectDoesNotExists, e:
+                    except ObjectDoesNotExist, e:
                         raise ValidationError("Couldn't find glue: " + str(e))
                     nameserver.glue = glue
                 nameserver.server = server
@@ -89,8 +87,6 @@ def create_ns_delegated(request, domain):
         if not domain:
             pass  # Fall through. Maybe send a message saying no domain?
         elif form.is_valid():
-            server = form.cleaned_data['server']
-            ip_str = form.cleaned_data['server_ip_address']
             was_delegated = domain.delegated
             if was_delegated:
                 # Quickly and transperently Un-delegate the domain so we
@@ -107,4 +103,4 @@ def create_ns_delegated(request, domain):
     # Everything else get's the blank form
     form = NSDelegated()
     return render_to_response("nameserver/ns_delegated.html",
-            {'form': form, 'request': request})
+                              {'form': form, 'request': request})

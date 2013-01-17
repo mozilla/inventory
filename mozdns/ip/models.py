@@ -38,8 +38,9 @@ class Ip(models.Model):
     belongs to is done by applying a 'longest prefix match' to all
     reverse domains in the :ref:`domain` table.
 
-    :ref:`address_record` objects need the ip validation that happens in this class
-    but do not need their :class:`Ip`'s to be tied back to a reverse domain.
+    :ref:`address_record` objects need the ip validation that happens in this
+    class but do not need their :class:`Ip`'s to be tied back to a reverse
+    domain.
 
     :ref:`staticinterface` objects need to have their ip tied back to reverse
     domain because they represent a :ref:`PTR` record as well as an
@@ -55,7 +56,8 @@ class Ip(models.Model):
     """
     IP_TYPE_CHOICES = (('4', 'ipv4'), ('6', 'ipv6'))
     ip_str = models.CharField(max_length=39, editable=True, verbose_name='IP',
-                help_text="IP Address in dotted quad or dotted colon format")
+                              help_text="IP Address in dotted quad or dotted "
+                              "colon format")
     # ip_upper/lower are calculated from ip_str on ip_clean.
     # TODO rename ip_* to ipaddr_*
     ip_upper = models.BigIntegerField(null=True, blank=True)
@@ -73,7 +75,8 @@ class Ip(models.Model):
     # the definition for 'domain'.
     # reverse_domain = models.ForeignKey(Domain, null=True, blank=True)
     ip_type = models.CharField(max_length=1, choices=IP_TYPE_CHOICES,
-                    editable=True, help_text='IPv4 or IPv6 Address type')
+                               editable=True,
+                               help_text='IPv4 or IPv6 Address type')
 
     class Meta:
         abstract = True
@@ -108,8 +111,8 @@ class Ip(models.Model):
         rvname = nibbilize(self.ip_str) if self.ip_type == '6' else self.ip_str
         rvname = ip_to_domain_name(rvname, ip_type=self.ip_type)
         self.reverse_domain = name_to_domain(rvname)
-        if (self.reverse_domain is None or
-            self.reverse_domain.name in ('arpa', 'in-addr.arpa', 'ip6.arpa')):
+        if (self.reverse_domain is None or self.reverse_domain.name in
+                ('arpa', 'in-addr.arpa', 'ip6.arpa')):
             raise ValidationError("No reverse Domain found for {0} "
                                   .format(self.ip_str))
 
@@ -136,7 +139,7 @@ def ipv6_to_longs(addr):
     """
     try:
         ip = ipaddr.IPv6Address(addr)
-    except ipaddr.AddressValueError, e:
+    except ipaddr.AddressValueError:
         raise ValidationError("AddressValueError: Invalid IPv6 address {0}".
                               format(addr))
     # TODO, use int() instead of _int. Make sure tests pass

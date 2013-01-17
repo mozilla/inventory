@@ -15,10 +15,10 @@ from mozdns.tests.utils import create_fake_zone
 
 class AutoDeleteTests(TestCase):
     def setUp(self):
-        c = Domain(name = 'poo')
+        c = Domain(name='poo')
         c.save()
         self.assertFalse(c.purgeable)
-        self.f_c  = create_fake_zone('foo.poo', suffix="")
+        self.f_c = create_fake_zone('foo.poo', suffix="")
         self.assertEqual(self.f_c.name, 'foo.poo')
 
     def test_cleanup_txt(self):
@@ -50,7 +50,7 @@ class AutoDeleteTests(TestCase):
         fqdn = "bar.x.y.z.foo.poo"
         label, the_domain = ensure_label_domain(fqdn)
         addr = AddressRecord(label=label, domain=the_domain,
-                ip_type='4', ip_str="10.2.3.4")
+                             ip_type='4', ip_str="10.2.3.4")
         addr.save()
         self.assertFalse(prune_tree(the_domain))
         addr.delete()
@@ -104,8 +104,9 @@ class AutoDeleteTests(TestCase):
 
         fqdn = "bar.x.y.z.foo.poo"
         label, the_domain = ensure_label_domain(fqdn)
-        srv = SRV(label='_'+label, domain=the_domain, target="foo", priority=4,
-                weight=4, port=34)
+        srv = SRV(
+            label='_' + label, domain=the_domain, target="foo", priority=4,
+            weight=4, port=34)
         srv.save()
         self.assertFalse(prune_tree(the_domain))
         srv.delete()
@@ -117,7 +118,7 @@ class AutoDeleteTests(TestCase):
 
     def test_cleanup_cname(self):
         # Make sure CNAME record block
-        c = Domain(name = 'foo1')
+        c = Domain(name='foo1')
         c.save()
         self.assertFalse(c.purgeable)
         f_c = create_fake_zone('foo.foo1', suffix="")
@@ -157,8 +158,8 @@ class AutoDeleteTests(TestCase):
         label, the_domain = ensure_label_domain(fqdn)
         system = System()
         addr = StaticInterface(label=label, domain=the_domain,
-                ip_type='4', ip_str="10.2.3.4", mac="00:11:22:33:44:55",
-                system=system)
+                               ip_type='4', ip_str="10.2.3.4",
+                               mac="00:11:22:33:44:55", system=system)
         addr.save()
         self.assertFalse(prune_tree(the_domain))
         addr.delete()

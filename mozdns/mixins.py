@@ -1,7 +1,6 @@
 from settings import MOZDNS_BASE_URL
 from gettext import gettext as _
 from string import Template
-import pdb
 
 
 class DisplayMixin(object):
@@ -22,8 +21,10 @@ class DisplayMixin(object):
         bind_name = self.fqdn + "."
         if not self.ttl:
             self.ttl = 3600
-        return template.format(bind_name=bind_name, rdtype=self.rdtype, rdclass='IN',
-                                **vars(self))
+        return template.format(
+            bind_name=bind_name, rdtype=self.rdtype, rdclass='IN',
+            **vars(self))
+
 
 class ObjectUrlMixin(object):
     """
@@ -47,7 +48,8 @@ class ObjectUrlMixin(object):
         return self.get_absolute_url()
 
     def get_history_url(self):
-        return "/reversion_compare/history_view/{0}/{1}/".format(self.rdtype, self.pk)
+        return "/reversion_compare/history_view/{0}/{1}/".format(self.rdtype,
+                                                                 self.pk)
 
     def get_edit_url(self):
         """
@@ -58,8 +60,9 @@ class ObjectUrlMixin(object):
         )
 
     def get_fancy_edit_url(self):
-        return MOZDNS_BASE_URL + _("/record/update/{0}/{1}/").format(self.rdtype,
-                                    self.pk)
+        return MOZDNS_BASE_URL + _(
+            "/record/update/{0}/{1}/").format(self.rdtype,
+                                              self.pk)
 
     def get_delete_url(self):
         """

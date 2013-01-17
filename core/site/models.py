@@ -1,12 +1,9 @@
 from django.db import models
 
-from django.core.exceptions import ValidationError
 
 from core.mixins import ObjectUrlMixin
 from core.keyvalue.models import KeyValue
-from core.utils import IPFilterSet, networks_to_Q
-
-import pdb
+from core.utils import networks_to_Q
 
 
 class Site(models.Model, ObjectUrlMixin):
@@ -16,8 +13,8 @@ class Site(models.Model, ObjectUrlMixin):
 
     def details(self):
         return (
-                ('Name', self.get_full_name()),
-                )
+            ('Name', self.get_full_name()),
+        )
 
     def get_full_name(self):
         full_name = self.name

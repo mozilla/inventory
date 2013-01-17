@@ -13,8 +13,8 @@ class View(models.Model, ObjectUrlMixin):
 
     def details(self):
         return (
-                ('Name', self.name),
-               )
+            ('Name', self.name),
+        )
 
     def __str__(self):
         return self.name

@@ -15,10 +15,9 @@ import reversion
 from gettext import gettext as _
 from string import Template
 import time
-import os
 
 
-#TODO, put these defaults in a config file.
+# TODO, put these defaults in a config file.
 ONE_WEEK = 604800
 DEFAULT_EXPIRE = ONE_WEEK * 2
 DEFAULT_RETRY = ONE_WEEK / 7  # One day
@@ -54,8 +53,8 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
 
     id = models.AutoField(primary_key=True)
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-            validators=[validate_ttl],
-            help_text="Time to Live of this record")
+                                      validators=[validate_ttl],
+                                      help_text="Time to Live of this record")
     primary = models.CharField(max_length=100, validators=[validate_name])
     contact = models.CharField(max_length=100, validators=[validate_name])
     serial = models.PositiveIntegerField(null=False, default=int(time.time()))
@@ -71,8 +70,9 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     # This indicates if this SOA's zone needs to be rebuilt
     dirty = models.BooleanField(default=False)
     search_fields = ('primary', 'contact', 'description')
-    template = _("{root_domain}. {ttl} {rdclass:$rdclass_just} {rdtype:$rdtype_just}"
-                "{primary}. {contact}. ({serial} {refresh} {retry} {expire})")
+    template = _("{root_domain}. {ttl} {rdclass:$rdclass_just} "
+                 "{rdtype:$rdtype_just} {primary}. {contact}. "
+                 "({serial} {refresh} {retry} {expire})")
 
     attrs = None
 
@@ -93,15 +93,15 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
         unique_together = ('primary', 'contact', 'description')
 
     def details(self):
-        return  (
-                    ('Primary', self.primary),
-                    ('Contact', self.contact),
-                    ('Serial', self.serial),
-                    ('Expire', self.expire),
-                    ('Retry', self.retry),
-                    ('Refresh', self.refresh),
-                    ('Description', self.description),
-                )
+        return (
+            ('Primary', self.primary),
+            ('Contact', self.contact),
+            ('Serial', self.serial),
+            ('Expire', self.expire),
+            ('Retry', self.retry),
+            ('Refresh', self.refresh),
+            ('Description', self.description),
+        )
 
     @property
     def rdtype(self):
@@ -111,19 +111,19 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     def root_domain(self):
         try:
             return self.domain_set.get(~Q(master_domain__soa=F('soa')),
-                    soa__isnull=False)
+                                       soa__isnull=False)
         except ObjectDoesNotExist:
             return None
-
 
     def get_debug_build_url(self):
         return MOZDNS_BASE_URL + "/bind/build_debug/{0}/".format(self.pk)
 
     def delete(self, *args, **kwargs):
         if self.domain_set.exists():
-            raise ValidationError("Domains exist in this SOA's zone. Delete "
-                    "those domains or remove them from this zone before "
-                    "deleting this SOA.")
+            raise ValidationError(
+                "Domains exist in this SOA's zone. Delete "
+                "those domains or remove them from this zone before "
+                "deleting this SOA.")
         super(SOA, self).delete(*args, **kwargs)
 
     def has_record_set(self, exclude_ns=False):
@@ -139,7 +139,7 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
         if self.pk:
             db_self = SOA.objects.get(pk=self.pk)
             fields = ['primary', 'contact', 'expire', 'retry',
-                    'refresh', 'description']
+                      'refresh', 'description']
             # Leave out serial for obvious reasons
             for field in fields:
                 if getattr(db_self, field) != getattr(self, field):
@@ -162,7 +162,8 @@ class SOAKeyValue(KeyValue):
     soa = models.ForeignKey(SOA, null=False)
 
     def _aa_disabled(self):
-        """Disabled - The Value of this Key determines whether or not an SOA will
+        """
+        Disabled - The Value of this Key determines whether or not an SOA will
         be asked to build a zone file. Values that represent true are 'True,
         TRUE, true, 1' and 'yes'. Values that represent false are 'False,
         FALSE, false, 0' and 'no'.
@@ -175,8 +176,8 @@ class SOAKeyValue(KeyValue):
             self.value = "False"
         else:
             raise ValidationError("Disabled should be set to either {0} OR "
-                        "{1}".format(", ".join(true_values),
-                        ", ".join(false_values)))
+                                  "{1}".format(", ".join(true_values),
+                                               ", ".join(false_values)))
 
 
 reversion.register(SOAKeyValue)

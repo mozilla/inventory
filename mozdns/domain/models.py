@@ -137,10 +137,10 @@ class Domain(models.Model, ObjectUrlMixin):
                 (self.soa.root_domain and
                 not self.soa.root_domain.nameserver_set.exists() or
                 not self.soa.root_domain and
-                not self.nameserver_set.all().exists())):
-                    raise ValidationError("By changing this domain's SOA you are "
-                            "attempting to create a zone whos root domain has no "
-                            "NS record.")
+                 not self.nameserver_set.all().exists())):
+                    raise ValidationError("By changing this domain's SOA you "
+                                          "are attempting to create a zone "
+                                          "whos root domain has no NS record.")
         super(Domain, self).save(*args, **kwargs)
         if self.is_reverse and new_domain:
             # Collect any ptr's that belong to this new domain.
@@ -188,6 +188,7 @@ class Domain(models.Model, ObjectUrlMixin):
         if self.domain_set.exists():
             raise ValidationError("Before deleting this domain, please "
                                   "remove it's children.")
+
     def has_record_set(self, exclude_ns=False):
         if self.addressrecord_set.exists():
             return True
@@ -209,9 +210,7 @@ class Domain(models.Model, ObjectUrlMixin):
             return True
         return False
 
-
     ### Reverse Domain Functions
-
     def reassign_ptr_delete(self):
         """This function serves as a pretty subtle workaround.
 
@@ -278,8 +277,8 @@ def reassign_reverse_ptrs(reverse_domain_1, reverse_domain_2, ip_type):
     if reverse_domain_2 is None or ip_type is None:
         return
     ptrs = reverse_domain_2.ptr_set.iterator()
-    #intrs = reverse_domain_2.staticinterface_set.iterator()
-    #TODO do the intr case
+    # intrs = reverse_domain_2.staticinterface_set.iterator()
+    # TODO do the intr case
     for ptr in ptrs:
         if ip_type == '6':
             nibz = nibbilize(ptr.ip_str)

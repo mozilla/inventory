@@ -1,5 +1,4 @@
 from django import forms
-from django.forms import ModelForm
 from mozdns.cname.models import CNAME
 from mozdns.forms import BaseForm
 
@@ -11,6 +10,7 @@ class CNAMEForm(BaseForm):
         fields = ('label', 'domain', 'target', 'views', 'ttl', 'description')
         widgets = {'views': forms.CheckboxSelectMultiple}
         # https://code.djangoproject.com/ticket/9321
+
 
 class CNAMEFQDNForm(BaseForm):
     class Meta:

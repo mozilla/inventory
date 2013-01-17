@@ -1,5 +1,3 @@
-from django.forms import ModelForm
-
 from mozdns.sshfp.models import SSHFP
 from mozdns.forms import BaseForm
 

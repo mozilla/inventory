@@ -1,22 +1,16 @@
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
-from django.contrib import messages
-from django.forms.util import ErrorList
-from django.http import HttpResponse
+from django.forms.util import ErrorList, ErrorDict
 
 from core.vlan.models import Vlan, VlanKeyValue
 from core.vlan.forms import VlanForm
-from core.network.models import Network
-from core.site.models import Site
 from core.keyvalue.utils import get_attrs, update_attrs
 
 from core.views import CoreDeleteView, CoreListView
 from core.views import CoreCreateView
 
 import re
-import pdb
-import ipaddr
 
 
 class VlanView(object):

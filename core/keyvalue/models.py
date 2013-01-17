@@ -1,6 +1,5 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-import pdb
 
 
 class KeyValue(models.Model):
@@ -66,7 +65,7 @@ class KeyValue(models.Model):
 
         if not callable(validate):
             raise ValidationError("No validator for key %s not callable" %
-                    key_attr)
+                                  key_attr)
         try:
             validate()
         except TypeError, e:

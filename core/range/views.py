@@ -15,12 +15,11 @@ from mozdns.ip.models import ipv6_to_longs
 from core.views import CoreDeleteView, CoreDetailView
 from core.views import CoreCreateView, CoreUpdateView, CoreListView
 from core.keyvalue.utils import get_attrs, update_attrs, get_aa, get_docstrings
-from core.keyvalue.utils import get_docstrings, dict_to_kv
+from core.keyvalue.utils import dict_to_kv
 from django.forms.util import ErrorList, ErrorDict
 
 import ipaddr
 import simplejson as json
-import pdb
 
 
 class RangeView(object):
@@ -38,7 +37,7 @@ class RangeDetailView(RangeView, CoreDetailView):
 
     def get_context_data(self, **kwargs):
         context = super(RangeDetailView, self).get_context_data(
-                **kwargs)
+            **kwargs)
         context['form_title'] = "{0} Details".format(
             self.form_class.Meta.model.__name__
         )
@@ -57,13 +56,14 @@ def delete_range_attr(request, attr_pk):
     attr.delete()
     return HttpResponse("Attribute Removed.")
 
+
 def range_usage_text(request):
     start = request.GET.get('start', None)
     end = request.GET.get('end', None)
     format = request.GET.get('format', 'human_readable')
     if not (start and end):
         return HttpResponseBadRequest(json.dumps({'error_messages':
-                    'Provide a start and end'}))
+                                                  'Provide a start and end'}))
 
     get_objects = request.GET.get('get_objects', False)
     if start.find(':') > -1:
@@ -77,9 +77,11 @@ def range_usage_text(request):
 
     if format == 'human_readable':
         usage_data['free_ranges'] = map(lambda x: (int_to_ip(x[0], ip_type),
-            int_to_ip(x[1], ip_type)), usage_data['free_ranges'])
+                                        int_to_ip(x[1], ip_type)),
+                                        usage_data['free_ranges'])
 
     return HttpResponse(json.dumps(usage_data))
+
 
 def range_detail(request, range_pk):
     mrange = get_object_or_404(Range, pk=range_pk)
@@ -100,7 +102,7 @@ def range_detail(request, range_pk):
 
     range_data = []
     for i in range((start_upper << 64) + start_lower, (end_upper << 64) +
-            end_lower - 1):
+                   end_lower - 1):
         taken = False
         adr_taken = None
         ip_str = str(ipaddr.IPv4Address(i))
@@ -135,7 +137,7 @@ def range_detail(request, range_pk):
                 taken = True
                 break
 
-        if taken == False:
+        if not taken:
             range_data.append((None, ip_str))
 
     return render(request, 'range/range_detail.html', {
@@ -158,9 +160,6 @@ def update_range(request, range_pk):
         form = RangeForm(request.POST, instance=mrange)
         try:
             if not form.is_valid():
-                if form._errors is None:
-                    form._errors = ErrorDict()
-                form._errors['__all__'] = ErrorList(e.messages)
                 return render(request, 'range/range_edit.html', {
                     'range': mrange,
                     'form': form,
@@ -198,35 +197,38 @@ def update_range(request, range_pk):
             'aa': json.dumps(aa)
         })
 
+
 def redirect_to_range_from_ip(request):
     ip_str = request.GET.get('ip_str')
     ip_type = request.GET.get('ip_type')
     if not (ip_str and ip_type):
-        return HttpResonse(json.dumps({'failure':"Slob"}))
+        return HttpResponse(json.dumps({'failure': "Slob"}))
 
     if ip_type == '4':
         try:
             ip_upper, ip_lower = 0, int(ipaddr.IPv4Address(ip_str))
-        except ipaddr.AddressValueError, e:
-            return HttpResonse(json.dumps({'success': False,
-                'message':"Failure to recognize {0} as an IPv4 "
-                "Address.".format(ip_str)}))
+        except ipaddr.AddressValueError:
+            return HttpResponse(
+                json.dumps({'success': False, 'message': "Failure to "
+                           "recognize{0} as an IPv4 "
+                           "Address.".format(ip_str)}))
     else:
         try:
             ip_upper, ip_lower = ipv6_to_longs(ip_str)
-        except ValidationError, e:
+        except ValidationError:
             return HttpResponse(json.dumps({'success': False,
-                'message': 'Invalid IP'}))
+                                            'message': 'Invalid IP'}))
 
     range_ = Range.objects.filter(start_upper__lte=ip_upper,
-            start_lower__lte=ip_lower, end_upper__gte=ip_upper,
-            end_lower__gte=ip_lower)
+                                  start_lower__lte=ip_lower,
+                                  end_upper__gte=ip_upper,
+                                  end_lower__gte=ip_lower)
     if not len(range_) == 1:
-        return HttpResponse(json.dumps({'failure':"Failture to find range"}))
+        return HttpResponse(json.dumps({'failure': "Failture to find range"}))
     else:
         return HttpResponse(json.dumps(
             {'success': True,
-             'redirect_url':range_[0].get_absolute_url()}))
+             'redirect_url': range_[0].get_absolute_url()}))
 
 
 def get_next_available_ip_by_range(request, range_id):
@@ -237,6 +239,7 @@ def get_next_available_ip_by_range(request, range_id):
     ret['success'] = True
     ret['ip_address'] = display_ip
     return HttpResponse(json.dumps(ret))
+
 
 def get_all_ranges_ajax(request):
     system_pk = request.GET.get('system_pk', '-1')

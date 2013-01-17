@@ -6,7 +6,7 @@ from mozdns.mozdhcp.range.models import Range
 
 
 class DynamicInterface(BaseInterface):
-    Ctnr            = models.ForeignKey(Ctnr, null=False)
+    Ctnr = models.ForeignKey(Ctnr, null=False)
     range = models.ForeignKey(Range, null=False)
 
     class Meta:

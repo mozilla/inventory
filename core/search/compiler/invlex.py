@@ -1,16 +1,16 @@
-import pdb
 import re
 import ply.lex as lex
-from core.search.compiler.invfilter import *
+from core.search.compiler.invfilter import (DirectiveFilter, REFilter,
+                                            TextFilter)
 
 
 class InvLexer(object):
 
-    tokens = ( 'NOT',
-        'TEXT', 'DIRECTIVE', 'RE',
-        'AND', 'OR',
-        'LPAREN', 'RPAREN',
-    )
+    tokens = ('NOT',
+              'TEXT', 'DIRECTIVE', 'RE',
+              'AND', 'OR',
+              'LPAREN', 'RPAREN',
+              )
 
     # Tokens
     t_LPAREN = r'\('

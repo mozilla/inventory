@@ -18,10 +18,11 @@ import pdb
 
 
 def tablefy(objects, views=True):
-    """Given a list of objects, build a matrix that is can be printed as a
-    table. Also return the headers for that table. Populate the given url with
-    the pk of the object. Return all headers, field array, and urls in a
-    seperate lists.
+    """
+    Given a list of objects, build a matrix that is can be printed as a table.
+    Also return the headers for that table. Populate the given url with the pk
+    of the object. Return all headers, field array, and urls in a seperate
+    lists.
 
     :param  objects: A list of objects to make the matrix out of.
     :type   objects: AddressRecords
@@ -56,12 +57,15 @@ def tablefy(objects, views=True):
     return (headers, matrix, urls)
 
 
+# TODO depricate this
 def slim_form(domain_pk=None, form=None):
-    """ What is going on? We want only one domain showing up in the
+    """
+    What is going on? We want only one domain showing up in the
     choices.  We are replacing the query set with just one object. Ther
     are two querysets. I'm not really sure what the first one does, but
     I know the second one (the widget) removes the choices. The third
-    line removes the default u'--------' choice from the drop down.  """
+    line removes the default u'--------' choice from the drop down.
+    """
     if not form:
         raise Http404
     if domain_pk:
@@ -74,6 +78,7 @@ def slim_form(domain_pk=None, form=None):
         form.fields['domain'].widget.choices.queryset = query_set
         form.fields['domain'].empty_label = None
     return form
+
 
 def get_clobbered(domain_name):
     classes = [MX, AddressRecord, CNAME, TXT, SRV, StaticInterface, SSHFP]
@@ -93,11 +98,13 @@ def get_clobbered(domain_name):
             obj.delete(**kwargs)
     return clobber_objects
 
+
 def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
-    """This function will take ``domain_name`` and make sure that a domain with that name
-    exists. If this function creates a domain it will set the domain's purgeable flag
-    to the value of the named arguement ``purgeable``. See the doc page about
-    Labels and Domains for more information about this function"""
+    """This function will take ``domain_name`` and make sure that a domain with
+    that name exists. If this function creates a domain it will set the
+    domain's purgeable flag to the value of the named arguement ``purgeable``.
+    See the doc page about Labels and Domains for more information about this
+    function"""
     try:
         domain = Domain.objects.get(name=name)
         return domain
@@ -123,17 +130,20 @@ def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
                 continue
 
         if not leaf_domain:
-            raise ValidationError("Creating this record would cause the "
-                    "creation of a new TLD. Please contact "
-                    "http://www.icann.org/ for more information.")
+            raise ValidationError(
+                "Creating this record would cause the "
+                "creation of a new TLD. Please contact "
+                "http://www.icann.org/ for more information.")
         if leaf_domain.delegated:
-            raise ValidationError("Creating this record would cause the "
-                    "creation of a domain that would "
-                    "be a child of a delegated domain.")
+            raise ValidationError(
+                "Creating this record would cause the "
+                "creation of a domain that would be a child of a "
+                "delegated domain.")
         if not leaf_domain.soa:
-            raise ValidationError("Creating this record would cause the "
-                    "creation of a domain that would "
-                    "not be in an existing DNS zone.")
+            raise ValidationError(
+                "Creating this record would cause the "
+                "creation of a domain that would not be in an existing "
+                "DNS zone.")
 
     domain_name = ''
     for i in range(len(parts)):
@@ -159,7 +169,7 @@ def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
                     view = View.objects.get(name=view_name)
                     object_.views.add(view)
                     object_.save()
-            except ValidationError, e:
+            except ValidationError:
                 # this is bad
                 pdb.set_trace()
                 pass
@@ -181,7 +191,7 @@ def ensure_label_domain(fqdn, force=False):
     fqdn_partition = fqdn.split('.')
     if len(fqdn_partition) == 1:
         raise ValidationError("Creating this record would force the creation "
-                "of a new TLD '{0}'!".format(fqdn))
+                              "of a new TLD '{0}'!".format(fqdn))
     else:
         label, domain_name = fqdn_partition[0], '.'.join(fqdn_partition[1:])
         domain = ensure_domain(domain_name, purgeable=True, inherit_soa=True)
@@ -203,7 +213,8 @@ def prune_tree_helper(domain, deleted_domains):
     if domain.has_record_set():
         return deleted_domains  # There are records for this domain
     elif not domain.purgeable:
-        return deleted_domains  # This domain should not be deleted by a computer.
+        return deleted_domains  # This domain should not be deleted by a
+                                # computer.
     else:
         master_domain = domain.master_domain
         if not master_domain:
@@ -214,8 +225,9 @@ def prune_tree_helper(domain, deleted_domains):
         domain.delete()
         return prune_tree_helper(master_domain, deleted_domains)
 
+
 def get_zones():
     """This function returns a list of domains that are at the root of their
     respective zones."""
     return Domain.objects.filter(~Q(master_domain__soa=F('soa')),
-                            soa__isnull=False)
+                                 soa__isnull=False)

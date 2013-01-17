@@ -1,3 +1,6 @@
+import random
+import string
+
 from mozdns.create_zone.views import create_zone_ajax
 from django.test import RequestFactory
 
@@ -14,6 +17,7 @@ def get_post_data(random_str, suffix):
         'ttl_1': '1234'
     }
 
+
 def create_fake_zone(random_str, suffix=".mozilla.com"):
     factory = RequestFactory()
     post_data = get_post_data(random_str, suffix=suffix)
@@ -21,3 +25,20 @@ def create_fake_zone(random_str, suffix=".mozilla.com"):
     create_zone_ajax(request)
     from mozdns.domain.models import Domain
     return Domain.objects.get(name=post_data['root_domain'])
+
+
+def random_label():
+    """
+    Utility function to generate a random *valid* label.
+    """
+    label = ''
+    for i in range(random.randint(5, 30)):
+        label += string.letters[random.randint(0, len(string.letters) - 1)]
+    return label
+
+
+def random_byte():
+    """
+    Utility function to generate a random byte for random IPs
+    """
+    return random.randint(0, 255)

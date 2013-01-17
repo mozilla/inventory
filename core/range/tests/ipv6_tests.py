@@ -5,8 +5,6 @@ from mozdns.domain.models import Domain
 from core.network.models import Network
 from core.range.models import Range
 
-import ipaddr
-import pdb
 
 class V6RangeTests(TestCase):
 
@@ -28,7 +26,8 @@ class V6RangeTests(TestCase):
         self.s3.update_network()
         self.s3.save()
 
-    def do_add(self, start_str, end_str, default_domain, network, rtype, ip_type):
+    def do_add(self, start_str, end_str, default_domain, network, rtype,
+               ip_type):
         r = Range(start_str=start_str, end_str=end_str, network=network)
         r.__repr__()
         r.save()
@@ -42,8 +41,10 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
     def test2_create(self):
@@ -54,8 +55,10 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
     def test3_create(self):
@@ -66,8 +69,10 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         r = self.do_add(**kwargs)
         self.assertEqual(r.start_upper, 0xffffffffffffffff)
         self.assertEqual(r.start_lower, 0xfffffffffffffff0)
@@ -83,8 +88,10 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.assertRaises(ValidationError, self.do_add, **kwargs)
 
     def test2_bad_create(self):
@@ -96,8 +103,10 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.assertRaises(ValidationError, self.do_add, **kwargs)
 
     def test3_bad_create(self):
@@ -109,8 +118,10 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.assertRaises(ValidationError, self.do_add, **kwargs)
 
     def test4_bad_create(self):
@@ -122,8 +133,10 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.assertRaises(ValidationError, self.do_add, **kwargs)
 
     def test5_bad_create(self):
@@ -135,8 +148,10 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
         start_str = "1234:123e:1234:1234::"
@@ -146,14 +161,16 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.assertRaises(ValidationError, self.do_add, **kwargs)
 
     def test6_bad_create(self):
         # Partial overlap
-        #start_str = "10.0.4.1"
-        #end_str = "10.0.4.55"
+        # start_str = "10.0.4.1"
+        # end_str = "10.0.4.55"
         start_str = "fe:1::"
         end_str = "fe:1:4::"
         default_domain = self.d
@@ -161,13 +178,15 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
 
         self.do_add(**kwargs)
 
-        #start_str = "10.0.4.1"
-        #end_str = "10.0.4.30"
+        # start_str = "10.0.4.1"
+        # end_str = "10.0.4.30"
         start_str = "fe:1::"
         end_str = "fe:1:3::"
         default_domain = self.d
@@ -175,15 +194,17 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
 
         self.assertRaises(ValidationError, self.do_add, **kwargs)
 
     def test7_bad_create(self):
         # Partial overlap
-        #start_str = "10.0.4.1"
-        #end_str = "10.0.4.55"
+        # start_str = "10.0.4.1"
+        # end_str = "10.0.4.55"
         start_str = "fe1:1::"
         end_str = "fe1:1:3::"
         default_domain = self.d
@@ -191,12 +212,14 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
-        #start_str = "10.0.4.1"
-        #end_str = "10.0.4.56"
+        # start_str = "10.0.4.1"
+        # end_str = "10.0.4.56"
         start_str = "fe1:1::"
         end_str = "fe1:1:4::"
         default_domain = self.d
@@ -204,14 +227,16 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str, 'default_domain':
+            default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.assertRaises(ValidationError, self.do_add, **kwargs)
 
     def test8_bad_create(self):
         # Full overlap
-        #start_str = "10.0.4.1"
-        #end_str = "10.0.4.55"
+        # start_str = "10.0.4.1"
+        # end_str = "10.0.4.55"
         start_str = "fe2:1::"
         end_str = "fe2:1:4::"
         default_domain = self.d
@@ -219,12 +244,14 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
-        #start_str = "10.0.4.2"
-        #end_str = "10.0.4.55"
+        # start_str = "10.0.4.2"
+        # end_str = "10.0.4.55"
         start_str = "fe2:1:2::"
         end_str = "fe2:1:4::"
         default_domain = self.d
@@ -232,14 +259,16 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.assertRaises(ValidationError, self.do_add, **kwargs)
 
     def test9_bad_create(self):
         # Full overlap
-        #start_str = "10.0.4.1"
-        #end_str = "10.0.4.55"
+        # start_str = "10.0.4.1"
+        # end_str = "10.0.4.55"
         start_str = "fe3:1:1::"
         end_str = "fe3:1:4::"
         default_domain = self.d
@@ -247,12 +276,14 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
-        #start_str = "10.0.4.2"
-        #end_str = "10.0.4.54"
+        # start_str = "10.0.4.2"
+        # end_str = "10.0.4.54"
         start_str = "fe3:1:2::"
         end_str = "fe3:1:3::"
         default_domain = self.d
@@ -260,14 +291,16 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.assertRaises(ValidationError, self.do_add, **kwargs)
 
     def test10_bad_create(self):
         # Duplicate add
-        #start_str = "10.0.4.1"
-        #end_str = "10.0.4.55"
+        # start_str = "10.0.4.1"
+        # end_str = "10.0.4.55"
         start_str = "fe5:1:1::"
         end_str = "fe5:1:55::"
         default_domain = self.d
@@ -275,12 +308,14 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
-        #start_str = "10.0.5.2"
-        #end_str = "10.0.5.56"
+        # start_str = "10.0.5.2"
+        # end_str = "10.0.5.56"
         start_str = "fe5:1:56::"
         end_str = "fe5:1:57::"
         default_domain = self.d
@@ -288,16 +323,18 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
 
         self.do_add(**kwargs)
         self.assertRaises(ValidationError, self.do_add, **kwargs)
 
     def test11_bad_create(self):
         # More overlap tests
-        #start_str = "10.0.4.5"
-        #end_str = "10.0.4.55"
+        # start_str = "10.0.4.5"
+        # end_str = "10.0.4.55"
         start_str = "fe6:4:5::"
         end_str = "fe6:4:55::"
         default_domain = self.d
@@ -305,12 +342,14 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
-        #start_str = "10.0.4.60"
-        #end_str = "10.0.4.63"
+        # start_str = "10.0.4.60"
+        # end_str = "10.0.4.63"
         start_str = "fe6:4:60::"
         end_str = "fe6:4:63::"
         default_domain = self.d
@@ -318,12 +357,14 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
-        #start_str = "10.0.4.1"
-        #end_str = "10.0.4.4"
+        # start_str = "10.0.4.1"
+        # end_str = "10.0.4.4"
         start_str = "fe6:4:1::"
         end_str = "fe6:4:4::"
         default_domain = self.d
@@ -331,12 +372,14 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
-        #start_str = "10.0.4.2"
-        #end_str = "10.0.4.54"
+        # start_str = "10.0.4.2"
+        # end_str = "10.0.4.54"
         start_str = "fe6:4:2::"
         end_str = "fe6:4:54::"
         default_domain = self.d
@@ -344,14 +387,16 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.assertRaises(ValidationError, self.do_add, **kwargs)
 
     def test12_bad_create(self):
         # Update range to something outside of the subnet.
-        #start_str = "10.0.4.5"
-        #end_str = "10.0.4.55"
+        # start_str = "10.0.4.5"
+        # end_str = "10.0.4.55"
         start_str = "fe7:4:5::"
         end_str = "fe7:4:55::"
         default_domain = self.d
@@ -359,12 +404,14 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
-        #start_str = "10.0.4.60"
-        #end_str = "10.0.4.63"
+        # start_str = "10.0.4.60"
+        # end_str = "10.0.4.63"
         start_str = "fe7:4:60::"
         end_str = "fe7:4:63::"
         default_domain = self.d
@@ -372,12 +419,14 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
-        #start_str = "10.0.4.1"
-        #end_str = "10.0.4.4"
+        # start_str = "10.0.4.1"
+        # end_str = "10.0.4.4"
         start_str = "fe7:4:1::"
         end_str = "fe7:4:4::"
         default_domain = self.d
@@ -385,16 +434,18 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         r = self.do_add(**kwargs)
         r.end_str = "ffff:ffff:ffff::"
 
         self.assertRaises(ValidationError, r.clean)
 
     def test13_bad_create(self):
-        #start_str = "10.0.4.5"
-        #end_str = "10.0.4.55"
+        # start_str = "10.0.4.5"
+        # end_str = "10.0.4.55"
         start_str = "fe8:4:5::"
         end_str = "fe8:4:55::"
         default_domain = self.d
@@ -402,7 +453,9 @@ class V6RangeTests(TestCase):
         rtype = 's'
         ip_type = '6'
 
-        kwargs = {'start_str':start_str, 'end_str':end_str, 'default_domain':default_domain,
-                'network':network, 'rtype':rtype, 'ip_type':ip_type}
+        kwargs = {
+            'start_str': start_str, 'end_str': end_str,
+            'default_domain': default_domain,
+            'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
         self.assertRaises(ValidationError, self.do_add, **kwargs)
