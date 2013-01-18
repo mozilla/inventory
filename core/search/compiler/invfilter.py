@@ -20,12 +20,15 @@ from mozdns.view.models import View
 
 from core.interface.static_intr.models import StaticInterface
 from core.site.models import Site
-from core.utils import IPFilter
+from core.utils import IPFilter, one_to_two
 from core.vlan.models import Vlan
 from core.utils import start_end_filter
 
 from systems.models import System
 
+
+class BadDirective(Exception):
+    pass
 
 searchables = (
     ('A', AddressRecord),
@@ -129,15 +132,10 @@ class DirectiveFilter(_Filter):
             return build_rdtype_qsets(dvalue)
         elif directive == 'site':
             return build_site_qsets(dvalue)
+        elif directive == 'ip':
+            return build_ip_qsets(dvalue)
         else:
             raise BadDirective("Unknown Directive '{0}'".format(directive))
-
-
-##############################################################################
-##########################  Directive Filters  ###############################
-##############################################################################
-class BadDirective(Exception):
-    pass
 
 
 def build_rdtype_qsets(rdtype):
@@ -192,30 +190,46 @@ def build_ipf_qsets(q):
     return q_sets
 
 
+def _resolve_ip_type(ip_str):
+    if ip_str.find(':') > -1:
+        Klass = ipaddr.IPv6Network
+        ip_type = '6'
+    elif ip_str.find('.') > -1:
+        Klass = ipaddr.IPv4Network
+        ip_type = '4'
+    return ip_type, Klass
+
+
 def build_range_qsets(range_):
     try:
         start, end = range_.split(',')
     except ValueError:
         raise BadDirective("Specify a range using the format: start,end")
-    if start.find(':') > -1:
-        ip_type = '6'
-    if end.find('.') > -1:
-        ip_type = '4'
+    start_ip_type, _ = _resolve_ip_type(start)
+    end_ip_type, _ = _resolve_ip_type(end)
+    if start_ip_type != end_ip_type:
+        raise BadDirective("Couldn not resolve IP type of {0} and "
+                           "{1}".format(start, end))
     try:
-        istart, iend, ipf_q = start_end_filter(start, end, ip_type)
+        istart, iend, ipf_q = start_end_filter(start, end, start_ip_type)
     except (ValidationError, ipaddr.AddressValueError), e:
         raise BadDirective(str(e))
     return build_ipf_qsets(ipf_q)
 
 
+def build_ip_qsets(ip_str):
+    ip_type, Klass = _resolve_ip_type(ip_str)
+    try:
+        ip = Klass(ip_str)
+        ip_upper, ip_lower = one_to_two(int(ip))
+    except (ipaddr.AddressValueError):
+        raise BadDirective("{0} isn't a valid "
+                           "IP address.".format(ip_str))
+    return build_ipf_qsets(Q(ip_upper=ip_upper, ip_lower=ip_lower))
+
+
 def build_network_qsets(network_str):
-    # Todo move these directive processors into functions.
-    if network_str.find(':') > -1:
-        Klass = ipaddr.IPv6Network
-        ip_type = '6'
-    if network_str.find('.') > -1:
-        Klass = ipaddr.IPv4Network
-        ip_type = '4'
+    ip_type, Klass = _resolve_ip_type(network_str)
     try:
         network = Klass(network_str)
         ipf = IPFilter(network.network, network.broadcast, ip_type)

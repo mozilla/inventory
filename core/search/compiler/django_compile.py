@@ -39,18 +39,6 @@ def compile_q_objects(search):
         return None, str(why)
 
 
-def _compile_q_objects(search):
-    parse = build_parser()
-    try:
-        root_node = parse(search)
-    except (SyntaxError, BadDirective), e:
-        return None, str(e)
-    exec_stack = list(reversed(make_stack(root_node)))
-    qs = compile_Q(exec_stack)[0]
-    qs.append([])  # This last list is for misc objects
-    return qs, None
-
-
 def compile_Q(stack):
     q_stack = []
     while True:
