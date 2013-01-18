@@ -5,53 +5,53 @@
 </script>
 <div id="ajax_results" width="100%">
 <div id="meta">
-    {% if meta.counts.soa %}
-        {{ meta.counts.soa }} <a href="#q={{search}}&SOA">SOA</a> records |
+    {% if meta['counts']['soa'] %}
+        {{ meta['counts']['soa'] }} <a href="#q={{search}}&SOA">SOA</a> records |
     {% else %}
         zero SOA records |
     {% endif %}
-    {% if meta.counts.addr %}
-        {{ meta.counts.addr }} <a href="#q={{search}}&Address">A/AAAA</a> records |
+    {% if meta['counts']['A'] %}
+        {{ meta['counts']['A'] }} <a href="#q={{search}}&Address">A/AAAA</a> records |
     {% else %}
         zero A/AAAA records |
     {% endif %}
-    {% if meta.counts.cname %}
-        {{ meta.counts.cname }} <a href="#q={{search}}&CNAME">CNAME</a> records |
+    {% if meta['counts']['CNAME'] %}
+        {{ meta['counts']['CNAME'] }} <a href="#q={{search}}&CNAME">CNAME</a> records |
     {% else %}
         zero CNAME records |
     {% endif %}
-    {% if meta.counts.domain %}
-        {{ meta.counts.domain }} <a href="#q={{search}}&Domain">Domains</a> |
+    {% if meta['counts']['DOMAIN'] %}
+        {{ meta['counts']['DOMAIN'] }} <a href="#q={{search}}&Domain">Domains</a> |
     {% else %}
         zero Domains |
     {% endif %}
-    {% if meta.counts.intr %}
-        {{ meta.counts.intr }} <a href="#q={{search}}&Interface">INTR</a> records |
+    {% if meta['counts']['INTR'] %}
+        {{ meta['counts']['INTR'] }} <a href="#q={{search}}&Interface">INTR</a> records |
     {% else %}
         zero INTR records |
     {% endif %}
-    {% if meta.counts.sys %}
-        {{ meta.counts.sys }} <a href="#q={{search}}&System">Systems</a> |
+    {% if meta['counts']['SYS'] %}
+        {{ meta['counts']['SYS'] }} <a href="#q={{search}}&System">Systems</a> |
     {% else %}
         zero Systems |
     {% endif %}
-    {% if meta.counts.mx %}
-        {{ meta.counts.mx }} <a href="#q={{search}}&MX">MX</a> records |
+    {% if meta['counts']['MX'] %}
+        {{ meta['counts']['MX'] }} <a href="#q={{search}}&MX">MX</a> records |
     {% else %}
         zero MX records |
     {% endif %}
-    {% if meta.counts.ns %}
-        {{ meta.counts.ns }} <a href="#q={{search}}&NS">NS</a> records |
+    {% if meta['counts']['NS'] %}
+        {{ meta['counts']['NS'] }} <a href="#q={{search}}&NS">NS</a> records |
     {% else %}
         zero NS records |
     {% endif %}
-    {% if meta.counts.ptr %}
-        {{ meta.counts.ptr }} <a href="#q={{search}}&PTR">PTR</a> records |
+    {% if meta['counts']['PTR'] %}
+        {{ meta['counts']['PTR'] }} <a href="#q={{search}}&PTR">PTR</a> records |
     {% else %}
         zero PTR records |
     {% endif %}
-    {% if meta.counts.txt %}
-        {{ meta.counts.txt }} <a href="#q={{search}}&TXT">TXT</a> records
+    {% if meta['counts']['TXT'] %}
+        {{ meta['counts']['TXT'] }} <a href="#q={{search}}&TXT">TXT</a> records
     {% else %}
         zero TXT records
     {% endif %}
@@ -59,7 +59,7 @@
 <div id='search-time' style='margin-top: 2px;' >
 </div>
 <br/>
-{% if sys %}
+{% if objects['SYSTEM'] %}
     <h4><a name="q={{search}}&System">Systems</a></h4>
     <table class="tablesorter system-table">
         <thead>
@@ -74,7 +74,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for s in sys %}
+        {% for s in objects['SYSTEM'] %}
         <tr>
             <td>{{ s.hostname }}</td>
             <td>{{ s.oob_ip }}</td>
@@ -107,53 +107,53 @@
 
 
 {% import 'record/draw_record_table.html' as drawer %}
-{% if soas %}
+{% if objects['SOA'] %}
     <h4><a name="q={{search}}&SOA">SOA</a></h4>
-    {{ drawer.draw_record_table('SOA', soas, table_class='tablesorter record-table', table_id='soa-table') }}
+    {{ drawer.draw_record_table('SOA', objects['SOA'], table_class='tablesorter record-table', table_id='soa-table') }}
 {% endif %}
 
-{% if domains %}
+{% if objects['DOMAIN'] %}
     <h4><a name="q={{search}}&Domain">Domains</a></h4>
-    {{ drawer.draw_record_table('DOMAIN', domains, table_class='tablesorter record-table', table_id='domain-table') }}
+    {{ drawer.draw_record_table('DOMAIN', objects['DOMAIN'], table_class='tablesorter record-table', table_id='domain-table') }}
 {% endif %}
 
-{% if nss %}
+{% if objects['NS'] %}
     <h4><a name="q={{search}}&Nameserver">Nameserver</a></h4>
-    {{ drawer.draw_record_table('NS', nss, table_class='tablesorter record-table', table_id='ns-table') }}
+    {{ drawer.draw_record_table('NS', objects['NS'], table_class='tablesorter record-table', table_id='ns-table') }}
 {% endif %}
 
-{% if mxs %}
+{% if objects['MX'] %}
     <h4><a name="q={{search}}&MX">MX</a> Records</h4>
-    {{ drawer.draw_record_table('MX', mxs, table_class='tablesorter record-table', table_id='mx-table') }}
+    {{ drawer.draw_record_table('MX', objects['MX'], table_class='tablesorter record-table', table_id='mx-table') }}
 {% endif %}
 
-{% if srvs %}
+{% if objects['SRV'] %}
     <h4><a name="q={{search}}&SRV">SRV</a> Records</h4>
-    {{ drawer.draw_record_table('SRV', srvs, table_class='tablesorter record-table', table_id='srv-table') }}
+    {{ drawer.draw_record_table('SRV', objects['SRV'], table_class='tablesorter record-table', table_id='srv-table') }}
 {% endif %}
 
-{% if txts %}
+{% if objects['TXT'] %}
     <h4><a name="q={{search}}&TXT">TXT</a> Records</h4>
-    {{ drawer.draw_record_table('TXT', txts, table_class='tablesorter record-table', table_id='txt-table') }}
+    {{ drawer.draw_record_table('TXT', objects['TXT'], table_class='tablesorter record-table', table_id='txt-table') }}
 {% endif %}
 
-{% if cnames %}
+{% if objects['CNAME'] %}
     <h4><a name="q={{search}}&CNAME">CNAME</a> Records</h4>
-    {{ drawer.draw_record_table('CNAME', cnames, table_class='tablesorter record-table', table_id='cname-table') }}
+    {{ drawer.draw_record_table('CNAME', objects['CNAME'], table_class='tablesorter record-table', table_id='cname-table') }}
 {% endif %}
 
-{% if intrs %}
+{% if objects['INTR'] %}
     <h4><a name="q={{search}}&Interface">Interface</a> Records</h4>
-    {{ drawer.draw_record_table('INTR', intrs, table_class='tablesorter intr-table', table_id='intr-table') }}
+    {{ drawer.draw_record_table('INTR', objects['INTR'], table_class='tablesorter intr-table', table_id='intr-table') }}
 {% endif %}
 
-{% if addrs %}
+{% if objects['A'] %}
 <h4><a id="q={{search}}&Address">Address</a> Records</h4>
-    {{ drawer.draw_record_table('A', addrs, table_class='tablesorter addr-table', table_id='addr-table') }}
+    {{ drawer.draw_record_table('A', objects['A'], table_class='tablesorter addr-table', table_id='addr-table') }}
 {% endif %}
 
-{% if ptrs %}
+{% if objects['PTR'] %}
     <h4><a name="q={{search}}&PTR">PTR</a> Records</h4>
-    {{ drawer.draw_record_table('PTR', ptrs, table_class='tablesorter ptr-table', table_id='ptr-table') }}
+    {{ drawer.draw_record_table('PTR', objects['PTR'], table_class='tablesorter ptr-table', table_id='ptr-table') }}
 {% endif %}
 </div>

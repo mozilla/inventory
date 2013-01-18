@@ -69,12 +69,12 @@ def record_search_ajax(request):
 
     if not obj_meta.Klass:
         raise Http404
-    mega_filter, error = search_type(query, record_type)
-    if not mega_filter:
+    records, error = search_type(query, record_type)
+    if error:
         records = []
     else:
         try:
-            records = list(obj_meta.Klass.objects.filter(mega_filter)[:50])
+            records = records[:50]
         except MySQLdb.OperationalError, e:
             if "Got error " in str(e) and " from regexp" in str(e):
                 # This is nasty. If the user is using an invalid regex patter,

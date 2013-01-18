@@ -43,17 +43,6 @@ searchables = (
 )
 
 
-def get_managers():
-    managers = []
-    for name, Klass in searchables:
-        if name == 'System':
-            managers.append(Klass.objectsselect_related('server_model',
-                            'system_rack__location'))
-        else:
-            managers.append(Klass.objects)
-    return managers
-
-
 class _Filter(object):
     """The Base class of different filters. Implement these methods
     """
