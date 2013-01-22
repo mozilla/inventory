@@ -97,10 +97,12 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
         if self.domain.soa:
             self.domain.soa.dirty = True
             self.domain.soa.save()
+        call_prune_tree = kwargs.pop('call_prune_tree', True)
         from mozdns.utils import prune_tree
         objs_domain = self.domain
         super(MozdnsRecord, self).delete(*args, **kwargs)
-        prune_tree(objs_domain)
+        if call_prune_tree:
+            prune_tree(objs_domain)
 
     def save(self, *args, **kwargs):
         self.full_clean()

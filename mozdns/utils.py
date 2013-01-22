@@ -92,9 +92,13 @@ def get_clobbered(domain_name):
             new_obj.label = ""
             clobber_objects.append((new_obj, obj_views))
             if Klass == AddressRecord:
-                kwargs = {"check_cname": False}
+                kwargs = {"check_cname": False, "prune_tree": False}
             else:
-                kwargs = {}
+                kwargs = {"call_prune_tree": False}
+            # We have to be careful here to not delete any domains due to them
+            # being pruneable and not having any records or child domains. We
+            # set the call_prune_tree flag to tell the object's delete function to
+            # skip calling prune_tree
             obj.delete(**kwargs)
     return clobber_objects
 

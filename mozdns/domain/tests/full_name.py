@@ -229,3 +229,40 @@ class FullNameTests(TestCase):
         cname.save()
         self.assertFalse(prune_tree(the_domain))
         cname.delete()
+
+    def test_basic_add_remove7(self):
+        # try a star record
+        f_c = create_fake_zone("foo.foo2", suffix="")
+        f_c.save()
+        self.assertFalse(f_c.purgeable)
+        fqdn = "*.x.y.z.foo.foo2"
+        label, the_domain = ensure_label_domain(fqdn)
+        self.assertEqual('*', label)
+
+        cname = CNAME(label=label, domain=the_domain, target="foo")
+        cname.save()
+        self.assertFalse(prune_tree(the_domain))
+        cname.delete()
+
+    def test_basic_add_remove8(self):
+        # Make sure a record's label is changed to '' when a domain with the
+        # same name as it's fqdn is created.
+        f_c = create_fake_zone("foo.foo3", suffix="")
+        f_c.save()
+        self.assertFalse(f_c.purgeable)
+        fqdn = "www.x.y.z.foo.foo3"
+        label, the_domain = ensure_label_domain(fqdn)
+        self.assertEqual('www', label)
+        self.assertEqual('x.y.z.foo.foo3', the_domain.name)
+        self.assertTrue(the_domain.pk)
+
+        cname = CNAME(label=label, domain=the_domain, target="foo")
+        cname.save()
+        fqdn = "*.www.x.y.z.foo.foo3"
+        label2, the_domain2 = ensure_label_domain(fqdn)
+        cname = CNAME.objects.get(fqdn=cname.fqdn)
+        self.assertEqual('', cname.label)
+        self.assertEqual('www.x.y.z.foo.foo3', cname.domain.name)
+        self.assertEqual('*', label2)
+        self.assertEqual('www.x.y.z.foo.foo3', the_domain2.name)
+
