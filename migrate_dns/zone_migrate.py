@@ -1,5 +1,3 @@
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
-
 from mozdns.address_record.models import AddressRecord
 from mozdns.cname.models import CNAME
 from mozdns.domain.models import Domain
@@ -8,17 +6,13 @@ from mozdns.nameserver.models import Nameserver
 from mozdns.ptr.models import PTR
 from mozdns.soa.models import SOA
 from mozdns.srv.models import SRV
-from mozdns.tests.view_tests import random_label
 from mozdns.txt.models import TXT
 from mozdns.domain.utils import *
-from mozdns.ip.utils import ip_to_domain_name
 from mozdns.ip.models import ipv6_to_longs
 from mozdns.view.models import View
 from mozdns.utils import ensure_domain
 
 from settings import ZONE_PATH
-
-from mdns.svn_build import collect_svn_zone, collect_rev_svn_zone
 
 import dns
 import dns.zone

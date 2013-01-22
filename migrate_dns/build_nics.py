@@ -1,6 +1,4 @@
 import re
-import pdb
-import systems.models
 from systems.models import System
 from mdns.utils import *
 

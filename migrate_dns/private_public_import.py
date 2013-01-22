@@ -1,13 +1,9 @@
-from django.core.exceptions import ObjectDoesNotExist
-
 from mdns.zone_migrate import populate_forward_dns, populate_reverse_dns
 
 from dns import zone
 from iscpy.iscpy_dns.named_importer_lib import MakeNamedDict
-from mozdns.soa.models import SOA
 from mozdns.view.models import View
 
-import pdb
 import os
 
 # Add zones that should not be imported here
@@ -47,7 +43,6 @@ def handle_zone(zone_name, zone_meta, public, private):
     if not zone_meta['file']:
         print "No zone file for {0}".format(zone_name)
         return
-    comment = "SOA for " + zone_name
     print "Importing {0}. View: {1}".format(zone_name,
                         'public' if public else 'private')
     mzone = get_zone_data(zone_name, zone_meta['file'], ZONE_PATH)
