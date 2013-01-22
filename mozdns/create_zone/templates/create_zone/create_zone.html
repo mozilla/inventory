@@ -10,8 +10,35 @@
 {% block content %}
     <script>
     $(document).ready(function(){
-        $('#useTemplate').click(function() {
-
+        $('#useTemplate').click(function (){
+            $("#templateZones").dialog({
+                title: 'Choose a zone to use as a template.',
+                autoShow: false,
+                minWidth: 280,
+                modal: true,
+                buttons: {
+                    Cancel: function() {
+                        // pass
+                        $("#zones").css('display', 'none');
+                        $(this).dialog("close");
+                    }
+                }
+            });
+            $("#zones").css('display', 'block');
+            $("#zones").focus();
+            $("#zones").autocomplete({
+                minLength: 0,
+                source: {{zones}},
+                focus: function( event, ui ) {
+                    $("#zones").val( ui.item.label );
+                    return false;
+                },
+                select: function( event, ui ) {
+                    $("#zones").val(ui.item.label);
+                    window.location = window.location.pathname + "?template_zone=" + ui.item.label
+                    return false;
+                }
+            });
         });
         $("#zoneForm").data('blockCounter', 1);
         removeButtons = $('#zoneForm').find('.remove-entry:not(:first)');
@@ -80,6 +107,9 @@
     </style>
 
     <input type='button' value='Use another zone as a template' id='useTemplate'>
+    <div id='templateZones' style="display:none;">
+        <input id="zones" style="width:20em;"/>
+    </div>
 
     <div class="form-container">
     <form id='zoneForm' method='POST'>

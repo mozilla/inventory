@@ -7,7 +7,8 @@ from mozdns.address_record.models import AddressRecord
 from core.search.compiler.django_compile import compile_to_django
 
 
-class SearchDNSTests(TestCase):
+class IntegrationTests(TestCase):
+    """A dumping ground for larger-than-a-single-app tests."""
     def test_integration1(self):
         create_fake_zone("wee.wee.mozilla.com", "")
         res, error = compile_to_django("wee.wee.mozilla.com")
@@ -107,7 +108,7 @@ class SearchDNSTests(TestCase):
         self.assertEqual(len(res['NS']), 0)
         self.assertEqual(len(res['CNAME']), 1)
 
-    def test_integration4_ip_range(self):
+    def test_integration4_ip(self):
         create_fake_zone("wee3.wee.mozilla.com", "")
         create_fake_zone("1.2.ip6.arpa", "")
         res, error = compile_to_django("1.2.ip6.arpa")

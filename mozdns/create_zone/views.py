@@ -126,15 +126,18 @@ def create_zone(request):
 
     context = None
     message = ''
+    zones = get_zones()
     if template_zone:
         try:
-            root_domain = get_zones().get(name=template_zone)
+            root_domain = zones.get(name=template_zone)
             context = {
                 'message': 'Using {0} as a template.'.format(template_zone),
                 'root_domain': root_domain.name,
                 'contact': root_domain.soa.contact,
                 'primary': root_domain.soa.primary,
                 'nss': root_domain.nameserver_set.all(),
+                'zones': json.dumps(
+                    sorted([z.name for z in get_zones()], reverse=True))
             }
         except ObjectDoesNotExist:
             message = gt('When trying to use {0} as a template, no zone '
@@ -146,6 +149,8 @@ def create_zone(request):
             'contact': '',
             'primary': '',
             'nss': [],
+            'zones': json.dumps(
+                sorted([z.name for z in get_zones()], reverse=True))
         }
 
     return render(request, 'create_zone/create_zone.html', context)

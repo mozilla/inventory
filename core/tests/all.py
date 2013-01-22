@@ -5,3 +5,4 @@ from core.interface.static_intr.tests.all import *
 from core.range.tests.all import *
 from core.network.tests import *
 from core.lib.tests.all import *
+from core.search.tests.all import *

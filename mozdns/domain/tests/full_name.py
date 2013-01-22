@@ -265,4 +265,3 @@ class FullNameTests(TestCase):
         self.assertEqual('www.x.y.z.foo.foo3', cname.domain.name)
         self.assertEqual('*', label2)
         self.assertEqual('www.x.y.z.foo.foo3', the_domain2.name)
-

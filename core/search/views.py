@@ -86,11 +86,14 @@ def _search(request, response):
     if not obj_map:
         return HttpResponse(json.dumps({'error_messages': error_resp}))
     obj_counts = {}
+    total_objects = 0
     for type_, q in obj_map.iteritems():
         obj_counts[type_] = q.count() if q else 0
+        total_objects += obj_counts[type_]
     results = {
         'meta': {
             'counts': obj_counts,
+            'total_objects': total_objects,
             'search': search,
         },
         'objects': obj_map
