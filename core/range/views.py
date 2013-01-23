@@ -2,7 +2,7 @@ from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse
 
 from core.utils import int_to_ip
 from core.range.forms import RangeForm
@@ -62,8 +62,9 @@ def range_usage_text(request):
     end = request.GET.get('end', None)
     format = request.GET.get('format', 'human_readable')
     if not (start and end):
-        return HttpResponseBadRequest(json.dumps({'error_messages':
-                                                  'Provide a start and end'}))
+        return HttpResponse(json.dumps({
+            'success': False,
+            'error_messages': 'Provide a start and end'}))
 
     get_objects = request.GET.get('get_objects', False)
     if start.find(':') > -1:
@@ -73,13 +74,18 @@ def range_usage_text(request):
     try:
         usage_data = range_usage(start, end, ip_type, get_objects)
     except (ValidationError, ipaddr.AddressValueError), e:
-        return HttpResponseBadRequest(json.dumps({'error_messages': str(e)}))
+        return HttpResponse(
+            json.dumps({
+                'error_messages': str(e),
+                'success': False
+            }))
 
     if format == 'human_readable':
         usage_data['free_ranges'] = map(lambda x: (int_to_ip(x[0], ip_type),
                                         int_to_ip(x[1], ip_type)),
                                         usage_data['free_ranges'])
 
+    usage_data['success'] = True
     return HttpResponse(json.dumps(usage_data))
 
 

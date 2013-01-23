@@ -1,7 +1,29 @@
 <script>
     // So if people paste links around.
     console.log("Form loaded: I see rdtype=: {{record_type}} and pk=:{{record_pk}}");
+    $(document).ready(function (){
+        if ($('#id_ip_str') && !$('#id_ip_str').val()){
+            $(
+            "<input type='button' id='ffip' value='FFIP'/>"
+            ).insertAfter('#id_ip_str').css('margin-left', '0.7em');
+            $('#ffip').click(function () {
+                make_free_ip_search(
+                    $('#id_ip_str'),
+                    $('#range_start'),
+                    $('#range_end'),
+                    $('#find-free-ip-dialog'),
+                    $('#free-ip-result')
+                );
+            });
+        }
+    });
 </script>
+<div id='find-free-ip-dialog' style='display:none;'>
+    <label>Start: <input id='range_start' type='text'></label>
+    <label>End: <input id='range_end' type='text'></label>
+    <div id='free-ip-result'></div>
+</div>
+
 <div id='form-message' class='form-message'>
 {% if message %}
     {{message}} <div style='display: inline;' id='action-time'></div>

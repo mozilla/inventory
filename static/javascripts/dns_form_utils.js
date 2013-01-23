@@ -343,3 +343,42 @@ function setup_delete(){
         }
     });
 }
+
+function make_free_ip_search(target_ip_str, start, end, dialog_div, message_area) {
+    dialog_div.dialog({
+        title: 'Specify a range in which an unallocated ip address should be found.',
+        autoShow: false,
+        minWidth: 520,
+        buttons: {
+            "Find A Free IP": function() {
+                $.get("/core/range/usage_text/",
+                    {
+                        start: start.val(),
+                        end: end.val(),
+                        format: 'human_readable'
+                    }, function(data) {
+                        var data = $.parseJSON(data);
+                        message_area.empty()
+                        if (!data['success']) {
+                            message_area.append(data['error_messages']);
+                        } else if (data['unused'] == 0) {
+                            message_area.append("No ip addresses are free.");
+                        } else {
+                            var p_unused = data['unused'] / (data['unused'] + data['used']);
+                            p_unused = "" + p_unused; // Cast it
+                            message = "%" + p_unused.substring(2, 4) + " of address are unallocated"
+                                      + " in this range. The first unused address is "
+                                      + data['free_ranges'][0][0];
+                            message_area.append(message);
+                        }
+                    }).error(function (data) {
+                        var data = $.parseJSON(data);
+                    });
+            },
+            Cancel: function() {
+                // pass
+                $(this).dialog("close");
+            }
+        }
+    });
+}

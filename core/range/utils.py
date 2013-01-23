@@ -5,7 +5,50 @@ from mozdns.ptr.models import PTR
 
 
 def range_usage(ip_start, ip_end, ip_type, get_objects=True):
-    """This is a magical function."""
+    """
+    Returns ip usage statistics about the range starting at ip_start and
+    ending at ip_end.
+
+    Given an inclusive contiguous range of positive integers (IP addresses)
+    between `a` and `b` and a list of lists where each sublist contains
+    integers (IP addresses) that are within the range, how many integers
+    between `a` and `b` do not exist in any of the lists; this is what this
+    function calculates.
+
+    For example:
+
+    ```
+    Start = 0
+    End = 9
+    Lists = [[1,2,3], [2,3,4]]
+    ```
+
+    The integers that do not occur in `Lists` are `0`, `5`, `6`, `7`, `8`, and
+    `9`, so there are 6 integers that do not exist in Lists that satisfy `Start
+    <= n <= End`.
+
+    Start can be small and End can be very large (the range may be
+    larger than you would want to itterate over). Due to the size of IPv6
+    ranges, we should not use recursion.
+
+    There are three types of objects (that we care about) that have IP's
+    associated with them: AddressRecord, PTR, StaticInterface. Because we get
+    objects back as Queryset's that are hard to merge, we have to do this
+    algorithm while retaining all three lists. The gist of the algoritm is as
+    follows::
+
+        # Assume the lists are sorted
+        while lists:
+            note the start number (ip)
+            lowest =: of the things in list (PTR, A, INTR), find the lowest
+            difference =: start - lowest.ip
+            total_free +=: difference
+            start =: lowest.ip + 1
+
+            if any PTR, A, or INTR has the same IP as lowest:
+                remove those items from their lists
+    """
+
     istart, iend, ipf_q = start_end_filter(ip_start, ip_end, ip_type)
 
     def get_ip(rec):
