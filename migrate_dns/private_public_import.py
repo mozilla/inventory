@@ -1,4 +1,4 @@
-from mdns.zone_migrate import populate_forward_dns, populate_reverse_dns
+from migrate_dns.zone_migrate import populate_forward_dns, populate_reverse_dns
 
 from dns import zone
 from iscpy.iscpy_dns.named_importer_lib import MakeNamedDict

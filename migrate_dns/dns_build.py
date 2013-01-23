@@ -1,7 +1,7 @@
 from truth.models import Truth
 
-from mdns.build_nics import *
-from mdns.utils import *
+from migrate_dns.build_nics import *
+from migrate_dns.utils import *
 import ipaddr
 from systems.models import ScheduledTask
 from core.interface.static_intr.models import StaticInterface

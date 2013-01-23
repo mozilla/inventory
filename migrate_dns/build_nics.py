@@ -1,6 +1,6 @@
 import re
 from systems.models import System
-from mdns.utils import *
+from migrate_dns.utils import *
 
 import pprint
 pp = pprint.PrettyPrinter(indent=2)

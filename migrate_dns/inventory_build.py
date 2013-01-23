@@ -1,9 +1,9 @@
 from truth.models import Truth
 import systems
 from systems.models import System
-from mdns.build_nics import *
+from migrate_dns.build_nics import *
 from settings import FIX_M_C_M_C
-from mdns.utils import *
+from migrate_dns.utils import *
 
 import ipaddr
 

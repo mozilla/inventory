@@ -15,7 +15,7 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 
 from dhcp.models import DHCP
-import mdns
+import migrate_dns
 from settings import MOZ_SITE_PATH
 from settings import BUG_URL
 
@@ -199,8 +199,8 @@ class KeyValue(models.Model):
     def save(self, *args, **kwargs):
         dirty = False
         schedule_dns = False
-        from mdns.build_nics import build_nic
-        from mdns.dns_build import ip_to_site
+        from migrate_dns.build_nics import build_nic
+        from migrate_dns.dns_build import ip_to_site
 
         is_nic = re.match('^nic\.\d+\.(.*)\.\d+$', self.key)
         if self.pk:
@@ -236,7 +236,7 @@ class KeyValue(models.Model):
         # to construct an interface and find the ip in the interface.
             intr = build_nic(self.system.keyvalue_set.all())
             for ip in intr.ips:
-                kv = mdns.dns_build.ip_to_site(ip, MOZ_SITE_PATH)
+                kv = migrate_dns.dns_build.ip_to_site(ip, MOZ_SITE_PATH)
                 if kv:
                     try:
                         ScheduledTask(type='dns', task=kv.key).save()

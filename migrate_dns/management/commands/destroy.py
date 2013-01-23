@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from mdns.destructo import destroy
+from migrate_dns.destructo import destroy
 
 
 class Command(BaseCommand):

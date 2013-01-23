@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 
-from mdns.build_nics import *
-from mdns.utils import *
+from migrate_dns.build_nics import *
+from migrate_dns.utils import *
 import ipaddr
 from core.network.models import Network, NetworkKeyValue
 from core.network.utils import calc_parent

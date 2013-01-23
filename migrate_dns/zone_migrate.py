@@ -22,19 +22,19 @@ from copy import deepcopy
 
 def buildzone3(job):
     if job == "external":
-        from mdns.migrate.zone_configs.external import external
+        from migrate_dns.migrate.zone_configs.external import external
         configs = external
     if job == "private_reverse":
-        from mdns.migrate.zone_configs.private_reverse import private_reverse
+        from migrate_dns.migrate.zone_configs.private_reverse import private_reverse
         configs = private_reverse
     if job == "net":
-        from mdns.migrate.zone_configs.mozilla_net import mozilla_net
+        from migrate_dns.migrate.zone_configs.mozilla_net import mozilla_net
         configs = mozilla_net
     if job == "org":
-        from mdns.migrate.zone_configs.mozilla_org import mozilla_org
+        from migrate_dns.migrate.zone_configs.mozilla_org import mozilla_org
         configs = mozilla_org
     if job == "com":
-        from mdns.migrate.zone_configs.mozilla_com_dc_zone_config import mozilla_com_dcs
+        from migrate_dns.migrate.zone_configs.mozilla_com_dc_zone_config import mozilla_com_dcs
         configs = mozilla_com_dcs
     build_from_config(configs)
 
