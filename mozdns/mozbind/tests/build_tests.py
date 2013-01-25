@@ -4,6 +4,7 @@ import os
 from django.test.client import Client
 from django.test import TestCase
 
+from mozdns.soa.models import SOA
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.view.models import View
@@ -59,22 +60,54 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                        FIRST_RUN=True, PUSH_TO_PROD=False)
-        b.build_dns()
+        b.build_dns()  # This won't check anything in since PUSH_TO_PROD==False
         self.assertEqual((13, 0), b.svn_lines_changed())
         b.PUSH_TO_PROD = True
+        b.build_dns()  # This checked stuff in
+
+        # no lines should have changed
         b.build_dns()
+        self.assertEqual((0, 0), b.svn_lines_changed())
 
         # Now add a record.
         a, c = AddressRecord.objects.get_or_create(
-            label='', domain=root_domain, ip_str="10.0.0.1", ip_type='4')
+            label='', domain=root_domain, ip_str="10.0.0.1", ip_type='4'
+        )
         a.views.add(View.objects.get_or_create(name='private')[0])
         if not c:
             a.ttl = 8
             a.save()
         b.PUSH_TO_PROD = False
-        b.build_dns()
+        self.assertTrue(SOA.objects.get(pk=root_domain.soa.pk).dirty)
+        tmp_serial = SOA.objects.get(pk=root_domain.soa.pk).serial
+        b.build_dns()  # Serial get's incrimented and written to svn
+        self.assertEqual(
+            SOA.objects.get(pk=root_domain.soa.pk).serial, tmp_serial + 1
+        )
+        self.assertFalse(SOA.objects.get(pk=root_domain.soa.pk).dirty)
         # added new record and new serial, old serial removed.
         self.assertEqual((2, 1), b.svn_lines_changed())
+
+        b.PUSH_TO_PROD = True
+        tmp_serial = SOA.objects.get(pk=root_domain.soa.pk).serial
+        self.assertFalse(SOA.objects.get(pk=root_domain.soa.pk).dirty)
+        b.build_dns()
+        self.assertFalse(SOA.objects.get(pk=root_domain.soa.pk).dirty)
+        self.assertEqual(
+            SOA.objects.get(pk=root_domain.soa.pk).serial, tmp_serial
+        )
+        self.assertEqual((0, 0), b.svn_lines_changed())
+
+        # no lines should have changed if we would have built again
+        b.PUSH_TO_PROD = False
+        #b.DEBUG = True
+        self.assertFalse(SOA.objects.get(pk=root_domain.soa.pk).dirty)
+        tmp_serial = SOA.objects.get(pk=root_domain.soa.pk).serial
+        b.build_dns()
+        self.assertEqual(SOA.objects.get(pk=root_domain.soa.pk).serial,
+                         tmp_serial)
+        self.assertFalse(SOA.objects.get(pk=root_domain.soa.pk).dirty)
+        self.assertEqual((0, 0), b.svn_lines_changed())
 
     def test_one_file_svn_lines_changed(self):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,

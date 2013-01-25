@@ -140,7 +140,8 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
             db_self = SOA.objects.get(pk=self.pk)
             fields = ['primary', 'contact', 'expire', 'retry',
                       'refresh', 'description']
-            # Leave out serial for obvious reasons
+            # Leave out serial so rebuilds don't cause a never ending build
+            # cycle
             for field in fields:
                 if getattr(db_self, field) != getattr(self, field):
                     self.dirty = True

@@ -163,13 +163,21 @@ class DNSBuilder(SVNBuilderMixin):
         syslog.openlog('dnsbuild', 0, syslog.LOG_USER)
         self.lock_fd = None
 
+    def format_title(self, title):
+        return "{0} {1} {0}".format('=' * ((30 - len(title)) / 2), title)
+
     def log(self, log_level, msg, **kwargs):
         # Eventually log this stuff into bs
         # Let's get the callers name and log that
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
-        callername = calframe[1][3]
-        fmsg = "[{0}] {1}".format(callername, msg)
+        callername = "[{0}]".format(calframe[1][3])
+        soa = kwargs.get('soa', None)
+        if soa:
+            fmsg = "{0:20} < {1} > {2}".format(callername,
+                                               soa.root_domain.name, msg)
+        else:
+            fmsg = "{0:20} {1}".format(callername, msg)
         if hasattr(syslog, log_level):
             ll = getattr(syslog, log_level)
         else:
@@ -205,8 +213,7 @@ class DNSBuilder(SVNBuilderMixin):
                 shutil.rmtree(self.STAGE_DIR)
             except OSError, e:
                 if e.errno == 2:
-                    self.log('LOG_WARNING', "Staging was "
-                             "not present.")
+                    self.log('LOG_WARNING', "Staging was not present.")
                 else:
                     raise
             self.log('LOG_INFO', "Staging area cleared")
@@ -223,7 +230,7 @@ class DNSBuilder(SVNBuilderMixin):
         try:
             if not os.path.exists(os.path.dirname(self.LOCK_FILE)):
                 os.makedirs(os.path.dirname(self.LOCK_FILE))
-            self.log('LOG_INFO', "Attempting aquire mutext "
+            self.log('LOG_INFO', "Attempting acquire mutext "
                      "({0})...".format(self.LOCK_FILE))
             self.lock_fd = open(self.LOCK_FILE, 'w+')
             fcntl.flock(self.lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -232,7 +239,7 @@ class DNSBuilder(SVNBuilderMixin):
             #  IOError: [Errno 11] Resource temporarily unavailable
             if exc_value[0] == 11:
                 raise BuildError(
-                    "DNS build script attemted to aquire the "
+                    "DNS build script attempted to acquire the "
                     "build mutux but another process already has it.")
             else:
                 raise
@@ -322,8 +329,11 @@ class DNSBuilder(SVNBuilderMixin):
         command_str = "named-checkzone {0} {1} {2}".format(
                       self.NAMED_CHECKZONE_OPTS, root_domain.name,
                       zone_file)
-        self.log('LOG_INFO', "Calling `named-checkzone {0} "
-                             "{1}`".format(root_domain.name, zone_file))
+        self.log(
+            'LOG_INFO', "Calling `named-checkzone {0} {1}`".
+            format(root_domain.name, zone_file),
+            soa=soa
+        )
         stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
             raise BuildError("\nnamed-checkzone failed on zone {0}. "
@@ -383,7 +393,7 @@ class DNSBuilder(SVNBuilderMixin):
             fd.write(stmts)
         return stage_config
 
-    def build_zone(self, view, rel_fname, view_data, root_domain, soa):
+    def build_zone(self, view, file_meta, view_data, root_domain, soa):
         """
         This function will write the zone's zone file to the the staging area
         and call named-checkconf on the files before they are copied over to
@@ -392,14 +402,12 @@ class DNSBuilder(SVNBuilderMixin):
         written to the file system `None` will be returned instead of the path
         to the file.
         """
-        self.log('LOG_INFO', "{0} for view '{1}' will be rebuilt.".format(soa,
-                             view))
-
-        stage_fname = os.path.join(self.STAGE_DIR, rel_fname)
-        self.write_stage_zone(stage_fname, root_domain, soa, rel_fname,
-                              view_data)
+        stage_fname = os.path.join(self.STAGE_DIR, file_meta['rel_fname'])
+        self.write_stage_zone(
+            stage_fname, root_domain, soa, file_meta['rel_fname'], view_data
+        )
         self.log('LOG_INFO', "Built stage_{0}_file to "
-                             "{1}".format(view.name, stage_fname))
+                             "{1}".format(view.name, stage_fname), soa=soa)
         self.named_checkzone(stage_fname, root_domain, soa)
 
         prod_fname = self.stage_to_prod(stage_fname)
@@ -416,121 +424,181 @@ class DNSBuilder(SVNBuilderMixin):
         zone_stmt += "}};\n"
         return zone_stmt
 
-    def verify_prev_build(self, prod_fname, view_data, root_domain, soa):
-        if not view_data:
-            return
-        serial = get_serial(os.path.join(prod_fname))
+    def verify_previous_build(self, file_meta, view, root_domain, soa):
+        force_rebuild, new_serial = False, None
+        serial = get_serial(os.path.join(file_meta['prod_fname']))
         if not serial.isdigit():
-            if not soa.serial:
-                soa.serial = int(time.time()) - 1
-            soa.dirty = True
+            new_serial = int(time.time())
+            force_rebuild = True
             # it's a new serial
-            self.log('LOG_NOTICE', "{0} appears to be a new zone. Building"
-                     " {1} with initial serial {2}".format(soa, prod_fname,
-                     soa.serial + 1), soa=soa)
+            self.log(
+                'LOG_NOTICE', "{0} appears to be a new zone. Building {1} "
+                "with initial serial {2}".format(soa, file_meta['prod_fname'],
+                                                 new_serial),
+                soa=soa)
         elif int(serial) != soa.serial:
             # Looks like someone made some changes... let's nuke them.
             # We should probably email someone too.
-            self.log('LOG_NOTICE', "{0} has serial {1} in svn ({2}) and "
-                     "serial {3} in the database. SOA is being marked as "
-                     "dirty.".format(soa, serial, prod_fname, soa.serial),
-                     soa=soa)
-            soa.dirty = True
+            self.log(
+                'LOG_NOTICE', "{0} has serial {1} in svn ({2}) and serial "
+                "{3} in the database. Zone will be rebuilt."
+                .format(soa, serial, file_meta['prod_fname'],
+                        soa.serial),
+                soa=soa)
+            force_rebuild = True
             # Choose the highest serial so any slave nameservers don't get
             # confused.
-            soa.serial = max(int(serial), soa.serial)
+            new_serial = max(int(serial), soa.serial)
 
-    def build_view(self, view, view_data, root_domain, soa):
-        rel_zdir = self.calc_target(root_domain, soa)
-        fname = self.calc_fname(view, root_domain)
-        rel_fname = os.path.join(rel_zdir, fname)
-        prod_fname = os.path.join(self.PROD_DIR, rel_fname)
-        # If there is zomething different about the zone, like it's new or
-        # it's serial doesn't match the one if the db, :func:`verify_prev`
-        # will mark the soa as dirty.
-        self.verify_prev_build(prod_fname, view_data, root_domain, soa)
-        if soa.dirty:
-            # Update the new zone strings with the correct serial number.
-            self.log('LOG_INFO', "{0} is seen as dirty.".format(soa),
-                                 soa=soa)
-            self.log('LOG_INFO', "Prev serial was {0}. Using serial "
-                                 "new serial {1}.".format(soa.serial,
-                                 soa.serial + 1), soa=soa)
-            self.build_zone(view, rel_fname,
-                            view_data.format(serial=soa.serial + 1),
-                            root_domain, soa)
-        else:
-            # private_data and public_data are not used because the soa
-            # was not dirty and doesn't have any new changes in it,
-            # instead the data already in prod_fname is checked again
-            # using named_checkzone.  Later prod_fname is pointed to by
-            # the view's config file in the form of a zone statement
-            # (see render_zone_stmt).
-            self.log('LOG_INFO', "{0} is seen as NOT dirty.".format(soa),
-                     soa=soa)
-            self.named_checkzone(prod_fname, root_domain, soa)
+        return force_rebuild, new_serial
 
-        return self.render_zone_stmt(root_domain.name, prod_fname)
+    def get_file_meta(self, view, root_domain, soa):
+        file_meta = {}
+        relative_zone_dir = self.calc_target(root_domain, soa)
+        file_meta['fname'] = self.calc_fname(view, root_domain)
+        file_meta['rel_fname'] = os.path.join(relative_zone_dir,
+                                              file_meta['fname'])
+        file_meta['prod_fname'] = os.path.join(self.PROD_DIR,
+                                               file_meta['rel_fname'])
+        return file_meta
 
     def build_zone_files(self):
-        """
-        This function builds and then writes zone files to the file system.
-        This function also returns a list of zone statements.
-        """
-        # Keep track of which zones we build and what they look like.
-
-        private_zone_stmts, public_zone_stmts = [], []
+        zone_stmts = {}
 
         for soa in SOA.objects.all():
-            zinfo = soa.root_domain, soa
+            # General order of things:
+            # * Find which views should have a zone file built and add them to
+            #   a list.
+            # * If any of the view's zone file have been tampered with or the
+            #   zone is new, trigger the rebuilding of all the zone's view
+            #   files. (rebuil all views in a zone keeps the serial
+            #   synced across all views)
+            # * Either rebuild all of a zone's view files because one view
+            #   needed to be rebuilt due to tampering or the zone was dirty
+            #   (again, this is to keep their serial synced) or just call
+            #   named-checkzone on the existing zone files for good measure.
+            #   Also generate a zone statement and add it to a dictionary for
+            #   later use during BIND configuration generation.
+            self.log('LOG_INFO', '====== Processing {0} {1} ======'.format(
+                soa.root_domain, soa.serial)
+            )
+            views_to_build = []
+            force_rebuild = soa.dirty
+            self.log('LOG_INFO', "SOA was seen with dity == {0}".
+                     format(force_rebuild), soa=soa)
 
-            # The *_data vars help us to decide whether we should build a zone.
-            # If there are no records in the public/private view the
-            # corresponding *_data var will be the emptry string. We will not
-            # build and write a zone file for a view that does not have any
-            # data.
+            # By setting dirty to false now rather than later we get around the
+            # edge case that someone updates a record mid build.
+            soa.dirty = False
+            soa.save()
 
-            t_start = time.time()  # tic
-            private_data, public_data = build_zone_data(*zinfo, logf=self.log)
-            build_time = time.time() - t_start  # toc
-            self.log('LOG_INFO', 'Built {0} in {1} seconds '.format(soa,
-                     build_time), soa=soa, build_time=build_time)
+            # This for loop decides which views will be canidates for
+            # rebuilding.
+            for view in View.objects.all():
+                self.log('LOG_INFO', "++++++ Looking at < {0} > view ++++++".
+                         format(view.name), soa=soa)
+                t_start = time.time()  # tic
+                view_data = build_zone_data(view, soa.root_domain, soa)
+                build_time = time.time() - t_start  # toc
+                self.log('LOG_INFO', '< {0} > Built {1} data in {2} seconds'
+                         .format(view.name, soa, build_time), soa=soa,
+                         build_time=build_time)
+                if not view_data:
+                    self.log('LOG_INFO', '< {0} > No data found in this view. '
+                             'No zone file will be made or included in any '
+                             'config for this view.'.format(view.name),
+                             soa=soa)
+                    continue
+                self.log('LOG_INFO', '< {0} > Non-empty data set for this '
+                         'view. Its zone file will be included in the '
+                         'config.'.format(view.name), soa=soa)
+                file_meta = self.get_file_meta(view, soa.root_domain, soa)
+                was_bad_prev, new_serial = self.verify_previous_build(
+                    file_meta, view, soa.root_domain, soa
+                )
 
-            private_view = View.objects.get_or_create(name='private')[0]
-            public_view = View.objects.get_or_create(name='public')[0]
-            if private_data:
-                # The private view has data. let's build it.
-                private_zone_stmts.append(self.build_view(private_view,
-                                          private_data, *zinfo))
-            if public_data:
-                public_zone_stmts.append(self.build_view(public_view,
-                                         public_data, *zinfo))
-            if soa.dirty:
-                soa.serial += 1
-                soa.dirty = False
-                soa.save()
+                if was_bad_prev:
+                    soa.serial = new_serial
+                    force_rebuild = True
 
-        return private_zone_stmts, public_zone_stmts
+                views_to_build.append(
+                    (view, file_meta, view_data)
+                )
 
-    def build_view_config(self, view, ztype, stmts):
-        config_fname = "{0}.{1}".format(ztype, view.name)
+            self.log(
+                'LOG_INFO', '----- Building < {0} > ------'.format(
+                    ' | '.join([view.name for view, _, _ in views_to_build])
+                ), soa=soa
+            )
+
+            if force_rebuild:
+                # Bypass save so we don't have to save a possible stale 'dirty'
+                # value to the db.
+                SOA.objects.filter(pk=soa.pk).update(serial=soa.serial + 1)
+                self.log('LOG_INFO', 'Zone will be rebuilt at serial {0}'
+                         .format(soa.serial), soa=soa)
+            else:
+                self.log('LOG_INFO', 'Zone is stable at serial {0}'
+                         .format(soa.serial), soa=soa)
+
+            for view, file_meta, view_data in views_to_build:
+                view_zone_stmts = zone_stmts.setdefault(view.name, [])
+                # If we see a view in this loop it's going to end up in the
+                # config
+                view_zone_stmts.append(
+                    self.render_zone_stmt(soa.root_domain,
+                                          file_meta['prod_fname'])
+                )
+                # If it's dirty or we are rebuilding another view, rebuild the
+                # zone
+                if force_rebuild:
+                    self.log('LOG_INFO', 'Rebuilding < {0} > view file '
+                             '{1}'.format(view.name, file_meta['prod_fname']),
+                             soa=soa)
+                    prod_fname = self.build_zone(
+                        view, file_meta,
+                        # Lazy string evaluation
+                        view_data.format(serial=soa.serial + 1),
+                        soa.root_domain, soa
+                    )
+                    assert prod_fname == file_meta['prod_fname']
+                else:
+                    self.log(
+                        'LOG_INFO',
+                        'NO REBUILD needed for < {0} > view file {1}'.format(
+                            view.name, file_meta['prod_fname']),
+                        soa=soa
+                    )
+                # run named-checkzone for good measure
+                    self.named_checkzone(
+                        file_meta['prod_fname'], soa.root_domain, soa
+                    )
+
+        return zone_stmts
+
+    def build_view_config(self, view_name, ztype, stmts):
+        config_fname = "{0}.{1}".format(ztype, view_name)
         zone_stmts = '\n'.join(stmts).format(ztype=ztype)
         stage_config = self.write_stage_config(config_fname, zone_stmts)
         self.named_checkconf(stage_config)
         return self.stage_to_prod(stage_config)
 
-    def build_config_files(self, private_zone_stmts, public_zone_stmts):
+    def build_config_files(self, zone_stmts):
         # named-checkconf on config files
-        self.log('LOG_INFO', "Building config files.")
-        private_view = View.objects.get_or_create(name='private')[0]
-        public_view = View.objects.get_or_create(name='public')[0]
-        # If we need slave configs, do it here
-        private_config = self.build_view_config(private_view, 'master',
-                                                private_zone_stmts)
-
-        public_config = self.build_view_config(public_view, 'master',
-                                               public_zone_stmts)
-        return private_config, public_config
+        self.log('LOG_INFO', self.format_title("Building config files"))
+        configs = []
+        self.log(
+            'LOG_INFO', "Building configs for views < {0} >".format(
+                ' | '.join([view_name for view_name in zone_stmts.keys()])
+            )
+        )
+        for view_name, view_stmts in zone_stmts.iteritems():
+            self.log('LOG_INFO', "Building config for view < {0} >".
+                     format(view_name))
+            configs.append(
+                self.build_view_config(view_name, 'master', view_stmts)
+            )
+        return configs
 
     def check_stop_update(self):
         """
@@ -554,17 +622,19 @@ class DNSBuilder(SVNBuilderMixin):
 
             # zone files
             if self.BUILD_ZONES:
-                self.build_config_files(*self.build_zone_files())
+                self.build_config_files(self.build_zone_files())
             else:
                 self.log('LOG_INFO', "BUILD_ZONES is False. Not "
                          "building zone files.")
 
+            self.log('LOG_INFO', self.format_title("VCS Checkin"))
             if self.BUILD_ZONES and self.PUSH_TO_PROD:
                 self.vcs_checkin()
             else:
                 self.log('LOG_INFO', "PUSH_TO_PROD is False. Not checking "
                          "into {0}".format(self.vcs_type))
 
+            self.log('LOG_INFO', self.format_title("Handle Staging"))
             if self.PRESERVE_STAGE:
                 self.log('LOG_INFO', "PRESERVE_STAGE is True. Not "
                          "removing staging. You will need to use "
@@ -580,5 +650,6 @@ class DNSBuilder(SVNBuilderMixin):
             raise
         finally:
             # Clean up
+            self.log('LOG_INFO', self.format_title("Release Mutex"))
             self.unlock()
         self.log('LOG_NOTICE', 'Successful build is successful.')
