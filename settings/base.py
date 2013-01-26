@@ -37,8 +37,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     #'piston',
     #'south',
     'systems',
-    'mdns',
-    'mdns.migrate',
+    'migrate_dns',
     'user_systems',
     'build',
     'dhcp',
@@ -60,7 +59,6 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'core.interface.static_intr',
     'core.search',
     'core.lib',
-    'core.bulk_change',
     'mozdns',
     'mozdns.address_record',
     'mozdns.cname',
@@ -77,7 +75,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'mozdns.mozbind',
     'mozdns.record',
     'mozdns.create_zone',
-    'debug_toolbar',
+    #'debug_toolbar',
     'tastypie',
     'tastytools',
     'reversion',
@@ -88,7 +86,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
 # Because Jinja2 is the default template loader, add any non-Jinja templated
 # apps here:
 JINGO_EXCLUDE_APPS = [
-    'debug_toolbar',
+    #'debug_toolbar',
     'build',
     'admin',
     'user_systems',
@@ -149,7 +147,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'reversion.middleware.RevisionMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
 INTERNAL_IPS = ('127.0.0.1','10.22.74.139','10.250.2.54')
@@ -172,3 +170,6 @@ MOZDNS_BASE_URL = "/mozdns"
 CORE_BASE_URL = "/core"
 ROOT_URLCONF = 'inventory.urls'
 BUILD_PATH = '/home/juber/dnsbuilds/'
+
+# HACK HACK This will need to be fixed
+from settings.local import *
