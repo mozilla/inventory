@@ -7,7 +7,6 @@ from mozdns.nameserver.models import Nameserver
 from mozdns.ptr.models import PTR
 from mozdns.cname.models import CNAME
 from mozdns.soa.models import SOA
-from mozdns.view.models import View
 from mozdns.ip.utils import ip_to_domain_name
 
 from core.interface.static_intr.models import StaticInterface
@@ -372,6 +371,28 @@ class NSTestsModels(TestCase):
         # the zone's root domain.
         ptr = PTR(name="asdf", ip_str="13.10.1.1", ip_type="4")
         self.assertRaises(ValidationError, ptr.save)
+
+    def test_bad_nameserver_soa_state_case_1_4(self):
+        # This is Case 1 ... with StaticInterfaces's
+        reverse_root_domain = create_fake_zone("14.in-addr.arpa", suffix="")
+        root_domain = create_fake_zone("asdf14")
+        for ns in root_domain.nameserver_set.all():
+            ns.delete()
+
+        # At his point we should have a domain at the root of a zone with no
+        # other records in it.
+
+        # Let's create a child domain and try to add a record there.
+        cdomain = Domain(name="10.14.in-addr.arpa")
+        cdomain.soa = reverse_root_domain.soa
+        cdomain.save()
+
+        # Adding a record shouldn't be allowed because there is no NS record on
+        # the zone's root domain.
+        intr = StaticInterface(label="asdf", domain=root_domain,
+                ip_str="14.10.1.1", ip_type="4", mac="11:22:33:44:55:66",
+                system=self.s)
+        self.assertRaises(ValidationError, intr.save)
 
     """
     def test_bad_nameserver_soa_state_case_1_4(self):

@@ -112,6 +112,8 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
         self.check_no_ns_soa_condition()
 
     def check_no_ns_soa_condition(self):
+        # If this function changes, change it in the StaticInterface class
+        # TODO refactor this
         if self.reverse_domain.soa:
             root_domain = self.reverse_domain.soa.root_domain
             if root_domain and not root_domain.nameserver_set.exists():
