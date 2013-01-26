@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from mozdns.domain.models import Domain
 from mozdns.nameserver.models import Nameserver
 from mozdns.soa.models import SOA
-from mozdns.tests.view_tests_template import random_label, random_byte
+from mozdns.tests.utils import random_label, random_byte
 
 
 class CreateZoneTests(TestCase):

@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+
 from migrate_dns.private_public_import import do_import
 
 

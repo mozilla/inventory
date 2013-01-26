@@ -265,3 +265,17 @@ class FullNameTests(TestCase):
         self.assertEqual('www.x.y.z.foo.foo3', cname.domain.name)
         self.assertEqual('*', label2)
         self.assertEqual('www.x.y.z.foo.foo3', the_domain2.name)
+
+    def test_basic_add_remove9(self):
+        # Make sure all record types block
+        f_c = create_fake_zone("foo.foo22", suffix="")
+        self.assertFalse(f_c.purgeable)
+        fqdn = "y.z.foo.foo22"
+        label, the_domain = ensure_label_domain(fqdn)
+        addr = AddressRecord(label=label, domain=the_domain,
+                             ip_type='4', ip_str="10.2.3.4")
+        addr.save()
+        self.assertFalse(prune_tree(the_domain))
+
+        f_c = create_fake_zone("y.z.foo.foo22", suffix="")
+        self.assertFalse(f_c.purgeable)
