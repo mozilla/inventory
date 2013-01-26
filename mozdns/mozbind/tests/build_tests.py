@@ -60,6 +60,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                        FIRST_RUN=True, PUSH_TO_PROD=False)
+
         b.build_dns()  # This won't check anything in since PUSH_TO_PROD==False
         self.assertEqual((13, 0), b.svn_lines_changed())
         b.PUSH_TO_PROD = True

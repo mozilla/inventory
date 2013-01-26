@@ -126,9 +126,9 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
                 "deleting this SOA.")
         super(SOA, self).delete(*args, **kwargs)
 
-    def has_record_set(self, exclude_ns=False):
+    def has_record_set(self, view=None, exclude_ns=False):
         for domain in self.domain_set.all():
-            if domain.has_record_set(exclude_ns=exclude_ns):
+            if domain.has_record_set(view=view, exclude_ns=exclude_ns):
                 return True
         return False
 

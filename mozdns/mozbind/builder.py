@@ -87,12 +87,9 @@ class SVNBuilderMixin(object):
         # svn diff changes and react if changes are too large
         if ((lambda x, y: x + y)(*lines_changed) >
                 MAX_ALLOWED_LINES_CHANGED):
-            pass
-        # email and fail
-            # Make sure we can run the script again
-            # rm -rf stage/
-            # rm lock.file
-        return False
+            raise BuildError("Wow! Too many lines changed during this "
+                             "checkin. {0} lines add, {1} lines removed."
+                             .format(**lines_changed))
 
     def svn_checkin(self, lines_changed):
         # svn add has already been called
@@ -498,7 +495,8 @@ class DNSBuilder(SVNBuilderMixin):
                 self.log('LOG_INFO', "++++++ Looking at < {0} > view ++++++".
                          format(view.name), soa=soa)
                 t_start = time.time()  # tic
-                view_data = build_zone_data(view, soa.root_domain, soa)
+                view_data = build_zone_data(view, soa.root_domain, soa,
+                                            logf=self.log)
                 build_time = time.time() - t_start  # toc
                 self.log('LOG_INFO', '< {0} > Built {1} data in {2} seconds'
                          .format(view.name, soa, build_time), soa=soa,

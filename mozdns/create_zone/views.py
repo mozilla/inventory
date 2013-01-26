@@ -82,12 +82,15 @@ def create_zone_ajax(request):
     domain.save()
 
     private_view, _ = View.objects.get_or_create(name='private')
+    public_view, _ = View.objects.get_or_create(name='private')
     saved_nss = []  # If these are errors, back out
     for i, ns in enumerate(nss):
         ns.domain = domain
         try:
             ns.save()
             ns.views.add(private_view)
+            if not domain.name.endswith('10.in-addr.arpa'):
+                ns.views.add(public_view)
             saved_nss.append(ns)
         except ValidationError, e:
             suffixes = ["th", "st", "nd", "rd", ] + ["th"] * 16
