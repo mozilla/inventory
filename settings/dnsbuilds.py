@@ -4,3 +4,8 @@ LOCK_FILE = "/tmp/lock_file"
 NAMED_CHECKZONE_OPTS = ""
 MAX_ALLOWED_LINES_CHANGED = 500
 STOP_UPDATE_FILE = "/tmp/stop.update"
+
+
+## Needed for migration
+ZONE_PATH = "/home/juber/sysadmins/dnsconfig/"
+

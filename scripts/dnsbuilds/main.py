@@ -3,9 +3,9 @@ import argparse
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
+#sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 import manage
 from mozdns.mozbind.builder import DNSBuilder, BuildError
 from core.utils import fail_mail

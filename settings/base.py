@@ -2,8 +2,6 @@
 # repo. If you need to override a setting locally, use settings_local.py
 
 from funfactory.settings_base import *
-from settings.dns import *
-
 
 # Bundles is a dictionary of two dictionaries, css and js, which list css files
 # and js files that can be bundled together by the minify app.
@@ -166,6 +164,7 @@ DEBUG_TOOLBAR_CONFIG = {
 #############################################################
 #                       MOZ DNS                             #
 #############################################################
+from settings.dnsbuilds import *
 MOZDNS_BASE_URL = "/mozdns"
 CORE_BASE_URL = "/core"
 ROOT_URLCONF = 'inventory.urls'
