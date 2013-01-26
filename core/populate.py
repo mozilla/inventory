@@ -60,7 +60,9 @@ site_networks = []
 ams1 = "10.4.0.0/16"
 ams1_oct = "4"
 n_str = ams1
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="ams1")
 n.save()
 site_networks.append(n)
@@ -68,7 +70,9 @@ site_networks.append(n)
 scl1 = "10.12.0.0/16"
 scl1_oct = "12"
 n_str = scl1
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="scl1")
 n.save()
 site_networks.append(n)
@@ -76,7 +80,9 @@ site_networks.append(n)
 scl2 = "10.14.0.0/16"
 scl2_oct = "14"
 n_str = scl2
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="scl2")
 n.save()
 site_networks.append(n)
@@ -84,7 +90,9 @@ site_networks.append(n)
 pek1 = "10.6.0.0/16"
 pek1_oct = "6"
 n_str = pek1
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="pek1")
 n.save()
 site_networks.append(n)
@@ -92,7 +100,9 @@ site_networks.append(n)
 phx1 = "10.8.0.0/16"
 phx1_oct = "8"
 n_str = phx1
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="phx1")
 n.save()
 site_networks.append(n)
@@ -100,7 +110,9 @@ site_networks.append(n)
 svc_phx1 = "10.10.0.0/16"
 svc_phx1_oct = "10"
 n_str = svc_phx1
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="phx1")
 n.save()
 site_networks.append(n)
@@ -108,7 +120,9 @@ site_networks.append(n)
 scl2_bid = "10.16.0.0/16"
 scl2_bid_oct = "16"
 n_str = scl2_bid
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="scl2")
 n.save()
 site_networks.append(n)
@@ -116,7 +130,9 @@ site_networks.append(n)
 phx1_bid = "10.18.0.0/16"
 phx1_bid_oct = "18"
 n_str = phx1_bid
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="phx1")
 n.save()
 site_networks.append(n)
@@ -124,7 +140,9 @@ site_networks.append(n)
 corp_phx1 = "10.20.0.0/16"
 corp_phx1_oct = "20"
 n_str = corp_phx1
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="phx1")
 n.save()
 site_networks.append(n)
@@ -132,7 +150,9 @@ site_networks.append(n)
 scl3 = "10.22.0.0/16"
 scl3_oct = "22"
 n_str = scl3
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="scl3")
 n.save()
 site_networks.append(n)
@@ -140,7 +160,9 @@ site_networks.append(n)
 pek1 = "10.24.0.0/16"
 pek1_oct = "24"
 n_str = pek1
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="pek1")
 n.save()
 site_networks.append(n)
@@ -148,7 +170,9 @@ site_networks.append(n)
 releng_scl3 = "10.26.0.0/16"
 releng_scl3_oct = "26"
 n_str = releng_scl3
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 n.site = Site.objects.get(name="scl3")
 n.save()
 site_networks.append(n)
@@ -156,19 +180,25 @@ site_networks.append(n)
 Ops_EC2_VPC = "10.128.0.0/16"
 Ops_EC2_VPC_oct = "128"
 n_str = Ops_EC2_VPC
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 site_networks.append(n)
 
 RelEng_EC2_VPC = "10.130.0.0/16"
 RelEng_EC2_VPC_oct = "130"
 n_str = RelEng_EC2_VPC
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 site_networks.append(n)
 
 AirMo_Ev = "10.255.0.0/16"
 AirMo_Ev_oct = "255"
 n_str = AirMo_Ev
-n, _ = Network.objects.get_or_create(network_str=n_str, ip_type='4')
+n = Network(network_str=n_str, ip_type='4')
+n.save()
+
 site_networks.append(n)
 
 
