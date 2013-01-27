@@ -9,7 +9,7 @@ from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.view.models import View
 from mozdns.tests.utils import random_label, random_byte
-from mozdns.mozbind.builder import DNSBuilder
+from mozdns.mozbind.builder import DNSBuilder, BuildError
 
 from mozdns.tests.utils import create_fake_zone
 
@@ -62,13 +62,13 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
                        FIRST_RUN=True, PUSH_TO_PROD=False)
 
         b.build_dns()  # This won't check anything in since PUSH_TO_PROD==False
-        self.assertEqual((13, 0), b.svn_lines_changed())
+        self.assertEqual((13, 0), b.svn_lines_changed(b.PROD_DIR))
         b.PUSH_TO_PROD = True
         b.build_dns()  # This checked stuff in
 
         # no lines should have changed
         b.build_dns()
-        self.assertEqual((0, 0), b.svn_lines_changed())
+        self.assertEqual((0, 0), b.svn_lines_changed(b.PROD_DIR))
 
         # Now add a record.
         a, c = AddressRecord.objects.get_or_create(
@@ -87,7 +87,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         )
         self.assertFalse(SOA.objects.get(pk=root_domain.soa.pk).dirty)
         # added new record and new serial, old serial removed.
-        self.assertEqual((2, 1), b.svn_lines_changed())
+        self.assertEqual((2, 1), b.svn_lines_changed(b.PROD_DIR))
 
         b.PUSH_TO_PROD = True
         tmp_serial = SOA.objects.get(pk=root_domain.soa.pk).serial
@@ -97,7 +97,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         self.assertEqual(
             SOA.objects.get(pk=root_domain.soa.pk).serial, tmp_serial
         )
-        self.assertEqual((0, 0), b.svn_lines_changed())
+        self.assertEqual((0, 0), b.svn_lines_changed(b.PROD_DIR))
 
         # no lines should have changed if we would have built again
         b.PUSH_TO_PROD = False
@@ -108,7 +108,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         self.assertEqual(SOA.objects.get(pk=root_domain.soa.pk).serial,
                          tmp_serial)
         self.assertFalse(SOA.objects.get(pk=root_domain.soa.pk).dirty)
-        self.assertEqual((0, 0), b.svn_lines_changed())
+        self.assertEqual((0, 0), b.svn_lines_changed(b.PROD_DIR))
 
     def test_one_file_svn_lines_changed(self):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
@@ -117,23 +117,45 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         test_file = os.path.join(self.prod_dir, 'test')
         with open(test_file, 'w+') as fd:
             fd.write('line 1\n')
-        lc = b.svn_lines_changed()
+        lc = b.svn_lines_changed(b.PROD_DIR)
         self.assertEqual((1, 0), lc)
         b.svn_checkin(lc)
 
         with open(test_file, 'w+') as fd:
             fd.write('line 1\nline 2\n')
 
-        lc = b.svn_lines_changed()
+        lc = b.svn_lines_changed(b.PROD_DIR)
         self.assertEqual((1, 0), lc)
         b.svn_checkin(lc)
 
         with open(test_file, 'w+') as fd:
             fd.write('line 1\n')
 
-        lc = b.svn_lines_changed()
+        lc = b.svn_lines_changed(b.PROD_DIR)
         self.assertEqual((0, 1), lc)
         b.svn_checkin(lc)
+
+    def test_too_many_config_lines_changed(self):
+        create_fake_zone('asdf86')
+        root_domain1 = create_fake_zone('asdf87')
+        root_domain2 = create_fake_zone('asdf88')
+        root_domain3 = create_fake_zone('asdf89')
+        b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                       LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
+                       FIRST_RUN=True, PUSH_TO_PROD=True)
+        b.build_dns()
+        for ns in root_domain1.nameserver_set.all():
+            ns.delete()
+
+        b.build_dns()  # One zone removed should be okay
+
+        for ns in root_domain2.nameserver_set.all():
+            ns.delete()
+
+        for ns in root_domain3.nameserver_set.all():
+            ns.delete()
+
+        self.assertRaises(BuildError, b.build_dns)
 
     def test_two_file_svn_lines_changed(self):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
@@ -144,7 +166,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         with open(test1_file, 'w+') as fd:
             fd.write('line 1.1\n')
 
-        lc = b.svn_lines_changed()
+        lc = b.svn_lines_changed(b.PROD_DIR)
         self.assertEqual((1, 0), lc)
         b.svn_checkin(lc)
 
@@ -153,14 +175,14 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         with open(test2_file, 'w+') as fd:
             fd.write('line 2.1\nline 2.2\n')
 
-        lc = b.svn_lines_changed()
+        lc = b.svn_lines_changed(b.PROD_DIR)
         self.assertEqual((3, 0), lc)
         b.svn_checkin(lc)
 
         with open(test1_file, 'w+') as fd:
             fd.write('line 1\n')
 
-        lc = b.svn_lines_changed()
+        lc = b.svn_lines_changed(b.PROD_DIR)
         self.assertEqual((1, 2), lc)
         b.svn_checkin(lc)
 
@@ -169,6 +191,6 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         with open(test2_file, 'w+') as fd:
             fd.write('line 2.3\nline 2.4\n')
 
-        lc = b.svn_lines_changed()
+        lc = b.svn_lines_changed(b.PROD_DIR)
         self.assertEqual((4, 3), lc)
         b.svn_checkin(lc)

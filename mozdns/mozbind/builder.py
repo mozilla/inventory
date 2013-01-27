@@ -12,6 +12,7 @@ import time
 
 from settings.dnsbuilds import STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE
 from settings.dnsbuilds import NAMED_CHECKZONE_OPTS, MAX_ALLOWED_LINES_CHANGED
+from settings.dnsbuilds import MAX_ALLOWED_CONFIG_LINES_REMOVED
 
 from mozdns.domain.models import SOA
 from mozdns.view.models import View
@@ -30,7 +31,7 @@ class SVNBuilderMixin(object):
 
     vcs_type = 'svn'
 
-    def svn_lines_changed(self):
+    def svn_lines_changed(self, dirname):
         """This function will collect some metrics on how many lines were added
         and removed during the build process.
 
@@ -45,9 +46,11 @@ class SVNBuilderMixin(object):
         tens of lines is not a large concern.
         """
         cwd = os.getcwd()
-        os.chdir(self.PROD_DIR)
+        os.chdir(dirname)
         try:
-            command_str = "svn add --force .".format(self.PROD_DIR)
+            command_str = "svn add --force .".format(dirname)
+            self.log('LOG_INFO', "Calling `{0}` in {1}".
+                     format(command_str, dirname))
             stdout, stderr, returncode = self.shell_out(command_str)
             if returncode != 0:
                 raise BuildError("\nFailed to add files to svn."
@@ -62,6 +65,7 @@ class SVNBuilderMixin(object):
         except Exception:
             raise
         finally:
+            self.log('LOG_INFO', "Changing pwd to {0}".format(cwd))
             os.chdir(cwd)  # go back!
 
         la, lr = 0, 0
@@ -97,15 +101,6 @@ class SVNBuilderMixin(object):
         os.chdir(self.PROD_DIR)
         self.log('LOG_INFO', "Changing pwd to {0}".format(self.PROD_DIR))
         try:
-            """
-            command_str = "svn add --force .".format(self.PROD_DIR)
-            stdout, stderr, returncode = self.shell_out(command_str)
-            if returncode != 0:
-                raise BuildError("\nFailed to add files to svn."
-                                 "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
-                                 format(command_str, stdout, stderr))
-            """
-
             ci_message = _("Checking in DNS. {0} lines were added and {1} were"
                            " removed".format(*lines_changed))
             self.log('LOG_INFO', "Commit message: {0}".format(ci_message))
@@ -124,13 +119,41 @@ class SVNBuilderMixin(object):
         return
 
     def vcs_checkin(self):
-        lines_changed = self.svn_lines_changed()
+        command_str = "svn add --force .".format(self.PROD_DIR)
+        stdout, stderr, returncode = self.shell_out(command_str)
+        try:
+            cwd = os.getcwd()
+            os.chdir(self.PROD_DIR)
+            self.log('LOG_INFO', "Calling `svn up` in {0}".
+                     format(self.PROD_DIR))
+            command_str = "svn up"
+            stdout, stderr, returncode = self.shell_out(command_str)
+            if returncode != 0:
+                raise BuildError("\nFailed to svn up."
+                                 "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
+                                 format(command_str, stdout, stderr))
+        finally:
+            os.chdir(cwd)  # go back!
+            self.log('LOG_INFO', "Changing pwd to {0}".format(cwd))
+
+        lines_changed = self.svn_lines_changed(self.PROD_DIR)
         self.svn_sanity_check(lines_changed)
         if lines_changed == (0, 0):
             self.log('LOG_INFO', "PUSH_TO_PROD is True but "
                      "svn_lines_changed found that no lines different "
                      "from last svn checkin.")
         else:
+            config_lines_changed = self.svn_lines_changed(
+                os.path.join(self.PROD_DIR, 'config')
+            )
+            config_lines_removed = config_lines_changed[1]
+            if config_lines_removed > MAX_ALLOWED_CONFIG_LINES_REMOVED:
+                raise BuildError(
+                    "Wow! Too many lines removed from the config dir ({0} "
+                    "lines removed). Manually make sure this commit is okay."
+                    .format(config_lines_removed)
+                )
+
             self.log('LOG_INFO', "PUSH_TO_PROD is True. Checking into "
                      "svn.")
             self.svn_checkin(lines_changed)
