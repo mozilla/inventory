@@ -91,9 +91,13 @@ class SVNBuilderMixin(object):
         # svn diff changes and react if changes are too large
         if ((lambda x, y: x + y)(*lines_changed) >
                 MAX_ALLOWED_LINES_CHANGED):
-            raise BuildError("Wow! Too many lines changed during this "
-                             "checkin. {0} lines add, {1} lines removed."
-                             .format(**lines_changed))
+            if self.FORCE:
+                self.log('LOG_INFO', "Sanity check failed but FORCE == True. "
+                         "Ignoring thresholds.")
+            else:
+                raise BuildError("Wow! Too many lines changed during this "
+                                 "checkin. {0} lines add, {1} lines removed."
+                                 .format(*lines_changed))
 
     def svn_checkin(self, lines_changed):
         # svn add has already been called
@@ -148,11 +152,15 @@ class SVNBuilderMixin(object):
             )
             config_lines_removed = config_lines_changed[1]
             if config_lines_removed > MAX_ALLOWED_CONFIG_LINES_REMOVED:
-                raise BuildError(
-                    "Wow! Too many lines removed from the config dir ({0} "
-                    "lines removed). Manually make sure this commit is okay."
-                    .format(config_lines_removed)
-                )
+                if self.FORCE:
+                    self.log('LOG_INFO', "Config sanity check failed but "
+                             "FORCE == True. Ignoring thresholds.")
+                else:
+                    raise BuildError(
+                        "Wow! Too many lines removed from the config dir ({0} "
+                        "lines removed). Manually make sure this commit is okay."
+                        .format(config_lines_removed)
+                    )
 
             self.log('LOG_INFO', "PUSH_TO_PROD is True. Checking into "
                      "svn.")
@@ -174,6 +182,7 @@ class DNSBuilder(SVNBuilderMixin):
             'PRESERVE_STAGE': False,
             'LOG_SYSLOG': True,
             'DEBUG': False,
+            'FORCE': False,
             'bs': DNSBuildRun()  # Build statistic
         }
         for k, default in defaults.iteritems():
@@ -637,7 +646,7 @@ class DNSBuilder(SVNBuilderMixin):
         self.log('LOG_NOTICE', 'Building...')
         self.lock()
         try:
-            if self.CLOBBER_STAGE:
+            if self.CLOBBER_STAGE or self.FORCE:
                 self.clear_staging(force=True)
             self.build_staging()
 

@@ -8,6 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardi
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 import manage
 from mozdns.mozbind.builder import DNSBuilder, BuildError
+from settings.dnsbuilds import STOP_UPDATE_FILE
 from core.utils import fail_mail
 
 
@@ -35,22 +36,31 @@ def main():
     parser.add_argument('--debug', dest='DEBUG',
                         action='store_true', default=False, help="Print "
                         "copious amounts of text.")
-    parser.add_argument('--first-run', dest='FIRST_RUN',
+    parser.add_argument('--force', dest='FORCE',
                         action='store_true', default=False, help="Ignore "
-                        "all change delta thresholds.")
+                        "all change delta thresholds and clobber stagig area.")
     nas = parser.parse_args(sys.argv[1:])
     b = DNSBuilder(**dict(nas._get_kwargs()))
     message = "DNS Build Error. Error: '{0}'. The build was unsuccessful."
+    def write_stop_update(error):
+        if os.path.exists(STOP_UPDATE_FILE):
+            return
+        with open(STOP_UPDATE_FILE, 'w+') as fd:
+            msg = ("This file was placed here because there was an error:\n"
+                   "=============== ERROR MESSAGE ======================+\n")
+            fd.write(msg)
+            fd.write(error)
     try:
         b.build_dns()
     except BuildError as why:
         b.log('LOG_ERR', why)
+        write_stop_update(str(why))
         fail_mail(message.format(why))
     except Exception as err:
-        # Make some noise
+        write_stop_update(str(err))
         fail_mail(message.format(err))
         b.log('LOG_CRIT', err)
-        raise
+        raise  # Make some noise
 
 if __name__ == '__main__':
     main()
