@@ -144,7 +144,7 @@ class SVNBuilderMixin(object):
         self.svn_sanity_check(lines_changed)
         if lines_changed == (0, 0):
             self.log('LOG_INFO', "PUSH_TO_PROD is True but "
-                     "svn_lines_changed found that no lines different "
+                     "svn_lines_changed found that no lines differ "
                      "from last svn checkin.")
         else:
             config_lines_changed = self.svn_lines_changed(
