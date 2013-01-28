@@ -53,13 +53,13 @@ def main():
     try:
         b.build_dns()
     except BuildError as why:
-        b.log('LOG_ERR', why)
+        b.log(why, log_level='LOG_ERR')
         write_stop_update(str(why))
         fail_mail(message.format(why))
     except Exception as err:
         write_stop_update(str(err))
         fail_mail(message.format(err))
-        b.log('LOG_CRIT', err)
+        b.log(err, log_level='LOG_CRIT')
         raise  # Make some noise
 
 if __name__ == '__main__':
