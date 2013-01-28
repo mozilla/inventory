@@ -31,6 +31,17 @@ def do_import():
             continue
         handle_zone(zone_name, zone_meta, True, False)
 
+def migrate_single_zone(view_name, zone_name, zone_file):
+    if view_name not in ('public', 'private'):
+        print "view must be 'public' or 'private'"
+        return
+    zone_meta = {'file': zone_file}
+
+    if view_name == 'private':
+        handle_zone(zone_name, zone_meta, True, False)
+    if view_name == 'public':
+        handle_zone(zone_name, zone_meta, True, False)
+
 def get_zone_data(zone_name, filepath, dirpath):
     cwd = os.getcwd()
     os.chdir(dirpath)

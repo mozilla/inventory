@@ -132,6 +132,7 @@ class Domain(models.Model, ObjectUrlMixin):
             #   OR
             #       it has no root domain, which means we are going to
             #       be the root domain, and we have no nameserver records.
+            # TODO: fix the view bug
             if (db_self.soa != self.soa and
                 self.soa and self.has_record_set() and
                 (self.soa.root_domain and
@@ -189,25 +190,31 @@ class Domain(models.Model, ObjectUrlMixin):
             raise ValidationError("Before deleting this domain, please "
                                   "remove it's children.")
 
-    def has_record_set(self, exclude_ns=False):
-        if self.addressrecord_set.exists():
-            return True
-        if self.cname_set.exists():
-            return True
-        if self.mx_set.exists():
-            return True
-        if not exclude_ns and self.nameserver_set.exists():
-            return True
-        if self.srv_set.exists():
-            return True
-        if self.sshfp_set.exists():
-            return True
-        if self.staticinterface_set.exists():
-            return True
-        if self.txt_set.exists():
-            return True
-        if self.ptr_set.exists():
-            return True
+    def has_record_set(self, view=None, exclude_ns=False):
+        object_sets = [
+            self.addressrecord_set,
+            self.cname_set,
+            self.mx_set,
+            self.srv_set,
+            self.sshfp_set,
+            self.staticinterface_set,
+            self.txt_set,
+            self.ptr_set
+        ]
+        if not view:
+            for object_set in object_sets:
+                if object_set.exists():
+                    return True
+            if not exclude_ns and self.nameserver_set.exists():
+                return True
+        else:
+            for object_set in object_sets:
+                if object_set.filter(views=view).exists():
+                    return True
+            if (not exclude_ns and
+                    self.nameserver_set.filter(views=view).exists()):
+                return True
+
         return False
 
     ### Reverse Domain Functions

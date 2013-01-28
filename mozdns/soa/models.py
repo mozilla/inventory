@@ -126,9 +126,9 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
                 "deleting this SOA.")
         super(SOA, self).delete(*args, **kwargs)
 
-    def has_record_set(self, exclude_ns=False):
+    def has_record_set(self, view=None, exclude_ns=False):
         for domain in self.domain_set.all():
-            if domain.has_record_set(exclude_ns=exclude_ns):
+            if domain.has_record_set(view=view, exclude_ns=exclude_ns):
                 return True
         return False
 
@@ -140,7 +140,8 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
             db_self = SOA.objects.get(pk=self.pk)
             fields = ['primary', 'contact', 'expire', 'retry',
                       'refresh', 'description']
-            # Leave out serial for obvious reasons
+            # Leave out serial so rebuilds don't cause a never ending build
+            # cycle
             for field in fields:
                 if getattr(db_self, field) != getattr(self, field):
                     self.dirty = True

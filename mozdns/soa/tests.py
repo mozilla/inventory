@@ -146,3 +146,19 @@ class SOATests(TestCase):
         self.assertTrue(soa == d1.soa)
         self.assertTrue(soa == d2.soa)
         self.assertTrue(soa == d3.soa)
+
+    def test_update_serial_no_dirty(self):
+        # If we update the serial, the dirty bit shouldn't change.
+        data = {'primary': "fakey.ns1.asdffoo.com", 'contact':
+                "adsffoopy.email.foo.com"}
+        soa = SOA(**data)
+        soa.save()  # new soa's are always dirty
+
+        soa.dirty = False
+        soa.save()
+
+        soa.serial = soa.serial + 9
+        soa.save()
+
+        same_soa = SOA.objects.get(pk=soa.pk)
+        self.assertFalse(same_soa.dirty)

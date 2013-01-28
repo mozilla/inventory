@@ -145,7 +145,6 @@ class CreateZoneTests(TestCase):
         self._ensure_no_change(post_data)
 
     def test_create_tld(self):
-
         # Try a bad primary
         post_data = self.get_post_data()
         post_data['root_domain'] = 'asdf'

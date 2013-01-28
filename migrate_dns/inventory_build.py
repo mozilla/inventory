@@ -1,17 +1,9 @@
-from truth.models import Truth
-import systems
-from systems.models import System
 from migrate_dns.build_nics import *
-from settings import FIX_M_C_M_C
 from migrate_dns.utils import *
 
 import ipaddr
 
-import re
-import copy
 import pprint
-import pdb
-import string
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -49,12 +41,6 @@ def generate_hostname(nic, site_name):
             "Use the 'dns_auto_hostname' key to override."
             .format(hostname, nic.system.pk), WARNING)
 
-        if FIX_M_C_M_C:
-            log("Attemping to fix...", DEBUG)
-            kv = systems.models.KeyValue(key =
-                    "nic.{0}.dns_auto_hostname.{1}".format(nic.primary,
-                    nic.alias), value = 'False', system = nic.system)
-            kv.save()
     return hostname
 
 

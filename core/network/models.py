@@ -56,6 +56,10 @@ class Network(models.Model, ObjectUrlMixin):
                                   "child ranges")
         super(Network, self).delete(*args, **kwargs)
 
+    def save(self, *args, **kwargs):
+        self.clean()
+        super(Network, self).save(*args, **kwargs)
+
     def clean(self):
         self.update_network()
         # Look at all ranges that claim to be in this subnet, are they actually

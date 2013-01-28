@@ -12,6 +12,8 @@ from mozdns.view.models import View
 from core.interface.static_intr.models import StaticInterface
 
 from gettext import gettext as _
+from core.utils import fail_mail
+
 DEFAULT_TTL = 3600
 
 
@@ -116,16 +118,10 @@ def render_reverse_zone(view, domain_mega_filter, rdomain_mega_filter):
     return data
 
 
-def build_zone_data(root_domain, soa, logf=None):
+def build_zone_data(view, root_domain, soa, logf=None):
     """
     This function does the heavy lifting of building a zone. It coordinates
     getting all of the data out of the db into BIND format.
-
-    .. note::
-        If a zone's root_domain does not have any :class:`Nameserver`
-        object associated with it this function will not build zone data for
-        that zone (BIND will fail if an NS record for a zone's root domain does
-        not exist). This function will also log that it encountered this case.
 
     :param soa: The SOA corresponding to the zone being built.
     :type soa: SOA
@@ -138,12 +134,21 @@ def build_zone_data(root_domain, soa, logf=None):
     :returns public_data: The data that should be written to public_file_path
     :type public_data: str
 
-    :returns private_zone_file: The path to the zone file in the STAGEING dir
-    :type private_zone_file: str
-    :param private_data: The data that should be written to private_zone_file
-    :type private_data: str
+    :returns view_zone_file: The path to the zone file in the STAGEING dir
+    :type view_zone_file: str
+    :param view_data: The data that should be written to view_zone_file
+    :type view_data: str
     """
     ztype = 'reverse' if root_domain.is_reverse else 'forward'
+    if (soa.has_record_set(view=view, exclude_ns=True) and
+        not root_domain.nameserver_set.filter(views=view).exists()):
+        msg = ("The {0} zone has a records in the {1} view, but there are "
+               "no nameservers in that view. A zone file for {1} won't be "
+               "built. Use the search string 'zone=:{0} view=:{1}' to find "
+               "the troublesome records".format(root_domain, view.name))
+        fail_mail(msg, subject="Shitty edge case detected.")
+        logf('LOG_WARNING', msg)
+        return ''
 
     domains = soa.domain_set.all().order_by('name')
 
@@ -159,29 +164,15 @@ def build_zone_data(root_domain, soa, logf=None):
 
     soa_data = render_soa_only(soa=soa, root_domain=root_domain)
     try:
-        private = View.objects.get(name="private")
         if ztype == "forward":
-            private_data = render_forward_zone(private, domain_mega_filter)
+            view_data = render_forward_zone(view, domain_mega_filter)
         else:
-            private_data = render_reverse_zone(private, domain_mega_filter,
-                                               rdomain_mega_filter)
+            view_data = render_reverse_zone(view, domain_mega_filter,
+                                            rdomain_mega_filter)
     except View.DoesNotExist:
-        private_data = ""
+        view_data = ""
 
-    try:
-        public = View.objects.get(name="public")
-        if ztype == "forward":
-            public_data = render_forward_zone(public, domain_mega_filter)
-        else:
-            public_data = render_reverse_zone(public, domain_mega_filter,
-                                              rdomain_mega_filter)
-    except View.DoesNotExist:
-        public_data = ""
+    if view_data:
+        view_data = soa_data + view_data
 
-    if private_data:
-        private_data = soa_data + private_data
-
-    if public_data:
-        public_data = soa_data + public_data
-
-    return (private_data, public_data)
+    return view_data
