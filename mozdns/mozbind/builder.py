@@ -10,6 +10,8 @@ import os
 import re
 import time
 
+from django.db import transaction
+
 from settings.dnsbuilds import STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE
 from settings.dnsbuilds import NAMED_CHECKZONE_OPTS, MAX_ALLOWED_LINES_CHANGED
 from settings.dnsbuilds import MAX_ALLOWED_CONFIG_LINES_REMOVED
