@@ -38,7 +38,7 @@ def migrate_single_zone(view_name, zone_name, zone_file):
     zone_meta = {'file': zone_file}
 
     if view_name == 'private':
-        handle_zone(zone_name, zone_meta, True, False)
+        handle_zone(zone_name, zone_meta, False, True)
     if view_name == 'public':
         handle_zone(zone_name, zone_meta, True, False)
 

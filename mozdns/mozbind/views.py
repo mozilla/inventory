@@ -21,7 +21,7 @@ def build_debug_soa(request, soa_pk):
         private_data = private_data.format(serial=soa.serial)
 
         public_data = build_zone_data(public_view, soa.root_domain, soa)
-        public_data = private_data.format(serial=soa.serial)
+        public_data = public_data.format(serial=soa.serial)
 
         output = _(
             """
