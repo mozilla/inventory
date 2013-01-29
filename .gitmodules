@@ -4,3 +4,6 @@
 [submodule "vendor-local/src/iscpy"]
 	path = vendor-local/src/iscpy
 	url = git://github.com/uberj/iscpy.git
+[submodule "vendor-local/src/dnspython"]
+	path = vendor-local/src/dnspython
+	url = https://github.com/uberj/dnspython.git
