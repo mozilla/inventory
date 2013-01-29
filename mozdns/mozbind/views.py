@@ -28,7 +28,7 @@ def build_debug_soa(request, soa_pk):
 ;======= Private Data =======
 {0}
 
-;======= Private Data =======
+;======= Public Data =======
 {1}
         """.format(private_data, public_data))
     except Exception:
