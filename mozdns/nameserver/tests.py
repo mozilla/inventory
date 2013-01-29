@@ -389,9 +389,9 @@ class NSTestsModels(TestCase):
 
         # Adding a record shouldn't be allowed because there is no NS record on
         # the zone's root domain.
-        intr = StaticInterface(label="asdf", domain=root_domain,
-                ip_str="14.10.1.1", ip_type="4", mac="11:22:33:44:55:66",
-                system=self.s)
+        intr = StaticInterface(
+            label="asdf", domain=root_domain, ip_str="14.10.1.1", ip_type="4",
+            mac="11:22:33:44:55:66", system=self.s)
         self.assertRaises(ValidationError, intr.save)
 
     """
