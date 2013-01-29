@@ -41,7 +41,7 @@ def tablefy(objects, views=True):
     # Build the matrix and urls
     for obj in objects:
         row = []
-        urls.append(obj.get_absolute_url())
+        urls.append(obj.get_fancy_edit_url())
         for title, value in obj.details():
             row.append(value)
         if views:
