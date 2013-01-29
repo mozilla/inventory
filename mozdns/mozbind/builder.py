@@ -55,13 +55,13 @@ class SVNBuilderMixin(object):
                      format(command_str, dirname))
             stdout, stderr, returncode = self.shell_out(command_str)
             if returncode != 0:
-                raise BuildError("\nFailed to add files to svn."
+                raise BuildError("Failed to add files to svn."
                                  "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
                                  format(command_str, stdout, stderr))
             command_str = "svn diff --depth=infinity ."
             stdout, stderr, returncode = self.shell_out(command_str)
             if returncode != 0:
-                raise BuildError("\nFailed to add files to svn."
+                raise BuildError("Failed to add files to svn."
                                  "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
                                  format(command_str, stdout, stderr))
         except Exception:
@@ -91,8 +91,7 @@ class SVNBuilderMixin(object):
         True-ish. If all sanity cheecks pass, a Falsy value will be
         returned."""
         # svn diff changes and react if changes are too large
-        if ((lambda x, y: x + y)(*lines_changed) >
-                MAX_ALLOWED_LINES_CHANGED):
+        if sum(lines_changed) > MAX_ALLOWED_LINES_CHANGED:
             if self.FORCE:
                 self.log("Sanity check failed but FORCE == True. "
                          "Ignoring thresholds.")
@@ -114,7 +113,7 @@ class SVNBuilderMixin(object):
                 self.PROD_DIR, ci_message)
             stdout, stderr, returncode = self.shell_out(command_str)
             if returncode != 0:
-                raise BuildError("\nFailed to check in changes."
+                raise BuildError("Failed to check in changes."
                                  "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
                                  format(command_str, stdout, stderr))
             else:
@@ -130,12 +129,11 @@ class SVNBuilderMixin(object):
         try:
             cwd = os.getcwd()
             os.chdir(self.PROD_DIR)
-            self.log("Calling `svn up` in {0}".
-                     format(self.PROD_DIR))
+            self.log("Calling `svn up` in {0}".format(self.PROD_DIR))
             command_str = "svn up"
             stdout, stderr, returncode = self.shell_out(command_str)
             if returncode != 0:
-                raise BuildError("\nFailed to svn up."
+                raise BuildError("Failed to svn up."
                                  "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
                                  format(command_str, stdout, stderr))
         finally:
