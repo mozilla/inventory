@@ -1,3 +1,6 @@
 [submodule "vendor"]
 	path = vendor
 	url = git@github.com:rtucker-mozilla/mozilla_inventory_lib.git
+[submodule "vendor-local/src/iscpy"]
+	path = vendor-local/src/iscpy
+	url = git://github.com/uberj/iscpy.git

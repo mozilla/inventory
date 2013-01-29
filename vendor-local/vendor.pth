@@ -5,3 +5,4 @@ src/django-multidb-router
 src/mimeparse
 src/django-extensions
 src/django-reversion/src
+src/iscpy
