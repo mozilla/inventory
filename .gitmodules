@@ -7,3 +7,6 @@
 [submodule "vendor-local/src/dnspython"]
 	path = vendor-local/src/dnspython
 	url = https://github.com/uberj/dnspython.git
+[submodule "vendor-local/src/django-reversion"]
+	path = vendor-local/src/django-reversion
+	url = https://github.com/etianen/django-reversion.git
