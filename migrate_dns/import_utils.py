@@ -3,6 +3,7 @@ from migrate_dns.zone_migrate import populate_forward_dns, populate_reverse_dns
 from dns import zone
 from iscpy.iscpy_dns.named_importer_lib import MakeNamedDict
 from mozdns.view.models import View
+import settings
 
 import os
 
@@ -12,10 +13,8 @@ black_list = (
     'services.mozilla.com',
     )
 
-SYSADMINS_PATH = "/home/juber/sysadmins/"
-ZONE_PATH = os.path.join(SYSADMINS_PATH, "dnsconfig")
-PRIVATE = os.path.join(SYSADMINS_PATH, "dnsconfig/config/zones.private")
-PUBLIC = os.path.join(SYSADMINS_PATH, "dnsconfig/config/zones.public")
+PRIVATE = os.path.join(settings.ZONE_PATH, "config/zones.private")
+PUBLIC = os.path.join(settings.ZONE_PATH, "config/zones.public")
 
 def do_import():
     private_zones = MakeNamedDict(open(PRIVATE).read())
@@ -56,7 +55,7 @@ def handle_zone(zone_name, zone_meta, public, private):
         return
     print "Importing {0}. View: {1}".format(zone_name,
                         'public' if public else 'private')
-    mzone = get_zone_data(zone_name, zone_meta['file'], ZONE_PATH)
+    mzone = get_zone_data(zone_name, zone_meta['file'], settings.ZONE_PATH)
     views = []
     if public:
         views.append(View.objects.get(name='public'))
