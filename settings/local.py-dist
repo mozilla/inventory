@@ -22,8 +22,10 @@ ADMINS = (
     # ('Your Name', 'your_email@domain.com'),
 )
 
+people_who_need_to_know_about_failures = ['']
+inventorys_email = ''
 MANAGERS = ADMINS
-INSTALLED_APPS = (                                                       
+INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.auth',
     'django.contrib.contenttypes',

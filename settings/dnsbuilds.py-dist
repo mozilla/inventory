@@ -1,0 +1,16 @@
+STAGE_DIR = ""
+PROD_DIR = ""
+LOCK_FILE = ""
+NAMED_CHECKZONE_OPTS = ""
+MAX_ALLOWED_LINES_CHANGED = 500
+
+# Only one zone at a time should be removed
+MAX_ALLOWED_CONFIG_LINES_REMOVED = 5
+
+STOP_UPDATE_FILE = ""
+
+
+## Needed for migrations
+# it is where your zone files are kept
+ZONE_PATH = ""
+
