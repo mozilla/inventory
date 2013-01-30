@@ -14,5 +14,4 @@ urlpatterns = patterns('',
                        url(r'^range/', include('core.range.urls')),
                        url(r'^build/', include('core.build.urls')),
                        url(r'^search/', include('core.search.urls')),
-                       url(r'^bulk_change/', include('core.bulk_change.urls')),
                        )
