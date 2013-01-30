@@ -25,22 +25,6 @@ ADMINS = (
 people_who_need_to_know_about_failures = ['']
 inventorys_email = ''
 MANAGERS = ADMINS
-INSTALLED_APPS = (
-    'django.contrib.sessions',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.admin',
-    'piston',
-    #'south',
-    'systems',
-    'user_systems',
-    'build',
-    'dhcp',
-    'truth',
-    'api',
-    'api_v2',
-    'reports',
-)
 
 DATABASES = {
     'default': {
