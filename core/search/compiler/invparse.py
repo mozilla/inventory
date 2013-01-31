@@ -105,7 +105,8 @@ def build_parser():
     # TODO, ply is wierd and needs these 4 lines?
     tokens = lexer.tokens
     tokens
-    p = yacc.yacc()
+    import settings
+    p = yacc.yacc(debug=0, outputdir=settings.YACC_DIR)
     p
 
     def parse(s):
