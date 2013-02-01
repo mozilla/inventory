@@ -147,6 +147,10 @@ class OperatingSystemResource(CustomAPIResource):
             super(Meta, self).__init(*args, **kwargs)
         resource_name = 'operating_system'
         queryset = system_model.OperatingSystem.objects.all()
+        filtering = {
+                'version': ALL_WITH_RELATIONS,
+                'name': ALL_WITH_RELATIONS,
+                }
 
 class OperatingSystemData(CustomAPIResource):
     resource = "operating_system"
