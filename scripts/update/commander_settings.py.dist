@@ -1,0 +1,16 @@
+SRC_DIR = ''
+WWW_DIR = ''
+
+CRON_NAME = ''
+
+DEPLOY_SCRIPT = ''
+REMOTE_UPDATE_SCRIPT = ''
+
+WEB_HOSTGROUP = ''
+CELERY_HOSTGROUP = ''
+CELERY_SERVICE = ''
+
+UPDATE_REF = 'origin/prod'
+SSH_KEY = None
+
+REMOTE_WSGI = ''
