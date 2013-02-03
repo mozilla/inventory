@@ -18,7 +18,7 @@ from mozdns.view.models import View
 from mozdns.tests.utils import create_fake_zone
 
 
-class BaseViewTestCase(object):
+class BaseRecordTestCase(object):
     record_base_url = "/mozdns/record"
 
     def setUp(self):
@@ -31,8 +31,8 @@ class BaseViewTestCase(object):
         self.factory = RequestFactory()
         self.domain = create_fake_zone("{0}.{1}.{2}".format(random_label(),
                                        random_label(), random_label()))
-        View.objects.get_or_create(name='public')
-        View.objects.get_or_create(name='private')
+        self.public_view = View.objects.get_or_create(name='public')[0]
+        self.private_view = View.objects.get_or_create(name='private')[0]
 
     # Add an rdtype to the dict
     def update_rdtype(self, data):
@@ -109,8 +109,43 @@ class BaseViewTestCase(object):
         self.assertEqual(
             1, self.test_type.objects.filter(pk=new_obj.pk).count())
 
+    def get_domain_and_post_data(self):
+        # This is different for classes that have ips instead of fqdns
+        domain_name = "{0}.{1}.{2}.{3}.com".format(
+            random_label(), random_label(), random_label(), random_label()
+        )
+        root_domain = create_fake_zone(domain_name, suffix="")
+        post_data = self.post_data()
+        post_data = self.update_rdtype(post_data)
+        # Get the '_' in SRV records
+        post_data['fqdn'] = post_data['fqdn'][0] + "asdf.asdf." + domain_name
+        return root_domain, post_data
 
-class CNAMERecordTests(BaseViewTestCase, TestCase):
+    def test_no_ns_in_view(self):
+        root_domain, post_data = self.get_domain_and_post_data()
+        ns = root_domain.nameserver_set.all()[0]
+        ns.views.remove(self.public_view)
+        ns.views.remove(self.private_view)
+        # We now have a zone with nameservers that aren't in any views. No
+        # record should be allowed to be in the view
+
+        start_obj_count = self.test_type.objects.all().count()
+        post_data['views'] = [self.public_view.pk]
+        resp = self.c.post('/mozdns/record/record_ajax/', data=post_data)
+        self.assertEqual(resp.status_code, 200)
+        new_obj_count = self.test_type.objects.all().count()
+        # Nothing should have been created
+        self.assertEqual(start_obj_count, new_obj_count)
+
+        ns.views.add(self.public_view)
+        # Okay, we should be able to add to the public view now
+        start_obj_count = self.test_type.objects.all().count()
+        resp = self.c.post('/mozdns/record/record_ajax/', data=post_data)
+        new_obj_count = self.test_type.objects.all().count()
+        self.assertEqual(start_obj_count + 1, new_obj_count)
+
+
+class CNAMERecordTests(BaseRecordTestCase, TestCase):
     test_type = CNAME
 
     def post_data(self):
@@ -122,7 +157,7 @@ class CNAMERecordTests(BaseViewTestCase, TestCase):
         }
 
 
-class MXRecordTests(BaseViewTestCase, TestCase):
+class MXRecordTests(BaseRecordTestCase, TestCase):
     test_type = MX
 
     def post_data(self):
@@ -136,7 +171,7 @@ class MXRecordTests(BaseViewTestCase, TestCase):
         }
 
 
-class SRVRecordTests(BaseViewTestCase, TestCase):
+class SRVRecordTests(BaseRecordTestCase, TestCase):
     test_type = SRV
 
     def post_data(self):
@@ -151,7 +186,7 @@ class SRVRecordTests(BaseViewTestCase, TestCase):
         }
 
 
-class TXTRecordTests(BaseViewTestCase, TestCase):
+class TXTRecordTests(BaseRecordTestCase, TestCase):
     test_type = TXT
 
     def post_data(self):
@@ -163,7 +198,7 @@ class TXTRecordTests(BaseViewTestCase, TestCase):
         }
 
 
-class NameserverRecordTests(BaseViewTestCase, TestCase):
+class NameserverRecordTests(BaseRecordTestCase, TestCase):
     test_type = Nameserver
 
     def post_data(self):
@@ -174,8 +209,53 @@ class NameserverRecordTests(BaseViewTestCase, TestCase):
             'domain': self.domain.pk,
         }
 
+    def test_no_ns_in_view(self):
+        root_domain = create_fake_zone("asdfdjhjd")
+        ns = root_domain.nameserver_set.all()[0]
 
-class SSHFPRecordTests(BaseViewTestCase, TestCase):
+        cn = CNAME(label='asdf', domain=root_domain, target='test.com')
+        cn.full_clean()
+        cn.save()
+        cn.views.add(self.public_view)
+
+        self.assertTrue(ns.domain.soa == cn.domain.soa)
+
+        # We now should have a nameserver and a cname in the public view. The
+        # nameserver should not be allowed to disable it's public view
+
+        # Try to remove the public view
+        self.assertTrue(self.public_view in ns.views.all())
+        self.assertTrue(self.private_view in ns.views.all())
+        post_data = self.update_rdtype(self.post_data())
+        post_data['domain'] = ns.domain.pk
+        post_data['views'] = [self.private_view.pk]
+        post_data['record_pk'] = ns.pk
+        resp = self.c.post('/mozdns/record/record_ajax/',
+                           data=post_data)
+        self.assertEqual(resp.status_code, 200)
+        # Make sure it's still there
+        ns = Nameserver.objects.get(pk=ns.pk)  # fetch
+        # Make sure the view is still there
+        # The clean method should prevent it from being deleted
+        self.assertTrue(self.public_view in ns.views.all())
+
+        # Try to remove the private view
+        # This should be allowed
+        self.assertTrue(self.public_view in ns.views.all())
+        post_data = self.update_rdtype(self.post_data())
+        post_data['views'] = [self.public_view.pk]
+        post_data['record_pk'] = ns.pk
+        resp = self.c.post('/mozdns/record/record_ajax/',
+                           data=post_data)
+        self.assertEqual(resp.status_code, 200)
+        # Make sure it's still there
+        ns = Nameserver.objects.get(pk=ns.pk)  # fetch
+        # Make sure the view is still there
+        # The clean method should prevent it from being deleted
+        self.assertTrue(self.private_view not in ns.views.all())
+
+
+class SSHFPRecordTests(BaseRecordTestCase, TestCase):
     test_type = SSHFP
 
     def post_data(self):
@@ -189,7 +269,7 @@ class SSHFPRecordTests(BaseViewTestCase, TestCase):
         }
 
 
-class AdderessRecordV4RecordTests(BaseViewTestCase, TestCase):
+class AdderessRecordV4RecordTests(BaseRecordTestCase, TestCase):
     test_type = AddressRecord
 
     def setUp(self):
@@ -206,7 +286,7 @@ class AdderessRecordV4RecordTests(BaseViewTestCase, TestCase):
         }
 
 
-class AdderessRecordV6RecordTests(BaseViewTestCase, TestCase):
+class AdderessRecordV6RecordTests(BaseRecordTestCase, TestCase):
     test_type = AddressRecord
 
     def setUp(self):
@@ -226,8 +306,18 @@ class AdderessRecordV6RecordTests(BaseViewTestCase, TestCase):
         }
 
 
-class PTRV6RecordTests(BaseViewTestCase, TestCase):
+class PTRV6RecordTests(BaseRecordTestCase, TestCase):
     test_type = PTR
+
+    def get_domain_and_post_data(self):
+        # This is different for classes that have ips instead of fqdns
+        domain_name = "9.ip6.arpa"
+        root_domain = create_fake_zone(domain_name, suffix="")
+        post_data = self.post_data()
+        post_data = self.update_rdtype(post_data)
+        # Get the '_' in SRV records
+        post_data['ip_str'] = '9000::df12'
+        return root_domain, post_data
 
     def setUp(self):
         Domain.objects.get_or_create(name='arpa')
@@ -247,8 +337,18 @@ class PTRV6RecordTests(BaseViewTestCase, TestCase):
         }
 
 
-class PTRV4RecordTests(BaseViewTestCase, TestCase):
+class PTRV4RecordTests(BaseRecordTestCase, TestCase):
     test_type = PTR
+
+    def get_domain_and_post_data(self):
+        # This is different for classes that have ips instead of fqdns
+        domain_name = "2.in-addr.arpa"
+        root_domain = create_fake_zone(domain_name, suffix="")
+        post_data = self.post_data()
+        post_data = self.update_rdtype(post_data)
+        # Get the '_' in SRV records
+        post_data['ip_str'] = '2.10.1.1'
+        return root_domain, post_data
 
     def setUp(self):
         Domain.objects.get_or_create(name='arpa')
@@ -267,7 +367,7 @@ class PTRV4RecordTests(BaseViewTestCase, TestCase):
         }
 
 """
-class SOARecordTests(BaseViewTestCase, TestCase):
+class SOARecordTests(BaseRecordTestCase, TestCase):
     test_type = SOA
 
     def post_data(self):

@@ -82,7 +82,7 @@ def create_zone_ajax(request):
     domain.save()
 
     private_view, _ = View.objects.get_or_create(name='private')
-    public_view, _ = View.objects.get_or_create(name='private')
+    public_view, _ = View.objects.get_or_create(name='public')
     saved_nss = []  # If these are errors, back out
     for i, ns in enumerate(nss):
         ns.domain = domain

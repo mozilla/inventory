@@ -62,7 +62,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
                        FIRST_RUN=True, PUSH_TO_PROD=False)
 
         b.build_dns()  # This won't check anything in since PUSH_TO_PROD==False
-        self.assertEqual((13, 0), b.svn_lines_changed(b.PROD_DIR))
+        self.assertEqual((26, 0), b.svn_lines_changed(b.PROD_DIR))
         b.PUSH_TO_PROD = True
         b.build_dns()  # This checked stuff in
 
@@ -86,8 +86,9 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
             SOA.objects.get(pk=root_domain.soa.pk).serial, tmp_serial + 1
         )
         self.assertFalse(SOA.objects.get(pk=root_domain.soa.pk).dirty)
-        # added new record and new serial, old serial removed.
-        self.assertEqual((2, 1), b.svn_lines_changed(b.PROD_DIR))
+        # added new record (1) and new serials (2 for both views), old serials
+        # removed.
+        self.assertEqual((3, 2), b.svn_lines_changed(b.PROD_DIR))
 
         b.PUSH_TO_PROD = True
         tmp_serial = SOA.objects.get(pk=root_domain.soa.pk).serial

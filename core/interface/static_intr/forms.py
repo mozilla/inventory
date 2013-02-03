@@ -5,6 +5,7 @@ from core.interface.static_intr.models import StaticInterface
 from mozdns.view.models import View
 from core.range.models import Range
 from mozdns.validation import validate_label
+from mozdns.forms import BaseForm
 from systems.models import System
 from core.validation import validate_mac
 
@@ -26,7 +27,7 @@ class CombineForm(forms.Form):
     system = forms.ModelChoiceField(queryset=System.objects.all())
 
 
-class StaticInterfaceForm(forms.ModelForm):
+class StaticInterfaceForm(BaseForm):
     views = forms.ModelMultipleChoiceField(
         queryset=View.objects.all(),
         widget=forms.widgets.CheckboxSelectMultiple, required=False)
@@ -38,7 +39,7 @@ class StaticInterfaceForm(forms.ModelForm):
                    'system', 'fqdn')
 
 
-class FullStaticInterfaceForm(forms.ModelForm):
+class FullStaticInterfaceForm(BaseForm):
     views = forms.ModelMultipleChoiceField(
         queryset=View.objects.all(),
         widget=forms.widgets.CheckboxSelectMultiple, required=False)
@@ -49,7 +50,7 @@ class FullStaticInterfaceForm(forms.ModelForm):
                    'fqdn')
 
 
-class StaticInterfaceQuickForm(forms.Form):
+class StaticInterfaceQuickForm(BaseForm):
     mac = forms.CharField(validators=[validate_mac])
     label = forms.CharField(validators=[validate_label])
     ranges = Range.objects.all().select_related(depth=4).filter(

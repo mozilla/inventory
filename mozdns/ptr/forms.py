@@ -4,6 +4,9 @@ from mozdns.forms import BaseForm
 
 
 class PTRForm(BaseForm):
+    def delete_instance(self, instance):
+        instance.delete()
+
     class Meta:
         model = PTR
         exclude = ('ip', 'reverse_domain', 'ip_upper',

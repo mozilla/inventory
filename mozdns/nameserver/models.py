@@ -5,6 +5,7 @@ from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.validation import validate_label, validate_name
 from mozdns.models import MozdnsRecord
+from mozdns.view.models import View
 
 from core.interface.static_intr.models import StaticInterface
 
@@ -111,7 +112,7 @@ class Nameserver(MozdnsRecord):
     glue = property(get_glue, set_glue, del_glue, "The Glue property.")
 
     def delete(self, *args, **kwargs):
-        self.check_no_ns_soa_condition()
+        self.check_no_ns_soa_condition(self.domain)
         super(Nameserver, self).delete(*args, **kwargs)
 
     def clean(self):
@@ -149,11 +150,29 @@ class Nameserver(MozdnsRecord):
                     else:
                         self.glue = intr_glue[0]
 
-    def check_no_ns_soa_condition(self):
-        if (self.domain.soa and
-            self.domain.soa.root_domain == self.domain and
-            self.domain.nameserver_set.count() == 1 and  # We are it!
-                self.domain.soa.has_record_set(exclude_ns=True)):
+    def clean_views(self, views):
+        # Forms will call this function with the set of views it is about to
+        # set on this object. Make sure we aren't serving as the NS for a view
+        # that we are about to remove.
+        removed_views = set(View.objects.all()) - set(views)
+        for view in removed_views:
+            if (self.domain.soa and
+                self.domain.soa.root_domain == self.domain and
+                self.domain.nameserver_set.filter(views=view).count() == 1 and
+                # We are it!
+                    self.domain.soa.has_record_set(exclude_ns=True,
+                                                   view=view)):
+                raise ValidationError(
+                    "Other records in this nameserver's zone are"
+                    " relying on it's existance in the {0} view. You can't "
+                    "remove it's memebership of the {0} view.".format(view)
+                )
+
+    def check_no_ns_soa_condition(self, domain):
+        if (domain.soa and
+            domain.soa.root_domain == domain and
+            domain.nameserver_set.count() == 1 and  # We are it!
+                domain.soa.has_record_set(exclude_ns=True)):
             raise ValidationError(
                 "Other records in this nameserver's zone are"
                 " relying on it's existance as it is the only nameserver "

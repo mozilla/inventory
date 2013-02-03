@@ -394,36 +394,7 @@ class NSTestsModels(TestCase):
             mac="11:22:33:44:55:66", system=self.s)
         self.assertRaises(ValidationError, intr.save)
 
-    """
-    def test_bad_nameserver_soa_state_case_1_4(self):
-        # This is Case 1
-        root_domain = create_fake_zone("asdf10")
-        nss = root_domain.nameserver_set.all()
-        self.assertTrue(len(nss), 1)
-        ns = nss[0]
-        private_view, _ = View.objects.get_or_create(name='private')
-        public_view, _ = View.objects.get_or_create(name='public')
-
-        ns.views.remove(public_view)
-        ns.views.add(private_view)
-
-        # At his point we should have a domain at the root of a zone with no
-        # other records in it.
-
-        # Adding a record shouldn't be allowed because there is no NS record on
-        # the zone's root domain.
-        a = AddressRecord(
-            label='', domain=root_domain, ip_type="6", ip_str="1::"
-        )
-        a.save()
-        a.views.add(public_view)
-        self.assertRaises(ValidationError, a.save)
-        cn = CNAME(label='', domain=root_domain, target="asdf")
-        cn.save()
-        cn.views.add(public_view)
-        self.assertRaises(ValidationError, cn.save)
-    """
-
+    # See record.tests for the case a required view is deleted.
     def test_bad_nameserver_soa_state_case_2_0(self):
         # This is Case 2
         root_domain = create_fake_zone("asdf20")

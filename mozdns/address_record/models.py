@@ -48,7 +48,7 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
         self.set_fqdn()
         self.check_TLD_condition()
         self.validate_delegation_conditions()
-        self.check_no_ns_soa_condition()
+        self.check_no_ns_soa_condition(self.domain)
         self.check_for_cname()
 
         if not kwargs.pop("ignore_interface", False):

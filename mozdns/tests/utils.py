@@ -41,4 +41,4 @@ def random_byte():
     """
     Utility function to generate a random byte for random IPs
     """
-    return random.randint(0, 255)
+    return random.randint(1, 255)

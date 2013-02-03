@@ -161,20 +161,9 @@ class StaticInterface(BaseAddressRecord):
             self.check_glue_status()
 
         self.update_reverse_domain()
-        self.check_no_reverse_ns_soa_condition()
+        self.check_no_ns_soa_condition(self.reverse_domain)
         super(StaticInterface, self).clean(validate_glue=False,
                                            ignore_interface=True)
-
-    def check_no_reverse_ns_soa_condition(self):
-        # If this function changes, change it in the PTR class
-        # TODO refactor this
-        if self.reverse_domain.soa:
-            root_domain = self.reverse_domain.soa.root_domain
-            if root_domain and not root_domain.nameserver_set.exists():
-                raise ValidationError(
-                    "The zone you are trying to assign this "
-                    "record into does not have an NS record, thus cannnot "
-                    "support other records.")
 
     def check_glue_status(self):
         """If this interface is a 'glue' record for a Nameserver instance,

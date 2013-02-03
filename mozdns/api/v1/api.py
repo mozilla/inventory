@@ -108,15 +108,23 @@ class CommonDNSResource(ModelResource):
         # later in a seperate step
         public_view = View.objects.get(name='public')
         private_view = View.objects.get(name='private')
+        view_set = set(obj.views.all())
         for view_name in views:
-            if view_name == 'no-public':
-                obj.views.remove(public_view)
+            if view_name == 'no-public' and public_view in view_set:
+                view_set.remove(public_view)
             elif view_name == 'public':
-                obj.views.add(public_view)
-            if view_name == 'no-private':
-                obj.views.remove(private_view)
+                view_set.add(public_view)
+            if view_name == 'no-private' and private_view in view_set:
+                view_set.remove(private_view)
             elif view_name == 'private':
-                obj.views.add(private_view)
+                view_set.add(private_view)
+
+        obj.clean_views(view_set)
+        for view in View.objects.all():
+            if view not in view_set:
+                obj.views.remove(view)
+            else:
+                obj.views.add(view)
 
     def extract_kv(self, bundle):
         return []
@@ -172,10 +180,31 @@ class CommonDNSResource(ModelResource):
         return self.save_commit(request, bundle, views, comment, kv)
 
     def save_commit(self, request, bundle, views, comment, kv):
+        # Q: Why is update_views called in two different places?!?
+        # A: Due to many-to-many objects neeeding both objects to exist in the
+        # db before any relationships can be made, we call update_views
+        # *before* changing the object if the object is being *updated* (it has
+        # a primary key), and we call update_views *after* save is called if
+        # the object is new. If the object was new and we find invalid views
+        # after it was created, we delete the object and raise a 400.
+
+        # TODO, use db transaction and rollback() for a cleaner implementation
+
+        # This all get's really complicated when the record is a glue record...
+        # fuck
+        try:
+            if bundle.obj.pk:
+                verb = 'updated'
+                self.update_views(bundle.obj, views)
+            else:
+                verb = 'created'
+        except ValidationError, e:
+            bundle.errors['error_messages'] = {'views': json.dumps(e.messages)}
+            self.error_response(bundle.errors, request)
+
         try:
             bundle.obj.full_clean()
             bundle.obj.save()
-            reversion.set_comment(comment)
         except ValidationError, e:
             if 'domain' in bundle.data:
                 prune_tree(bundle.data['domain'])
@@ -187,7 +216,19 @@ class CommonDNSResource(ModelResource):
             bundle.errors['error_messages'] = "Very bad error."
             self.error_response(bundle.errors, request)
 
-        self.update_views(bundle.obj, views)
+        # If we are creating an object, delete the object and error out.
+        if verb == 'created':
+            try:
+                self.update_views(bundle.obj, views)
+            except ValidationError, e:
+                msg = ("Some views failed validation with the message: {0}. "
+                       "The object was not {1}".format(e.messages[0], verb))
+                bundle.obj.delete()
+                bundle.data['error_messages'] = {'views': msg}
+                self.error_response(bundle.errors, request)
+
+        # Hey everything worked!
+        reversion.set_comment(comment)
 
         # Now do the kv magic
         if kv:

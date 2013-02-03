@@ -8,8 +8,6 @@ from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.validation import validate_first_label, validate_name
 from mozdns.validation import validate_ttl
 
-a = 1
-
 
 class LabelDomainMixin(models.Model):
     """
@@ -52,11 +50,49 @@ class LabelDomainMixin(models.Model):
         abstract = True
 
 
-class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
+class ViewMixin(models.Model):
+    def validate_views(instance, views):
+        for view in views:
+            instance.clean_views(views)
+
+    views = models.ManyToManyField(
+        View, blank=True, validators=[validate_views]
+    )
+
+    class Meta:
+        abstract = True
+
+    def clean_views(self, views):
+        """cleaned_data is the data that is going to be called with for
+        updating an existing or creating a new object. Classes should implement
+        this function according to their specific needs.
+        """
+        for view in views:
+            if hasattr(self, 'domain'):
+                self.check_no_ns_soa_condition(self.domain, view=view)
+            if hasattr(self, 'reverse_domain'):
+                self.check_no_ns_soa_condition(self.reverse_domain, view=view)
+
+    def check_no_ns_soa_condition(self, domain, view=None):
+        if domain.soa:
+            fail = False
+            root_domain = domain.soa.root_domain
+            if root_domain and not root_domain.nameserver_set.exists():
+                fail = True
+            elif (view and
+                  not root_domain.nameserver_set.filter(views=view).exists()):
+                fail = True
+            if fail:
+                raise ValidationError(
+                    "The zone you are trying to assign this record into does "
+                    "not have an NS record, thus cannnot support other "
+                    "records.")
+
+
+class MozdnsRecord(ViewMixin, DisplayMixin, ObjectUrlMixin):
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
                                       validators=[validate_ttl],
                                       help_text="Time to Live of this record")
-    views = models.ManyToManyField(View, blank=True)
     description = models.CharField(max_length=1000, blank=True, null=True,
                                    help_text="A description of this record.")
     # fqdn = label + domain.name <--- see set_fqdn
@@ -88,7 +124,7 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
         # function
         self.set_fqdn()
         self.check_TLD_condition()
-        self.check_no_ns_soa_condition()
+        self.check_no_ns_soa_condition(self.domain)
         self.check_for_delegation()
         if self.rdtype != 'CNAME':
             self.check_for_cname()
@@ -156,15 +192,6 @@ class MozdnsRecord(models.Model, DisplayMixin, ObjectUrlMixin):
         else:
             if CNAME.objects.filter(label='', domain=self.domain).exists():
                 raise ValidationError("A CNAME with this name already exists.")
-
-    def check_no_ns_soa_condition(self):
-        if self.domain.soa:
-            root_domain = self.domain.soa.root_domain
-            if root_domain and not root_domain.nameserver_set.exists():
-                raise ValidationError(
-                    "The zone you are trying to assign this record into does "
-                    "not have an NS record, thus cannnot support other "
-                    "records.")
 
     def check_for_delegation(self):
         """

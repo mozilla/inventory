@@ -20,15 +20,86 @@ import simplejson as json
 API_VERSION = '1'
 
 
-class MozdnsAPITests(object):
+class NoNameserverViewTests(object):
+    def get_domain_and_post_data(self):
+        # This is different for classes that have ips instead of fqdns
+        domain_name = "{0}.{1}.{2}.{3}.com".format(
+            random_label(), random_label(), random_label(), random_label()
+        )
+        root_domain = create_fake_zone(domain_name, suffix="")
+        post_data = self.post_data()
+        # Get the '_' in SRV records
+        post_data['fqdn'] = post_data['fqdn'][0] + "asdf.asdf." + domain_name
+        return root_domain, post_data
+
+    def test_no_ns_views(self, data_source=None):
+        if data_source:
+            root_domain, post_data = data_source()
+        else:
+            root_domain, post_data = self.get_domain_and_post_data()
+        self.assertEqual(1, root_domain.nameserver_set.all().count())
+        ns = root_domain.nameserver_set.all()[0]
+        # Remove all views from the zone
+        ns.views.remove(self.public_view)
+        ns.views.remove(self.private_view)
+
+        # Creation should error and we shouldn't see a difference in the number
+        # of objects in the db
+        before_count = self.test_type.objects.all().count()
+        post_data['views'] = ['public']
+        resp, post_data = self.generic_create(
+            post_data, assertResponse=self.assertHttpBadRequest, fail=True
+        )
+        after_count = self.test_type.objects.all().count()
+        self.assertEqual(before_count, after_count)
+        del post_data['views']
+
+        ns.views.add(self.public_view)
+        ns.views.add(self.private_view)
+
+        # Re add all the views and test other things
+        self.assertTrue(self.private_view in ns.views.all())
+        self.assertTrue(self.public_view in ns.views.all())
+
+        resp, post_data = self.generic_create(post_data)
+        obj_data = json.loads(resp.content)
+        _, (_, new_object_url) = resp.items()
+
+        # We now have a zone with a record in it. The namserver at the root of
+        # the zone is in both views.
+
+        # Remove one view and make sure putting the record in that view causes
+        # a 400
+        ns.views.remove(self.private_view)
+        patch_data = {'pk': obj_data['pk'], 'views': ['private']}
+        update_resp, patch_data = self.generic_update(
+            new_object_url, patch_data,
+            assertResponse=self.assertHttpBadRequest
+        )
+
+        # This shouldn't be an error
+        patch_data = {'pk': obj_data['pk'], 'views': ['no-private']}
+        update_resp, patch_data = self.generic_update(
+            new_object_url, patch_data
+        )
+
+        # Adding to the public view should be fine because the NS is in that
+        # view
+        patch_data = {'pk': obj_data['pk'], 'views': ['public']}
+        update_resp, patch_data = self.generic_update(
+            new_object_url, patch_data
+        )
+
+
+class MozdnsAPITests(NoNameserverViewTests):
     object_list_url = "/mozdns/api/v{0}_dns/{1}/"
     object_url = "/mozdns/api/v{0}_dns/{1}/{2}/"
 
     def setUp(self):
         super(MozdnsAPITests, self).setUp()
         self.domain = create_fake_zone(self.__class__.__name__.lower())
-        View.objects.get_or_create(name='public')
-        View.objects.get_or_create(name='private')
+        self.public_view = View.objects.get_or_create(name='public')[0]
+        self.private_view = View.objects.get_or_create(name='private')[0]
 
     def test_create(self):
         resp, post_data = self.generic_create(self.post_data())
@@ -83,24 +154,31 @@ class MozdnsAPITests(object):
         self.assertHttpAccepted(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count)
 
-    def generic_update(self, patch_url, patch_data):
+    def generic_update(self, patch_url, patch_data, assertResponse=None):
         obj_count = self.test_type.objects.count()
         resp = self.api_client.patch(patch_url, format='json',
                                      data=patch_data)
-        self.assertHttpAccepted(resp)
+        if not assertResponse:
+            self.assertHttpAccepted(resp)
+        else:
+            assertResponse(resp)
         # Verify a no new object has been added.
         self.assertEqual(self.test_type.objects.count(), obj_count)
         return resp, patch_data
 
-    def generic_create(self, post_data):
+    def generic_create(self, post_data, assertResponse=None, fail=False):
         # Check how many are there first.
         obj_count = self.test_type.objects.count()
         create_url = self.object_list_url.format(
             API_VERSION, str(self.test_type.__name__).lower())
         resp = self.api_client.post(create_url, format='json', data=post_data)
-        self.assertHttpCreated(resp)
+        if assertResponse:
+            assertResponse(resp)
+        else:
+            self.assertHttpCreated(resp)
         # Verify a new one has been added.
-        self.assertEqual(self.test_type.objects.count(), obj_count + 1)
+        if not fail:
+            self.assertEqual(self.test_type.objects.count(), obj_count + 1)
         return resp, post_data
 
     def test_changing_only_one_field(self):
@@ -172,7 +250,8 @@ class MangleTests(ResourceTestCase):
         post_data.pop('fqdn')
         obj_count = self.test_type.objects.count()
         create_url = self.object_list_url.format(
-            API_VERSION, str(self.test_type.__name__).lower())
+            API_VERSION, str(self.test_type.__name__).lower()
+        )
         resp = self.api_client.post(create_url, format='json', data=post_data)
         self.assertHttpBadRequest(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count)
@@ -310,6 +389,124 @@ class NameserverAPITests(MozdnsAPITests, ResourceTestCase):
     def test_fqdn_create(self):
         pass
 
+    def test_no_ns_views(self):
+        root_domain = create_fake_zone("12.88.in-addr.arpa", suffix="")
+        self.assertEqual(1, root_domain.nameserver_set.all().count())
+        ns = root_domain.nameserver_set.all()[0]
+        self.assertTrue(self.private_view in ns.views.all())
+        self.assertTrue(self.public_view in ns.views.all())
+
+        ptr = PTR(ip_str="88.12.1.1", ip_type='4', name='foo.bar')
+        ptr.full_clean()
+        ptr.save()
+
+        # At this point we have a zone with a NS in both private and public
+        # views. There is a ptr in the zone but its not in a view.
+
+        # Add the ptr to the public view
+        ptr.views.add(self.public_view)
+        ptr = PTR.objects.get(pk=ptr.pk)
+        self.assertTrue(self.public_view in ptr.views.all())
+
+        ns_url = self.object_url.format(
+            API_VERSION, str(self.test_type.__name__).lower(), ns.pk
+        )  # The url for the nameserver in the zone
+
+        # Try removing the NS from the public view, it should fail
+        post_data = {'pk': ns.pk, 'views': ['no-public']}
+        update_resp, post_data = self.generic_update(
+            ns_url, post_data, assertResponse=self.assertHttpBadRequest
+        )
+        ns = Nameserver.objects.get(pk=ns.pk)
+        # Nothing should have changed
+        self.assertTrue(self.private_view in ns.views.all())
+        self.assertTrue(self.public_view in ns.views.all())
+
+        # We should be allowed to remove the private view
+        post_data = {'pk': ns.pk, 'views': ['no-private']}
+        update_resp, post_data = self.generic_update(ns_url, post_data)
+        ns = Nameserver.objects.get(pk=ns.pk)
+        self.assertTrue(self.private_view not in ns.views.all())
+        self.assertTrue(self.public_view in ns.views.all())
+
+        # Re add all views to the NS
+        ns = Nameserver.objects.get(pk=ns.pk)
+        ns.views.add(self.public_view)
+        ns.views.add(self.private_view)
+
+        # Remove the ptr from the public view and add it to the private view
+        ptr.views.remove(self.public_view)
+        ptr.views.add(self.private_view)
+
+        # Try removing the NS from the private view, it should fail
+        post_data = {'pk': ns.pk, 'views': ['no-private']}
+        update_resp, post_data = self.generic_update(
+            ns_url, post_data, assertResponse=self.assertHttpBadRequest
+        )
+        ns = Nameserver.objects.get(pk=ns.pk)
+        self.assertTrue(self.private_view in ns.views.all())
+        self.assertTrue(self.public_view in ns.views.all())
+
+        # Create another NS record
+        ns1 = Nameserver(domain=root_domain, server="foo.bar")
+        ns1.save()
+        ns1.views.add(self.private_view)
+
+        # there is another NS there now, we should be able to remove the
+        # private view
+        post_data = {'pk': ns.pk, 'views': ['no-private']}
+        update_resp, post_data = self.generic_update(ns_url, post_data)
+        ns = Nameserver.objects.get(pk=ns.pk)
+        self.assertTrue(self.private_view not in ns.views.all())
+        self.assertTrue(self.public_view in ns.views.all())
+
+        # The new ns (ns1) is the only ns enabled, it should not be allowed to
+        # leave the private view. Try removing the NS from the private view, it
+        # should fail
+        post_data_ns1 = {'pk': ns1.pk, 'views': ['no-private']}
+        ns1_url = self.object_url.format(
+            API_VERSION, str(self.test_type.__name__).lower(), ns1.pk
+        )  # The url for the nameserver in the zone
+        update_resp, post_data_ns1 = self.generic_update(
+            ns1_url, post_data_ns1, assertResponse=self.assertHttpBadRequest
+        )
+        ns1 = Nameserver.objects.get(pk=ns1.pk)
+        self.assertTrue(self.private_view in ns1.views.all())
+        self.assertTrue(self.public_view in ns.views.all())
+
+        # Re-add the original ns to the private view and then delete ns1
+        post_data = {'pk': ns.pk, 'views': ['private']}
+        update_resp, post_data = self.generic_update(ns_url, post_data)
+        ns = Nameserver.objects.get(pk=ns.pk)
+        self.assertTrue(self.private_view in ns.views.all())
+        self.assertTrue(self.public_view in ns.views.all())
+
+        ns1.delete()
+
+        # There is now one ns that is in the private and public view
+        self.assertEqual(1, root_domain.nameserver_set.all().count())
+        self.assertTrue(self.private_view in ns.views.all())
+        self.assertTrue(self.public_view in ns.views.all())
+
+        # We should be allowed to remove the public view
+        post_data = {'pk': ns.pk, 'views': ['no-public']}
+        update_resp, post_data = self.generic_update(ns_url, post_data)
+        self.assertHttpAccepted(update_resp)
+        ns = Nameserver.objects.get(pk=ns.pk)
+        self.assertTrue(self.private_view in ns.views.all())
+        self.assertTrue(self.public_view not in ns.views.all())
+
+        # Remove the ptr from all views
+        ptr.views.remove(self.private_view)
+        self.assertTrue(self.public_view not in ptr.views.all())
+
+        # We should now be able to remove the private view
+        post_data = {'pk': ns.pk, 'views': ['no-private']}
+        update_resp, post_data = self.generic_update(ns_url, post_data)
+        ns = Nameserver.objects.get(pk=ns.pk)
+        self.assertTrue(self.private_view not in ns.views.all())
+        self.assertTrue(self.public_view not in ns.views.all())
+
     def post_data(self):
         return {
             'server': 'g' + random_label(),
@@ -382,6 +579,15 @@ class PTRV6APITests(MozdnsAPITests, ResourceTestCase):
     def test_fqdn_create(self):
         pass
 
+    def get_domain_and_post_data(self):
+        # This is different for classes that have ips instead of fqdns
+        domain_name = '1.1.1.1.ip6.arpa'
+        root_domain = create_fake_zone(domain_name, suffix="")
+        post_data = self.post_data()
+        # Get the '_' in SRV records
+        post_data['ip_str'] = '1111:123::1f2f'
+        return root_domain, post_data
+
     def post_data(self):
         return {
             'description': 'k' + random_label(),
@@ -406,6 +612,15 @@ class PTRV4APITests(MozdnsAPITests, ResourceTestCase):
     def test_fqdn_create(self):
         pass
 
+    def get_domain_and_post_data(self):
+        # This is different for classes that have ips instead of fqdns
+        domain_name = '11.22.11.in-addr.arpa'
+        root_domain = create_fake_zone(domain_name, suffix="")
+        post_data = self.post_data()
+        # Get the '_' in SRV records
+        post_data['ip_str'] = '11.22.11.1'
+        return root_domain, post_data
+
     def post_data(self):
         return {
             'description': random_label(),
@@ -421,9 +636,7 @@ class StaticIntrV4APITests(MozdnsAPITests, ResourceTestCase):
     test_type = StaticInterface
 
     def setUp(self):
-        Domain.objects.get_or_create(name='arpa')
-        Domain.objects.get_or_create(name='in-addr.arpa')
-        Domain.objects.get_or_create(name='11.in-addr.arpa')
+        create_fake_zone('11.in-addr.arpa', suffix="")
         super(StaticIntrV4APITests, self).setUp()
         self.s = System(hostname="foobar")
         self.s.save()
@@ -469,9 +682,7 @@ class StaticIntrV6APITests(MozdnsAPITests, ResourceTestCase):
     test_type = StaticInterface
 
     def setUp(self):
-        Domain.objects.get_or_create(name='arpa')
-        Domain.objects.get_or_create(name='ip6.arpa')
-        Domain.objects.get_or_create(name='2.ip6.arpa')
+        create_fake_zone('2.ip6.arpa', suffix="")
         super(StaticIntrV6APITests, self).setUp()
         self.s = System(hostname="foobar")
         self.s.save()

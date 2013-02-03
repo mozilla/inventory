@@ -1,13 +1,13 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from mozdns.view.models import View
 from mozdns.domain.models import Domain
 from mozdns.ip.models import Ip
 from mozdns.cname.models import CNAME
 from mozdns.ip.utils import ip_to_dns_form
 from mozdns.validation import validate_name, validate_ttl
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
+from mozdns.models import ViewMixin
 from core.interface.static_intr.models import StaticInterface
 
 import reversion
@@ -15,7 +15,7 @@ import reversion
 from gettext import gettext as _
 
 
-class PTR(Ip, ObjectUrlMixin, DisplayMixin):
+class PTR(Ip, ViewMixin, ObjectUrlMixin, DisplayMixin):
     """A PTR is used to map an IP to a domain name.
 
     >>> PTR(ip_str=ip_str, name=fqdn, ip_type=ip_type)
@@ -27,7 +27,6 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
                                       validators=[validate_ttl])
     reverse_domain = models.ForeignKey(Domain, null=False, blank=True)
-    views = models.ManyToManyField(View, blank=True)
     description = models.CharField(max_length=1000, null=True, blank=True)
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {name:1}.")
@@ -109,18 +108,7 @@ class PTR(Ip, ObjectUrlMixin, DisplayMixin):
                                   "Name.")
         if kwargs.pop('update_reverse_domain', True):
             self.update_reverse_domain()
-        self.check_no_ns_soa_condition()
-
-    def check_no_ns_soa_condition(self):
-        # If this function changes, change it in the StaticInterface class
-        # TODO refactor this
-        if self.reverse_domain.soa:
-            root_domain = self.reverse_domain.soa.root_domain
-            if root_domain and not root_domain.nameserver_set.exists():
-                raise ValidationError(
-                    "The zone you are trying to assign this "
-                    "record into does not have an NS record, thus cannnot "
-                    "support other records.")
+        self.check_no_ns_soa_condition(self.reverse_domain)
 
     def __str__(self):
         return "{0} {1} {2}".format(str(self.ip_str), 'PTR', self.name)
