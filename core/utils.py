@@ -8,6 +8,29 @@ from settings.local import people_who_need_to_know_about_failures
 from settings.local import inventorys_email
 
 
+# http://dev.mysql.com/doc/refman/5.0/en/miscellaneous-functions.html
+# Prevent this case http://people.mozilla.com/~juber/public/t1_t2_scenario.txt
+def locked_function(lock_name, timeout=10):
+    def decorator(f):
+        def new_function(*args, **kwargs):
+            from django.db import connection
+            cursor = connection.cursor()
+            cursor.execute(
+                "SELECT GET_LOCK('{lock_name}', {timeout});".format(
+                    lock_name=lock_name, timeout=timeout
+                )
+            )
+            ret = f(*args, **kwargs)
+            cursor.execute(
+                "SELECT RELEASE_LOCK('{lock_name}');".format(
+                    lock_name=lock_name
+                )
+            )
+            return ret
+        return new_function
+    return decorator
+
+
 def fail_mail(content, subject='Inventory is having issues.',
               to=people_who_need_to_know_about_failures,
               from_=inventorys_email):
