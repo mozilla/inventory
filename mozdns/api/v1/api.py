@@ -7,6 +7,7 @@ from tastypie.api import Api
 
 from systems.models import System
 from api_v3.system_api import SystemResource
+from core.utils import locked_function
 from core.interface.static_intr.models import StaticInterface
 from mozdns.utils import ensure_label_domain, prune_tree
 from mozdns.domain.models import Domain
@@ -173,8 +174,12 @@ class CommonDNSResource(ModelResource):
 
     def save_commit(self, request, bundle, views, comment, kv):
         try:
-            bundle.obj.full_clean()
-            bundle.obj.save()
+
+            @locked_function('inventory.record_lock')
+            def do_save():
+                bundle.obj.full_clean()
+                bundle.obj.save()
+            do_save()
             reversion.set_comment(comment)
         except ValidationError, e:
             if 'domain' in bundle.data:

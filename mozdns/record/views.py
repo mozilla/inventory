@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 
 from mozdns.domain.models import Domain
 from core.search.compiler.django_compile import search_type
+from core.utils import locked_function
 
 from mozdns.record.utils import get_obj_meta
 
@@ -92,12 +93,17 @@ def record_search_ajax(request):
 def record_ajax(request):
     # This function is pretty much a router
     if request.method == 'POST':
-        record_type = request.POST.get('record_type', '')
-        record_pk = request.POST.get('record_pk', '')
-        obj_meta = get_obj_meta(record_type)()
-        return obj_meta.post(request, record_type, record_pk)
+        return _record_post(request)
     else:
         record_type = request.GET.get('record_type', '')
         record_pk = request.GET.get('record_pk', '')
         obj_meta = get_obj_meta(record_type)()
         return obj_meta.get(request, record_type, record_pk)
+
+
+@locked_function('inventory.record_lock', 10)
+def _record_post(request):
+    record_type = request.POST.get('record_type', '')
+    record_pk = request.POST.get('record_pk', '')
+    obj_meta = get_obj_meta(record_type)()
+    return obj_meta.post(request, record_type, record_pk)
