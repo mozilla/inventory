@@ -1,0 +1,133 @@
+{% extends "tastytools/base.html" %}
+{% load staticlink %}
+
+{% block extra_head %}
+    <script type="text/javascript">
+      window.api_url = '{{api_url}}';
+    </script>
+
+    {% staticlink js:tastytools/lib/SyntaxHighlighter/shCore.js %}
+    {% staticlink js:tastytools/lib/SyntaxHighlighter/shBrushJScript.js %}
+
+    {% staticlink css:tastytools/lib/SyntaxHighlighter/shCore.css %}
+    {% staticlink css:tastytools/lib/SyntaxHighlighter/shThemeDefault %}
+
+    {% staticlink js:tastytools/api.doc %}
+    {# {% staticlink css:tastytools/api.doc %} #}
+
+    <style type='text/css'>
+
+
+    </style>
+
+    <script type="text/template" id="resource_list_template">
+        <% collection.forEach( function(resource, index) { %>
+            <li><a  data-toggle="pill" href="#" 
+                    class="button" data-index="<%=index%>" ><%=resource.get("name")%>
+            </a></li>
+        <% }) %>
+    </script>
+
+    <script type="text/template" id="resource_field_template">
+        <%  var has_default = default_value != "No default provided."; %>
+            <dt>
+                <div class="span2"><%= name %></div>
+                <div class="span1">
+                    <em class="type"><%= type %></em>
+                </div>
+                <div class="span3">
+                    <em class="default <%= has_default? '':'default-none' %>"><%= default_value %>&nbsp;</em>
+                </div>
+                <div class="span2">
+                <% _.each(
+                        _.filter(['nullable', 'readonly', 'unique', 'blank'], 
+                            function(item) { return eval(item) }
+                        ), 
+                        function(item) { %>
+                    <span class='label'><%=item%></span>
+                <% }) %>
+                </div>
+            </dt>
+            <dd class="offset2 span6">
+                <%= help_text %>
+                <% if(filtering && filtering.length>0) { %>
+                    <br/><strong>Filtering</strong>&nbsp;
+                    <% _.forEach(filtering, function(filterType) { %>
+                        <span class="label label-info"><%=filterType%></span>
+                    <% }) %>
+                <% } %>
+            </dd>
+        </div>
+    </script>
+
+    <script type="text/template" id="resource_template">
+        <%  var methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']; 
+        %>
+        <h2 id='anchor_<%=name%>'><%=name%></h2>
+        <div class="well row">
+            <table class='resources_table span8'>
+                <tr>
+                    <th>List URI</th>
+                    <td><%= list_endpoint %></td>
+                </tr>
+                <tr>
+                    <th>Schema URI</th>
+                    <td><%= schema %></td>
+                </tr>
+                <% _.each( ['List', 'Detail'], function(operation) { %>
+                    <tr>
+                        <th><%= operation %> Methods</th>
+                        <td class='methods'>
+                        <% _.each(methods, function(method) {
+                            var o = operation.toLowerCase();
+                            var m = method.toLowerCase();
+
+                            var methods_list = eval("allowed_"+o+"_http_methods");
+                            var is_allowed= methods_list.indexOf(m)>-1;
+                        %>
+                        <span class="label label-<%=is_allowed?'success':'important'%>" >
+                            <%=method%>
+                        </span>
+                        <% }) %>
+                        </td>
+                    </tr>
+                <% }) %>
+                <tr>
+                    <th>Default Format</th>
+                    <td><%= default_format %></td>
+                </tr>
+                <tr>
+                    <th>Default Limit</th>
+                    <td><%= default_limit %></td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Fields</h3>
+        <ul class='field_list row'></ul>
+
+            <h3 class="span8" >Example data</h3>
+            <div id="examples"></div>
+        </div>
+
+    </script>
+
+    <script type="text/template" id="example_template">
+        <h4><%=method%></h4>
+        <pre class="brush: js"><%=example%></pre>
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <h2 class="span2">Resources</h2>
+    </div>
+    <div class="row">
+        <div class="span2">
+            <ul id='resource_list' class="nav nav-pills nav-stacked"></ul>
+        </div>
+        <div id="resource" class="offset1 span8">
+        </div>
+    </div>
+{% endblock %}
+

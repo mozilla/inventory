@@ -1,0 +1,261 @@
+.lightblue {
+    padding: 0px; margin: 0px 0px 10px 0px; 
+    background: #DFE6E9 url(../images/DFE6E9TopLeft.gif) no-repeat top left;
+    color: #465372;
+}
+
+.lightblue div.top_right {
+    padding: 0; margin: 0;
+    background: url(../images/DFE6E9TopRight.gif) no-repeat top right;
+}
+
+.lightblue div div.bot_right {
+    padding: 0; margin: 0;
+    background: url(../images/DFE6E9BottomRight.gif) no-repeat bottom right;
+}
+
+.lightblue div div div.bot_left {
+    padding: 20px; margin: 0;
+    background: url(../images/DFE6E9BottomLeft.gif) no-repeat bottom left;
+    font-size: 0.9em;
+}
+
+.yellow {
+    padding: 0; margin: 0px 0px 10px 10px; width: 220px;
+    background: #FAF6C9 url(../images/FAF6C9TopLeft.gif) no-repeat top left;
+    color: #555;
+}
+
+.yellow div {
+    padding: 0; margin: 0;
+    background: url(../images/FAF6C9TopRight.gif) no-repeat top right;
+}
+
+.yellow div div {
+    padding: 0; margin: 0;
+    background: url(../images/FAF6C9BottomRight.gif) no-repeat bottom right;
+}
+
+.yellow div div div {
+    padding: 10px; margin: 0;
+    background: url(../images/FAF6C9BottomLeft.gif) no-repeat bottom left;
+    font-size: 0.9em;
+}
+
+.features-table {
+    border-collapse: collapse;
+    margin: 31px 0 20px 0; padding: 0;
+    width: 100%;
+}
+
+.features-table td {
+    padding: 0px 0px 5px 0px;
+}
+
+.features-table td.left {
+    padding: 0 3px 0 0;
+}
+
+.features-table td.right {
+    padding: 0 0 0 2px;
+}
+
+ul.feedlist {
+    list-style: url('/css//images/rssfeed.png');
+    margin: 0; padding: 0;
+}
+
+ul.feedlist li a {
+    vertical-align: top;
+}
+    
+#content {
+    background-image: none;
+}
+#toptabs {
+  width: 100%;  
+  z-index: 2;
+}
+
+ul#app-buttons {
+    display: block;
+  list-style-type: none;
+  margin: 0px;
+  padding: 0px;
+}
+
+ul#app-buttons li {
+  display: inline;
+  list-style-type: none;
+  padding: 4px 0px 0px 0px;
+  margin: 0px 1px 0px 1px;
+  background-color: #f0edae;
+  -moz-border-radius-topleft: 5px;
+  -moz-border-radius-topright: 5px;
+  -webkit-border-radius-top-left: 5px;
+  -webkit-border-radius-top-right: 5px;
+}
+
+
+ul#app-buttons li a {
+  list-style-type: none;
+  padding: 4px 8px 0px 8px;
+  margin: 0px;
+  height: 20px;
+  white-space: nowrap;
+  font-weight: bold;
+  color: #0033aa;
+  text-decoration: none;
+}
+
+ul#app-buttons li:hover {
+    background-color: #dfe6e9;
+}
+
+ul#app-buttons li:hover a {
+
+}
+
+.sub_form {
+    display: block;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #dcdcdc;
+    border: 2px solid #ccc;
+    margin-left: 14.5em;
+    padding: 10px 20px 10px 10px;
+    width: 400px;
+}
+
+.sub_purposes_form {
+    display: block;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #dcdcdc;
+    border: 2px solid #ccc;
+    margin-left: 16.5em;
+    padding: 10px 20px 10px 10px;
+    width: 400px;
+}
+
+.sub_purposes_form ul li {
+    list-style-type: none;
+}
+
+table {
+    background-color: #F5F5F5;
+    border-collapse: collapse;
+    border: 1px;
+    table-layout: auto;
+    font-size: 11px;
+    width: 100%;
+}
+table th {
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+}
+table tr {
+    text-align: left;
+    border-bottom: 1px solid #d5d5d5;
+
+}
+table td {
+    padding: 3px;
+}
+#editform dl {
+    margin: 0px;
+    padding: 0px;
+}
+#editform dt {
+    float: left;
+    clear: both;
+    text-align: right;
+		margin-right: 10px;
+		margin-top: auto;
+		margin-bottom: auto;
+    width: 175px;
+    font-size: 12px;
+    font-weight: bold;
+		
+}
+#editform dd {
+    margin-bottom: 9px;
+    font-size: 11px;
+}
+
+#bulkeditform dl {
+    margin: 0px;
+    padding: 0px;
+}
+#bulkeditform dt {
+    float: left;
+    clear: both;
+    text-align: left;
+    margin: 5px 10px 0 0;
+    width: 175px;
+    font-size: 11px;
+    font-weight: bold;
+}
+#bulkeditform dd {
+    margin-bottom: 5px;
+    font-size: 11px;
+}
+div.autocomplete {
+      position:absolute;
+      width:250px;
+      background-color: white;
+      border:1px solid #888;
+      margin:0px;
+      padding:0px;
+}
+div.autocomplete ul  {
+      list-style-type: none;
+      margin:0px;
+      padding:0px;
+    }
+div.autocomplete ul li {
+    list-style-type: none;
+}
+ul#app-buttons li.selected {
+    background: rgb(223,230,233);
+
+}
+dl.show {
+    background-color: #f5f5f5;
+}
+dl.show dt {
+    clear: both;
+    font-weight: bold;
+    float: left;
+    text-align: right;
+    width: 175px;
+    padding: 3px 1em 0px 0px;
+}
+dl.show dd {
+    float: left;
+    padding: 3px 0 0 0;
+}
+
+ul li.selected {
+    background-color: #ffb;
+}
+
+a:visited { 
+    color: #0E3243;
+}
+
+div.formline {
+    padding-top: .5em;
+}
+form.editform label {
+    width: 14em;
+    clear: left;
+    float: left;
+    text-align: right;
+    font-weight: bold; 
+    padding-right: .5em;
+    border-bottom: 1px dashed #EEEEEE;
+}
+
+.clearboth {
+    clear: both;
+}

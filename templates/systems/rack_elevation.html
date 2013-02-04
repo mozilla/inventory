@@ -1,0 +1,298 @@
+{% extends "jinja_base.html" %}
+{% block subtitle %} - racks{% endblock %}
+{% block content %}
+<script type="text/javascript" src="/static/js/jQuery.rightclick.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui-1.8.11.custom.min.js"></script>
+<script type="text/javascript" src="/static/js/jquery.autocomplete-min.js"></script>
+<link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
+<style type='text/css'>
+    #blah-rack_elevation {
+        width: 400px;
+        height: 700px;
+    }
+    .autocomplete-w1 { border-right: 1 px solid #F0F0F0; position:absolute; top:0px; width: 150px; left:0px; margin:6px 0 0 6px; /* IE6 fix: */ _background:none; _margin:1px 0 0 0; }
+    .autocomplete { background:#FFF; cursor:default; text-align:left; max-height:350px; background-color: #FEFEFE; width: 150px; margin:-6px 6px 6px -6px;}
+    .autocomplete .selected { background:#F0F0F0; }
+    .autocomplete div { border-bottom: 1px solid #999; border-left: 1px solid #999; border-right: 1px solid #999; padding:2px 5px; white-space:nowrap; width: 149px; overflow:visible; background-color: #FEFEFE;}
+    .autocomplete strong { font-weight:normal; color:#3399FF; }
+</style>
+
+<script type="text/javascript">
+    var json_string = '{{ data }}';
+$(document).ready(function() {
+    data = $.parseJSON(json_string);
+    var called = false;
+    var system_list = new Array();
+    var item_height = 18;
+    var total_ru = data.rack_ru;
+    var rack_height = (total_ru * item_height) + 50;
+    var rack_width = 400;
+    var edge = 25;
+    var usable_height = rack_height - (edge * 2)
+    var usable_width = rack_width - (edge * 2)
+    ru_height = usable_height/total_ru;
+    if(called == false){
+        draw();
+        called = true;
+    }
+    function get_ru(e){
+        e.pageY = e.pageY - 7;
+        var y = Math.floor((e.pageY-$("#rack_elevation").offset().top) / 18);
+        //Flip the bits to get the proper slice of the array
+        y = total_ru - y;
+        return y;
+    }
+
+    function is_system(system_index){
+        if( parseInt(system_list[system_index]) > 0){
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+    function is_rack_hardware(system_index){
+        if( parseInt(system_list[system_index]) == -1){
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+    function left_click_rack(system_index){
+        if( is_system(system_index)){
+            self.location = "/en-US/systems/edit/" + system_list[system_index];
+        } else if (is_rack_hardware(system_index) == false){
+            // @TODO Add jquery ui dialog box for adding hardware
+            alert("Show interface to add");
+        }
+    }
+
+    /*$("#rack_elevation").rightClick(function(e){
+        system_index = get_ru(e);
+        if(is_system(system_index)){
+            make_system_dialog(system_index);
+        }
+    });*/
+
+    function make_system_dialog(system_index){
+        var system_id = system_list[system_index];
+        $.each(data.systems, function(key, value){
+                if(value['system_id'] == system_id){
+                slot = value['system_slot'];
+                image = value['system_image'];
+                ru = value['system_ru'];
+                system_name = value['system_name'];
+                system_id= value['system_id'];
+                oob_ip = value['oob_ip'];
+                server_model = value['server_model'];
+                operating_system = value['operating_system'];
+                }
+        });
+        $("#oob_ip").html(oob_ip);
+        $("#server_model").html(server_model);
+        $("#operating_system").html(operating_system);
+        var d = $( "#dialog" ).dialog({
+                title: system_name, 
+                autoShow: false,
+                buttons: {
+                    "Show": function() {
+                        self.location = '/systems/show/' + system_id;
+                            $( this ).dialog( "close" );
+                    },
+                    "Edit": function() {
+                        self.location = '/systems/edit/' + system_id;
+                            $( this ).dialog( "close" );
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+                
+                });
+        d.show();
+
+    }
+
+    $("#rack_elevation").click(function(e){
+        system_index = get_ru(e);
+        if(is_system(system_index)){
+            make_system_dialog(system_index);
+        } else if(!is_rack_hardware(system_index) && system_index > 0){
+            $("#ru_number").html(system_index);
+            var d = $( "#add-dialog" ).dialog({
+                    title: system_name, 
+                    autoShow: false,
+                    buttons: {
+                        "Save": function() {
+                            self.location = '/systems/show/' + system_id;
+                                $( this ).dialog( "close" );
+                        },
+                        Cancel: function() {
+                            $( this ).dialog( "close" );
+                        }
+                    }
+                    
+                    });
+            d.show();
+
+        }
+        
+        /*system_index = get_ru(e);
+        left_click_rack(system_index);*/
+    });
+    /*
+     *   draw_rack_lines
+    */
+
+    function draw_rack_border(ctx){
+        ctx.beginPath();
+        ctx.fillStyle   = '#000000';
+        ctx.fillRect(0,0,rack_width, rack_height);  
+    }
+    function clear_rack_center(ctx){
+        ctx.beginPath();
+        ctx.fillStyle   = '#FFFFFF';
+        ctx.fillRect(edge, edge, usable_width, usable_height);  
+
+    }
+function draw() {
+        var ctx = document.getElementById('rack_elevation').getContext('2d');
+        //alert(usable_height/total_ru);
+        // Each RU is 18 pixels
+        draw_rack_border(ctx);
+        clear_rack_center(ctx);
+        counter = 1;
+        // Counter to decide whether or not we want to draw rack lines.
+        // If ignore > 0 then no lines get drawn
+        ignore = 0;
+        //Iterate over each RU
+        for(i=usable_height; i>edge - 11; i-=(usable_height/total_ru)){
+            mult = i;
+            var slot = 0;
+            var image = false;
+            var ru = 0;
+            $.each(data.systems, function(key, value){
+                 if(value['system_slot'] == counter){
+                    slot = value['system_slot'];
+                    image = value['system_image'];
+                    ru = value['system_ru'];
+                    system_name = value['system_name'];
+                    system_id= value['system_id'];
+                 }
+            });
+            $.each(data.ethernet_patch_panels_24, function(key, value){
+                 if(value == counter){
+                    slot = value;
+                    image = '24port_ethernet_patch_panel.jpg';
+                    ru = 1;
+                    system_name = '';
+                    system_id= '-1';
+                 }
+            });
+            $.each(data.ethernet_patch_panels_48, function(key, value){
+                 if(value == counter){
+                    slot = value;
+                    image = '48port_ethernet_patch_panel.jpg';
+                    ru = 2;
+                    system_name = '';
+                    system_id= '-1';
+                 }
+            });
+            if(slot > 0){
+                system_ru = ru;
+                draw_image_at_ru(ctx, '/static/images/' + image, counter, edge, edge+mult, usable_width, usable_height, system_ru, system_name);
+                for(ii=1;ii<=system_ru;ii++){
+                    system_list.push(system_id);
+                }
+                //Get the size of the system and increment the ignore counter
+                if(system_ru > 0){
+                    ignore += (system_ru);
+                }
+            } else {
+                // Add some text to the array
+                // Later we check the array for either a system id or text. If there is text then we'll show a UI Dialog to add a system
+                if(ignore == 0){
+                    system_list.push('add');
+                }
+                ctx.beginPath();
+                ctx.fillStyle = '';
+                ctx.strokeStyle = "grey";
+                ctx.lineWidth = 1;
+                ctx.moveTo(edge, edge + mult);  
+                ctx.lineTo(usable_width + edge, edge + mult);  
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.fillStyle = "blue";
+                ctx.strokeStyle = "blue";
+                ctx.font="8pt";
+                text_y = mult + ( (usable_height/24) / 2) + 2;
+                ctx.fillText("RU " + counter, usable_width / 2, text_y);
+                ctx.stroke();
+                ctx.fill();
+            }
+            if(ignore > 0){
+                ignore--;
+            }
+            counter++;
+        }
+}
+
+    function draw_image_at_ru(ctx, img_path, slot,x,y,width,height, ru, system_name ){
+        // Calculate the top portion of the system. Each is based on an RU being 18 pixels high, counting backwards from the bottom up
+        y = y - (item_height * ru);
+        text_y = y + ((18 * ru) / 2) + 3;
+        var img = new Image();   // Create new img element  
+        img.onload = function(){  
+            // Set the background to the image of the server
+            ctx.drawImage(img, x, y, width, 18  * ru);
+            if(system_name.length > 0){
+                // Clear out a white background to overlay the system name
+                ctx.fillStyle   = 'white';
+                var new_text_y = y + ((18 * ru) / 2) + 3;
+                //Because system names are of variable length. Create a small box then increment it based on the length of the system name.
+                ctx.fillRect(edge + edge + 2, new_text_y - 12, usable_width -340 + (system_name.length * 5),16);  
+                ctx.fill();
+                // We want to mark on the left side of the rack the RU that the system starts at
+                ctx.fillStyle = "red";
+                ctx.font="8pt";
+                ctx.fillText(slot, 7, new_text_y);
+                // Add a grey border, with blue text
+                ctx.strokeStyle = "grey";
+                ctx.font = "12px";
+                ctx.fillStyle = "blue";
+                //Add the text that includes the system name
+                ctx.fillText(system_name, edge + edge + 6, new_text_y +0);
+                ctx.stroke();
+            }
+        };  
+        img.src =  img_path;
+    }
+
+
+    });
+
+
+</script>
+<h2>System Rack Elevation</h2>
+<canvas width="500" height="900" id='rack_elevation' style="cursor:pointer;">
+</canvas>
+<div id = "container"></div>
+<div id="dialog" title="System Details" style='display: none;'>
+    OOP IP: <span id='oob_ip'>&nbsp;</span><br />
+    Server Model: <span id='server_model'>&nbsp;</span><br />
+    Operating System <span id='operating_system'>&nbsp;</span><br />
+</div>
+<div id="add-dialog" title="Add System to Rack" style='display: none;'>
+    <div>Search: <input type='text' name='system_search' id='system_search' style='width: 159px;' value=''></div>
+</div>
+<script type="text/javascript">
+    var ac = $('#system_search').autocomplete({
+                serviceUrl:'/en-US/systems/system_auto_complete_ajax/',
+                minChars:2,
+                deferRequestBy: 500,
+                maxHeight:400
+            });
+
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+<table id="quicksearch" class="listtable tablesorter">
+	<thead>
+        <tr>
+            <th>Host Name</th> 
+            <th>Serial</th> 
+            <th>Asset #</th> 
+            <th>Model</th> 
+            <th>Rack</th> 
+            <th>Switch Ports</th> 
+            {% if not read_only %}<th>OOB IP</th>{% endif %}
+            <th colspan="{% if read_only %}1{% else %}3{% endif %}">Actions</th>
+        </tr>
+	</thead>
+	<tbody>
+        {% include "systems/tablebody_snippet.html" %}
+	</tbody>
+</table>

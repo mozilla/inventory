@@ -1,0 +1,65 @@
+=clearfix
+    overflow: hidden
+    +has-layout
+
+=has-layout
+    // This makes ie6 get layout
+    display: inline-block
+    // and this puts it back to block
+    &
+        display: block
+
+// Implementation of float:left with fix for double-margin bug
+=float-left
+    +float("left")
+ 
+// Implementation of float:right with fix for double-margin bug
+=float-right
+    +float("right")
+ 
+// Available as alternate syntax with just +float
+=float(!side = "left")
+    display: inline
+    float= !side
+// Turn off the bullet for an element of a list
+=no-bullet
+    list-style-type: none
+    margin-left: 0px
+ 
+// turns off the bullets for an entire list
+=no-bullets
+    li
+        +no-bullet
+
+=reset-box-model
+    margin: 0
+    padding: 0
+    border: 0
+    outline: 0
+
+=horizontal-list-container
+    +reset-box-model
+    +clearfix
+ 
+//**
+    Can be mixed into any li selector that is meant to participate in a horizontal layout.
+    Used to implement +horizontal-list.
+=horizontal-list-item(!padding = 4px)
+    +no-bullet
+    white-space: nowrap
+    +float-left
+    padding:
+        left= !padding
+        right= !padding
+    &.first
+        padding-left: 0px
+    &.last
+        padding-right: 0px
+ 
+//**
+    A list(ol,ul) that is layed out such that the elements are floated left and won't wrap.
+    This is not an inline list.
+=horizontal-list(!padding = 4px)
+    +horizontal-list-container
+    li
+        +horizontal-list-item(!padding)

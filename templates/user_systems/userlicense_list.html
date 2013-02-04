@@ -1,0 +1,71 @@
+{% extends "jinja_base.html" %}
+{% block content %}
+
+    <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
+<div style="margin-top: 1em; float:right;">
+    <form action="/licenses/quicksearch" onSubmit="return false;">
+        <strong>Quick Search:</strong> <input id="quicksearch" type="text" name="quicksearch" /><input type='submit' name='submit' value='Go' />
+    </form>
+</div>
+<h2>Listing Licenses</h2>
+<a href="{{ 'license-new'|url() }}">Create New</a>
+
+<br />
+<div id="search_hits"></div>
+<table class="listtable tablesorter">
+	<thead>
+        <tr>
+            <th>Type</th> 
+            <th>Key</th> 
+            <th>Operating System</th>
+            <th>Username</th>
+            <th>Version</th>
+            <th>Belongs To</th>
+            <th colspan="3">Actions</th>
+        </tr>
+	</thead>
+    <tbody>
+        {% for license in license_list.object_list %}
+        <tr>
+            <td>{{ license.license_type }}</td>
+            <td>{{ license.license_key }}</td>
+            <td>{{ license.user_operating_system }}</td>
+            <td>{{ license.username }}</td>
+            <td>{{ license.version }}</td>
+            {% if license.owner %}
+                <td><a href="{{ license.owner.get_absolute_url() }}">{{ license.owner }}</a></td>
+            {% else %}
+                <td>&nbsp;</td>
+            {% endif %}
+	
+            <td><a href="{{ 'license-show'|url(license.id) }}">Show</a></td>
+            <td><a href="{{ 'license-edit'|url(license.id) }}">Edit</a></td>
+            <td><a href="{{ 'license-delete'|url(license.id) }}">Delete</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+    <tr><td colspan="9">
+        <span class="step-links">
+            {% if license_list.has_previous() %}
+                <a href="?page={{ license_list.previous_page_number() }}">Previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ license_list.number }} of {{ license_list.paginator.num_pages }}.
+            </span>
+
+            {% if license_list.has_next() %}
+                <a href="?page={{ license_list.next_page_number() }}">Next</a>
+            {% endif %}
+        </span>
+    </td></tr>
+    </tfoot>
+</table>
+<script>
+	$().ready(function(){
+        add_tablesorter($('.listtable')[0]);
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{{ 'license-quicksearch'|url() }}");
+	});
+</script>
+{% endblock %}

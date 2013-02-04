@@ -1,4 +1,5 @@
-inventory
-=========
+=======
+Mozilla Inventory
+=======
 
-Mozilla IT's Inventory system
+Mozilla's Inventory is a web application template based on Playdoh and django.

@@ -1,0 +1,188 @@
+{% extends "jinja_base.html" %}
+{% block subtitle %} - {{ system.hostname }} - show{% endblock %}
+{% block content %}
+<div>
+<dl class="show">
+<dt>Host name:</dt>
+<dd>{{ system.hostname }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Created On:</dt>
+<dd>{{ system.created_on }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Serial:</dt>
+<dd>{{ system.serial }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Switch Ports:</dd>
+<dd>{{ system.switch_ports }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Patch Panel Port:</dd>
+<dd>{{ system.patch_panel_port }}</dd>
+<div style="clear:both;"></div>
+{% if not read_only %}
+<dt>OOB Ip:</dt>
+<dd>
+        {% if system.oob_ip %}
+            <a href="http://{{ system.oob_ip }}/">{{ system.oob_ip }}</a>
+        {% endif %}
+</dd>
+<div style="clear:both;"></div>
+{% endif %}
+
+<dt>OOB switch &amp; port:</dt>
+<dd>{{ system.oob_switch_port }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Status:</dt>
+<dd>{{ system.system_status }}</dd>
+<div style="clear:both;"></div>
+
+<dt>SystemRack:</dt>
+<dd>{{ system.system_rack }} <b> - </b> {{ system.rack_order }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Asset Tag:</dt>
+<dd>{{ system.asset_tag }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Date Purchased:</dt>
+<dd>{{ system.purchase_date }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Last Password Change:</dt>
+<dd>{{ system.change_password }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Purchase Price:</dt>
+<dd>{{ system.purchase_price }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Operating System:</dt>
+<dd>{{ system.operating_system }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Server Model:</dt>
+<dd>{{ system.server_model }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Allocated to:</dt> 
+<dd>{{ system.allocation }}</dd>
+<div style="clear:both;"></div>
+
+{% if is_release %}
+	<dt>Releng Distro:</dt>
+		<dd>{{ system.releng_distro }}</dd>
+	<div style="clear:both;"></div>
+	<dt>Releng Bitlength:</dt>
+		<dd>{{ system.releng_bitlength }}</dd>
+	<div style="clear:both;"></div>
+	<dt>Releng Purpose:</dt>
+		<dd>{{ system.releng_purpose }}</dd>
+	<div style="clear:both;"></div>
+	<dt>Releng Trust Level:</dt>
+		<dd>{{ system.releng_trustlevel }}</dd>
+	<div style="clear:both;"></div>
+	<dt>Releng Environment:</dt>
+		<dd>{{ system.releng_environment }}</dd>
+	<div style="clear:both;"></div>
+	<dt>Releng Data Center:</dt>
+		<dd>{{ system.releng_datacenter }}</dd>
+	<div style="clear:both;"></div>
+	<dt>Releng Role:</dt>
+		<dd>{{ system.releng_role }}</dd>
+	<div style="clear:both;"></div>
+{% endif %}
+
+{% if system.warranty_link %}
+<dt>Warranty Check:</dt> 
+<dd>
+<a href="{{ system.warranty_link }}">Warranty Check</a>
+
+</dd>
+<div style="clear:both;"></div>
+{% endif %}
+
+{% if system.build_attribute %}
+  <dt>Support Tier: </dt> 
+  <dd>{{ system.build_attribute.support_tier }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Tinderbox Tree URL: </dt> 
+  <dd><%= auto_link h(@system.build_attribute.tboxtree_url) %></dd>
+  <div style="clear:both;"></div>
+  <dt>Repository Branch: </dt> 
+  <dd>{{ system.build_attribute.cvsbranch }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Cpu Throttled?: </dt> 
+  <dd>{{ system.build_attribute.cpu_throttled }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Product Branch: </dt> 
+  <dd>{{ system.build_attribute.product_branch }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Closes Tree?: </dt> 
+  <dd>{{ system.build_attribute.closes_tree }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Support Doc: </dt> 
+  <dd><%= auto_link h(@system.build_attribute.support_doc) %></dd>
+  <div style="clear:both;"></div>
+{% endif %}
+
+</div><div>
+
+<dl class="show">
+<dt>Notes: </dt>
+<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre style='width: 700px; white-space: normal;'>{{ system.notes_with_link }}</pre></dd>
+<div style="clear:both;"></div>
+</dl>
+
+<dl class="show">
+<dt>Network Adapters: </dt>
+<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;">
+<pre>
+    {{ adapter }} 
+    <table>
+    <tr><th>NIC</th><th>IP Address</th><th>Mac Address</th><th>DHCP Scope</th><th>DHCP Hostname</th></tr>
+    {% for adapter in adapters %}
+        <tr><td>{{adapter.adapter_name}}</td><td>{{ adapter.ipv4_address }}</td><td>{{ adapter.mac_address }}</td><td>{{ adapter.dhcp_scope }}</td><td>{{ adapter.option_hostname }}</td></tr>
+
+    {% endfor %}
+    </table>
+
+</pre></dd>
+<div style="clear:both;"></div>
+</dl>
+</div>
+<dl class="show">
+<dt>Key/Value Store (without network adapters): </dt>
+<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;">
+<pre>
+    <table>
+    <tr><th>Key</th><th>Value</th></tr>
+    {% for key in key_values %}
+        <tr><td>{{key.key}}</td><td>{{ key.value }}</td></tr>
+    {% endfor %}
+    </table>
+
+</pre></dd>
+<div style="clear:both;"></div>
+</dl>
+</div>
+{% if not read_only %}
+<div>
+
+    <dl class="show">
+        <dt>Licenses: </dt>
+        <dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.licenses }}</pre></dd>
+        <div style="clear:both;"></div>
+    </dl>
+</div>
+{% endif %}
+
+<div style="clear:both;"></div>
+{% if not read_only %}
+<a href="{{ "systems.views.system_edit"|url(system.id) }}">Edit</a>
+{% endif %}
+<a href="{{ "systems.views.home"|url() }}">Back</a>
+{% endblock %}

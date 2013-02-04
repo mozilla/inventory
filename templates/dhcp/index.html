@@ -1,0 +1,20 @@
+{% extends "jinja_base.html" %}
+{% block subtitle %}: DHCP Scope list{% endblock %}
+{% block content %}
+<h2>Listing DHCP Scopes</h2>
+{% if not read_only %}<a href="{{ "dhcp.views.new"|url() }}">Create New</a>{% endif %}
+
+<br />
+<table class="span-24 listtable tablesorter">
+	<thead>
+        <tr>
+            <th colspan="2">Scope Name</th> 
+        </tr>
+	</thead>
+	<tbody>
+    {% for scope in dhcp_scopes %}
+	<tr><td>{{scope}}</td><td><a href="/dhcp/edit/{{scope}}/">Edit</a>&nbsp;<a onclick="return confirm('Are you sure?');" href="/dhcp/delete/{{scope}}/">Delete</a>&nbsp;<a href="/dhcp/showfile/{{scope}}">Show File</a></td></tr>
+    {% endfor %}
+	</tbody>
+</table>
+{% endblock %}

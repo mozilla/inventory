@@ -1,0 +1,15 @@
+{% extends "jinja_base.html" %}
+{% block head %}
+    <script src="{{ MEDIA_URL }}javascripts/jquery.autocomplete.min.js" type="text/javascript"></script>
+    <link href="{{ MEDIA_URL }}stylesheets/jquery.autocomplete.css" media="screen" rel="stylesheet" type="text/css" />
+{% endblock %}
+{% block content %}
+    <h2>Edit User System</h2>
+    {{form.errors}}
+    <form class="editform" action="" method="post">
+        {% include "user_systems/unmanagedsystem_form_snippet.html" %}
+        <input type="submit" name="Submit" value="Save" />
+    </form>
+
+    {% include "user_systems/unmanagedsystem_form_snippet.js" %}
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "jinja_base.html" %}
+{% block subtitle %}: Inventory Reporting{% endblock %}
+{% block content %}
+<h2>Inventory Report</h2>
+
+<br />
+<style type="text/css">
+    li { list-style-type: none; margin-left: -44px; }
+    li > label > input { list-style-type: none;   vertical-align: baseline; }
+    li label { font-weight: normal; margin-top: 15px;}
+
+</style>
+{% if systems %}
+<table>
+    <tr><th style='font-size: 22px;' colspan="6">{{ systems|length }} record(s) found</th></tr>
+    <tr>
+        <th>Hostname</th>
+        <th>Status</th>
+        <th>Server Model</th>
+        <th>Location</th>
+        <th>Allocation</th>
+        <th>Operating System</th>
+    </tr>
+    {% for system in systems %}
+    <tr>
+        <td>{{ system }}</td>
+        <td>{{ system.system_status }}</td>
+        <td>{{ system.server_model }}</td>
+        <td>{{ system.system_rack.location }}</td>
+        <td>{{ system.allocation }}</td>
+        <td>{{ system.operating_system }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+<form class='editform' method="post">
+{{ form.errors }}
+<table style="width: 550px;">
+    {% if error_message %}
+    <tr><th><font color='red'>{{error_message}}</font></th></tr>
+    {% endif %}
+    {{ form.as_table() }}
+    <tr><td><input type="submit" value="Generate" id="submit"></td></tr>
+</table>
+</form>
+{{ content }}
+<script type="text/javascript">
+    $(".system_status").change(function(){
+        var cur = $(this);
+        var val=cur.val();
+        if(val > 0){
+            $("#id_system_status_0").attr("checked", '');
+        } else {
+            $(".system_status").each(function(){
+                $(this).attr("checked", '');
+            });
+            $("#id_system_status_0").attr("checked", 'checked');
+
+        }
+    });
+    $(".system_location").change(function(){
+        var cur = $(this);
+        var val=cur.val();
+        if(val > 0){
+            $("#id_location_0").attr("checked", '');
+        } else {
+            $(".system_location").each(function(){
+                $(this).attr("checked", '');
+            });
+            $("#id_location_0").attr("checked", 'checked');
+
+        }
+    });
+</script>
+{% endblock %}

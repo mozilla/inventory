@@ -1,0 +1,165 @@
+{% extends "jinja_base.html" %}
+{% block subtitle %}: Key Value Store{% endblock %}
+{% block content %}
+{% block head %}
+<script src="{{ MEDIA_URL }}javascripts/jquery.datatables.min.js"></script>
+<style type="text/css">
+    @import "{{ MEDIA_URL }}css/smoothness/jquery-ui-1.8.11.custom.css";
+.production {
+	font-weight: bold;
+	text-decoration: underline;
+	font-color: #FFF;
+
+}
+.dataTables_length {
+	float: left;
+	padding: 0 0 0 5px;
+}
+.dataTables_filter {
+	float: right;
+	padding: 0 5px 0 0px;
+}
+.ui-icon {
+	float: right;
+
+}
+.ui-toolbar {
+	margin-bottom: none;
+	padding-bottom: none;
+
+}
+.DataTables_sort_wrapper {
+	min-width: 70px;
+	text-align: center;
+	font-weight: bold;
+	font-color: #000;
+	color: #000;
+	cursor: pointer;
+	background: url("{{ MEDIA_URL }}css/smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png");
+	margin: 0px;
+	padding: 0px;
+
+
+}
+
+th.ui-state-default {
+	margin: 0px;
+	padding: 0px;
+	background-color: none;
+	border: 1px solid #BBBBBB !important;
+	background: url("{{ MEDIA_URL }}css//smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png");
+}
+#example {
+	border-collapse:collapse;
+	margin-top: 0px;
+	border-top: none;
+	margin-bottom: 0px;
+	border-bottom: none;
+
+}
+#example_paginate {
+	font-color: #000;
+
+}
+#datagrid_processing {
+	padding: 5px 0 0 20px;
+	margin-left: 10px;
+	z-index: 400;
+}
+</style>
+{% endblock %}
+<h2>Listing systems</h2>
+{% if not read_only %}<a href="{{ 'truth.views.create'|url() }}">Create New</a>{% endif %}
+
+<br />
+<div id="search_hits"></div>
+<table class="display" id="datagrid">
+	<thead>
+        <tr>
+            <th>Key Name</th> 
+            <th>Key Description</th> 
+            <th>Actions</th> 
+        </tr>
+	</thead>
+	<tbody>
+<tr>
+			<td colspan="5" class="dataTables_empty">Loading data from server</td>
+		</tr>
+	</tbody>
+</table>
+<script type="text/javascript">
+    
+$(document).ready(function() {
+jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function ( oSettings, iDelay ) {
+	/*
+	 * Type:        Plugin for DataTables (www.datatables.net) JQuery plugin.
+	 * Name:        dataTableExt.oApi.fnSetFilteringDelay
+	 * Version:     2.2.1
+	 * Description: Enables filtration delay for keeping the browser more
+	 *              responsive while searching for a longer keyword.
+	 * Inputs:      object:oSettings - dataTables settings object
+	 *              integer:iDelay - delay in miliseconds
+	 * Returns:     JQuery
+	 * Usage:       $('#example').dataTable().fnSetFilteringDelay(250);
+	 * Requires:	  DataTables 1.6.0+
+	 *
+	 * Author:      Zygimantas Berziunas (www.zygimantas.com) and Allan Jardine (v2)
+	 * Created:     7/3/2009
+	 * Language:    Javascript
+	 * License:     GPL v2 or BSD 3 point style
+	 * Contact:     zygimantas.berziunas /AT\ hotmail.com
+	 */
+	var
+		_that = this,
+		iDelay = (typeof iDelay == 'undefined') ? 250 : iDelay;
+	
+	this.each( function ( i ) {
+		$.fn.dataTableExt.iApiIndex = i;
+		var
+			$this = this, 
+			oTimerId = null, 
+			sPreviousSearch = null,
+			anControl = $( 'input', _that.fnSettings().aanFeatures.f );
+		
+			anControl.unbind( 'keyup' ).bind( 'keyup', function() {
+			var $$this = $this;
+
+			if (sPreviousSearch === null || sPreviousSearch != anControl.val()) {
+				window.clearTimeout(oTimerId);
+				sPreviousSearch = anControl.val();	
+				oTimerId = window.setTimeout(function() {
+					$.fn.dataTableExt.iApiIndex = i;
+					_that.fnFilter( anControl.val() );
+				}, iDelay);
+			}
+		});
+		
+		return this;
+	} );
+	return this;
+}
+	//$().ready(function(){
+        //add_tablesorter($('.listtable')[0]);
+        //add_quicksearch($("#quicksearch"), $("#search_hits"), "/systems/quicksearch/");
+		$('#datagrid').dataTable( {
+"aoColumns": [
+{ "sSortDataType": "dom-text" },
+{ "sSortDataType": "dom-text" },
+{ "asSorting": [], 'bSortable':false }
+],
+			"fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+						/* Append the grade to the default row class name */
+                    if(aData[2]){
+                        $('td:eq(2)', nRow).html('<a href="/truth/edit/' + aData[2] + '">Edit</a>&nbsp;<a href="/truth/delete/' + aData[2]+ '/" onclick="return confirm(\'Are you sure?\');">Delete</a>');
+                    }
+					return nRow;
+			},
+			"bJQueryUI": true,
+			"bProcessing": true,
+			"bServerSide": true,
+			"sAjaxSource": "/truth/list_all_keys_ajax/"
+		} ).fnSetFilteringDelay(500);
+$("#datagrid_filter > input").focus();
+	});
+</script>
+{% endblock %}

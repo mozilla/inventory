@@ -1,0 +1,79 @@
+{% extends "jinja_base.html" %}
+{% block content %}
+<div>
+
+<dl class="show">
+<dt>Serial:</dt>
+<dd>{{ user_system.serial }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Asset Tag:</dt>
+<dd>{{ user_system.asset_tag }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Operating System:</dt>
+<dd>{{ user_system.operating_system }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Owner:</dt>
+<dd>
+{% if user_system.owner %}
+<a href="{{ 'owner-show'|url(user_system.owner.id) }}">{{ user_system.owner }}</a>
+{% endif %}
+</dd>
+<div style="clear:both;"></div>
+
+<dt>Server Model:</dt>
+<dd>{{ user_system.server_model }}</dd>
+<div style="clear:both;"></div>
+
+{% if user_system.bug_number %}
+<dt>Bug #:</dt>
+<dd><a href="{{ user_system.get_bug_url() }}">{{ user_system.bug_number }}</a></dd>
+<div style="clear:both;"></div>
+{% endif %}
+
+{% if user_system.loaner_return_date %}
+<dt>Loaner Return Date:</dt>
+<dd>{{ user_system.loaner_return_date }}</dd>
+<div style="clear:both;"></div>
+{% endif %}
+
+<dt>Date Purchased:</dt>
+<dd>{{ user_system.date_purchased }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Cost:</dt>
+<dd>{{ user_system.cost }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Cost Center:</dt>
+<dd>{{ user_system.cost_center }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Notes:</dt>
+<dd>{{ user_system.notes }}</dd>
+<div style="clear:both;"></div>
+</dl>
+
+</div>
+<h3>History</h3>
+<div class="show">
+    <table>
+        <th>Date</th>
+        <th>Info</th>
+        <th>Changed By</th>
+        {% for history in user_system.history_set.all() %}
+        <tr>
+            <td>{{ history.created }}</td>
+            <td>{{ history.change }}</td>
+            <td>{{ history.changed_by }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<div style="clear:both;"></div>
+<a href="/user_systems/edit/{{user_system.id }}">Edit</a>
+<a href="/user_systems/">Back</a>
+{% endblock %}

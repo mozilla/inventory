@@ -1,0 +1,48 @@
+<table cellpadding="2" border="0" align="center">
+{% for n in adapters %}
+
+    <tr><td>IP: <input type="text" id="{{n.id}}_ip_address" name="{{n.id}}_ip_address" value="{{n.ip_address}}" size="13" /></td><td>MAC: <input type="text" id="{{n.id}}_mac_address" name="{{n.id}}_mac_address" value="{{n.mac_address}}" size="13" /></td><td>DHCP Scope:&nbsp;<select id="{{n.id}}_dhcp_scope_id" name="{{n.id}}_dhcp_scope_id"><option value=''>-----</option>{% for d in dhcp_scopes %}<option value="{{d.id}}" {% ifequal d.id n.dhcp_scope_id %} selected="selected" {% endifequal %}>{{d.scope_name}}</option>{% endfor %}</select></td><td>Name:&nbsp;<input type="text" id="{{n.id}}adapter_name" name="{{n.id}}adapter_name" value="{{n.adapter_name}}" size="6" /></td><td>Switch&nbsp;<select id="{{n.id}}_switch_id" name="{{n.id}}_switch_id"><option value=''>-----</option>{% for s in switches %}<option value="{{s.id}}" {% ifequal s.id n.switch_id %} selected="selected" {% endifequal %}>{{s.hostname}}</option>{% endfor %}</select></td></tr><tr><td>Port:&nbsp;<input type="text" id="{{n.id}}_switch_port" name="{{n.id}}_switch_port" value="{{n.switch_port}}" size="10" /></td><td>Filename: <input type="text" id="{{n.id}}_filename" name="{{n.id}}_filename" value="{{n.filename}}" size="13" /></td><td>Host Name: <input type="text" id="{{n.id}}_option_host_name" name="{{n.id}}_option_host_name" value="{{n.option_host_name}}" size="13" /></td><td>Domain: <input type="text" id="{{n.id}}_option_domain_name" name="{{n.id}}_option_domain_name" value="{{n.option_domain_name}}" size="13" /></td><td><a href="#" id="{{n.id}}_save" class="save_network_adapter">Save</a>&nbsp;<a href="#" id="{{n.id}}_save" class="delete_network_adapter">Delete</a></td></tr><tr><td colspan="5"><hr /></td></tr>
+{% endfor %}
+<tr><td><a href="" id='create_network_adapter'>Create Network Adapter</a></td></tr>
+</table>
+<script type="text/javascript">
+		function getURISegment(segment){
+			var query = document.location.href;
+			var split1 = query.split(/\/\//);
+			var ret = split1[1].split(/\//);
+			return (ret[segment - 1]);
+		}
+
+
+		$('.save_network_adapter').click(function(){
+			var system_id = this.id.split('_')[0];
+			$.post("/systems/save_network_adapter/" + system_id + '/',
+				{ 
+				adapter_name: $('#' + system_id + 'adapter_name').val(), 
+				filename: $('#' + system_id + '_filename').val(), 
+				option_host_name: $('#' + system_id + '_option_host_name').val(), 
+				option_domain_name: $('#' + system_id + '_option_domain_name').val(), 
+				dhcp_scope_id: $('#' + system_id + '_dhcp_scope_id').val(), 
+				mac_address: $('#' + system_id + '_mac_address').val(), 
+				ip_address: $('#' + system_id + '_ip_address').val(), 
+				switch_port: $('#' + system_id + '_switch_port').val(), 
+				switch_id: $('#' + system_id + '_switch_id').val()
+				}
+			);
+			return false;
+
+		});
+		$('.delete_network_adapter').click(function(){
+			var nic_id = this.id.split('_')[0];
+			var system_id = getURISegment(4);
+			$('#network_adapters_div').html('&nbsp;').load('/systems/delete_network_adapter/' + nic_id + '/' + system_id + '/');
+			return false;
+
+		});
+		$('#create_network_adapter').click(function(){
+			var system_id = getURISegment(4);
+			$('#network_adapters_div').html('&nbsp;').load('/systems/create_network_adapter/' + system_id + '/');
+			return false;
+
+		});
+</script>

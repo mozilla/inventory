@@ -1,0 +1,48 @@
+{% load staticlink %}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        {% staticlink js:tastytools/lib/jquery-1.7.1.js %}
+        {% staticlink js:tastytools/lib/underscore %}
+        {% staticlink js:tastytools/lib/backbone %}
+        {% staticlink js:tastytools/lib/bootstrap.min.js %}
+        {% staticlink css:tastytools/lib/bootstrap.min.css %}
+        {# {% staticlink css:tastytools/style %} #}
+
+        {% block extra_head %}
+        {% endblock %}
+        <style type="text/css">
+            .well {
+            }
+            dd {
+                margin-bottom: 20px;
+            }
+            /*
+            dt em {
+                padding: 0 10px;
+            }
+            */
+            dt em.type      { color: green }
+            dt em.default   { color: orange }
+            dt em.default.default-none { color: #999 }
+            .resources_table th {
+                text-align: right;
+                padding-right: 20px;
+            }
+            .methods .label {
+                margin: 0 5px;
+            }
+
+            #resource h2, h3 { color: #999 }
+            #resource .code { border: 1px solid #ccc }
+
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+        {% block content %}
+        {% endblock %}
+        </div>
+    </body>
+</html>

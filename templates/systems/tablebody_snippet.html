@@ -1,0 +1,22 @@
+{% for system in systems %}
+    {% url systems.views.system_show system.id as system_show %} 
+<tr>
+    <td><a href="{{ system_show }}">{{ system }}</a></td>
+	<td>{{ system.serial }}</td>
+	<td>{{ system.asset_tag }}</td>
+	<td>{{ system.server_model }}</td>
+	<td>{{ system.system_rack }}</td>
+	<td>{{ system.switch_ports }}</td>
+    {% if not read_only %}
+	<td>
+        {% if system.oob_ip %}<a href="http://{{ system.oob_ip }}/">{{ system.oob_ip }}</a>{% endif %}
+    </td>
+    {% endif %}
+<!--
+    <td><a href="{{ system_show }}">Show</a></td>
+    -- {% if not read_only %}
+    <td><a href="/systems/edit/{{ system.id }}/">Edit</a></td>
+    <td><a href="/systems/delete/{{ system.id }}/" onclick="return confirm('Are you sure?');">Delete</a></td>
+    {% endif %}-->
+</tr>
+{% endfor %}

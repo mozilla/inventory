@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+{{ form.errors }}
+    <form method="post" action="">
+    <div id="editform">
+        <dt><label for="system_status_id">Support Tier</label></dt>
+        <dd>{{ form.support_tier }}</dd>
+
+        <dt><label for="build_attribute_product_series">Product Series</label></dt>
+        <dd>{{ form.product_series }}</dd>
+
+        <dt><label for="build_attribute_tboxtree_url">TinderBox Tree URL</label></dt>
+        <dd>{{ form.tboxtree_url }}</dd>
+
+        <dt><label for="build_attribute_cvsbranch">Repository Branch</label></dt>
+        <dd>{{ form.cvsbranch }}</dd>
+
+        <dt><label for="build_attribute_cvsbranch">Cpu Throttled?</label></dt>
+        <dd>{{ form.cpu_throttled }}</dd>
+
+        <dt><label for="build_attribute_product_branch">Product Branch</label></dt>
+        <dd>{{ form.product_branch }}</dd>
+
+        <dt><label for="build_attribute_pool_name">Pool Name</label></dt>
+        <dd>{{ form.pool_name }}</dd>
+
+        <dt><label for="build_attribute_pool_name">Purposes</label></dt>
+        <dd><div class="sub_purposes_form">{{ form.purposes }}</div></dd>
+
+        <dt><label for="build_attribute_cvsbranch">Closes Tree?</label></dt>
+        <dd>{{ form.closes_tree }}</dd>
+
+        <dt><label for="build_attribute_support_doc">Support Doc URL</label></dt>
+        <dd>{{ form.support_doc }}</dd>
+
+
+        <dt><label for="system_operating_system">Operating System</label></dt>
+        <dd><span id="os_span">{{ system_form.operating_system }}</span>
+        </dd>
+
+        <dt><label for="system_ram">Ram</label></dt>
+        <dd>{{ system_form.ram }}</dd>
+
+        <div style="clear:both;">
+        <dt><label for="system_notes">Notes</label></dt>
+        <dd> {{ system_form.notes }}</dd>
+        </div>
+        <div style="clear:both;">
+        </div>
+
+    </div>
+    <input type="submit" value="Save" name="submit" />
+    </form>
+
+{% endblock %}

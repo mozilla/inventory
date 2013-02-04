@@ -1,0 +1,22 @@
+{% for system in systems.object_list %}
+<tr>
+    <td>
+        <input type="checkbox" name="system_id" value="{{ system.pk }}" />
+        <a href="{% url build-show system.id %}">{{ system }}</a>
+    </td>
+    <td>{{ system.system_rack.location }}</td>
+{% with system.buildattribute as ba %}
+<td>{{ ba.support_tier }}</td>
+<td>{{ ba.cvsbranch }}</td>
+<td>{{ ba.cpu_throttled }}</td>
+<td>{{ ba.product_branch }}</td>
+<td>{{ ba.product_series }}</td>
+<td>{{ ba.closes_tree }}</td>
+<td>{{ ba.purposes.all|join:"," }}</td>
+<td>{{ ba.support_doc|urlize }}</td>
+<td><a href="{% url build-show system.id %}">Show</a></td>
+<td><a href="{% url build-edit system.id %}">Edit</a></td>
+{% endwith %}
+
+</tr>
+{% endfor %}

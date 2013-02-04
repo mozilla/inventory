@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block content %}
+<dl class="show">
+<dt>Host name:</dt>
+<dd>{{ system.hostname }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Serial:</dt>
+<dd>{{ system.serial }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Switch Ports:</dd>
+<dd>{{ system.switch_ports }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Patch Panel Port:</dd>
+<dd>{{ system.patch_panel_port }}</dd>
+<div style="clear:both;"></div>
+
+<dt>OOB Ip:</dt>
+<dd>
+        {% if system.oob_ip %}
+            <a href="http://{{ system.oob_ip }}/">{{ system.oob_ip }}</a>
+        {% endif %}
+</dd>
+<div style="clear:both;"></div>
+
+<dt>OOB switch &amp; port:</dt>
+<dd>{{ system.oob_switch_port }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Status:</dt>
+<dd>{{ system.system_status }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Rack:</dt>
+<dd>{{ system.system_rack }} <b> - </b> {{ system.rack_order }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Asset Tag:</dt>
+<dd>{{ system.asset_tag }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Date Purchased:</dt>
+<dd>{{ system.purchase_date }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Purchase Price:</dt>
+<dd>{{ system.purchase_price }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Operating System:</dt>
+<dd>{{ system.operating_system }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Server Model:</dt>
+<dd>{{ system.server_model }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Allocated to:</dt> 
+<dd>{{ system.allocation }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Ram:</dt> 
+<dd>{{ system.ram }}</dd>
+<div style="clear:both;"></div>
+
+{% if system.buildattribute %}
+  <dt>Pool Name: </dt> 
+  <dd>{{ system.buildattribute.pool_name }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Support Tier: </dt> 
+  <dd>{{ system.buildattribute.support_tier }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Tinderbox Tree URL: </dt> 
+  <dd>{{ system.buildattribute.tboxtree_url|urlize }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Product Series</dt>
+  <dd>{{ system.buildattribute.product_series }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Repository Branch: </dt> 
+  <dd>{{ system.buildattribute.cvsbranch }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Cpu Throttled?: </dt> 
+  <dd>{{ system.buildattribute.cpu_throttled }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Product Branch: </dt> 
+  <dd>{{ system.buildattribute.product_branch }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Closes Tree?: </dt> 
+  <dd>{{ system.buildattribute.closes_tree }}</dd>
+  <div style="clear:both;"></div>
+  <dt>Support Doc: </dt> 
+  <dd>{{ system.buildattribute.support_doc|urlize }}</dd>
+  <div style="clear:both;"></div>
+  
+  <dt>Unit Test</dt>
+  <dd>{{ system.buildattribute.unittest }}</dd>
+  <div style="clear:both;"></div>
+
+  <dt>Talos:</dt>
+  <dd>{{ system.buildattribute.talos }}</dd>
+  <div style="clear:both;"></div>
+
+  <dt>Build:</dt>
+  <dd>{{ system.buildattribute.build_purpose }}</dd>
+  <div style="clear:both;"></div>
+
+  <dt>Buildbot Master:</dt>
+  <dd>{{ system.buildattribute.buildbot_master }}</dd>
+  <div style="clear:both;"></div>
+
+  <dt>Staging:</dt>
+  <dd>{{ system.buildattribute.staging }}</dd>
+  <div style="clear:both;"></div>
+
+  <dt>Production:</dt>
+  <dd>{{ system.buildattribute.production }}</dd>
+  <div style="clear:both;"></div>
+
+  <dt>Release:</dt>
+  <dd>{{ system.buildattribute.release }}</dd>
+  <div style="clear:both;"></div>
+
+  <dt>Obsolete:</dt>
+  <dd>{{ system.buildattribute.obsolete }}</dd>
+  <div style="clear:both;"></div>
+  
+{% endif %}
+<dt>Notes: </dt>
+<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre>{{ system.notes }}</pre></dd>
+<div style="clear:both;"></div>
+
+</dl>
+<div style="clear:both;"></div>
+{% endblock %}

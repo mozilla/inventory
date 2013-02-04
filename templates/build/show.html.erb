@@ -1,0 +1,133 @@
+<dl class="show">
+<dt>Host name:</dt>
+<dd><%= h @system.hostname %></dd>
+<div style="clear:both;"></div>
+
+<dt>Serial:</dt>
+<dd><%= h @system.serial %></dd>
+<div style="clear:both;"></div>
+
+<dt>Switch Ports:</dd>
+<dd><%= h @system.switch_ports %></dd>
+<div style="clear:both;"></div>
+
+<dt>Patch Panel Port:</dd>
+<dd><%= h @system.patch_panel_port %></dd>
+<div style="clear:both;"></div>
+
+<dt>OOB Ip:</dt>
+<dd><%= link_to @system.oob_ip,  "http://" + @system.oob_ip unless @system.oob_ip.nil? %></dd>
+<div style="clear:both;"></div>
+
+<dt>OOB switch &amp; port:</dt>
+<dd><%= h @system.oob_switch_port %></dd>
+<div style="clear:both;"></div>
+
+<dt>Status:</dt>
+<dd><%= h @system.system_status %></dd>
+<div style="clear:both;"></div>
+
+<dt>SystemRack:</dt>
+<dd><%= h @system.system_rack %> <b> - </b> <%= h @system.rack_order %></dd>
+<div style="clear:both;"></div>
+
+
+
+<dt>Asset Tag:</dt>
+<dd><%= h @system.asset_tag %></dd>
+<div style="clear:both;"></div>
+
+<dt>Date Purchased:</dt>
+<dd><%= h @system.purchase_date %></dd>
+<div style="clear:both;"></div>
+
+<dt>Purchase Price:</dt>
+<dd><%= h @system.purchase_price %></dd>
+<div style="clear:both;"></div>
+
+<dt>Operating System:</dt>
+<dd><%= h @system.operating_system %></dd>
+<div style="clear:both;"></div>
+
+<dt>Server Model:</dt>
+<dd><%= h @system.server_model %></dd>
+<div style="clear:both;"></div>
+
+<dt>Allocated to:</dt> 
+<dd><%= h @system.allocation %></dd>
+<div style="clear:both;"></div>
+
+<dt>Ram:</dt> 
+<dd><%= h @system.ram %></dd>
+<div style="clear:both;"></div>
+
+<% if @system.build_attribute %>
+  <dt>Pool Name: </dt> 
+  <dd><%= h @system.build_attribute.pool_name %></dd>
+  <div style="clear:both;"></div>
+  <dt>Support Tier: </dt> 
+  <dd><%= h @system.build_attribute.support_tier %></dd>
+  <div style="clear:both;"></div>
+  <dt>Tinderbox Tree URL: </dt> 
+  <dd><%= auto_link h(@system.build_attribute.tboxtree_url) %></dd>
+  <div style="clear:both;"></div>
+  <dt>Product Series</dt>
+  <dd><%= h @system.build_attribute.product_series %></dd>
+  <div style="clear:both;"></div>
+  <dt>Repository Branch: </dt> 
+  <dd><%= h @system.build_attribute.cvsbranch %></dd>
+  <div style="clear:both;"></div>
+  <dt>Cpu Throttled?: </dt> 
+  <dd><%= h @system.build_attribute.cpu_throttled %></dd>
+  <div style="clear:both;"></div>
+  <dt>Product Branch: </dt> 
+  <dd><%= h @system.build_attribute.product_branch %></dd>
+  <div style="clear:both;"></div>
+  <dt>Closes Tree?: </dt> 
+  <dd><%= h @system.build_attribute.closes_tree %></dd>
+  <div style="clear:both;"></div>
+  <dt>Support Doc: </dt> 
+  <dd><%= auto_link h(@system.build_attribute.support_doc) %></dd>
+  <div style="clear:both;"></div>
+  
+  <dt>Unit Test</dt>
+  <dd><%= h @system.build_attribute.unittest %></dd>
+  <div style="clear:both;"></div>
+
+  <dt>Talos:</dt>
+  <dd><%= h @system.build_attribute.talos %></dd>
+  <div style="clear:both;"></div>
+
+  <dt>Build:</dt>
+  <dd><%= h @system.build_attribute.build_purpose %></dd>
+  <div style="clear:both;"></div>
+
+  <dt>Buildbot Master:</dt>
+  <dd><%= h @system.build_attribute.buildbot_master %></dd>
+  <div style="clear:both;"></div>
+
+  <dt>Staging:</dt>
+  <dd><%= h @system.build_attribute.staging %></dd>
+  <div style="clear:both;"></div>
+
+  <dt>Production:</dt>
+  <dd><%= h @system.build_attribute.production %></dd>
+  <div style="clear:both;"></div>
+
+  <dt>Release:</dt>
+  <dd><%= h @system.build_attribute.release %></dd>
+  <div style="clear:both;"></div>
+
+  <dt>Obsolete:</dt>
+  <dd><%= h @system.build_attribute.obsolete %></dd>
+  <div style="clear:both;"></div>
+  
+<% end %>
+<dt>Notes: </dt>
+<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre><%= h @system.notes %></pre></dd>
+<div style="clear:both;"></div>
+
+</dl>
+<div style="clear:both;"></div>
+<%= link_to 'Edit', :action => 'edit', :id => @system %> |
+<%= link_to 'Back', :action => 'list' %>

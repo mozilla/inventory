@@ -1,0 +1,22 @@
+<form action="{% url build-bulk-edit %}" method="get">
+<table id="quicksearch" class="listtable tablesorter">
+	<thead>
+        <tr>
+            <th>Host Name</th> 
+            <th>Support Tier</th> 
+            <th>Repo. Branch</th> 
+            <th>CPU Throttled</th> 
+            <th>Product Branch</th> 
+            <th>Product Series</th> 
+            <th>Closes Tree</th> 
+            <th>Purposes</th> 
+            <th>Support URL</th> 
+            <th colspan="2">Actions</th>
+        </tr>
+	</thead>
+	<tbody>
+        {% include "build/quicksearch_tablebody_snippet.html" %}
+	</tbody>
+</table>
+<input type="submit" name="submit" value="Bulk Edit" />
+</form>

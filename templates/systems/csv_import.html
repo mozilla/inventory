@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="editform">
+    {% if form %}
+    <h3>Allowed columns: ({{ allowed_columns|join:", " }})</h2>
+    <form enctype="multipart/form-data" method="post">
+        <table>
+            {{ form }}
+        </table>
+        <input type="submit" name="submit" value="Import" />
+    </form>
+    {% else %}
+        <h3>Created {{ new_systems }} new systems.</h3>
+    {% endif %}
+</div>
+{% endblock %}
