@@ -162,7 +162,7 @@ class OperatingSystemData(CustomAPIResource):
         data.set('version', '6.2')
         return data
 class KeyValueResource(CustomAPIResource):
-    #system = fields.ToOneField(SystemResource, 'system', full=True)
+    system = fields.ToOneField('api_v3.system_api.SystemResource', 'system', full=False)
 
     class Meta(CustomAPIResource.Meta):
         filtering = {
