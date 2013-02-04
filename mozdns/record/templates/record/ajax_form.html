@@ -43,67 +43,76 @@
     }
     div.object_meta {
         float:right;
+        clear:both;
         border:2px solid gray;
         padding:10px;
         border-radius: 10px;
         background: white;
-        margin-right: 10px;
+        margin: 10px;
+        margin: 10px;
         min-height:100px;
         max-width:300px;
     }
     div.object_meta caption {
         max-width:320px;
     }
+    div.form-container {
+        float: left;
+    }
+    div.form-container ul {
+        width: 30em;
+    }
 </style>
 {% if object_ %}
     {% set d = object_.reverse_domain if record_type == 'PTR' else object_.domain %}
-    <div class='object_meta container'>
-    <table>
-        <caption>{{object_.bind_render_record()}}</caption>
-        {% if d.soa  %}
-        <tr>
-            <td>
-                ZONE: <a href='{{ d.soa.get_absolute_url() }}'>{{ d.soa }}</a>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Zone Status:
-                    {% if d.soa.dirty %}
-                    <div class='soa_status_dirty'>REBUILD NEEDED</div>
-                    {% else %}
-                    <div class='soa_status_clean'>UP TO DATE</div>
-                    {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Debug BIND File: <a href='{{ d.soa.get_debug_build_url() }}'> click </a>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td>
-                This record doesn't belong to any zone.
-            </td>
-        </tr>
-        {% endif %}
-        <tr>
-            <td>
-                Record History: <a href='{{ object_.get_history_url() }}'> click </a>
-            </td>
-        </tr>
-    </table>
+<div class='container'>
+    <div class='object_meta'>
+        <table>
+            <caption>{{object_.bind_render_record()}}</caption>
+            {% if d.soa  %}
+            <tr>
+                <td>
+                    ZONE: <a href='{{ d.soa.get_absolute_url() }}'>{{ d.soa }}</a>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Zone Status:
+                        {% if d.soa.dirty %}
+                        <div class='soa_status_dirty'>REBUILD NEEDED</div>
+                        {% else %}
+                        <div class='soa_status_clean'>UP TO DATE</div>
+                        {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Debug BIND File: <a href='{{ d.soa.get_debug_build_url() }}'> click </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td>
+                    This record doesn't belong to any zone.
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>
+                    Record History: <a href='{{ object_.get_history_url() }}'> click </a>
+                </td>
+            </tr>
+        </table>
     </div>
 {% endif %}
-
-<div class="form-container">
-    <form id='current-form'>
-        <input type="hidden" id="record_type" name="record_type" value="{{record_type}}"/>
-        <input type="hidden" id="record_pk" name="record_pk" value="{{record_pk}}"/>
-        <table>
-        {{ form.as_table() }}
-        </table>
-        <input id='submit-button' type="submit" value="Commit"/>
-    <form>
+    <div class="form-container">
+        <form id='current-form'>
+            <input type="hidden" id="record_type" name="record_type" value="{{record_type}}"/>
+            <input type="hidden" id="record_pk" name="record_pk" value="{{record_pk}}"/>
+            <table>
+            {{ form.as_table() }}
+            </table>
+            <input id='submit-button' type="submit" value="Commit"/>
+        <form>
+    </div>
 </div>
