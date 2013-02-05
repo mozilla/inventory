@@ -14,5 +14,9 @@ class SRVForm(BaseForm):
 class FQDNSRVForm(BaseForm):
     class Meta:
         model = SRV
+        fields = (
+            'fqdn', 'target', 'port', 'priority', 'weight', 'ttl',
+            'description', 'views'
+        )
         exclude = ('label', 'domain')
         widgets = {'views': forms.CheckboxSelectMultiple}

@@ -66,7 +66,16 @@
 {% if object_ %}
     {% set d = object_.reverse_domain if record_type == 'PTR' else object_.domain %}
 <div class='container'>
-    <div class='object_meta'>
+    <div class='object_meta' >
+        <!--- lolol, I suck at the web!
+        seriously, this all needs to be rewritten
+        The object_redirect_url is detected after the form is inserted into the web page, and if it's detected during a create it's used as a redirect target.
+        -->
+        {% if object_.pk %}
+        <div id='object_redirect_url' record-url='{{object_.get_fancy_edit_url()}}' style='display:none'>
+        </div>
+        {% endif %}
+
         <table>
             <caption>{{object_.bind_render_record()}}</caption>
             {% if d.soa  %}

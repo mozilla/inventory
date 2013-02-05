@@ -1,5 +1,5 @@
 function select_state(state) {
-    function insert_new_form(record_type, record_pk, callback){
+    function insert_new_form(record_type, record_pk, pre_callback, post_callback){
         console.log(record_type + " " + record_pk);
         $.get('/mozdns/record/record_ajax/',
 
@@ -12,8 +12,8 @@ function select_state(state) {
                 console.log("[DEBUG] Redrawing form");
                 $('#current-form-area').append(data);
                 $('#add-comment').attr('checked', true);
-                bind_submit($('#current-form'));
-                callback();
+                bind_submit($('#current-form'), post_callback);
+                pre_callback();
             }).error(function(e) {
                 var newDoc = document.open("text/html", "replace");
                 newDoc.write(e.responseText);
@@ -34,9 +34,17 @@ function select_state(state) {
         case 'create':
             console.log("[STATE] create");
             data.attr('record_pk', '');
-            insert_new_form(data.attr('record_type'), data.attr('record_pk'), function (){
-                bind_smart_names();
-            });
+            insert_new_form(data.attr('record_type'), data.attr('record_pk'),
+                function (){
+                    bind_smart_names();
+                },
+                function (){
+                    if ($('#object_redirect_url').attr('record-url')) {
+                        alert("Creation Successful!");
+                        window.location = $('#object_redirect_url').attr('record-url');
+                    }
+                }
+            );
             break;
     /*
      *      edit
@@ -52,23 +60,35 @@ function select_state(state) {
             console.log("[DEBUG] pk in update state: "+data.attr('record_pk'));
             if (!data.attr('record_pk')) {
                 console.log("Tried to update without a record_pk. Going to create view.");
-                insert_new_form(data.record_type, '', function (){
-                    bind_smart_names();
-                    return;
-                });
+                insert_new_form(data.record_type, '',
+                    function (){
+                        bind_smart_names();
+                        return;
+                    },
+                    function (){
+                        if ($('#object_redirect_url').attr('record-url')) {
+                            alert("Creation Successful!");
+                            window.location = $('#object_redirect_url').attr('record-url');
+                        }
+                    }
+                );
                 break;
             } else {
-                insert_new_form(data.attr('record_type'), data.attr('record_pk'), function (){
-                    fix_css();
-                    return;
-                });
+                insert_new_form(data.attr('record_type'), data.attr('record_pk'),
+                    function (){
+                        fix_css();
+                        return;
+                    },
+                    function (){
+                    }
+                );
                 setup_delete();
             }
             break;
     }
 }
 
-function bind_submit(form) {
+function bind_submit(form, post_callback) {
     console.log("[DEBUG] Binding submit");
     form.submit(function (){
         console.log("[DEBUG] Submit pressed");
@@ -84,7 +104,7 @@ function bind_submit(form) {
                             alert("Aborting commit due to empty commit message.");
                         } else {
                             $('#id_comment').val($('#commit-message').val());
-                            submit_handler();
+                            submit_handler(post_callback);
                         }
                         $(this).dialog("close");
                     },
@@ -96,13 +116,13 @@ function bind_submit(form) {
             });
         } else {
             console.log("[DEBUG] No commit message");
-            submit_handler();
+            submit_handler(post_callback);
         }
         return false;
     }); // end submit()
 }
 
-function submit_handler(){
+function submit_handler(post_callback){
     $('#form-message').html("<p>Sending data...</p>");
     var start = new Date().getTime();
     $.post('/mozdns/record/record_ajax/',
@@ -114,7 +134,8 @@ function submit_handler(){
             var time = end - start;
             $('#action-time').html('('+time/1000+' seconds)');
             fix_css();  // Make names the correct length
-            bind_submit($('#current-form'));  // It's a new form.
+            post_callback(); // Do work if needed
+            bind_submit($('#current-form'), post_callback);  // It's a new form.
         }
         ).error(function(e) {
             var newDoc = document.open("text/html", "replace");
