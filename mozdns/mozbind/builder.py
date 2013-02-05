@@ -399,7 +399,7 @@ class DNSBuilder(SVNBuilderMixin):
 
         if self.STAGE_ONLY:
             self.log("Did not copy {0} to {1}".format(src, dst))
-            return
+            return dst
 
         if not os.path.exists(dst_dir):
             os.makedirs(dst_dir)
