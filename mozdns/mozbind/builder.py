@@ -396,6 +396,11 @@ class DNSBuilder(SVNBuilderMixin):
                              "stage_to_prod".format(src))
         dst = src.replace(self.STAGE_DIR, self.PROD_DIR)
         dst_dir = os.path.dirname(dst)
+
+        if self.STAGE_ONLY:
+            self.log("Did not copy {0} to {1}".format(src, dst))
+            return
+
         if not os.path.exists(dst_dir):
             os.makedirs(dst_dir)
         # copy2 will copy file metadata
@@ -614,9 +619,12 @@ class DNSBuilder(SVNBuilderMixin):
                             soa=soa
                         )
                     # run named-checkzone for good measure
-                        self.named_checkzone(
-                            file_meta['prod_fname'], soa.root_domain, soa
-                        )
+                        if self.STAGE_ONLY:
+                            self.log("Not calling named-checkconf.", soa=soa)
+                        else:
+                            self.named_checkzone(
+                                file_meta['prod_fname'], soa.root_domain, soa
+                            )
             except Exception:
                 soa.dirty = True
                 soa.save()
