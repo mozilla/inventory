@@ -189,7 +189,7 @@ class DNSBuilder(SVNBuilderMixin):
             setattr(self, k, kwargs.get(k, default))
 
         # This is very specific to python 2.6
-        syslog.openlog('dnsbuild', 0, syslog.LOG_USER)
+        syslog.openlog('dnsbuild', 0, syslog.LOG_LOCAL6)
         self.lock_fd = None
 
     def format_title(self, title):
