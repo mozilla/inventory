@@ -3,6 +3,8 @@ PROD_DIR = ""
 LOCK_FILE = ""
 NAMED_CHECKZONE_OPTS = ""
 MAX_ALLOWED_LINES_CHANGED = 500
+NAMED_CHECKZONE = ""  # path to named-checkzone
+NAMED_CHECKCONF = ""  # path to named-checkconf
 
 # Only one zone at a time should be removed
 MAX_ALLOWED_CONFIG_LINES_REMOVED = 5

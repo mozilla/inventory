@@ -12,9 +12,11 @@ import time
 
 from django.db import transaction
 
-from settings.dnsbuilds import STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE
-from settings.dnsbuilds import NAMED_CHECKZONE_OPTS, MAX_ALLOWED_LINES_CHANGED
-from settings.dnsbuilds import MAX_ALLOWED_CONFIG_LINES_REMOVED
+from settings.dnsbuilds import (
+    STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE, NAMED_CHECKZONE_OPTS,
+    MAX_ALLOWED_LINES_CHANGED, MAX_ALLOWED_CONFIG_LINES_REMOVED,
+    NAMED_CHECKZONE, NAMED_CHECKCONF
+)
 
 from mozdns.domain.models import SOA
 from mozdns.view.models import View
@@ -352,18 +354,18 @@ class DNSBuilder(SVNBuilderMixin):
         with errors raise a BuildError.
         """
         # Make sure we have the write tools to do the job
-        command_str = "which named-checkzone"
+        command_str = "test -f {0}".format(NAMED_CHECKZONE)
         stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
             raise BuildError("Couldn't find named-checkzone.")
 
         # Check the zone file.
-        command_str = "named-checkzone {0} {1} {2}".format(
-                      self.NAMED_CHECKZONE_OPTS, root_domain.name,
-                      zone_file)
+        command_str = "{0} {1} {2} {3}".format(
+                      NAMED_CHECKZONE, self.NAMED_CHECKZONE_OPTS,
+                      root_domain.name, zone_file)
         self.log(
-            "Calling `named-checkzone {0} {1}`".
-            format(root_domain.name, zone_file),
+            "Calling `{0} {1} {2}`".
+            format(NAMED_CHECKZONE, root_domain.name, zone_file),
             root_domain=root_domain
         )
         stdout, stderr, returncode = self.shell_out(command_str)
@@ -374,14 +376,14 @@ class DNSBuilder(SVNBuilderMixin):
                              stderr))
 
     def named_checkconf(self, conf_file):
-        command_str = "which named-checkconf"
+        command_str = "test -f {0}".format(NAMED_CHECKCONF)
         stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
-            raise BuildError("Couldn't find named-checkconf.")
+            raise BuildError("Couldn't find {0}".format(NAMED_CHECKCONF))
 
-        command_str = "named-checkconf {0}".format(conf_file)
-        self.log("Calling `named-checkconf {0}` ".
-                 format(conf_file))
+        command_str = "{0} {1}".format(NAMED_CHECKCONF, conf_file)
+        self.log("Calling `{0} {1}` ".
+                 format(NAMED_CHECKCONF, conf_file))
         stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
             raise BuildError("\nnamed-checkconf rejected config {0}. "
