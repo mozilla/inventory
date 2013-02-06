@@ -22,6 +22,8 @@ from mozdns.mozbind.zone_builder import build_zone_data
 from mozdns.mozbind.models import DNSBuildRun
 from mozdns.mozbind.serial_utils import get_serial
 
+from core.utils import fail_mail
+
 
 class BuildError(Exception):
     """Exception raised when there is an error in the build process."""
@@ -660,19 +662,25 @@ class DNSBuilder(SVNBuilderMixin):
             )
         return configs
 
-    def check_stop_update(self):
+    def stop_update_exists(self):
         """
         Look for a file referenced by `STOP_UPDATE_FILE` and if it exists,
         cancel the build.
         """
         if os.path.exists(self.STOP_UPDATE_FILE):
-            msg = "The STOP_UPDATE_FILE ({0}) exists. Build canceled".format(
-                self.STOP_UPDATE_FILE)
+            msg = ("The STOP_UPDATE_FILE ({0}) exists. Build canceled. \n"
+                   "Reason for skipped build: \n"
+                   "{1}".format(self.STOP_UPDATE_FILE,
+                                open(self.STOP_UPDATE_FILE).read()))
+            fail_mail(msg, subject="DNS builds have stoped")
             self.log(msg)
-            raise BuildError(msg)
+            return True
+        else:
+            return False
 
     def build_dns(self):
-        self.check_stop_update()
+        if self.stop_update_exists():
+            return
         self.log('Building...')
         self.lock()
         try:
