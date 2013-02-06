@@ -201,10 +201,10 @@ class DNSBuilder(SVNBuilderMixin):
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
         callername = "[{0}]".format(calframe[1][3])
-        soa = kwargs.get('soa', None)
-        if soa:
+        root_domain = kwargs.get('root_domain', None)
+        if root_domain:
             fmsg = "{0:20} < {1} > {2}".format(callername,
-                                               soa.root_domain.name, msg)
+                                               root_domain.name, msg)
         else:
             fmsg = "{0:20} {1}".format(callername, msg)
         if hasattr(syslog, log_level):
@@ -320,14 +320,15 @@ class DNSBuilder(SVNBuilderMixin):
             zone_path = tmp_path + '/'
         return zone_path
 
-    def write_stage_zone(self, stage_fname, root_domain, soa, fname, data):
+    def write_stage_zone(self, stage_fname, root_domain, fname, data):
         """
         Write a zone_file.
         Return the path to the file.
         """
         if not os.path.exists(os.path.dirname(stage_fname)):
             os.makedirs(os.path.dirname(stage_fname))
-        self.log("Stage zone file is {0}".format(stage_fname), soa=soa)
+        self.log("Stage zone file is {0}".format(stage_fname),
+                 root_domain=root_domain)
         with open(stage_fname, 'w+') as fd:
             fd.write(data)
         return stage_fname
@@ -344,7 +345,7 @@ class DNSBuilder(SVNBuilderMixin):
         stdout, stderr = p.communicate()
         return stdout, stderr, p.returncode
 
-    def named_checkzone(self, zone_file, root_domain, soa):
+    def named_checkzone(self, zone_file, root_domain):
         """Shell out and call named-checkzone on the zone file. If it returns
         with errors raise a BuildError.
         """
@@ -361,7 +362,7 @@ class DNSBuilder(SVNBuilderMixin):
         self.log(
             "Calling `named-checkzone {0} {1}`".
             format(root_domain.name, zone_file),
-            soa=soa
+            root_domain=root_domain
         )
         stdout, stderr, returncode = self.shell_out(command_str)
         if returncode != 0:
@@ -427,7 +428,7 @@ class DNSBuilder(SVNBuilderMixin):
             fd.write(stmts)
         return stage_config
 
-    def build_zone(self, view, file_meta, view_data, root_domain, soa):
+    def build_zone(self, view, file_meta, view_data, root_domain):
         """
         This function will write the zone's zone file to the the staging area
         and call named-checkconf on the files before they are copied over to
@@ -438,11 +439,11 @@ class DNSBuilder(SVNBuilderMixin):
         """
         stage_fname = os.path.join(self.STAGE_DIR, file_meta['rel_fname'])
         self.write_stage_zone(
-            stage_fname, root_domain, soa, file_meta['rel_fname'], view_data
+            stage_fname, root_domain, file_meta['rel_fname'], view_data
         )
         self.log("Built stage_{0}_file to {1}".format(view.name, stage_fname),
-                 soa=soa)
-        self.named_checkzone(stage_fname, root_domain, soa)
+                 root_domain=root_domain)
+        self.named_checkzone(stage_fname, root_domain)
 
         prod_fname = self.stage_to_prod(stage_fname)
 
@@ -469,7 +470,7 @@ class DNSBuilder(SVNBuilderMixin):
                 'LOG_NOTICE', "{0} appears to be a new zone. Building {1} "
                 "with initial serial {2}".format(soa, file_meta['prod_fname'],
                                                  new_serial),
-                soa=soa)
+                root_domain=root_domain)
         elif int(serial) != soa.serial:
             # Looks like someone made some changes... let's nuke them.
             # We should probably email someone too.
@@ -478,7 +479,7 @@ class DNSBuilder(SVNBuilderMixin):
                 "{3} in the database. Zone will be rebuilt."
                 .format(soa, serial, file_meta['prod_fname'],
                         soa.serial),
-                soa=soa)
+                root_domain=root_domain)
             force_rebuild = True
             # Choose the highest serial so any slave nameservers don't get
             # confused.
@@ -503,6 +504,7 @@ class DNSBuilder(SVNBuilderMixin):
             # If anything happens during this soa's build we need to mark
             # it as dirty so it can be rebuild
             try:
+                root_domain = soa.root_domain  # This is an expensive lookup
                 # General order of things:
                 # * Find which views should have a zone file built and add them
                 # to a list.
@@ -529,11 +531,11 @@ class DNSBuilder(SVNBuilderMixin):
                 force_rebuild = soa_was_dirty(soa)
 
                 self.log('====== Processing {0} {1} ======'.format(
-                    soa.root_domain, soa.serial)
+                    root_domain, soa.serial)
                 )
                 views_to_build = []
                 self.log("SOA was seen with dity == {0}".
-                         format(force_rebuild), soa=soa)
+                         format(force_rebuild), root_domain=root_domain)
 
                 # By setting dirty to false now rather than later we get around
                 # the edge case that someone updates a record mid build.
@@ -544,26 +546,27 @@ class DNSBuilder(SVNBuilderMixin):
                 # rebuilding.
                 for view in View.objects.all():
                     self.log("++++++ Looking at < {0} > view ++++++".
-                             format(view.name), soa=soa)
+                             format(view.name), root_domain=root_domain)
                     t_start = time.time()  # tic
-                    view_data = build_zone_data(view, soa.root_domain, soa,
+                    view_data = build_zone_data(view, root_domain, soa,
                                                 logf=self.log)
                     build_time = time.time() - t_start  # toc
                     self.log('< {0} > Built {1} data in {2} seconds'
-                             .format(view.name, soa, build_time), soa=soa,
-                             build_time=build_time)
+                             .format(view.name, soa, build_time),
+                             root_domain=root_domain, build_time=build_time)
                     if not view_data:
                         self.log('< {0} > No data found in this view. '
                                  'No zone file will be made or included in any'
                                  ' config for this view.'.format(view.name),
-                                 soa=soa)
+                                 root_domain=root_domain)
                         continue
                     self.log('< {0} > Non-empty data set for this '
                              'view. Its zone file will be included in the '
-                             'config.'.format(view.name), soa=soa)
-                    file_meta = self.get_file_meta(view, soa.root_domain, soa)
+                             'config.'.format(view.name),
+                             root_domain=root_domain)
+                    file_meta = self.get_file_meta(view, root_domain, soa)
                     was_bad_prev, new_serial = self.verify_previous_build(
-                        file_meta, view, soa.root_domain, soa
+                        file_meta, view, root_domain, soa
                     )
 
                     if was_bad_prev:
@@ -577,7 +580,7 @@ class DNSBuilder(SVNBuilderMixin):
                 self.log(
                     '----- Building < {0} > ------'.format(
                         ' | '.join([v.name for v, _, _ in views_to_build])
-                    ), soa=soa
+                    ), root_domain=root_domain
                 )
 
                 if force_rebuild:
@@ -585,17 +588,17 @@ class DNSBuilder(SVNBuilderMixin):
                     # 'dirty' value to the db.
                     SOA.objects.filter(pk=soa.pk).update(serial=soa.serial + 1)
                     self.log('Zone will be rebuilt at serial {0}'
-                             .format(soa.serial + 1), soa=soa)
+                             .format(soa.serial + 1), root_domain=root_domain)
                 else:
                     self.log('Zone is stable at serial {0}'
-                             .format(soa.serial), soa=soa)
+                             .format(soa.serial), root_domain=root_domain)
 
                 for view, file_meta, view_data in views_to_build:
                     view_zone_stmts = zone_stmts.setdefault(view.name, [])
                     # If we see a view in this loop it's going to end up in the
                     # config
                     view_zone_stmts.append(
-                        self.render_zone_stmt(soa.root_domain,
+                        self.render_zone_stmt(root_domain,
                                               file_meta['prod_fname'])
                     )
                     # If it's dirty or we are rebuilding another view, rebuild
@@ -604,26 +607,27 @@ class DNSBuilder(SVNBuilderMixin):
                         self.log(
                             'Rebuilding < {0} > view file {1}'
                             .format(view.name, file_meta['prod_fname']),
-                            soa=soa)
+                            root_domain=root_domain)
                         prod_fname = self.build_zone(
                             view, file_meta,
                             # Lazy string evaluation
                             view_data.format(serial=soa.serial + 1),
-                            soa.root_domain, soa
+                            root_domain
                         )
                         assert prod_fname == file_meta['prod_fname']
                     else:
                         self.log(
                             'NO REBUILD needed for < {0} > view file {1}'
                             .format(view.name, file_meta['prod_fname']),
-                            soa=soa
+                            root_domain=root_domain
                         )
                     # run named-checkzone for good measure
                         if self.STAGE_ONLY:
-                            self.log("Not calling named-checkconf.", soa=soa)
+                            self.log("Not calling named-checkconf.",
+                                     root_domain=root_domain)
                         else:
                             self.named_checkzone(
-                                file_meta['prod_fname'], soa.root_domain, soa
+                                file_meta['prod_fname'], root_domain
                             )
             except Exception:
                 soa.dirty = True
