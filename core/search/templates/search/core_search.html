@@ -149,6 +149,21 @@ div advanced-search-knobs input{
                         var end = new Date().getTime();
                         var time = end - start;
                         $('#search-time').html('In ('+time/1000+' seconds)');
+                        var or = jQuery.parseJSON($('#overflow-info').attr('data-objs'));
+                        var max_obj_num = jQuery.parseJSON($('#overflow-info').attr('data-max-obj-num'));
+                        console.log(or);
+                        console.log(max_obj_num);
+                        msg = ""
+                        for (var key in or){
+                            if (or[key] > max_obj_num){
+                                msg += or[key] + " " + key + " objects were returned.  Results truncated to " + max_obj_num + ".\n"
+                            }
+                            console.log(key + " " + or[key]);
+                        }
+                        if (msg != ""){
+                            msg += "Please be more specific with your search query."
+                            alert(msg);
+                        }
             }).error(function(e) {
                 console.log(e);
                 if (e['statusText'] != "abort"){

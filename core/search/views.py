@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
-from mozdns.api.v1.api import v1_dns_api
 from mozdns.utils import get_zones
 
 from core.search.compiler.django_compile import compile_to_django
 import simplejson as json
 from gettext import gettext as _
+from itertools import izip
 
 from jinja2 import Environment, PackageLoader, ChoiceLoader
 env = Environment(loader=ChoiceLoader(
@@ -14,13 +14,7 @@ env = Environment(loader=ChoiceLoader(
      PackageLoader('core.search', 'templates')]
 ))
 
-
-def resource_for_request(resource_name, filters, request):
-    resource = v1_dns_api.canonical_resource_for(resource_name)
-    objects = resource.get_object_list(request).filter(filters)
-    search_fields = resource._meta.object_class.search_fields
-    return [(search_fields, resource.model_to_data(model, request))
-            for model in objects]
+MAX_NUM_OBJECTS = 5000
 
 
 def request_to_search(request):
@@ -50,6 +44,14 @@ def search_ajax(request):
     template = env.get_template('search/core_search_results.html')
 
     def html_response(**kwargs):
+        overflow_results = {}
+        for objects, (type_, count) in izip(kwargs['objects'].items(),
+                                            kwargs['meta']['counts'].items()):
+            if count > MAX_NUM_OBJECTS:
+                overflow_results[type_] = count
+                kwargs['objects'][type_] = objects[1][:MAX_NUM_OBJECTS]
+        kwargs['MAX_NUM_OBJECTS'] = MAX_NUM_OBJECTS
+        kwargs['overflow_results'] = json.dumps(overflow_results)
         return template.render(**kwargs)
     return _search(request, html_response)
 
