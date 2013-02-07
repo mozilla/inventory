@@ -112,23 +112,35 @@ class BuildScriptTests(object):
     def test_lock_unlock(self):
         if os.path.exists(self.lock_file):
             os.remove(self.lock_file)
-        b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+        b1 = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                       LOCK_FILE=self.lock_file)
+        b2 = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                       LOCK_FILE=self.lock_file)
+        b3 = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file)
         self.assertFalse(os.path.exists(self.lock_file))
-        b.lock()
+        self.assertTrue(b1.lock())
         self.assertTrue(os.path.exists(self.lock_file))
-        for i in xrange(10):
-            b.unlock()
-            b.lock()
+        self.assertTrue(b1.unlock())
 
-        b.unlock()
-        self.assertTrue(os.path.exists(self.lock_file))
+        self.assertTrue(b1.lock())
+        self.assertFalse(b2.lock())
+        self.assertFalse(b2.lock())
+        self.assertTrue(b1.unlock())
 
-        b.lock()
-        self.assertTrue(os.path.exists(self.lock_file))
+        self.assertTrue(b2.lock())
+        self.assertFalse(b1.lock())
+        self.assertTrue(b2.unlock())
 
-        b.unlock()
-        self.assertTrue(os.path.exists(self.lock_file))
+        self.assertTrue(b3.lock())
+        self.assertFalse(b1.lock())
+        self.assertFalse(b2.lock())
+        self.assertFalse(b1.unlock())
+        self.assertFalse(b2.unlock())
+        self.assertTrue(b3.unlock())
+
+        self.assertTrue(b1.lock())
+        self.assertTrue(b1.unlock())
 
     def test_stop_update(self):
         if os.path.exists(self.stop_update):

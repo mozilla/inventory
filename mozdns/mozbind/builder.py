@@ -269,12 +269,21 @@ class DNSBuilder(SVNBuilderMixin):
             self.lock_fd = open(self.LOCK_FILE, 'w+')
             fcntl.flock(self.lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             self.log("Lock written.")
+            return True
         except IOError, exc_value:
+            self.lock_fd = None
             #  IOError: [Errno 11] Resource temporarily unavailable
             if exc_value[0] == 11:
-                raise BuildError(
+                self.log(
                     "DNS build script attempted to acquire the "
-                    "build mutux but another process already has it.")
+                    "build mutux but another process already has it."
+                )
+                fail_mail(
+                    "An attempt was made to start the DNS build script "
+                    "while an instance of the script was already running. "
+                    "The attempt was denied.",
+                    subject="Concurrent DNS builds attempted.")
+                return False
             else:
                 raise
 
@@ -283,10 +292,13 @@ class DNSBuilder(SVNBuilderMixin):
         Try to remove the lock file. Fail very loudly if the lock doesn't exist
         and this function is called.
         """
+        if not self.lock_fd:
+            return False
         self.log("Attempting release mutex "
                  "({0})...".format(self.LOCK_FILE))
         fcntl.flock(self.lock_fd, fcntl.LOCK_UN)
         self.log("Unlock Complete.")
+        return True
 
     def calc_target(self, root_domain, soa):
         """
@@ -684,7 +696,8 @@ class DNSBuilder(SVNBuilderMixin):
         if self.stop_update_exists():
             return
         self.log('Building...')
-        self.lock()
+        if not self.lock():
+            return
         try:
             if self.CLOBBER_STAGE or self.FORCE:
                 self.clear_staging(force=True)
