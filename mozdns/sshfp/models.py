@@ -6,6 +6,7 @@ from mozdns.models import MozdnsRecord, LabelDomainMixin
 import reversion
 
 from gettext import gettext as _
+import re
 
 
 def validate_algorithm(number):
@@ -19,6 +20,14 @@ def validate_fingerprint(number):
         raise ValidationError("Fingerprint type must be 1 (SHA-1)")
 
 
+is_sha1 = re.compile("[0-9a-fA-F]{40}")
+
+
+def validate_sha1(sha1):
+    if not is_sha1.match(sha1):
+        raise ValidationError("Invalid key.")
+
+
 class SSHFP(MozdnsRecord, LabelDomainMixin):
     """
     >>> SSHFP(label=label, domain=domain, key=key_data,
@@ -26,7 +35,7 @@ class SSHFP(MozdnsRecord, LabelDomainMixin):
     """
 
     id = models.AutoField(primary_key=True)
-    key = models.TextField()
+    key = models.CharField(max_length=256, validators=[validate_sha1])
     algorithm_number = models.PositiveIntegerField(
         null=False, blank=False, validators=[validate_algorithm],
         help_text="Algorithm number must be with 1 (RSA) or 2 (DSA)")
@@ -36,7 +45,7 @@ class SSHFP(MozdnsRecord, LabelDomainMixin):
 
     template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {algorithm_number} {fingerprint_type} "
-                 "{key:$rhs_just}.")
+                 "{key:$rhs_just}")
 
     search_fields = ("fqdn", "key")
 
