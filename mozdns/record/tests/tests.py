@@ -265,7 +265,7 @@ class SSHFPRecordTests(BaseRecordTestCase, TestCase):
             'fqdn': 'h' + random_label() + "." + self.domain.name,
             'algorithm_number': 1,
             'fingerprint_type': 1,
-            'key': random_label()
+            'key': 'fe400b7ac08e79f64fab45cdf866e7672fd3c45c'
         }
 
 

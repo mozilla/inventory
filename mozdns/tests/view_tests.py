@@ -128,7 +128,7 @@ class SSHFPViewTests(TestCase):
             'label': random_label(),
             'algorithm_number': 1,
             'fingerprint_type': 1,
-            'key': random_label()
+            'key': 'fe400b7ac08e79f64fab45cdf866e7672fd3c45c'
         }
         do_setUp(self, "sshfp", SSHFP, test_data)
 
@@ -138,7 +138,7 @@ class SSHFPViewTests(TestCase):
             'domain': self.domain.pk,
             'algorithm_number': 1,
             'fingerprint_type': 1,
-            'key': random_label()
+            'key': 'fe400b7ac08e79f64fab45cdf866e7672fd3c45c'
         }
 
 builder = GenericViewTests()

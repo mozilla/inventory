@@ -138,10 +138,7 @@ class BuildScriptTests(object):
                        STOP_UPDATE_FILE=self.stop_update)
         open(self.stop_update, 'w+').close()
         try:
-            b.build_dns()
-            self.fail("The script didn't respect the stop.update file")
-        except BuildError, e:
-            self.assertTrue(str(e).find('stop.update') > 0)
+            self.assertTrue(b.stop_update_exists())
         finally:
             os.remove(self.stop_update)
 
