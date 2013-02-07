@@ -6,7 +6,6 @@ from mozdns.utils import get_zones
 from core.search.compiler.django_compile import compile_to_django
 import simplejson as json
 from gettext import gettext as _
-from itertools import izip
 
 from jinja2 import Environment, PackageLoader, ChoiceLoader
 env = Environment(loader=ChoiceLoader(
@@ -45,11 +44,11 @@ def search_ajax(request):
 
     def html_response(**kwargs):
         overflow_results = {}
-        for objects, (type_, count) in izip(kwargs['objects'].items(),
-                                            kwargs['meta']['counts'].items()):
+        for type_, count in kwargs['meta']['counts'].items():
             if count > MAX_NUM_OBJECTS:
                 overflow_results[type_] = count
-                kwargs['objects'][type_] = objects[1][:MAX_NUM_OBJECTS]
+                new_objs = kwargs['objects'][type_][:MAX_NUM_OBJECTS]
+                kwargs['objects'][type_] = new_objs
         kwargs['MAX_NUM_OBJECTS'] = MAX_NUM_OBJECTS
         kwargs['overflow_results'] = json.dumps(overflow_results)
         return template.render(**kwargs)
