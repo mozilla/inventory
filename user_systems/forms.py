@@ -38,6 +38,7 @@ class UserSystemForm(forms.ModelForm):
                   'date_purchased',
                   'system_type',
                   'cost',
+                  'cost_center',
                   'is_loaned',
                   'is_loaner',
                   'bug_number',

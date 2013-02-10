@@ -10,3 +10,6 @@
 [submodule "vendor-local/src/django-reversion"]
 	path = vendor-local/src/django-reversion
 	url = https://github.com/etianen/django-reversion.git
+[submodule "vendor-local/src/django-south"]
+	path = vendor-local/src/django-south
+	url = git://github.com/lambdafu/django-south.git
