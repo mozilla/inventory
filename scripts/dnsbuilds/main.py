@@ -39,8 +39,15 @@ def main():
     parser.add_argument('--force', dest='FORCE',
                         action='store_true', default=False, help="Ignore "
                         "all change delta thresholds and clobber stagig area.")
+    parser.add_argument('--status', dest='STATUS',
+                        action='store_true', default=False, help="Display "
+                        "info about the build configuration and exit.")
     nas = parser.parse_args(sys.argv[1:])
     b = DNSBuilder(**dict(nas._get_kwargs()))
+
+    if nas.STATUS:
+        b.status()
+        return
     message = "DNS Build Error. Error: '{0}'. The build was unsuccessful."
 
     def write_stop_update(error):

@@ -196,6 +196,40 @@ class DNSBuilder(SVNBuilderMixin):
         syslog.openlog('dnsbuild', 0, syslog.LOG_LOCAL6)
         self.lock_fd = None
 
+    def status(self):
+        """Print the status of the build system"""
+        is_locked = False
+        try:
+            self.lock_fd = open(self.LOCK_FILE, 'w+')
+            fcntl.flock(self.lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(self.lock_fd, fcntl.LOCK_UN)
+        except IOError, exc_value:
+            if exc_value[0] == 11:
+                is_locked = True
+        if is_locked:
+            print "IS_LOCKED=True"
+        else:
+            print "IS_LOCKED=False"
+        print "LOCK_FILE={0}".format(self.LOCK_FILE)
+
+        if os.path.exists(self.STOP_UPDATE_FILE):
+            print "STOP_UPDATE_FILE_EXISTS=True"
+        else:
+            print "STOP_UPDATE_FILE_EXISTS=False"
+        print "STOP_UPDATE_FILE={0}".format(self.STOP_UPDATE_FILE)
+
+        if os.path.exists(self.STAGE_DIR):
+            print "STAGE_DIR_EXISTS=True"
+        else:
+            print "STAGE_DIR_EXISTS=False"
+        print "STAGE_DIR={0}".format(self.STAGE_DIR)
+
+        if os.path.exists(self.PROD_DIR):
+            print "PROD_DIR_EXISTS=True"
+        else:
+            print "PROD_DIR_EXISTS=False"
+        print "PROD_DIR={0}".format(self.PROD_DIR)
+
     def format_title(self, title):
         return "{0} {1} {0}".format('=' * ((30 - len(title)) / 2), title)
 
