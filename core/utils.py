@@ -187,8 +187,8 @@ def two_to_one(upper, lower):
 
 
 def four_to_two(start_upper, start_lower, end_upper, end_lower):
-    start = start_upper << 64 + start_lower
-    end = end_upper << 64 + end_lower
+    start = (start_upper << 64) + start_lower
+    end = (end_upper << 64) + end_lower
     return start, end
 
 

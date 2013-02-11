@@ -59,21 +59,6 @@ class V4RangeTests(TestCase):
             'network': network, 'rtype': rtype, 'ip_type': ip_type}
         self.do_add(**kwargs)
 
-    def test1_bad_create(self):
-        # start == end
-        start_str = "10.0.0.0"
-        end_str = "10.1.0.0"
-        default_domain = self.d
-        network = self.s
-        rtype = 's'
-        ip_type = '4'
-
-        kwargs = {
-            'start_str': start_str, 'end_str': end_str,
-            'default_domain': default_domain,
-            'network': network, 'rtype': rtype, 'ip_type': ip_type}
-        self.assertRaises(ValidationError, self.do_add, **kwargs)
-
     def test2_bad_create(self):
         # start > end
         start_str = "10.0.0.2"

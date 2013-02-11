@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 
 from core.network.models import Network
-from core.utils import IPFilter
+from core.utils import IPFilter, four_to_two
 from core.mixins import ObjectUrlMixin
 from core.keyvalue.base_option import CommonOption
 from core.interface.static_intr.models import StaticInterface
@@ -55,6 +55,13 @@ class Range(models.Model, ObjectUrlMixin):
     dhcpd_raw_include = models.TextField(null=True, blank=True)
 
     network = models.ForeignKey(Network, null=False)
+    is_reserved = models.BooleanField(default=False, blank=False)
+
+    IP_TYPES = (
+        ('4', 'IPv4'),
+        ('6', 'IPv6'),
+    )
+    ip_type = models.CharField(max_length=1, choices=IP_TYPES)
 
     STATIC = "st"
     DYNAMIC = "dy"
@@ -113,61 +120,60 @@ class Range(models.Model, ObjectUrlMixin):
             end == start
             # Bad
         """
-        fail = False
-        if self.start_upper > self.end_upper:
-            # start > end
-            fail = True
-        if (self.start_upper == self.end_upper and self.start_lower >
-                self.end_lower):
-            # start > end
-            fail = True
-        if (self.start_upper == self.end_upper and self.start_lower ==
-                self.end_lower):
-            # end == start
-            fail = True
 
-        if fail:
-            raise ValidationError("The start of a range cannot be greater than"
-                                  " or equal to the end of the range.")
-
+        # Credit goes to fridgei
+        start, end = four_to_two(
+            self.start_upper, self.start_lower, self.end_upper, self.end_lower)
+        if start > end:
+            raise ValidationError(
+                "The start of a range cannot be greater than or equal to the "
+                "end of the range."
+            )
         self.network.update_network()
         if self.network.ip_type == '4':
             IPClass = ipaddr.IPv4Address
         else:
             IPClass = ipaddr.IPv6Address
 
-        if IPClass(self.start_str) < self.network.network.network:
-            # lol, network.network.network.network.network....
-            raise ValidationError("The start of a range cannot be less than "
-                                  "it's network's network address.")
-        if IPClass(self.end_str) > self.network.network.broadcast:
-            raise ValidationError("The end of a range cannot be more than "
-                                  "it's network's broadcast address.")
-
+        if (IPClass(self.start_str) < self.network.network.network or
+                IPClass(self.end_str) > self.network.network.broadcast):
+            raise ValidationError(
+                "Range {0}-{1} doesn't fit in {2}".format(
+                    self.start_lower, self.end_lower, self.network.network
+                )
+            )
         self.check_for_overlaps()
 
+    def _range_ips(self):
+        # Credit goes to fridgei
+        self._start, self._end = four_to_two(
+            self.start_upper, self.start_lower, self.end_upper, self.end_lower
+        )
+
     def check_for_overlaps(self):
-        """This function will look at all the other ranges and make sure we
+        """
+        This function will look at all the other ranges and make sure we
         don't overlap with any of them.
         """
-        for range_ in self.network.range_set.all():
+        # Credit goes to fridgei
+        self._range_ips()
+        Ip = ipaddr.IPv4Address if self.ip_type == '4' else ipaddr.IPv6Address
+        for range_ in Range.objects.all():
             if range_.pk == self.pk:
                 continue
-
+            range_._range_ips()
+            #the range being tested is above this range
+            if self._start > range_._end:
+                continue
             # start > end
-            if self.start_upper > range_.end_upper:
+            if self._end < range_._start:
                 continue
-            if (self.start_upper == range_.end_upper and self.start_lower >
-                    range_.end_lower):
-                continue
-            # end < start
-            if self.end_upper < range_.start_upper:
-                continue
-            if (self.end_upper == range_.start_upper and self.end_lower <
-                    range_.start_lower):
-                continue
-            raise ValidationError("Ranges cannot exist inside of other "
-                                  "ranges.")
+            raise ValidationError(
+                "Stored range {0} - {1} would contain {2} - {3}".format(
+                    Ip(range_._start), Ip(range_._end), Ip(self._start),
+                    Ip(self._end)
+                )
+            )
 
     def __str__(self):
         x = "Site: {0} Vlan: {1} Network: {2} Range: Start - {3} End -  {4}"
