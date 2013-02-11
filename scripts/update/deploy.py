@@ -36,6 +36,11 @@ def update_info(ctx):
         ctx.local('git submodule status')
         ctx.local('git rev-parse HEAD > media/revision.txt')
 
+@task
+def update_db(ctx):
+    with ctx.lcd(settings.SRC_DIR):
+        ctx.local('python2.6 manage.py migrate')
+        ctx.local('python2.6 manage.py migrate --list')
 
 @task
 def clean(ctx):
@@ -70,7 +75,7 @@ def pre_update(ctx, ref=settings.UPDATE_REF):
 @task
 def update(ctx):
     """2. Nothing to do here yet."""
-    pass
+    update_db()
 
 
 @task
