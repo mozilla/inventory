@@ -371,6 +371,10 @@ class OperatingSystemResource(CustomAPIResource):
     class Meta(CustomAPIResource.Meta):
         resource_name = 'operating_system'
         queryset = system_model.OperatingSystem.objects.all()
+        filtering = {
+                'version': ALL_WITH_RELATIONS,
+                'name': ALL_WITH_RELATIONS,
+                }
 
 class OperatingSystemData(CustomAPIResource):
     resource = "operating_system"
@@ -382,7 +386,7 @@ class OperatingSystemData(CustomAPIResource):
         data.set('version', '6.2')
         return data
 class KeyValueResource(CustomAPIResource):
-    #system = fields.ToOneField(SystemResource, 'system', full=True)
+    system = fields.ToOneField('api_v3.system_api.SystemResource', 'system', full=False)
 
     class Meta(CustomAPIResource.Meta):
         filtering = {

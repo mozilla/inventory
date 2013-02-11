@@ -16,9 +16,9 @@ class Migration(SchemaMigration):
             ('ip_type', self.gf('django.db.models.fields.CharField')(max_length=1)),
             ('ip_upper', self.gf('django.db.models.fields.BigIntegerField')(blank=True)),
             ('ip_lower', self.gf('django.db.models.fields.BigIntegerField')(blank=True)),
-            ('network_str', self.gf('django.db.models.fields.CharField')(max_length=39)),
+            ('network_str', self.gf('django.db.models.fields.CharField')(max_length=49)),
             ('prefixlen', self.gf('django.db.models.fields.PositiveIntegerField')()),
-            ('dhcpd_header', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+            ('dhcpd_raw_include', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
         ))
         db.send_create_signal('network', ['Network'])
 
@@ -37,13 +37,13 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('network', ['NetworkKeyValue'])
 
-        # Adding unique constraint on 'NetworkKeyValue', fields ['key', 'value']
-        db.create_unique('network_key_value', ['key', 'value'])
+        # Adding unique constraint on 'NetworkKeyValue', fields ['key', 'value', 'network']
+        db.create_unique('network_key_value', ['key', 'value', 'network_id'])
 
 
     def backwards(self, orm):
-        # Removing unique constraint on 'NetworkKeyValue', fields ['key', 'value']
-        db.delete_unique('network_key_value', ['key', 'value'])
+        # Removing unique constraint on 'NetworkKeyValue', fields ['key', 'value', 'network']
+        db.delete_unique('network_key_value', ['key', 'value', 'network_id'])
 
         # Removing unique constraint on 'Network', fields ['ip_upper', 'ip_lower', 'prefixlen']
         db.delete_unique('network', ['ip_upper', 'ip_lower', 'prefixlen'])
@@ -58,18 +58,18 @@ class Migration(SchemaMigration):
     models = {
         'network.network': {
             'Meta': {'unique_together': "(('ip_upper', 'ip_lower', 'prefixlen'),)", 'object_name': 'Network', 'db_table': "'network'"},
-            'dhcpd_header': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'dhcpd_raw_include': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'ip_lower': ('django.db.models.fields.BigIntegerField', [], {'blank': 'True'}),
             'ip_type': ('django.db.models.fields.CharField', [], {'max_length': '1'}),
             'ip_upper': ('django.db.models.fields.BigIntegerField', [], {'blank': 'True'}),
-            'network_str': ('django.db.models.fields.CharField', [], {'max_length': '39'}),
+            'network_str': ('django.db.models.fields.CharField', [], {'max_length': '49'}),
             'prefixlen': ('django.db.models.fields.PositiveIntegerField', [], {}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['site.Site']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'vlan': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['vlan.Vlan']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'})
         },
         'network.networkkeyvalue': {
-            'Meta': {'unique_together': "(('key', 'value'),)", 'object_name': 'NetworkKeyValue', 'db_table': "'network_key_value'"},
+            'Meta': {'unique_together': "(('key', 'value', 'network'),)", 'object_name': 'NetworkKeyValue', 'db_table': "'network_key_value'"},
             'has_validator': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_option': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),

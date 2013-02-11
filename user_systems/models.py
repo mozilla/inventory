@@ -37,6 +37,17 @@ class UnmanagedSystemType(models.Model):
     class Meta:
         db_table = 'unmanaged_system_types'
 
+
+class CostCenter(models.Model):
+    cost_center_number = models.IntegerField()
+    name = models.CharField(max_length=255, blank=True)
+
+    def __unicode__(self):
+        return '%s - %s' % (self.cost_center_number, self.name)
+
+    class Meta:
+        db_table = 'cost_centers'
+
 class UnmanagedSystem(models.Model):
     serial = models.CharField(max_length=255, blank=True)
     asset_tag = models.CharField(max_length=255, blank=True)
@@ -48,6 +59,7 @@ class UnmanagedSystem(models.Model):
     updated_on = models.DateTimeField(null=True, blank=True)
     date_purchased = models.DateField(null=True, blank=True)
     cost = models.CharField(max_length=50, blank=True)
+    cost_center = models.ForeignKey('CostCenter', null=True, blank=True)
     bug_number = models.CharField(max_length=255, blank=True)
     notes = models.TextField(blank=True)
     is_loaned = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
