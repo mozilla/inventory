@@ -25,6 +25,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         Domain.objects.get_or_create(name="mozilla.com")
         self.cleint = Client()
         super(MockBuildScriptTests, self).setUp()
+        self.stop_update_file = '/tmp/fake/stop.update'
 
     def get_post_data(self, random_str):
         """Return a valid set of data"""
@@ -45,7 +46,8 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         create_fake_zone('asdf1')
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
-                       FIRST_RUN=True, PUSH_TO_PROD=False)
+                       FIRST_RUN=True, PUSH_TO_PROD=False,
+                       STOP_UPDATE_FILE=self.stop_update_file)
         b.build_dns()
         create_fake_zone('asdf2')
         b.build_dns()
@@ -59,7 +61,8 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         root_domain = create_fake_zone('asdfz1')
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
-                       FIRST_RUN=True, PUSH_TO_PROD=False)
+                       FIRST_RUN=True, PUSH_TO_PROD=False,
+                       STOP_UPDATE_FILE=self.stop_update_file)
 
         b.build_dns()  # This won't check anything in since PUSH_TO_PROD==False
         self.assertEqual((26, 0), b.svn_lines_changed(b.PROD_DIR))
@@ -114,7 +117,8 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
     def test_one_file_svn_lines_changed(self):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
-                       FIRST_RUN=True, PUSH_TO_PROD=False)
+                       FIRST_RUN=True, PUSH_TO_PROD=False,
+                       STOP_UPDATE_FILE=self.stop_update_file)
         test_file = os.path.join(self.prod_dir, 'test')
         with open(test_file, 'w+') as fd:
             fd.write('line 1\n')
@@ -143,7 +147,8 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         root_domain3 = create_fake_zone('asdf89')
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
-                       FIRST_RUN=True, PUSH_TO_PROD=True)
+                       FIRST_RUN=True, PUSH_TO_PROD=True,
+                       STOP_UPDATE_FILE=self.stop_update_file)
         b.build_dns()
         for ns in root_domain1.nameserver_set.all():
             ns.delete()
@@ -161,7 +166,8 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
     def test_two_file_svn_lines_changed(self):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
-                       FIRST_RUN=True, PUSH_TO_PROD=False)
+                       FIRST_RUN=True, PUSH_TO_PROD=False,
+                       STOP_UPDATE_FILE=self.stop_update_file)
         test1_file = os.path.join(self.prod_dir, 'test1')
         test2_file = os.path.join(self.prod_dir, 'test2')
         with open(test1_file, 'w+') as fd:
