@@ -14,4 +14,5 @@ urlpatterns = patterns('',
                        url(r'^range/', include('core.range.urls')),
                        url(r'^build/', include('core.build.urls')),
                        url(r'^search/', include('core.search.urls')),
+                       url(r'^keyvalue/', include('core.keyvalue.urls')),
                        )

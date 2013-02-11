@@ -191,3 +191,5 @@ function remove_attr(attr_id, post_url) {
     remove(document.getElementById(attr_id));
 
 }
+
+
