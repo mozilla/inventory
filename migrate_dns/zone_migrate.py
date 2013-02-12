@@ -365,8 +365,6 @@ def migrate_TXT(zone, root_domain, soa, views):
 def migrate_SRV(zone, root_domain, soa, views):
     for (name, ttl, rdata) in zone.iterate_rdatas('SRV'):
         target = rdata.target.to_text().strip('.')
-        if target == "":
-            target = "."
         port = rdata.port
         weight = rdata.weight
         prio = rdata.priority

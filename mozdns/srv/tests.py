@@ -53,6 +53,11 @@ class SRVTests(TestCase):
                 222}
         self.do_remove(data)
 
+        data = {'label': '_bar', 'domain': self.o_e, 'target':
+                '', 'priority': 2, 'weight': 2222, 'port':
+                222}
+        self.do_remove(data)
+
     def test_invalid_add_update(self):
         data = {'label': '_df', 'domain': self.o_e,
                 'target': 'relay.oregonstate.edu', 'priority': 2, 'weight':

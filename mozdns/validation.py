@@ -445,7 +445,7 @@ def validate_srv_name(srv_name):
 
 
 def validate_srv_target(srv_target):
-    if srv_target == ".":
+    if srv_target == "":
         return
     else:
         validate_name(srv_target)

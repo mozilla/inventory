@@ -262,7 +262,7 @@ class DNSBuilder(SVNBuilderMixin):
         """
         if os.path.exists(self.STAGE_DIR) and not force:
             raise BuildError("The DNS build scripts tried to build the staging"
-                             " but area already exists.")
+                             " area but the area already exists.")
         try:
             os.makedirs(self.STAGE_DIR)
         except OSError:

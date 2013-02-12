@@ -30,7 +30,8 @@ class SRV(MozdnsRecord):
     # fqdn = label + domain.name <--- see set_fqdn
 
     target = models.CharField(max_length=100,
-                              validators=[validate_srv_target])
+                              validators=[validate_srv_target], blank=True,
+                              null=True)
 
     port = models.PositiveIntegerField(null=False,
                                        validators=[validate_srv_port])
