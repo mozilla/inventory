@@ -502,10 +502,13 @@ class DNSBuilder(SVNBuilderMixin):
     def calc_fname(self, view, root_domain):
         return "{0}.{1}".format(root_domain.name, view.name)
 
-    def render_zone_stmt(self, zone_name, file_path):
+    def render_zone_stmt(self, soa, zone_name, file_path):
         zone_stmt = "zone \"{0}\" IN {{{{\n".format(zone_name)
         zone_stmt += "\ttype {ztype};\n"  # We'll format this later
-        zone_stmt += "\tfile \"{0}\";\n".format(file_path)
+        if soa.is_signed:
+            zone_stmt += "\tfile \"{0}.signed\";\n".format(file_path)
+        else:
+            zone_stmt += "\tfile \"{0}\";\n".format(file_path)
         zone_stmt += "}};\n"
         return zone_stmt
 
@@ -648,7 +651,7 @@ class DNSBuilder(SVNBuilderMixin):
                     # If we see a view in this loop it's going to end up in the
                     # config
                     view_zone_stmts.append(
-                        self.render_zone_stmt(root_domain,
+                        self.render_zone_stmt(soa, root_domain,
                                               file_meta['prod_fname'])
                     )
                     # If it's dirty or we are rebuilding another view, rebuild

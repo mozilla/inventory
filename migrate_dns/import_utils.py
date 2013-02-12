@@ -31,15 +31,17 @@ def do_import():
         handle_zone(zone_name, zone_meta, True, False)
 
 def migrate_single_zone(view_name, zone_name, zone_file):
-    if view_name not in ('public', 'private'):
+    if view_name not in ('public', 'private', 'both'):
         print "view must be 'public' or 'private'"
         return
     zone_meta = {'file': zone_file}
 
     if view_name == 'private':
         handle_zone(zone_name, zone_meta, False, True)
-    if view_name == 'public':
+    elif view_name == 'public':
         handle_zone(zone_name, zone_meta, True, False)
+    elif view_name == 'both':
+        handle_zone(zone_name, zone_meta, True, True)
 
 def get_zone_data(zone_name, filepath, dirpath):
     cwd = os.getcwd()
