@@ -7,3 +7,4 @@ src/django-extensions
 src/django-reversion/src
 src/iscpy
 src/dnspython
+src/django-south
