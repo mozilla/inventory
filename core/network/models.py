@@ -140,7 +140,7 @@ class Network(models.Model, ObjectUrlMixin):
 
 
 class NetworkKeyValue(CommonOption):
-    network = models.ForeignKey(Network, null=False)
+    object_ = models.ForeignKey(Network, null=False)
     aux_attrs = (
         ('description', 'A description of the site'),
     )

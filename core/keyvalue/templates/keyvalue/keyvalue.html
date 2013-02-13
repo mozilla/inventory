@@ -13,86 +13,136 @@
     $(document).ready(function(){
         var form = $("#keyvalue-form");
         form.data('objectCounter', 1);
-        $('#add-attr').click(function() {
+        function add_an_attr(template, prefix){
             var form = $("#keyvalue-form");
             // Increment the number of new objects
             var objCounter = form.data('objectCounter');
             form.data('objCounter', objCounter + 1);
 
-            var newKV = $('#attr-template').clone();
-            var newKey = newKV.find(".attr-select");
-            var newValue = newKV.find(".value");
+            var newKV = $(template).clone();
+            var newKey = newKV.find(".attr-kv-k");
+            var newValue = newKV.find(".attr-kv-v");
+            console.log(newKey);
+            console.log(newValue);
+
+            var newError = $('#errors_').clone();
+
+            newKV.attr('data-errors', 'errors_' + objCounter);
+            newError.attr('id', 'errors_' + objCounter);
 
 
             //newEntry.attr('name', 'nameserver_' + objCounter);
-            newKey.attr('name', 'new_key_' + objCounter);
+            newKey.attr('name', prefix + '_new_key_' + objCounter);
             //newTTL.attr('name', 'ttl_' + objCounter);
-            newValue.attr('name', 'new_value_' + objCounter);
+            newValue.attr('name', prefix + '_new_value_' + objCounter);
             // Bind remove handler
-            var removeButton = newKV.find('.remove-entry');
+            var removeButton = newKV.find('.delete-key');
             removeButton.click(function(){
                 $(this).closest('tr').remove();
             });
             $('#keyvalue-pairs').append(newKV);
+            $('#keyvalue-pairs').append(newError);
             form.data('objectCounter', objCounter + 1);
+        }
+        $('#add-adhoc-attr').click(function() {
+            add_an_attr($('#adhoc-template'), 'adhoc');
         });
+        $('#add-attr').click(function() {
+            add_an_attr($('#attr-template'), 'attr');
+        });
+        form.submit(function (){
+            console.log("[DEBUG] Submit pressed");
+            $('#keyvalue-pairs .kv').each(function (index, el) {
+                var key_pk = $(el).attr('data-pk');
+                var key = $(el).find('.attr-kv-k').val()
+                var value = $(el).find('.attr-kv-v').val()
+                var delete_key = $(el).find('.delete-key').is(':checked');
+                var kv_css_class = $(el).attr('data-errors');
+                console.log("Key is : " + key + " Value is: " + value);
+
+                var errors = $('#'+kv_css_class);
+                $.post('/core/keyvalue/validate_keyvalue_ajax/',
+                    { key: key, value: value, key_pk: key_pk,
+                        kv_class: '{{kv_class}}', obj_pk: '{{obj_pk}}',
+                        delete_key: delete_key },
+                    function (data) {
+                        var data = $.parseJSON(data);
+                        if (data['success']){
+                            errors.css('display', 'none');
+                        } else {
+                            errors.css('display', 'block');
+                            errors.find('td').html(data['message']);
+                        }
+                    }).error(function(e) {
+                        var newDoc = document.open("text/html", "replace");
+                        newDoc.write(e.responseText);
+                        newDoc.close();
+                    });
+            });
+            return false;
+        }); // end submit()
+        return false;
     });
     </script>
         <div id='kv-templates' style='display:none;'>
             <table>
-                <tr id='attr-template'>
+                <tr id='attr-template' class='kv' data-errors='<set me>' data-pk=''>
                     <th><label class='attribute-label' >Attribute:</label></th>
                     <td>
-                        <select class='attr-select'>
+                        <select class='attr-kv-k'>
                             {% for option in aa_options %}
                             <option value="{{option}}">{{option}}</option>
                             {% endfor %}
                         </select>
                     </td>
                     <th><label class='value-label' >Value:</label></th>
-                    <td><input class="value" type='text' value=""> </td>
-                    <th><label>Remove</label></th>
+                    <td><input class='attr-kv-v' type='text' value=""> </td>
+                    <th>
+                        <input class='delete-key'
+                        id='first-remove'type='button' value='Remove' style=''>
+                    </th>
                     <td>
-                        <input class='remove-entry' id='first-remove'type='button' value='-' style=''>
-                    </td>
+                </td>
+                <tr id='errors_' style='display:none;'>
+                    <th></th><td></td>
+                </tr>
+
                 </tr>
                 <tr id='adhoc-template'>
                     <th><label>Attribute:</label></th>
                     <td><input class="attr-kv-k" type='text' value=""></td>
                     <th><label>Value:</label></th>
                     <td><input class="attr-kv-v" type='text' value=""> </td>
-                    <th><label>Remove</label></th>
+                    <th>
+                        <input class='delete-key'
+                        id='first-remove'type='button' value='Remove' style=''>
+                    </th>
                     <td>
-                        <input class='remove-entry' id='first-remove'type='button' value='-' style=''>
                     </td>
                 </tr>
             </table>
         </div>
     <input type='button' id='add-attr' value="Add New Attribute">
-    <input type='button' value="Add New (Adhoc) Attribute">
+    <input type='button' id='add-adhoc-attr' value="Add New (Adhoc) Attribute">
     <form id='keyvalue-form' method='POST'>
-        <table id="keyvalue-pairs">
-        {% for kv in existing_keyvalue %}
-                <tr class='kv-block'>
+        <table id='keyvalue-pairs'>
+        {% for kv in attrs %}
+                <tr class='kv' data-errors='errors_existing_{{kv.id}}' data-pk={{kv.id}}>
                     <th><label>Attribute:</label></th>
-                    <td>
-                        <input disabled='true' class="existing-kv-key" name="id_key_{{kv.id}}" type='text' value="{{kv.key}}">
-                    </td>
+                    <td><input disabled='true' class="attr-kv-k" name='exising_k_{{kv.id}}'
+                        type='text' value="{{kv.key}}"></td>
                     <th><label>Value:</label></th>
-                    <td>
-                        <input class="existing-kv-value" name="id_value_{{kv.id}}" type='text' value="{{kv.value}}">
-                    </td>
-                    <th><label>Mark for deletion</label></th>
-                    <td>
-                        <input class='remove-entry' name="delete_key_{{kv.id}}"
-                        id='first-remove' type='checkbox' value='true'>
-                    </td>
+                    <td><input class="attr-kv-v" name='existing_v_{{kv.id}}'
+                        type='text' value="{{kv.value}}"> </td>
+                    <th><label>Mark for deletion</label>
+                        <input class='delete-key' type='checkbox' style=''>
+                    </th>
+                </tr>
+                <tr id='errors_existing_{{kv.id}}' style='display:none;'>
+                    <th></th><td></td>
                 </tr>
         {% endfor %}
         </table>
-        {% for form in forms %}
-            {{form.as_table()}}
-        {% endfor %}
         <input type='submit' value='Submit'>
     </form>
     </div>
