@@ -270,11 +270,11 @@ def find_free_ip(start, end, ip_type='4'):
 
 
 class RangeKeyValue(CommonOption):
-    range = models.ForeignKey(Range, null=False)
+    obj = models.ForeignKey(Range, null=False)
 
     class Meta:
         db_table = 'range_key_value'
-        unique_together = ('key', 'value', 'range')
+        unique_together = ('key', 'value', 'obj')
 
     def _aa_failover(self):
         self.is_statement = True
@@ -284,7 +284,7 @@ class RangeKeyValue(CommonOption):
                                   "\"dhcp-failover\"`")
 
     def _aa_routers(self):
-        self._routers(self.range.network.ip_type)
+        self._routers(self.obj.network.ip_type)
 
     def _aa_ntp_servers(self):
-        self._ntp_servers(self.range.network.ip_type)
+        self._ntp_servers(self.obj.network.ip_type)

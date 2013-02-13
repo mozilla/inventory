@@ -140,14 +140,14 @@ class Network(models.Model, ObjectUrlMixin):
 
 
 class NetworkKeyValue(CommonOption):
-    object_ = models.ForeignKey(Network, null=False)
+    obj = models.ForeignKey(Network, null=False)
     aux_attrs = (
         ('description', 'A description of the site'),
     )
 
     class Meta:
         db_table = 'network_key_value'
-        unique_together = ('key', 'value', 'network')
+        unique_together = ('key', 'value', 'obj')
 
     """The NetworkOption Class.
 
@@ -197,16 +197,16 @@ class NetworkKeyValue(CommonOption):
         self.has_validator = True
         self.is_statement = True
         self.is_option = False
-        self._single_ip(self.network.ip_type)
+        self._single_ip(self.obj.ip_type)
 
     def _aa_dns_servers(self):
         """A list of DNS servers for this network."""
         self.is_statement = False
         self.is_option = False
-        self._ip_list(self.network.ip_type)
+        self._ip_list(self.obj.ip_type)
 
     def _aa_routers(self):
-        self._routers(self.network.ip_type)
+        self._routers(self.obj.ip_type)
 
     def _aa_ntp_servers(self):
-        self._ntp_servers(self.network.ip_type)
+        self._ntp_servers(self.obj.ip_type)

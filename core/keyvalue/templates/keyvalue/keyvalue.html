@@ -39,6 +39,7 @@
             var removeButton = newKV.find('.delete-key');
             removeButton.click(function(){
                 $(this).closest('tr').remove();
+                newError.remove();
             });
             $('#keyvalue-pairs').append(newKV);
             $('#keyvalue-pairs').append(newError);
@@ -101,10 +102,9 @@
                         <input class='delete-key'
                         id='first-remove'type='button' value='Remove' style=''>
                     </th>
-                    <td>
                 </td>
                 <tr id='errors_' style='display:none;'>
-                    <th></th><td></td>
+                    <td></td>
                 </tr>
 
                 </tr>
@@ -139,7 +139,7 @@
                     </th>
                 </tr>
                 <tr id='errors_existing_{{kv.id}}' style='display:none;'>
-                    <th></th><td></td>
+                    <td></td>
                 </tr>
         {% endfor %}
         </table>

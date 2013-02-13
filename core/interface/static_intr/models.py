@@ -228,11 +228,11 @@ is_mgmt = re.compile("^mgmt$")
 
 
 class StaticIntrKeyValue(KeyValue):
-    intr = models.ForeignKey(StaticInterface, null=False)
+    obj = models.ForeignKey(StaticInterface, null=False)
 
     class Meta:
         db_table = "static_inter_key_value"
-        unique_together = ("key", "value", "intr")
+        unique_together = ("key", "value", "obj")
 
     def _aa_primary(self):
         """

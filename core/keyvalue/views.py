@@ -43,7 +43,6 @@ def validate_keyvalue_ajax(request):
     print "{0} {1} {2} {3} {4}".format(kv_class, key, value, key_pk,
             delete_key)
 
-    import pdb;pdb.set_trace()
     if not (kv_class and bool(delete_key)):
         return HttpResponse(
             json.dumps({'success': False, 'message': 'missing class'})
@@ -78,12 +77,14 @@ def validate_keyvalue_ajax(request):
                             'message': "Can't find that Key Value pair."})
             )
     else:
-        kv = KVClass(key=key, value=value, object_=obj)
+        kv = KVClass(key=key, value=value, obj=obj)
 
     try:
         kv.clean()
     except ValidationError, e:
-        return HttpResponse(json.dumps({'success': False, 'message': str(e)}))
+        return HttpResponse(
+            json.dumps({'success': False, 'message': e.messages[0]})
+        )
 
     return HttpResponse(json.dumps({'success': True}))
 

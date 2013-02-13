@@ -80,8 +80,9 @@ class CommonOption(KeyValue):
             if value.strip() in choices:
                 continue
             else:
-                raise ValidationError("Invalid option ({0}) parameter "
-                                      "({1})'".format(self.key, self.value))
+                raise ValidationError(
+                    "Invalid parameter '{0}' for the option "
+                    "'{1}'".format(self.value, self.key))
 
     def _routers(self, ip_type):
         """
@@ -120,7 +121,7 @@ class CommonOption(KeyValue):
         self.is_option = True
         self.is_statement = False
         self.has_validator = True
-        self._ip_list(self.network.ip_type)
+        self._ip_list(self.obj.ip_type)
 
     def _aa_domain_name(self):
         """
