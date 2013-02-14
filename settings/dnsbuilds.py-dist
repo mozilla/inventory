@@ -10,6 +10,7 @@ NAMED_CHECKCONF = ""  # path to named-checkconf
 MAX_ALLOWED_CONFIG_LINES_REMOVED = 5
 
 STOP_UPDATE_FILE = ""
+LAST_RUN_FILE = ""
 
 
 ## Needed for migrations

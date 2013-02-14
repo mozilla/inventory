@@ -15,7 +15,7 @@ from django.db import transaction
 from settings.dnsbuilds import (
     STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE, NAMED_CHECKZONE_OPTS,
     MAX_ALLOWED_LINES_CHANGED, MAX_ALLOWED_CONFIG_LINES_REMOVED,
-    NAMED_CHECKZONE, NAMED_CHECKCONF
+    NAMED_CHECKZONE, NAMED_CHECKCONF, LAST_RUN_FILE
 )
 
 from mozdns.domain.models import SOA
@@ -178,6 +178,7 @@ class DNSBuilder(SVNBuilderMixin):
             'PROD_DIR': PROD_DIR,
             'LOCK_FILE': LOCK_FILE,
             'STOP_UPDATE_FILE': STOP_UPDATE_FILE,
+            'LAST_RUN_FILE': LAST_RUN_FILE,
             'STAGE_ONLY': False,
             'NAMED_CHECKZONE_OPTS': NAMED_CHECKZONE_OPTS,
             'CLOBBER_STAGE': False,
@@ -229,6 +230,8 @@ class DNSBuilder(SVNBuilderMixin):
         else:
             print "PROD_DIR_EXISTS=False"
         print "PROD_DIR={0}".format(self.PROD_DIR)
+
+        print "LAST_RUN_FILE={0}".format(self.LAST_RUN_FILE)
 
     def format_title(self, title):
         return "{0} {1} {0}".format('=' * ((30 - len(title)) / 2), title)

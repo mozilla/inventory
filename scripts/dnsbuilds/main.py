@@ -2,13 +2,14 @@
 import argparse
 import sys
 import os
+import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                 os.pardir, os.pardir)))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 import manage
 from mozdns.mozbind.builder import DNSBuilder, BuildError
-from settings.dnsbuilds import STOP_UPDATE_FILE
+from settings.dnsbuilds import STOP_UPDATE_FILE, LAST_RUN_FILE
 from core.utils import fail_mail
 
 
@@ -59,6 +60,9 @@ def main():
             fd.write(msg)
             fd.write(error)
     try:
+        with open(LAST_RUN_FILE, 'w+') as fd:
+            fd.write(str(int(time.time())))
+
         b.build_dns()
     except BuildError as why:
         b.log(why, log_level='LOG_ERR')
