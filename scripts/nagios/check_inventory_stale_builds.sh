@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BIN=/home/juber/inventory_dev/inventory/scripts/dnsbuilds/main.py
+BIN=""
 PREFIX="[DEV] "
 
 STALE_THRESHOLD=$((60 * 6))  # 6 Min

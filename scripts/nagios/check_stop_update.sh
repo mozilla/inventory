@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BIN=/home/juber/inventory_dev/inventory/scripts/dnsbuilds/main.py
+BIN=""
 PREFIX="[DEV] "
 
 CRIT=2
