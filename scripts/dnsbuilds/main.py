@@ -3,6 +3,7 @@ import argparse
 import sys
 import os
 import time
+import traceback
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
                                 os.pardir, os.pardir)))
@@ -62,17 +63,16 @@ def main():
     try:
         with open(LAST_RUN_FILE, 'w+') as fd:
             fd.write(str(int(time.time())))
-
         b.build_dns()
     except BuildError as why:
         b.log(why, log_level='LOG_ERR')
         write_stop_update(str(why))
         fail_mail(message.format(why))
     except Exception as err:
-        write_stop_update(str(err))
         fail_mail(message.format(err))
         b.log(err, log_level='LOG_CRIT')
-        raise  # Make some noise
+        error_msg = "{0}\n{1}".format(str(err), traceback.format_exc())
+        write_stop_update(error_msg)
 
 if __name__ == '__main__':
     main()
