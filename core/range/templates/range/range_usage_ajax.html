@@ -29,7 +29,7 @@
     <span>{{ errors }}</span>
 </div>
 {% else %}
-    <table class="usage_table">
+    <table class="tablesorter">
         <th>IP</th>
         <th>Objects</th>
         {% for frange in rusage['free_ranges'] %}
@@ -52,8 +52,8 @@
                         <td>
                                 Free IP
                         </td>
-                        <td class='free-ip'>
-                                {{translate_ip(frange[0])}}
+                        <td>
+                            <span class='free-ip'>{{translate_ip(frange[0])}}</span>
                         </td>
                     </tr>
                     {% else %}
@@ -61,9 +61,11 @@
                         <td>
                                 Free IP Range
                         </td>
-                        <td class='free-ip'>
+                        <td>
+                            <span class='free-ip'>
                                 {{translate_ip(frange[0])}} - {{translate_ip(frange[1])}}
                                 ({{frange[1]- frange[0]}} Free addresses)
+                            </span>
                         </td>
                     </tr>
                     {% endif %}

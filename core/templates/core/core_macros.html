@@ -1,6 +1,6 @@
 {% macro display_networks(networks, vlan=True, caption="Networks", first_header="Network", ignore_empty=True, extra_style='') -%}
     {% if networks or not ignore_empty %}
-        <table class="new-table" style="{{extra_style}}">
+        <table class="tablesorter" style="{{extra_style}}">
             <caption>{{caption}}</caption>
             <tr>
                     <th>{{first_header}}</th>
@@ -61,7 +61,7 @@
 {%- endmacro %}
 
 {% macro display_kv(kvs, caption="Key Value Store", obj=None, kv_type=None) -%}
-    <table class="new-table">
+    <table class="tablesorter">
         <caption>{{caption}}</caption>
         {% if kvs %}
             <th>Key</th>
@@ -94,7 +94,7 @@
 {%- endmacro %}
 
 {% macro display_details(details, caption="Attributes", obj=None, show_edit=False) -%}
-    <table class="new-table">
+    <table class="tablesorter">
         <caption>{{caption}}</caption>
         <th>Attribute</th>
         <th>Value</th>

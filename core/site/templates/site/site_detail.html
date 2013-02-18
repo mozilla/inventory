@@ -38,9 +38,10 @@
 
             <div style='float:left; margin-left: 3em;'>
             {% if child_sites %}
-                <table class="new-table" >
+                <table class="tablesorter" >
+                    <caption>Sub Sites</caption>
                     <tr>
-                        <th>Child Sites</th>
+                        <th>Site</th>
                     </tr>
                     {% for child_site in child_sites %}
                         <tr>

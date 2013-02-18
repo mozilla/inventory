@@ -179,43 +179,6 @@ table.racktable {
   table.racktable select {
     max-width: 220px; }
 
-.new-table {
-    margin-top: 2em;
-    -webkit-box-shadow: 0 8px 6px -6px black;
-       -moz-box-shadow: 0 8px 6px -6px black;
-            box-shadow: 0 8px 6px -6px black;
-    border-left: 1px solid rgb(85, 85, 85);
-    border-right: 1px solid rgb(85, 85, 85);
-    border-bottom: 1px solid rgb(85, 85, 85);
-}
-.new-table caption {
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    text-align: center;
-    background-color: rgb(85, 85, 85);
-    color: rgb(255, 255, 255);
-    font-size: 1.1em;
-}
-.new-table th {
-    color: rgb(255, 255, 255);
-    background-color: rgb(85, 85, 85);
-    border: 1px solid rgb(85, 85, 85);
-    font-size: 12px;
-    padding: 3px;
-    vertical-align: top;
-    text-align: left;
-}
-
-.new-table tr td{
-    vertical-align: top;
-    border: 0.1em solid rgb(85, 85, 85);
-}
-
-.new-table tr:nth-child(even) {
-    background-color: #C0C0C0;
-    border: 1px solid rgb(85, 85, 85);
-}
-
 .show {
   padding: 3em;
   margin: 3em;
