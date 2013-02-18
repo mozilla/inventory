@@ -51,7 +51,7 @@ class Vlan(models.Model, ObjectUrlMixin):
 
 
 class VlanKeyValue(KeyValue):
-    vlan = models.ForeignKey(Vlan, null=False)
+    obj = models.ForeignKey(Vlan, related_name='keyvalue_set', null=False)
 
     class Meta:
         db_table = "vlan_key_value"

@@ -1,22 +1,15 @@
-from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.http import HttpResponse
 
-from core.utils import int_to_ip
+from core.utils import int_to_ip, resolve_ip_type
 from core.range.forms import RangeForm
 from core.range.utils import range_usage
-from core.range.models import Range, RangeKeyValue
-from core.interface.static_intr.models import StaticInterface
-from mozdns.address_record.models import AddressRecord
-from mozdns.ptr.models import PTR
+from core.range.models import Range
 from mozdns.ip.models import ipv6_to_longs
 from core.views import CoreDeleteView, CoreDetailView
 from core.views import CoreCreateView, CoreUpdateView, CoreListView
-from core.keyvalue.utils import get_attrs, update_attrs, get_aa, get_docstrings
-from core.keyvalue.utils import dict_to_kv
-from django.forms.util import ErrorList, ErrorDict
 
 import ipaddr
 import simplejson as json
@@ -29,7 +22,19 @@ class RangeView(object):
 
 
 class RangeDeleteView(RangeView, CoreDeleteView):
-    """ """
+    pass
+
+
+class RangeCreateView(RangeView, CoreCreateView):
+    pass
+
+
+class RangeUpdateView(RangeView, CoreUpdateView):
+    template_name = "range/range_edit.html"
+
+
+class RangeListView(RangeView, CoreListView):
+    template_name = "range/range_list.html"
 
 
 class RangeDetailView(RangeView, CoreDetailView):
@@ -46,15 +51,6 @@ class RangeDetailView(RangeView, CoreDetailView):
         if self.extra_context:
             context = dict(context.items() + self.extra_context.items())
         return context
-
-
-def delete_range_attr(request, attr_pk):
-    """
-    An view destined to be called by ajax to remove an attr.
-    """
-    attr = get_object_or_404(RangeKeyValue, pk=attr_pk)
-    attr.delete()
-    return HttpResponse("Attribute Removed.")
 
 
 def range_usage_text(request):
@@ -89,119 +85,40 @@ def range_usage_text(request):
     return HttpResponse(json.dumps(usage_data))
 
 
-def range_detail(request, range_pk):
-    mrange = get_object_or_404(Range, pk=range_pk)
-    attrs = mrange.rangekeyvalue_set.all()
+def range_usage_ajax(request):
+    start = request.GET.get('start', None)
+    end = request.GET.get('end', None)
+    start_ip_type, _ = resolve_ip_type(start)
+    end_ip_type, _ = resolve_ip_type(end)
+    errors = None
+    if start_ip_type != end_ip_type or start_ip_type is None:
+        errors = "Couldn't resolve ip_type"
+        return render(request, 'range/range_usage_ajax.html', {
+            'errors': errors,
+        })
+    rusage = range_usage(start, end, start_ip_type, get_objects=True)
 
-    start_upper, start_lower = mrange.start_upper, mrange.start_lower
-    end_upper, end_lower = mrange.end_upper, mrange.end_lower
+    def translate_ip(ip_i, *args):
+        return int_to_ip(ip_i, start_ip_type)
 
-    gt_start = Q(ip_upper=start_upper, ip_lower__gte=start_lower)
-    gt_start = gt_start | Q(ip_upper__gte=start_upper)
-
-    lt_end = Q(ip_upper=end_upper, ip_lower__lte=end_lower)
-    lt_end = lt_end | Q(ip_upper__lte=end_upper)
-
-    records = AddressRecord.objects.filter(gt_start, lt_end)
-    ptrs = PTR.objects.filter(gt_start, lt_end)
-    intrs = StaticInterface.objects.filter(gt_start, lt_end)
-
-    range_data = []
-    for i in range((start_upper << 64) + start_lower, (end_upper << 64) +
-                   end_lower - 1):
-        taken = False
-        adr_taken = None
-        ip_str = str(ipaddr.IPv4Address(i))
-        for record in records:
-            if record.ip_lower == i:
-                adr_taken = record
-                break
-
-        ptr_taken = None
-        for ptr in ptrs:
-            if ptr.ip_lower == i:
-                ptr_taken = ptr
-                break
-
-        if ptr_taken and adr_taken:
-            if ptr_taken.name == adr_taken.fqdn:
-                range_data.append(('A/PTR', ip_str, ptr_taken, adr_taken))
-            else:
-                range_data.append(('PTR', ip_str, ptr_taken))
-                range_data.append(('A', ip_str, adr_taken))
-            taken = True
-        elif ptr_taken and not adr_taken:
-            range_data.append(('PTR', ip_str, ptr_taken))
-            taken = True
-        elif not ptr_taken and adr_taken:
-            range_data.append(('A', ip_str, adr_taken))
-            taken = True
-
-        for intr in intrs:
-            if intr.ip_lower == i:
-                range_data.append(('Interface', ip_str, intr))
-                taken = True
-                break
-
-        if not taken:
-            range_data.append((None, ip_str))
-
-    return render(request, 'range/range_detail.html', {
-        'range': mrange,
-        'attrs': attrs,
-        'range_data': range_data
+    return render(request, 'range/range_usage_ajax.html', {
+        'errors': errors,
+        'start': start,
+        'end': end,
+        'start_i': int_to_ip(start, start_ip_type),
+        'end_i': int_to_ip(end, end_ip_type),
+        'rusage': rusage,
+        'translate_ip': translate_ip
     })
 
 
-class RangeCreateView(RangeView, CoreCreateView):
-    """ """
-
-
-def update_range(request, range_pk):
+def range_detail(request, range_pk):
     mrange = get_object_or_404(Range, pk=range_pk)
-    attrs = mrange.rangekeyvalue_set.all()
-    docs = get_docstrings(RangeKeyValue())
-    aa = get_aa(RangeKeyValue())
-    if request.method == 'POST':
-        form = RangeForm(request.POST, instance=mrange)
-        try:
-            if not form.is_valid():
-                return render(request, 'range/range_edit.html', {
-                    'range': mrange,
-                    'form': form,
-                    'attrs': attrs,
-                    'docs': docs,
-                    'aa': json.dumps(aa)
-                })
-            else:
-                # Handle key value stuff.
-                kv = None
-                kv = get_attrs(request.POST)
-                update_attrs(kv, attrs, RangeKeyValue, mrange, 'range')
-                mrange = form.save()
-                return redirect(mrange.get_edit_url())
-        except ValidationError, e:
-            if form._errors is None:
-                form._errors = ErrorDict()
-            if kv:
-                attrs = dict_to_kv(kv, RangeKeyValue)
-            form._errors['__all__'] = ErrorList(e.messages)
-            return render(request, 'range/range_edit.html', {
-                'range': mrange,
-                'form': form,
-                'attrs': attrs,
-                'docs': docs,
-                'aa': json.dumps(aa)
-            })
-    else:
-        form = RangeForm(instance=mrange)
-        return render(request, 'range/range_edit.html', {
-            'range': mrange,
-            'form': form,
-            'attrs': attrs,
-            'docs': docs,
-            'aa': json.dumps(aa)
-        })
+    attrs = mrange.keyvalue_set.all()
+    return render(request, 'range/range_detail.html', {
+        'range': mrange,
+        'attrs': attrs,
+    })
 
 
 def redirect_to_range_from_ip(request):
@@ -284,11 +201,3 @@ def get_all_ranges_ajax(request):
                          'relevant': relevant
                          })
     return HttpResponse(json.dumps(ret_list))
-
-
-class RangeUpdateView(RangeView, CoreUpdateView):
-    """ """
-
-
-class RangeListView(RangeView, CoreListView):
-    """ """

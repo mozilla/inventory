@@ -2,13 +2,13 @@
 
 
 {% block content %}
+    <div class='dns-title'><h3>{{ site.get_full_name() }}</h3></div>
+    <div>
     {% if site.parent %}
-        <div class='dns-title'>{{ site.get_full_name() }}</div>
         Parent site: <a href='{{ site.parent.get_absolute_url() }}'>{{ site.parent.get_full_name() }}</a>
         </br>
-    {% else %}
-        <div class='dns-title'>{{ site.get_full_name() }}</div>
     {% endif %}
+    </div>
 
 
     {% block action_bar %}
@@ -25,78 +25,38 @@
     {% endblock %}
 
 
-        <table class="table">
-            <thead>
-                {% for item, value in site.details() %}
-                    <th>{{ item }}</th>
-                {% endfor %}
-            </thead>
+        <div>
+            {% from 'core/core_macros.html' import display_details %}
+            <div style='float:left;'>
+            {{ display_details(site.details(), obj=site) }}
+            </div>
 
-            <tbody>
-                <tr>
-                {% for item, value in site.details() %}
-                    <td>{{ value }}</td>
-                {% endfor %}
-                </tr>
-            </tbody>
-        </table>
+            <div style='float:left; margin-left: 3em;'>
+                {% from 'core/core_macros.html' import display_kv %}
+                {{ display_kv(attrs, obj=site, kv_type='site') }}
+            </div>
 
-        <table class="table">
-            <thead>
-                {% for attr in attrs %}
-                    <th>{{ attr.key }}</th>
-                {% endfor %}
-            </thead>
-
-            <tbody>
-                <tr>
-                {% for attr in attrs %}
-                    <td>{{ attr.value }}</td>
-                {% endfor %}
-                </tr>
-            </tbody>
-        </table>
-        {% if child_sites %}
-        <h3>Child sites</h3>
-            <table class="table">
-                <thead>
-                        <th>Site</th>
-                </thead>
-
-                <tbody>
-                    {% for child_site in child_sites %}
-                        <td><a href='{{ child_site.get_absolute_url() }}'>{{ child_site.get_full_name() }}</a></td>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-
-
-        <h3>Networks</h3>
-        <table class="table">
-            <thead>
-                    <th>Vlan</th>
-                    <th>Network(s)</th>
-            </thead>
-
-            <tbody>
-                {% for vlan in vlans %}
-                    {% for net in vlan.network_set.filter(site=site) %}
+            <div style='float:left; margin-left: 3em;'>
+            {% if child_sites %}
+                <table class="new-table" >
                     <tr>
-                    {% if loop.first %}
-                        <td><a href='{{ vlan.absolute_url() }}'>{{ vlan }}</a></td>
-                    {% else %}
-                        <td> </td>
-                    {% endif %}
-                    <td><a href='{{ net.absolute_url() }}'>{{ net }}</a></td>
+                        <th>Child Sites</th>
                     </tr>
+                    {% for child_site in child_sites %}
+                        <tr>
+                            <td>
+                                <a href='{{ child_site.get_absolute_url() }}'>{{ child_site.get_full_name() }}</a>
+                        </td>
+                        </tr>
                     {% endfor %}
-                {% endfor %}
-            </tbody>
-        </table>
-        {% if no_vlan_networks %}
-            <h3>Networks with no Vlan</h3>
-        {% from 'core/core_macros.html' import display_networks %}
-        {{ display_networks(no_vlan_networks) }}
-        {% endif %}
+                </table>
+            {% endif %}
+            </div>
+        </div>
+
+
+        <div style='display:table;'>
+            {% from 'core/core_macros.html' import display_networks %}
+            {{ display_networks(site.network_set.all(), first_header="Networks homed in "+site.get_full_name()+".", extra_style="width: 100%; margin-left:3em;") }}
+        </div>
 {% endblock %}

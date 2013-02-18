@@ -1,15 +1,9 @@
 {% extends "mozdns/mozdns_detail.html" %}
 
 {% block content %}
-    {% block title %}
-        {{ object.description }}
-    {% endblock %}
-
-
-
     {{ super() }}
 
-    {% from "mozdns/tables.html" import render_table %}
+    {% from "base/tables.html" import render_table %}
     <p><a href='/mozdns/bind/build_debug/{{ soa.pk }}/'>See compiled BIND file for this Zone</a></p>
 
     {% if dom_matrix %}

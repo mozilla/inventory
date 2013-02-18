@@ -22,7 +22,7 @@ from core.interface.static_intr.models import StaticInterface
 from core.site.models import Site
 from core.utils import IPFilter, one_to_two
 from core.vlan.models import Vlan
-from core.utils import start_end_filter
+from core.utils import start_end_filter, resolve_ip_type
 
 from systems.models import System
 
@@ -190,24 +190,14 @@ def build_ipf_qsets(q):
     return q_sets
 
 
-def _resolve_ip_type(ip_str):
-    if ip_str.find(':') > -1:
-        Klass = ipaddr.IPv6Network
-        ip_type = '6'
-    elif ip_str.find('.') > -1:
-        Klass = ipaddr.IPv4Network
-        ip_type = '4'
-    return ip_type, Klass
-
-
 def build_range_qsets(range_):
     try:
         start, end = range_.split(',')
     except ValueError:
         raise BadDirective("Specify a range using the format: start,end")
-    start_ip_type, _ = _resolve_ip_type(start)
-    end_ip_type, _ = _resolve_ip_type(end)
-    if start_ip_type != end_ip_type:
+    start_ip_type, _ = resolve_ip_type(start)
+    end_ip_type, _ = resolve_ip_type(end)
+    if start_ip_type != end_ip_type or not start_ip_type or not end_ip_type:
         raise BadDirective("Couldn not resolve IP type of {0} and "
                            "{1}".format(start, end))
     try:
@@ -218,7 +208,7 @@ def build_range_qsets(range_):
 
 
 def build_ip_qsets(ip_str):
-    ip_type, Klass = _resolve_ip_type(ip_str)
+    ip_type, Klass = resolve_ip_type(ip_str)
     try:
         ip = Klass(ip_str)
         ip_upper, ip_lower = one_to_two(int(ip))
@@ -229,7 +219,7 @@ def build_ip_qsets(ip_str):
 
 
 def build_network_qsets(network_str):
-    ip_type, Klass = _resolve_ip_type(network_str)
+    ip_type, Klass = resolve_ip_type(network_str)
     try:
         network = Klass(network_str)
         ipf = IPFilter(network.network, network.broadcast, ip_type)

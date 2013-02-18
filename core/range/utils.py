@@ -4,8 +4,15 @@ from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
 
 
-def range_usage(ip_start, ip_end, ip_type, get_objects=True):
+def range_usage(ip_start, ip_end, ip_type, get_objects=False):
     """
+    :param ip_start: Start ip
+    :type ip_start: str
+    :param ip_end: End ip
+    :type ip_end: str
+    :param ip_type: ip type
+    :type ip_end: str ('4' or '6')
+
     Returns ip usage statistics about the range starting at ip_start and
     ending at ip_end.
 
@@ -54,10 +61,11 @@ def range_usage(ip_start, ip_end, ip_type, get_objects=True):
     def get_ip(rec):
         return two_to_one(rec.ip_upper, rec.ip_lower)
 
+    # This should be done in the db
     lists = [sorted(AddressRecord.objects.filter(ipf_q), key=get_ip),
              sorted(PTR.objects.filter(ipf_q), key=get_ip),
              sorted(StaticInterface.objects.filter(ipf_q), key=get_ip)]
-
+    # This should be done in the db
     free_ranges = []
 
     def cmp_ip_upper_lower(a, b):
@@ -94,11 +102,18 @@ def range_usage(ip_start, ip_end, ip_type, get_objects=True):
         if minimum_i != rel_start:
             free_ranges.append((rel_start, minimum_i - 1))
 
+        if get_objects:
+            objects = ['objects']
         for l in lists:
             while (l and
                     l[0].ip_upper == minimum.ip_upper and
                     l[0].ip_lower == minimum.ip_lower):
-                l.pop(0)
+                if get_objects:
+                    objects.append(l.pop(0))
+                else:
+                    l.pop(0)
+        if get_objects:
+            free_ranges.append(objects)
 
         rel_start = minimum_i + 1
 

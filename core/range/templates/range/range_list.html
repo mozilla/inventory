@@ -1,0 +1,33 @@
+{% extends "core/core_base.html" %}
+{% block header %}
+    {{ object_list[0]|humanized_class_name + 's' }}
+{% endblock %}
+
+{% block content %}
+    <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+
+    <div class='dns-title'>{{ object_list[0]|humanized_class_name + 's'}}</div>
+    <script>
+        $(document).ready(function (){
+            $("#range-table").tablesorter({
+                headers: {
+                    0: { sorter:'hostname' },
+                    1: { sorter:'ipAddress' },
+                    2: { sorter:'ipAddress' },
+                    3: { sorter:'integer' },
+                }
+            });
+        });
+    </script>
+
+
+    {% block action_bar %}
+        {% if object_list %}
+        {# The problem here is that we are getting the create url from the first object. If there is no first object, because nothing has been created, there is no way to find the create url. BUG TODO#}
+        <a class="btn btn-primary" href="{{ object_list[0].get_create_url() }}">Create {{ object_list[0]|humanized_class_name }}</a>
+        {% endif %}
+    {% endblock %}
+
+    {% from 'core/core_macros.html' import display_ranges %}
+    {{ display_ranges(object_list, id='range-table') }}
+{% endblock %}

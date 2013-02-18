@@ -1,9 +1,9 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
 
 from core.mixins import ObjectUrlMixin
 from core.keyvalue.models import KeyValue
-from core.utils import networks_to_Q
+from core.utils import networks_to_Q, to_a
 
 
 class Site(models.Model, ObjectUrlMixin):
@@ -12,9 +12,18 @@ class Site(models.Model, ObjectUrlMixin):
     parent = models.ForeignKey("self", null=True, blank=True)
 
     def details(self):
-        return (
-            ('Name', self.get_full_name()),
-        )
+        details = [
+            ('Name', self.full_name),
+        ]
+        if self.parent:
+            details.append(
+                ('Parent Site', to_a(self.parent.full_name, self.parent))
+            )
+        return details
+
+    @property
+    def full_name(self):
+        return self.get_full_name()
 
     def get_full_name(self):
         full_name = self.name
@@ -54,7 +63,7 @@ class Site(models.Model, ObjectUrlMixin):
 
 
 class SiteKeyValue(KeyValue):
-    site = models.ForeignKey(Site, null=False)
+    obj = models.ForeignKey(Site, related_name='keyvalue_set', null=False)
 
     class Meta:
         db_table = 'site_key_value'
@@ -66,3 +75,17 @@ class SiteKeyValue(KeyValue):
 
     def _aa_description(self):
         return
+
+    def _aa_type(self):
+        """
+        The type of this site. Valid types include: DC, BU and Office.
+        """
+        valid_site_types = ['dc', 'bu', 'office']
+        if self.value.lower() not in valid_site_types:
+            raise ValidationError(
+                "{0} not a valid site type".format(self.value)
+            )
+        if self.value.lower() == 'office':
+            self.value = self.value.lower().title()
+        else:
+            self.value = self.value.upper()

@@ -1,6 +1,6 @@
 from mozdns.utils import slim_form
-from base.mozdns.views import BaseListView, BaseDetailView, BaseCreateView
-from base.mozdns.views import BaseUpdateView, BaseDeleteView
+from base.base.views import BaseListView, BaseDetailView, BaseCreateView
+from base.base.views import BaseUpdateView, BaseDeleteView
 
 
 class MozdnsListView(BaseListView):

@@ -55,7 +55,7 @@
     </div>
 
     <!-- Basic bootstrap table -->
-    <table class="table table-bordered table-striped">
+    <table class="new-table table-bordered table-striped">
         <thead>
             <tr>
                 <th>{{ object_list[0]|humanized_class_name }}</th>
@@ -64,7 +64,7 @@
 
     <tbody>
             {% for obj in object_list %}
-                <tr><th><a href='{{ obj.absolute_url() }}'>{{ obj }}</a></th></tr>
+                <tr><td><a href='{{ obj.absolute_url() }}'>{{ obj }}</a></td></tr>
             {% endfor %}
     </tbody>
     </table>

@@ -168,7 +168,8 @@ class CommonOption(KeyValue):
             validate_name(name.strip('"'))
 
     def _ip_list(self, ip_type):
-        """Use this if the value is supposed to be a list of ip addresses.
+        """
+        Use this if the value is supposed to be a list of ip addresses.
         """
         self.ip_option = True
         self.has_validator = True

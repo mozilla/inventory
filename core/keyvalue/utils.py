@@ -43,7 +43,7 @@ def get_attrs(query_dict):
     return kv
 
 
-def update_attrs(kv, attrs, KVClass, obj, obj_name):
+def update_attrs(kv, attrs, KVClass, obj):
     """
     :param kv: The KV pairs being added to the object.
     :type kv: dict
@@ -53,8 +53,6 @@ def update_attrs(kv, attrs, KVClass, obj, obj_name):
     :type KVClass: class
     :param obj: The object the KV paris are being associated to.
     :type obj: object
-    :param obj_name: The name of the foreign key back to obj
-    :type obj_name: str
     """
     to_save = []
     for attr, value in kv.iteritems():
@@ -71,7 +69,7 @@ def update_attrs(kv, attrs, KVClass, obj, obj_name):
             to_save.append(kv)
 
     for kv in to_save:
-        setattr(kv, obj_name, obj)
+        setattr(kv, 'obj', obj)
         kv.clean()
         kv.save()
 
@@ -125,10 +123,9 @@ class AuxAttr(object):
     the unit tests.
     """
 
-    def __init__(self, KeyValueClass, obj, obj_name):
+    def __init__(self, KeyValueClass, obj):
         # Bypass our overrides.
         super(AuxAttr, self).__setattr__('obj', obj)
-        super(AuxAttr, self).__setattr__('obj_name', obj_name)
         super(AuxAttr, self).__setattr__('KVClass', KeyValueClass)
         super(AuxAttr, self).__setattr__('cache', {})
 
@@ -137,7 +134,7 @@ class AuxAttr(object):
             return self.cache[attr]
         else:
             try:
-                kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
+                kv = self.KVClass.objects.get(**{'key': attr, 'obj':
                                                  self.obj})
             except ObjectDoesNotExist:
                 raise AttributeError("{0} AuxAttr has no attribute "
@@ -163,10 +160,10 @@ class AuxAttr(object):
         except AttributeError:
             pass
         try:
-            kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
+            kv = self.KVClass.objects.get(**{'key': attr, 'obj':
                                              self.obj})
         except ObjectDoesNotExist:
-            kv = self.KVClass(**{'key': attr, self.obj_name: self.obj})
+            kv = self.KVClass(**{'key': attr, 'obj': self.obj})
         kv.value = value
         kv.clean()
         kv.save()
@@ -181,7 +178,7 @@ class AuxAttr(object):
             pass
         if hasattr(self, attr):
             self.cache.pop(attr)
-            kv = self.KVClass.objects.get(**{'key': attr, self.obj_name:
+            kv = self.KVClass.objects.get(**{'key': attr, 'obj':
                                              self.obj})
             kv.delete()
             return

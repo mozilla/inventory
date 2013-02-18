@@ -10,8 +10,8 @@ def build_subnet(network, raw=False):
         :ref:`StaticInterface` instances.
     :type network: :class:`StaticInterface`
     """
-    network_options = network.networkkeyvalue_set.filter(is_option=True)
-    network_statements = network.networkkeyvalue_set.filter(is_statement=True)
+    network_options = network.keyvalue_set.filter(is_option=True)
+    network_statements = network.keyvalue_set.filter(is_statement=True)
     network_raw_include = network.dhcpd_raw_include
     # All interface objects that are within this network and have dhcp_enabled.
     # TODO, make this work with IPv6
@@ -76,8 +76,8 @@ def build_subnet(network, raw=False):
 
 
 def build_pool(mrange):
-    mrange_options = mrange.rangekeyvalue_set.filter(is_option=True)
-    mrange_statements = mrange.rangekeyvalue_set.filter(is_statement=True)
+    mrange_options = mrange.keyvalue_set.filter(is_option=True)
+    mrange_statements = mrange.keyvalue_set.filter(is_statement=True)
     mrange_raw_include = mrange.dhcpd_raw_include
     build_str = "\tpool {\n"
     build_str += "\t\t# Pool Statements\n"

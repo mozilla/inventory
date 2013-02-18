@@ -96,7 +96,7 @@ class StaticInterface(BaseAddressRecord):
     search_fields = ("mac", "ip_str", "fqdn")
 
     def update_attrs(self):
-        self.attrs = AuxAttr(StaticIntrKeyValue, self, "intr")
+        self.attrs = AuxAttr(StaticIntrKeyValue, self)
 
     def details(self):
         return (
@@ -228,7 +228,9 @@ is_mgmt = re.compile("^mgmt$")
 
 
 class StaticIntrKeyValue(KeyValue):
-    obj = models.ForeignKey(StaticInterface, null=False)
+    obj = models.ForeignKey(
+        StaticInterface, related_name='keyvalue_set', null=False
+    )
 
     class Meta:
         db_table = "static_inter_key_value"

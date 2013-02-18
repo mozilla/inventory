@@ -1,5 +1,5 @@
-from base.mozdns.views import BaseListView, BaseDetailView, BaseCreateView
-from base.mozdns.views import BaseUpdateView, BaseDeleteView
+from base.base.views import BaseListView, BaseDetailView, BaseCreateView
+from base.base.views import BaseUpdateView, BaseDeleteView
 
 from django.forms.util import ErrorList
 from django.core.exceptions import ObjectDoesNotExist, ValidationError

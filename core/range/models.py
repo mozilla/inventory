@@ -4,6 +4,7 @@ from django.http import HttpResponse
 
 from core.network.models import Network
 from core.utils import IPFilter, four_to_two
+from core.range.utils import range_usage
 from core.mixins import ObjectUrlMixin
 from core.keyvalue.base_option import CommonOption
 from core.interface.static_intr.models import StaticInterface
@@ -61,7 +62,7 @@ class Range(models.Model, ObjectUrlMixin):
         ('4', 'IPv4'),
         ('6', 'IPv6'),
     )
-    ip_type = models.CharField(max_length=1, choices=IP_TYPES)
+    ip_type = models.CharField(max_length=1, choices=IP_TYPES, editable=False)
 
     STATIC = "st"
     DYNAMIC = "dy"
@@ -69,8 +70,9 @@ class Range(models.Model, ObjectUrlMixin):
         (STATIC, 'Static'),
         (DYNAMIC, 'Dynamic'),
     )
-    models.CharField(max_length=2, choices=RANGE_TYPE, default=STATIC,
-                     editable=False)
+    rtype = models.CharField(
+        max_length=2, choices=RANGE_TYPE, default=STATIC, editable=True
+    )
 
     class Meta:
         db_table = 'range'
@@ -96,6 +98,7 @@ class Range(models.Model, ObjectUrlMixin):
                 self.end_upper, self.end_lower = ipv6_to_longs(self.end_str)
             else:
                 raise ValidationError("ERROR: could not determine the ip type")
+            self.ip_type = self.network.ip_type
         except ipaddr.AddressValueError, e:
             raise ValidationError(str(e))
 
@@ -176,6 +179,9 @@ class Range(models.Model, ObjectUrlMixin):
             )
 
     def __str__(self):
+        return self.start_str + " <-> " + self.end_str
+
+    def desc(self):
         x = "Site: {0} Vlan: {1} Network: {2} Range: Start - {3} End -  {4}"
         return x.format(self.network.site, self.network.vlan, self.network,
                         self.start_str, self.end_str)
@@ -227,6 +233,12 @@ class Range(models.Model, ObjectUrlMixin):
         else:
             return None
 
+    def range_usage(self):
+        ru = range_usage(self.start_str, self.end_str, self.network.ip_type)
+        ru_precent = ru['used'] / (ru['used'] + 0.0 + ru['unused'])
+        ru['precent_used'] = str(ru_precent * 100)[0:4] + " %"
+        return ru
+
 
 def find_free_ip(start, end, ip_type='4'):
     """Given start and end numbers, find a free ip.
@@ -270,7 +282,7 @@ def find_free_ip(start, end, ip_type='4'):
 
 
 class RangeKeyValue(CommonOption):
-    obj = models.ForeignKey(Range, null=False)
+    obj = models.ForeignKey(Range, related_name='keyvalue_set', null=False)
 
     class Meta:
         db_table = 'range_key_value'

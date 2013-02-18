@@ -65,7 +65,7 @@ def delete_soa_attr(request, attr_pk):
 
 def update_soa(request, soa_pk):
     soa = get_object_or_404(SOA, pk=soa_pk)
-    attrs = soa.soakeyvalue_set.all()
+    attrs = soa.keyvalue_set.all()
     docs = get_docstrings(SOAKeyValue())
     aa = get_aa(SOAKeyValue())
     if request.method == 'POST':
@@ -83,7 +83,7 @@ def update_soa(request, soa_pk):
                 # Handle key value stuff.
                 kv = None
                 kv = get_attrs(request.POST)
-                update_attrs(kv, attrs, SOAKeyValue, soa, 'soa')
+                update_attrs(kv, attrs, SOAKeyValue, soa)
                 soa = form.save()
                 return redirect(soa.get_edit_url())
         except ValidationError, e:

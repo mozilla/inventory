@@ -1,4 +1,4 @@
-{% extends "mozdns/base.html" %}
+{% extends "base/base.html" %}
 
 
 {% block content %}
@@ -17,9 +17,9 @@
         {% endif %}
     {% endblock %}
 
-        {% from "mozdns/tables.html" import render_table %}
+        {% from "base/tables.html" import render_table %}
 
-        <table class="table">
+        <table class="new-table">
             <thead>
                 {% for item, value in object.details() %}
                     <th>{{ item }}</th>

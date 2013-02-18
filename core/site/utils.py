@@ -9,7 +9,5 @@ def get_vlans(site):
     """
     vlans = set()
     for network in site.network_set.all():
-        print network
-        if network.vlan:
-            vlans.add(network.vlan)
+        vlans.add(network.vlan)
     return vlans

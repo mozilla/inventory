@@ -14,7 +14,7 @@
     <a class="btn" href="{{ object.get_delete_url() }}">Delete</a>
 
 
-    {% from "mozdns/tables.html" import render_table %}
+    {% from "base/tables.html" import render_table %}
 
     {% if ns_matrix %}
         <h3> Nameservers </h3>

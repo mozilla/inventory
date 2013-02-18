@@ -1,4 +1,4 @@
-{% extends "mozdns/detail.html" %}
+{% extends "base/detail.html" %}
 
 {% block content %}
     {% if object.domain %}
@@ -24,7 +24,7 @@
         {% endif %}
     {% endblock %}
 
-        {% from "mozdns/tables.html" import render_table %}
+        {% from "base/tables.html" import render_table %}
 
         <table class="table">
             <thead>

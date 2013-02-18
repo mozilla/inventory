@@ -200,3 +200,20 @@ def int_to_ip(ip, ip_type):
     elif ip_type == '4':
         IPKlass = ipaddr.IPv4Address
     return str(IPKlass(ip))
+
+
+def resolve_ip_type(ip_str):
+    if ip_str.find(':') > -1:
+        Klass = ipaddr.IPv6Network
+        ip_type = '6'
+    elif ip_str.find('.') > -1:
+        Klass = ipaddr.IPv4Network
+        ip_type = '4'
+    else:
+        Klass = None
+        ip_type = None
+    return ip_type, Klass
+
+
+def to_a(text, obj):
+    return "<a href='{0}'>{1}</a>".format(obj.absolute_url(), text)

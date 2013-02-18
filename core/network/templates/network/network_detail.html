@@ -2,7 +2,7 @@
 
 
 {% block content %}
-    <div class='dns-title'>{{ network }}</div>
+    <div class='dns-title'><h3>{{ network }}</h3></div>
 
     {% block action_bar %}
         {% if network.get_edit_url %}
@@ -20,70 +20,47 @@
     <br>
     <span>See <a href="/core/build/{{network.pk}}/">DHCP Build Output</a>.</span>
 
-        <table class="table">
-            <thead>
-                {% for item, value in network.details() %}
-                    <th>{{ item }}</th>
-                {% endfor %}
-                <th>Vlan</th>
-                {% if network.site %}
-                    <th>Site</th>
-                {% endif %}
-            </thead>
+        <div>
+            <div style='float:left;'>
+            {% from 'core/core_macros.html' import display_details %}
+            {{ display_details(network.details(), caption="Network Attributes", obj=network) }}
+            </div>
 
-            <tbody>
-                <tr>
-                {% for item, value in network.details() %}
-                    <td>{{ value }}</td>
-                {% endfor %}
-                {% if network.vlan %}
-                    <td><a href='{{ network.vlan.absolute_url() }}'>{{ network.vlan }}</a></td>
-                {% else %}
-                    <td>None</td>
-                {% endif %}
-                {% if network.site %}
-                    <td><a href='{{ network.site.absolute_url() }}'>{{ network.site }}</a></td>
-                {% endif %}
-                </tr>
-            </tbody>
-        </table>
+            <div style='float:left; margin-left: 3em;'>
+            {% from 'core/core_macros.html' import display_kv %}
+            {{ display_kv(attrs, obj=network, kv_type='network') }}
+            </div>
 
-        <table class="table">
-            <thead>
-                {% for attr in attrs %}
-                    <th>{{ attr.key }}</th>
-                {% endfor %}
-            </thead>
+            <div style='float:left; margin-left: 3em;'>
+            {% from 'core/core_macros.html' import display_networks %}
+            {{ display_networks(eldars, caption="Parent Network", first_header="Network", extra_style="") }}
+            </div>
 
-            <tbody>
-                <tr>
-                {% for attr in attrs %}
-                    <td>{{ attr.value }}</td>
-                {% endfor %}
-                </tr>
-            </tbody>
-        </table>
-
-        <h3>Parent Networks</h3>
-        {% from 'core/core_macros.html' import display_networks %}
-        {{ display_networks(eldars) }}
-
-        <h3>Sub Networks.</h3>
-        {{ display_networks(sub_networks) }}
+            <div style='float:left; margin-left: 3em;'>
+            {{ display_networks(sub_networks, first_header="Sub Networks", extra_style="") }}
+            </div>
+        </div>
 
 
-        <h3>Ranges</h3>
-        <table class="table">
-            <thead>
-                    <th>Info</th>
-            </thead>
+        {% if ranges %}
+                <div style='display:inline-block; margin-left: 3em;'>
+                <table class="new-table">
+                        <caption>Ranges</caption>
+                        <th>Type</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Usage</th>
 
-            <tbody>
-                <tr>
-                {% for range in ranges %}
-                <td>Start: <a href='{{range.get_absolute_url()}}'>{{ range.start_str }}</a> End: <a href='{{range.get_absolute_url()}}'>{{ range.end_str }}</a></td>
-                {% endfor %}
-                </tr>
-            </tbody>
-        </table>
+                        {% for range in ranges %}
+                        <tr>
+                            <td>{{ range.get_rtype_display() }}</td>
+                            <td><a href='{{range.get_absolute_url()}}'>{{ range.start_str }}</a></td>
+                            <td><a href='{{range.get_absolute_url()}}'>{{ range.end_str }}</a></td>
+                            {% set ru = range.range_usage() %}
+                            <td>{{ ru['precent_used']}}</td>
+                        </tr>
+                        {% endfor %}
+                </table>
+                </div>
+        {% endif %}
 {% endblock %}

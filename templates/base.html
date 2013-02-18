@@ -45,22 +45,22 @@
                     <a>DNS</a>
                     <ul>
                         {% for rdtype in ['CNAME', 'MX', 'NS', 'SRV', 'SSHFP', 'PTR', 'TXT'] %}
-                        <li><a href="/mozdns/record/search/{{rdtype}}/">{{rdtype}}</a></li>
+                        <li><a href="/base/record/search/{{rdtype}}/">{{rdtype}}</a></li>
                         {% endfor %}
-                        <li><a href="/mozdns/record/search/A/">A/AAAA</a></li>
-                        <li><a href="/mozdns/record/search/DOMAIN/">Domain</a></li>
-                        <li><a href="/mozdns/record/search/SOA/">SOA</a></li>
-                        <li><a href="/mozdns/create_zone/">New Zone</a></li>
+                        <li><a href="/base/record/search/A/">A/AAAA</a></li>
+                        <li><a href="/base/record/search/DOMAIN/">Domain</a></li>
+                        <li><a href="/base/record/search/SOA/">SOA</a></li>
+                        <li><a href="/base/create_zone/">New Zone</a></li>
                     </ul>
                 </li>
 
                 <li><a href="/core/">IPAM</a>
                     <ul>
                         <li><a class="nav-link" href="/core/search/">Search</a></li>
-                        <!-- <li><a class="nav-link" href="/core/site/">Site</a></li>
+                        <li><a class="nav-link" href="/core/site/">Site</a></li>
                         <li><a class="nav-link" href="/core/network/">Network</a></li>
                         <li><a class="nav-link" href="/core/vlan/">Vlan</a></li>
-                        <li><a class="nav-link" href="/core/range/">Range</a></li>-->
+                        <li><a class="nav-link" href="/core/range/">Range</a></li>
                     </ul>
                 </li>
                 {% if not read_only %}

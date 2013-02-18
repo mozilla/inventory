@@ -45,7 +45,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'reports',
     'mozdns',
     'base',
-    'base.mozdns',
+    'base.base',
     'core',
     'core.site',
     'core.vlan',

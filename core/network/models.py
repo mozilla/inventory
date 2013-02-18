@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 
 from mozdns.validation import validate_ip_type
 from mozdns.ip.models import ipv6_to_longs
-from core.utils import IPFilter
+from core.utils import IPFilter, one_to_two, to_a
 from core.vlan.models import Vlan
 from core.site.models import Site
 from core.mixins import ObjectUrlMixin
@@ -34,17 +34,27 @@ class Network(models.Model, ObjectUrlMixin):
                                             help_text="The number of binary "
                                             "1's in the netmask.")
 
-    dhcpd_raw_include = models.TextField(null=True, blank=True, help_text="The"
-                                         " config options in this box will be "
-                                         "included *as is* in the dhcpd.conf "
-                                         "file for this subnet.")
+    dhcpd_raw_include = models.TextField(
+        null=True, blank=True, help_text="The config options in this box "
+        "will be included *as is* in the dhcpd.conf file for this "
+        "subnet."
+    )
 
     network = None
 
     def details(self):
-        return (
+        details = [
             ('Network', self.network_str),
-        )
+        ]
+        if self.vlan:
+            details.append(
+                ('Vlan',
+                 to_a("{0}:{1}".format(self.vlan.name, self.vlan.number),
+                      self.vlan)))
+        if self.site:
+            details.append(('Site', to_a(self.site.full_name, self.site)))
+
+        return details
 
     class Meta:
         db_table = 'network'
@@ -127,9 +137,7 @@ class Network(models.Model, ObjectUrlMixin):
             raise ValidationError("Invalid network for ip type of "
                                   "'{0}'.".format(self, self.ip_type))
         # Update fields
-        self.ip_upper = int(self.network) >> 64
-        self.ip_lower = int(self.network) & (1 << 64) - 1  # Mask off
-                                                     # the last sixty-four bits
+        self.ip_upper, self.ip_lower = one_to_two(int(self.network))
         self.prefixlen = self.network.prefixlen
 
     def __str__(self):
@@ -140,7 +148,7 @@ class Network(models.Model, ObjectUrlMixin):
 
 
 class NetworkKeyValue(CommonOption):
-    obj = models.ForeignKey(Network, null=False)
+    obj = models.ForeignKey(Network, related_name='keyvalue_set', null=False)
     aux_attrs = (
         ('description', 'A description of the site'),
     )
@@ -164,7 +172,9 @@ class NetworkKeyValue(CommonOption):
         super(NetworkKeyValue, self).save(*args, **kwargs)
 
     def _aa_description(self):
-        """A descrition of this network"""
+        """
+        A descrition of this network
+        """
         pass
 
     def _aa_filename(self):
@@ -200,7 +210,9 @@ class NetworkKeyValue(CommonOption):
         self._single_ip(self.obj.ip_type)
 
     def _aa_dns_servers(self):
-        """A list of DNS servers for this network."""
+        """
+        A list of DNS servers for this network.
+        """
         self.is_statement = False
         self.is_option = False
         self._ip_list(self.obj.ip_type)

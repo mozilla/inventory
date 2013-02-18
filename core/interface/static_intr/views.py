@@ -222,7 +222,7 @@ def edit_static_interface(request, intr_pk):
                 # Handle key value stuff.
                 kv = None
                 kv = get_attrs(request.POST)
-                update_attrs(kv, attrs, StaticIntrKeyValue, intr, 'intr')
+                update_attrs(kv, attrs, StaticIntrKeyValue, intr)
                 intr = interface_form.save()
 
                 # Everything checks out. Clean and Save all the objects.

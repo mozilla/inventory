@@ -2,7 +2,7 @@
 
 
 {% block content %}
-    <div class='dns-title'>{{ vlan }}</div>
+    <div class='dns-title'><h3>Vlan: <code>{{ vlan }}</code><h3></div>
 
     {% block action_bar %}
         {% if vlan.get_edit_url %}
@@ -17,39 +17,20 @@
         {% endif %}
     {% endblock %}
 
+        <div>
+            <div style='float:left;'>
+            {% from 'core/core_macros.html' import display_details %}
+            {{ display_details(vlan.details(), caption="Vlan Attributes", obj=vlan) }}
+            </div>
 
-        <table class="table">
-            <thead>
-                {% for item, value in vlan.details() %}
-                    <th>{{ item }}</th>
-                {% endfor %}
-            </thead>
+            <div style='float:left; margin-left: 3em;'>
+            {% from 'core/core_macros.html' import display_kv %}
+            {{ display_kv(attrs, obj=vlan, kv_type='vlan') }}
+            </div>
 
-            <tbody>
-                <tr>
-                {% for item, value in vlan.details() %}
-                    <td>{{ value }}</td>
-                {% endfor %}
-                </tr>
-            </tbody>
-        </table>
-
-        <table class="table">
-            <thead>
-                {% for attr in attrs %}
-                    <th>{{ attr.key }}</th>
-                {% endfor %}
-            </thead>
-
-            <tbody>
-                <tr>
-                {% for attr in attrs %}
-                    <td>{{ attr.value }}</td>
-                {% endfor %}
-                </tr>
-            </tbody>
-        </table>
-
-        {% from 'core/core_macros.html' import display_networks %}
-        {{ display_networks(vlan.network_set.all(), vlan=False) }}
+            <div style='float:left; margin-left: 3em;'>
+                {% from 'core/core_macros.html' import display_networks %}
+                {{ display_networks(vlan.network_set.all(), caption="Networks in " + vlan.name, first_header="Network", extra_style="") }}
+            </div>
+        </div>
 {% endblock %}

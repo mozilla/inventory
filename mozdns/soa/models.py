@@ -161,7 +161,7 @@ reversion.register(SOA)
 
 
 class SOAKeyValue(KeyValue):
-    soa = models.ForeignKey(SOA, null=False)
+    obj = models.ForeignKey(SOA, related_name='keyvalue_set', null=False)
 
     def _aa_disabled(self):
         """

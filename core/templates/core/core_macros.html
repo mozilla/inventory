@@ -1,83 +1,113 @@
-{% macro display_networks(networks, vlan=True) -%}
-        <table class="table">
-            <thead>
-                    <th>Network</th>
+{% macro display_networks(networks, vlan=True, caption="Networks", first_header="Network", ignore_empty=True, extra_style='') -%}
+    {% if networks or not ignore_empty %}
+        <table class="new-table" style="{{extra_style}}">
+            <caption>{{caption}}</caption>
+            <tr>
+                    <th>{{first_header}}</th>
                     {% if vlan %}
                     <th>Vlan</th>
                     {% endif %}
                     <th>Site</th>
-            </thead>
+            </tr>
 
-            <tbody>
-                {% for network in networks %}
-                <tr>
-                        <td><a href='{{ network.absolute_url() }}'>{{ network }}</a></td>
-                    {% if vlan %}
-                        {% if network.vlan %}
-                            <td><a href='{{ network.vlan.absolute_url() }}'>{{ network.vlan }}</a></td>
-                        {% else %}
-                            <td>None</td>
-                        {% endif %}
-                    {% endif %}
-                    {% if network.site %}
-                        <td><a href='{{ network.site.absolute_url() }}'>{{ network.site }}</a></td>
+            {% for network in networks %}
+            <tr>
+                <td><a href='{{ network.absolute_url() }}'>{{ network }}</a></td>
+                {% if vlan %}
+                    {% if network.vlan %}
+                        <td><a href='{{ network.vlan.absolute_url() }}'>{{ network.vlan }}</a></td>
                     {% else %}
                         <td>None</td>
                     {% endif %}
-                </tr>
-                {% endfor %}
-            </tbody>
+                {% endif %}
+                {% if network.site %}
+                    <td><a href='{{ network.site.absolute_url() }}'>{{ network.site }}</a></td>
+                {% else %}
+                    <td>None</td>
+                {% endif %}
+            {% endfor %}
+            </tr>
         </table>
+    {% endif %}
 {%- endmacro %}
 
+{% macro display_ranges(ranges, vlan=True, caption="Ranges", first_header="", ignore_empty=True, extra_style='', id='range-table') -%}
+    {% if ranges or not ignore_empty %}
+        <table id='{{id}}' class="tablesorter" style="{{extra_style}}">
+            <caption>{{caption}}</caption>
+        <thead>
+            <tr>
+                    <th>Network</th>
+                    <th>Type</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Usage</th>
+            </tr>
+        </thead>
 
-{% macro draw_attrs(attrs, aa, delete_url) -%}
-{#
-    Parameters:
-
-        attrs - The list of existing attrs.
-
-        aa - The list of known validated attributes.
-
-        delete_url - The url an AJAX request will be POSTed to when a user requests to delete the attribute.
-                    The url will be {{ delete_url }}/{{ attr.pk}}/delete
-#}
-
-    <script language="Javascript" type="text/javascript" src="/static/javascripts/attribute_adder.js">
-    </script>
-
-    <input type="button" value="Add Attribute" onclick='addAttr("attrs_area","attr_",0, {{ aa | safe }});' />
-    <input type="button" value="Add Adhoc (Un-Validated) Attribute" onclick='addField("attrs_area","attr_",0, 200);' />
-    <br>
-    <div id='attribute-template'>
-        <tr class='key-value-pair'>
-                <td><input class="key-value-key" type='text' name='' value=''></td>
-                <td>
-                    <input class="nameserver-ttl" type='text'
-                    name='ttl_{{loop.index}}' value="{{ns.ttl}}">
-                    <input class='remove-entry' id='first-remove'type='button' value='-'
-                    {% if loop.first %}
-                        style='visibility:hidden;'
-                    {% endif %}
-                    ></td>
-        </tr>
-    </div>
-    <br>
-    <h3>Attributes</h3>
-    <b>Note</b>: <i>Order matters.</i>
-        <ul id="attrs_area">
-            {% for attr in attrs %}
-            <li>
-            <label for='attr_{{loop.index0}}_value' />{{ attr.key}}</label>
-            <input name='attr_{{loop.index0}}' id='attr_{{loop.index0}}' type='hidden' value='{{attr.key}}' /> 
-            <input name='attr_{{loop.index0}}_value' id='attr_{{loop.index0}}_value' type='text' value='{{attr.value}}'/>
-            <a style='cursor' onclick='remove_attr("attr_{{loop.index0}}", "{{ delete_url }}/{{ attr.pk }}/delete/")'>Delete</a>
-            </li>
+        <tbody>
+            {% for r in ranges %}
+            <tr>
+                <td><a href='{{r.network.absolute_url()}}'}}>{{ r.network }}</a></td>
+                <td>{{ r.get_rtype_display() }}</td>
+                <td><a href='{{ r.absolute_url() }}'>{{ r.start_str }}</a></td>
+                <td><a href='{{ r.absolute_url() }}'>{{ r.end_str }}</a></td>
+                <td>{{ r.range_usage()['precent_used'] }}</td>
             {% endfor %}
-        </ul>
-    <br/>
-    <ul id="adhoc_attrs_area">
-        <li></li>
-    </ul>
-    <!-- Let's hope we never have more that 200 attr's on an object! -->
+            </tr>
+        </tbody>
+        </table>
+    {% endif %}
+{%- endmacro %}
+
+{% macro display_kv(kvs, caption="Key Value Store", obj=None, kv_type=None) -%}
+    <table class="new-table">
+        <caption>{{caption}}</caption>
+        {% if kvs %}
+            <th>Key</th>
+            <th>Value</th>
+
+            {% for kv in kvs %}
+                <tr>
+                    <td>{{kv.key}}</td>
+                    <td>{{kv.value}}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+                <tr>
+                    <td>It's</td>
+                    <td>Empty!</td>
+                </tr>
+        {% endif %}
+    </table>
+        {% if kv_type and obj %}
+            {% if kvs %}
+                <div style='margin-bottom:2em;'>
+                    <span><a href='/core/keyvalue/{{kv_type}}/{{obj.pk}}/'>Edit</a> Key Value Store</span>
+                </div>
+            {% else %}
+                <div style='margin-bottom:2em;'>
+                    <span><a href='/core/keyvalue/{{kv_type}}/{{obj.pk}}/'>Add</a> to Key Value Store</span>
+                </div>
+            {% endif %}
+        {% endif %}
+{%- endmacro %}
+
+{% macro display_details(details, caption="Attributes", obj=None, show_edit=False) -%}
+    <table class="new-table">
+        <caption>{{caption}}</caption>
+        <th>Attribute</th>
+        <th>Value</th>
+        {% for detail in details %}
+            <tr>
+                <td>{{detail[0]}}</td>
+                <td>{{detail[1]}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    {% if obj and show_edit %}
+        <div style='margin-bottom:2em;'>
+            <span><a href='{{obj.edit_url()}}'>Edit</a> {{obj}}</span>
+        </div>
+    {% endif %}
 {%- endmacro %}

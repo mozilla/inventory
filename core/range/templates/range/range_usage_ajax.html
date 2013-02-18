@@ -1,0 +1,74 @@
+<html>
+<style>
+    .usage_table {
+        margin-top: 3em;
+    }
+    .usage_table th {
+        color: rgb(255, 255, 255);
+        background-color: rgb(85, 85, 85);
+        border: 1px solid rgb(85, 85, 85);
+        font-size: 12px;
+        padding: 3px;
+        vertical-align: top;
+        text-align: left;
+    }
+
+    .usage_table tr td{
+        vertical-align: top;
+    }
+
+    .usage_table tr:nth-child(even) {
+        background-color: #C0C0C0;
+    }
+    .free-ip {
+        background-color: #67ff5f;
+    }
+</style>
+{% if errors %}
+<div>
+    <span>{{ errors }}</span>
+</div>
+{% else %}
+    <table class="usage_table">
+        <th>IP</th>
+        <th>Objects</th>
+        {% for frange in rusage['free_ranges'] %}
+                {% if frange[0] == 'objects' %}
+                    <tr>
+                        <td>
+                            {{frange[1].ip_str}}
+                        </td>
+                        <td>
+                            <ul>
+                            {% for object in frange[1:] %}
+                                <li>{{object}}</li>
+                            {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                {% else %}
+                    {% if frange[0] == frange[1] %}
+                    <tr>
+                        <td>
+                                Free IP
+                        </td>
+                        <td class='free-ip'>
+                                {{translate_ip(frange[0])}}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td>
+                                Free IP Range
+                        </td>
+                        <td class='free-ip'>
+                                {{translate_ip(frange[0])}} - {{translate_ip(frange[1])}}
+                                ({{frange[1]- frange[0]}} Free addresses)
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% endif %}
+        {% endfor %}
+    </table>
+{% endif %}
+</html>

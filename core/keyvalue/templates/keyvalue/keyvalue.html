@@ -46,13 +46,15 @@
             form.data('objectCounter', objCounter + 1);
         }
         $('#add-adhoc-attr').click(function() {
-            add_an_attr($('#adhoc-template'), 'adhoc');
+            add_an_attr($('#adhoc-template'), 'attr');
         });
         $('#add-attr').click(function() {
             add_an_attr($('#attr-template'), 'attr');
         });
         form.submit(function (){
             console.log("[DEBUG] Submit pressed");
+
+            var success = true;
             $('#keyvalue-pairs .kv').each(function (index, el) {
                 var key_pk = $(el).attr('data-pk');
                 var key = $(el).find('.attr-kv-k').val()
@@ -62,88 +64,114 @@
                 console.log("Key is : " + key + " Value is: " + value);
 
                 var errors = $('#'+kv_css_class);
-                $.post('/core/keyvalue/validate_keyvalue_ajax/',
-                    { key: key, value: value, key_pk: key_pk,
-                        kv_class: '{{kv_class}}', obj_pk: '{{obj_pk}}',
-                        delete_key: delete_key },
-                    function (data) {
-                        var data = $.parseJSON(data);
-                        if (data['success']){
-                            errors.css('display', 'none');
-                        } else {
-                            errors.css('display', 'block');
-                            errors.find('td').html(data['message']);
-                        }
-                    }).error(function(e) {
-                        var newDoc = document.open("text/html", "replace");
-                        newDoc.write(e.responseText);
-                        newDoc.close();
-                    });
+                $.ajax({
+                    type: 'POST',
+                    async: false,
+                    url: '/core/keyvalue/validate_keyvalue_ajax/',
+                    data: { key: key, value: value, key_pk: key_pk,
+                            kv_class: '{{kv_class}}', obj_pk: '{{obj_pk}}',
+                            delete_key: delete_key },
+                    success: function (data) {
+                                var data = $.parseJSON(data);
+                                if (data['success']){
+                                    errors.css('display', 'none');
+                                } else {
+                                    errors.css('display', 'block');
+                                    errors.find('td').html(data['message']);
+                                    success = false;
+                                }
+                             },
+                    error: function(e) {
+                                var newDoc = document.open("text/html", "replace");
+                                newDoc.write(e.responseText);
+                                newDoc.close();
+                           },
+                });
             });
+            if (success) {
+                alert("All keys were updated/deleted/created!");
+                return true;
+            }
             return false;
-        }); // end submit()
+        });
         return false;
     });
     </script>
-        <div id='kv-templates' style='display:none;'>
-            <table>
-                <tr id='attr-template' class='kv' data-errors='<set me>' data-pk=''>
-                    <th><label class='attribute-label' >Attribute:</label></th>
-                    <td>
-                        <select class='attr-kv-k'>
-                            {% for option in aa_options %}
-                            <option value="{{option}}">{{option}}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <th><label class='value-label' >Value:</label></th>
-                    <td><input class='attr-kv-v' type='text' value=""> </td>
-                    <th>
-                        <input class='delete-key'
-                        id='first-remove'type='button' value='Remove' style=''>
-                    </th>
+    <div id='kv-templates' style='display:none;'>
+        <table style='table-layout: fixed;overflow: hidden;'>
+        <table>
+            <tr id='attr-template' class='kv' data-errors='<set me>' data-pk=''>
+                <th><label class='attribute-label' >Attribute:</label></th>
+                <td>
+                    <select class='attr-kv-k'>
+                        {% for option in aa_options %}
+                        <option value="{{option}}">{{option}}</option>
+                        {% endfor %}
+                    </select>
                 </td>
-                <tr id='errors_' style='display:none;'>
-                    <td></td>
-                </tr>
+                <th><label class='value-label' >Value:</label></th>
+                <td><input class='attr-kv-v' type='text' value=""></td>
+                <th>
+                    <input class='delete-key' type='button' value='Remove' style=''>
+                </th>
+            </td>
+            <tr id='errors_' style='display:none;'>
+                <td style='width:100px;'></td>
+            </tr>
 
-                </tr>
-                <tr id='adhoc-template'>
-                    <th><label>Attribute:</label></th>
-                    <td><input class="attr-kv-k" type='text' value=""></td>
-                    <th><label>Value:</label></th>
-                    <td><input class="attr-kv-v" type='text' value=""> </td>
-                    <th>
-                        <input class='delete-key'
-                        id='first-remove'type='button' value='Remove' style=''>
-                    </th>
-                    <td>
-                    </td>
-                </tr>
-            </table>
-        </div>
+            </tr>
+            <tr id='adhoc-template' class='kv' data-errors='<set me>' data-pk=''>
+                <th><label class='attribute-label' >Attribute:</label></th>
+                <td><input class="attr-kv-k" type='text' value=""></td>
+                <th><label class='value-label' >Value:</label></th>
+                <td><input class='attr-kv-v' type='text' value=""> </td>
+                <th>
+                    <input class='delete-key' type='button' value='Remove' style=''>
+                </th>
+            </td>
+        </table>
+    </div>
+    <h3>Editing KV Store for: <a href='{{object.get_absolute_url()}}'>{{object}}</a></h3>
     <input type='button' id='add-attr' value="Add New Attribute">
     <input type='button' id='add-adhoc-attr' value="Add New (Adhoc) Attribute">
     <form id='keyvalue-form' method='POST'>
         <table id='keyvalue-pairs'>
         {% for kv in attrs %}
                 <tr class='kv' data-errors='errors_existing_{{kv.id}}' data-pk={{kv.id}}>
-                    <th><label>Attribute:</label></th>
+                    <th style='width:100px'><label>Attribute:</label></th>
                     <td><input disabled='true' class="attr-kv-k" name='exising_k_{{kv.id}}'
-                        type='text' value="{{kv.key}}"></td>
+                        type='text' value="{{kv.key | e}}"></td>
                     <th><label>Value:</label></th>
                     <td><input class="attr-kv-v" name='existing_v_{{kv.id}}'
-                        type='text' value="{{kv.value}}"> </td>
+                        type='text' value="{{kv.value | e}}"> </td>
                     <th><label>Mark for deletion</label>
-                        <input class='delete-key' type='checkbox' style=''>
+                        <input class='delete-key' name='existing_delete_{{kv.id}}' type='checkbox' style=''>
                     </th>
                 </tr>
                 <tr id='errors_existing_{{kv.id}}' style='display:none;'>
-                    <td></td>
+                    <td style='width:100px;'></td>
                 </tr>
         {% endfor %}
         </table>
         <input type='submit' value='Submit'>
     </form>
+    <div>
+        {% if docs %}
+        <table border='5' class='new-table'>
+            <tr>
+                <th>Attribute</th>
+                <th>Description</th>
+            </tr>
+            {% for attr, doc in docs %}
+                {% if doc %}
+                    <tr>
+                        <td><b>{{attr}}</b></td>
+                        <td><pre>{{doc}}</pre></td>
+                    </tr>
+                {% endif %}
+            {% endfor%}
+        </table>
+        {% endif %}
+    </div>
     </div>
 {% endblock %}

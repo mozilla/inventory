@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 
 
@@ -72,3 +73,10 @@ class KeyValue(models.Model):
             # We want to catch when the validator didn't accept the correct
             # number of arguements.
             raise ValidationError("%s" % str(e))
+        self.validate_unique()
+
+    def validate_unique(self):
+        if (self.__class__.objects.filter(
+                key=self.key, value=self.value, obj=self.obj).
+                filter(~Q(id=self.pk)).exists()):
+            raise ValidationError("A key with this value already exists.")

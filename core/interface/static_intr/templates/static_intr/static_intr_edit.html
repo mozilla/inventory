@@ -21,31 +21,6 @@
         {{ form.as_p() }}
         </br>
         </br>
-        {% from "core/core_macros.html" import draw_attrs %}
-        {{ draw_attrs(attrs, aa, "/core/interface/attr") }}
-        <br/>
-        <br/>
         <input type="submit" value="Submit" />
-        <br/>
-        <br/>
-        <h3>Interface Attributes</h3>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Attribute</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for attr, doc in docs %}
-            <tr>
-                <td valign="top"><b>{{ attr }}</b></td>
-                <td><span width="200px"><pre>{{ doc }}</pre></span></td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        </br>
     </form>
 {% endblock %}

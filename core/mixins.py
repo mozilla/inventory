@@ -22,7 +22,16 @@ class ObjectUrlMixin(object):
     def absolute_url(self):
         return self.get_absolute_url()
 
+    # TODO, depricate this
     def get_edit_url(self):
+        """
+        Return the edit url of an object.
+        """
+        return CORE_BASE_URL + "/{0}/{1}/update/".format(
+            self._meta.db_table, self.pk
+        )
+
+    def edit_url(self):
         """
         Return the edit url of an object.
         """
