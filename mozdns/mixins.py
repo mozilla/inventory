@@ -55,9 +55,7 @@ class ObjectUrlMixin(object):
         """
         Return the edit url of an object.
         """
-        return MOZDNS_BASE_URL + "/{0}/{1}/update/".format(
-            self._meta.db_table, self.pk
-        )
+        return self.get_fancy_edit_url()
 
     def get_fancy_edit_url(self):
         return MOZDNS_BASE_URL + _(

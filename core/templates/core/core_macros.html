@@ -61,6 +61,7 @@
 {%- endmacro %}
 
 {% macro display_kv(kvs, caption="Key Value Store", obj=None, kv_type=None) -%}
+    {% if kvs %}
     <table class="tablesorter">
         <caption>{{caption}}</caption>
         {% if kvs %}
@@ -81,16 +82,18 @@
         {% endif %}
     </table>
         {% if kv_type and obj %}
-            {% if kvs %}
-                <div style='margin-bottom:2em;'>
-                    <span><a href='/core/keyvalue/{{kv_type}}/{{obj.pk}}/'>Edit</a> Key Value Store</span>
-                </div>
-            {% else %}
-                <div style='margin-bottom:2em;'>
-                    <span><a href='/core/keyvalue/{{kv_type}}/{{obj.pk}}/'>Add</a> to Key Value Store</span>
-                </div>
-            {% endif %}
+            <div style='margin-bottom:2em;'>
+                <span><a href='/core/keyvalue/{{kv_type}}/{{obj.pk}}/'>Edit</a> Key Value Store</span>
+            </div>
         {% endif %}
+    {% else %}
+        {% if kv_type and obj %}
+            <br />
+            <div style='margin-bottom:2em;'>
+                <span><a href='/core/keyvalue/{{kv_type}}/{{obj.pk}}/'>Add</a> to Key Value Store</span>
+            </div>
+        {% endif %}
+    {% endif %}
 {%- endmacro %}
 
 {% macro display_details(details, caption="Attributes", obj=None, show_edit=False) -%}

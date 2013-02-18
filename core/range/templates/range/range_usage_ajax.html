@@ -41,7 +41,7 @@
                         <td>
                             <ul>
                             {% for object in frange[1:] %}
-                                <li>{{object}}</li>
+                                <li><a href='{{object.get_edit_url()}}'>Goto</a> {{object}}</li>
                             {% endfor %}
                             </ul>
                         </td>
