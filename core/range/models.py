@@ -62,7 +62,9 @@ class Range(models.Model, ObjectUrlMixin):
         ('4', 'IPv4'),
         ('6', 'IPv6'),
     )
-    ip_type = models.CharField(max_length=1, choices=IP_TYPES, editable=False)
+    ip_type = models.CharField(
+        max_length=1, choices=IP_TYPES, editable=False, null=True
+    )
 
     STATIC = "st"
     DYNAMIC = "dy"
