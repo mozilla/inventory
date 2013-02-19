@@ -13,7 +13,7 @@
 	</thead>
 	<tbody>
     {% for scope in dhcp_scopes %}
-	<tr><td>{{scope}}</td><td><a href="/dhcp/edit/{{scope}}/">Edit</a>&nbsp;<a onclick="return confirm('Are you sure?');" href="/dhcp/delete/{{scope}}/">Delete</a>&nbsp;<a href="/dhcp/showfile/{{scope}}">Show File</a></td></tr>
+	<tr><td>{{scope}}</td><td><a href="/dhcp/edit/{{scope}}/">Edit</a>&nbsp;<a onclick="return confirm('Are you sure?');" href="/dhcp/delete/{{scope}}/">Delete</a>&nbsp;<a href="/dhcp/showfile/{{scope}}/">Show File</a></td></tr>
     {% endfor %}
 	</tbody>
 </table>
