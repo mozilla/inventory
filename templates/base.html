@@ -45,12 +45,12 @@
                     <a>DNS</a>
                     <ul>
                         {% for rdtype in ['CNAME', 'MX', 'NS', 'SRV', 'SSHFP', 'PTR', 'TXT'] %}
-                        <li><a href="/base/record/search/{{rdtype}}/">{{rdtype}}</a></li>
+                        <li><a href="/mozdns/record/search/{{rdtype}}/">{{rdtype}}</a></li>
                         {% endfor %}
-                        <li><a href="/base/record/search/A/">A/AAAA</a></li>
-                        <li><a href="/base/record/search/DOMAIN/">Domain</a></li>
-                        <li><a href="/base/record/search/SOA/">SOA</a></li>
-                        <li><a href="/base/create_zone/">New Zone</a></li>
+                        <li><a href="/mozdns/record/search/A/">A/AAAA</a></li>
+                        <li><a href="/mozdns/record/search/DOMAIN/">Domain</a></li>
+                        <li><a href="/mozdns/record/search/SOA/">SOA</a></li>
+                        <li><a href="/mozdns/create_zone/">New Zone</a></li>
                     </ul>
                 </li>
                 <li><a href="/dhcp/show/">DHCP</a>
