@@ -17,7 +17,7 @@ always_push_svn = True
 def main():
     client = Client()
     dhcp_scopes = []
-    dhcp_scopes = json.loads(client.get('/en-US/api/keyvalue/?key=is_dhcp_scope', follow=True).content)
+    dhcp_scopes = json.loads(client.get('/api/keyvalue/?key=is_dhcp_scope', follow=True).content)
     #print dhcp_scopes
     for dhcp_scope in dhcp_scopes:
         try:

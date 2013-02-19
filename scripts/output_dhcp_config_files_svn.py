@@ -21,6 +21,7 @@ def main():
     dh = DHCPHelper()
     dhcp_scopes = []
     dhcp_scopes = dh.get_scopes_to_generate()
+    print dhcp_scopes
     output_dir = DHCP_CONFIG_OUTPUT_DIRECTORY
     for scope in dhcp_scopes:
         dhcp_scope = scope.task
@@ -38,6 +39,7 @@ def main():
                 f = open(final_destination_file,"w")
                 f.write(output_text)
                 f.close()
+                print "Wrote config to {0}".format(final_destination_file)
             except IOError:
                 pass
             try:
