@@ -23,6 +23,10 @@
     .free-ip {
         background-color: #67ff5f;
     }
+
+    .sane-link {
+        color: rgb(0, 0, 0);
+    }
 </style>
 {% if errors %}
 <div>
@@ -41,7 +45,7 @@
                         <td>
                             <ul>
                             {% for object in frange[1:] %}
-                                <li><a href='{{object.get_edit_url()}}'>Goto</a> {{object}}</li>
+                                <li><a class='sane-link' href='{{object.get_edit_url()}}'>{{object}}</a></li>
                             {% endfor %}
                             </ul>
                         </td>
