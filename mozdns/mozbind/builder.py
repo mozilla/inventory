@@ -15,7 +15,7 @@ from django.db import transaction
 from settings.dnsbuilds import (
     STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE, NAMED_CHECKZONE_OPTS,
     MAX_ALLOWED_LINES_CHANGED, MAX_ALLOWED_CONFIG_LINES_REMOVED,
-    NAMED_CHECKZONE, NAMED_CHECKCONF, LAST_RUN_FILE
+    NAMED_CHECKZONE, NAMED_CHECKCONF, LAST_RUN_FILE, BIND_PREFIX
 )
 
 from mozdns.domain.models import SOA
@@ -176,6 +176,7 @@ class DNSBuilder(SVNBuilderMixin):
         defaults = {
             'STAGE_DIR': STAGE_DIR,
             'PROD_DIR': PROD_DIR,
+            'BIND_PREFIX': BIND_PREFIX,
             'LOCK_FILE': LOCK_FILE,
             'STOP_UPDATE_FILE': STOP_UPDATE_FILE,
             'LAST_RUN_FILE': LAST_RUN_FILE,
@@ -505,13 +506,17 @@ class DNSBuilder(SVNBuilderMixin):
     def calc_fname(self, view, root_domain):
         return "{0}.{1}".format(root_domain.name, view.name)
 
-    def render_zone_stmt(self, soa, zone_name, file_path):
+    def render_zone_stmt(self, soa, zone_name, file_meta):
         zone_stmt = "zone \"{0}\" IN {{{{\n".format(zone_name)
         zone_stmt += "\ttype {ztype};\n"  # We'll format this later
         if soa.is_signed:
-            zone_stmt += "\tfile \"{0}.signed\";\n".format(file_path)
+            zone_stmt += "\tfile \"{0}.signed\";\n".format(
+                file_meta['bind_fname']
+            )
         else:
-            zone_stmt += "\tfile \"{0}\";\n".format(file_path)
+            zone_stmt += "\tfile \"{0}\";\n".format(
+                file_meta['bind_fname']
+            )
         zone_stmt += "}};\n"
         return zone_stmt
 
@@ -544,12 +549,34 @@ class DNSBuilder(SVNBuilderMixin):
         return force_rebuild, new_serial
 
     def get_file_meta(self, view, root_domain, soa):
+        """
+        This function trys to pull all file login into one place.
+        Files:
+            * rel_zone_dir
+                - This is the directory path to where the zone file will be
+                  placed. It's relative to where the script things the SVN root
+                  is. See :func:`calc_target` for more info.
+            * fname
+                - This is the name of the file, which is usually in the format
+                  <zone-name>.<view-name>. See :func:`calc_fname` for more
+                  info.
+            * rel_fname
+                - The joining of rel_zone_dir + fname
+
+            * prod_fname
+                - Where the final zone file will be written (full path name)
+
+            * bind_fnam
+                - The path name used in the zones `zone` statement. See
+                  :func:`render_zone_stmt` for more info.
+        """
         file_meta = {}
-        relative_zone_dir = self.calc_target(root_domain, soa)
+        rel_zone_dir = self.calc_target(root_domain, soa)
         file_meta['fname'] = self.calc_fname(view, root_domain)
-        file_meta['rel_fname'] = os.path.join(relative_zone_dir,
-                                              file_meta['fname'])
+        file_meta['rel_fname'] = os.path.join(rel_zone_dir, file_meta['fname'])
         file_meta['prod_fname'] = os.path.join(self.PROD_DIR,
+                                               file_meta['rel_fname'])
+        file_meta['bind_fname'] = os.path.join(self.BIND_PREFIX,
                                                file_meta['rel_fname'])
         return file_meta
 
@@ -654,8 +681,7 @@ class DNSBuilder(SVNBuilderMixin):
                     # If we see a view in this loop it's going to end up in the
                     # config
                     view_zone_stmts.append(
-                        self.render_zone_stmt(soa, root_domain,
-                                              file_meta['prod_fname'])
+                        self.render_zone_stmt(soa, root_domain, file_meta)
                     )
                     # If it's dirty or we are rebuilding another view, rebuild
                     # the zone
