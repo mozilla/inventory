@@ -5,7 +5,7 @@
                 var query = document.location.href;
                 var split1 = query.split(/\/\//);
                 var ret = split1[1].split(/\//);
-                return (ret[segment - 1]);
+                return (ret[ret.length - 2]);  // ... okay ...
             }
 
             var kv_id = getURISegment(5);
