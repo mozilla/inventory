@@ -1,7 +1,7 @@
 function select_state(state) {
     function insert_new_form(record_type, record_pk, pre_callback, post_callback){
         console.log(record_type + " " + record_pk);
-        $.get('/mozdns/record/record_ajax/',
+        $.get('/en-US/mozdns/record/record_ajax/',
 
             {
                 'record_type': record_type,
@@ -125,7 +125,7 @@ function bind_submit(form, post_callback) {
 function submit_handler(post_callback){
     $('#form-message').html("<p>Sending data...</p>");
     var start = new Date().getTime();
-    $.post('/mozdns/record/record_ajax/',
+    $.post('/en-US/mozdns/record/record_ajax/',
         $('#current-form').serialize(),
         function (data) {
             $('#current-form-area').empty();
@@ -312,7 +312,7 @@ function setup_delete(){
     var record_type = data.attr('record_type');
     var record_pk = data.attr('record_pk');
     function delete_handler(){
-        $.post('/mozdns/record/delete/' + record_type + '/' + record_pk + '/',
+        $.post('/en-US/mozdns/record/delete/' + record_type + '/' + record_pk + '/',
             function (data) {
                 data = $.parseJSON(data)
                 if (data['success']) {

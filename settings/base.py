@@ -142,12 +142,16 @@ DEBUG_TOOLBAR_PANELS = (
     'debug_toolbar.panels.signals.SignalDebugPanel',
     'debug_toolbar.panels.logger.LoggingPanel',
 )
-MIDDLEWARE_CLASSES = (
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+TMP_MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (
     'reversion.middleware.RevisionMiddleware',
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
+MIDDLEWARE_CLASSES = []
+for mc in TMP_MIDDLEWARE_CLASSES:
+    if mc == 'session_csrf.CsrfMiddleware':
+        continue
+    MIDDLEWARE_CLASSES.append(mc)
+MIDDLEWARE_CLASSES = tuple(MIDDLEWARE_CLASSES)
 
 INTERNAL_IPS = ('127.0.0.1','10.22.74.139','10.250.2.54')
 

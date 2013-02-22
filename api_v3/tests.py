@@ -23,7 +23,7 @@ class Tasty1SystemTest(ResourceTestCase):
         System(**host_dict).save()
 
     def test1_system_not_exist(self):
-        resp = self.api_client.get('/api/v3/system/1/', format='json')
+        resp = self.api_client.get('/en-US/api/v3/system/1/', format='json')
         self.assertEqual(resp.status_code, 404)
 
     def test2_create_system(self):

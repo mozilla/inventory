@@ -7,6 +7,8 @@ from mozdns.nameserver.models import Nameserver
 from mozdns.soa.models import SOA
 from mozdns.tests.utils import random_label, random_byte
 
+def localize(url):
+    return '/en-US' + url
 
 class CreateZoneTests(TestCase):
 
@@ -34,7 +36,7 @@ class CreateZoneTests(TestCase):
         soa_count = SOA.objects.all().count()
         domain_count = Domain.objects.all().count()
         ns_count = Nameserver.objects.all().count()
-        resp = self.c.post(reverse('create-zone-ajax'), post_data)
+        resp = self.c.post(localize(reverse('create-zone-ajax')), post_data)
         self.assertEqual(200, resp.status_code)
         new_soa_count = SOA.objects.all().count()
         new_domain_count = Domain.objects.all().count()
@@ -58,7 +60,7 @@ class CreateZoneTests(TestCase):
         domain_count = Domain.objects.all().count()
         ns_count = Nameserver.objects.all().count()
         post_data = self.get_post_data()
-        resp = self.c.post(reverse('create-zone-ajax'), post_data)
+        resp = self.c.post(localize(reverse('create-zone-ajax')), post_data)
         self.assertEqual(200, resp.status_code)
         new_soa_count = SOA.objects.all().count()
         new_domain_count = Domain.objects.all().count()
@@ -74,7 +76,7 @@ class CreateZoneTests(TestCase):
         domain_count = Domain.objects.all().count()
         ns_count = Nameserver.objects.all().count()
         post_data = self.get_post_data()
-        resp = self.c.post(reverse('create-zone-ajax'), post_data)
+        resp = self.c.post(localize(reverse('create-zone-ajax')), post_data)
         self.assertEqual(200, resp.status_code)
         new_soa_count = SOA.objects.all().count()
         new_domain_count = Domain.objects.all().count()
@@ -86,7 +88,7 @@ class CreateZoneTests(TestCase):
 
     def test_more_realistic_creation(self):
         post_data = self.get_post_data()
-        resp = self.c.post(reverse('create-zone-ajax'), post_data)
+        resp = self.c.post(localize(reverse('create-zone-ajax')), post_data)
         self.assertEqual(200, resp.status_code)
         first_root_domain = post_data['root_domain']
         self._check_domain_tree(first_root_domain)
@@ -97,7 +99,7 @@ class CreateZoneTests(TestCase):
         second_root_domain = "{0}.{1}".format(
             random_label(), first_root_domain)
         post_data['root_domain'] = second_root_domain
-        resp = self.c.post(reverse('create-zone-ajax'), post_data)
+        resp = self.c.post(localize(reverse('create-zone-ajax')), post_data)
         self.assertEqual(200, resp.status_code)
         self._check_domain_tree(first_root_domain)
         self.assertTrue(Domain.objects.filter(name=second_root_domain))

@@ -19,6 +19,12 @@ import simplejson as json
 
 API_VERSION = '1'
 
+class TestCaseUtils(object):
+    def localize_url(self, url):
+        if 'en-US' not in url:
+            url = url.replace('mozdns', 'en-US/mozdns')
+        return url
+
 
 class NoNameserverViewTests(object):
     def get_domain_and_post_data(self):
@@ -63,7 +69,7 @@ class NoNameserverViewTests(object):
 
         resp, post_data = self.generic_create(post_data)
         obj_data = json.loads(resp.content)
-        _, (_, new_object_url) = resp.items()
+        new_object_url = resp['Location']
 
         # We now have a zone with a record in it. The namserver at the root of
         # the zone is in both views.
@@ -91,9 +97,9 @@ class NoNameserverViewTests(object):
         )
 
 
-class MozdnsAPITests(NoNameserverViewTests):
-    object_list_url = "/mozdns/api/v{0}_dns/{1}/"
-    object_url = "/mozdns/api/v{0}_dns/{1}/{2}/"
+class MozdnsAPITests(NoNameserverViewTests, TestCaseUtils):
+    object_list_url = "/en-US/mozdns/api/v{0}_dns/{1}/"
+    object_url = "/en-US/mozdns/api/v{0}_dns/{1}/{2}/"
 
     def setUp(self):
         super(MozdnsAPITests, self).setUp()
@@ -103,8 +109,10 @@ class MozdnsAPITests(NoNameserverViewTests):
 
     def test_create(self):
         resp, post_data = self.generic_create(self.post_data())
-        _, (_, new_object_url) = resp.items()
-        new_resp = self.api_client.get(new_object_url, format='json')
+        new_object_url = resp['Location']
+        new_resp = self.api_client.get(
+            new_object_url, format='json', follow=True
+        )
         self.assertValidJSONResponse(new_resp)
         new_obj_data = json.loads(new_resp.content)
         self.compare_data(post_data, new_obj_data)
@@ -134,13 +142,15 @@ class MozdnsAPITests(NoNameserverViewTests):
 
         post_data = self.post_data()
         resp, post_data = self.generic_create(post_data)
-        _, (_, new_object_url) = resp.items()
+        new_object_url = resp['Location']
         patch_data = self.post_data()
         update_resp, patch_data = self.generic_update(new_object_url,
                                                       patch_data)
 
         # Now make sure the data used to patch is sticking to the model.
-        patch_resp = self.api_client.get(new_object_url, format='json')
+        patch_resp = self.api_client.get(
+            new_object_url, format='json', follow=True
+        )
         self.assertValidJSONResponse(patch_resp)
         patch_obj_data = json.loads(patch_resp.content)
         self.compare_data(patch_data, patch_obj_data)
@@ -148,13 +158,14 @@ class MozdnsAPITests(NoNameserverViewTests):
     def test_delete(self):
         obj_count = self.test_type.objects.count()
         resp, post_data = self.generic_create(self.post_data())
-        _, (_, new_object_url) = resp.items()
+        new_object_url = self.localize_url(resp['Location'])
         self.assertEqual(self.test_type.objects.count(), obj_count + 1)
         resp = self.api_client.delete(new_object_url, format='json')
         self.assertHttpAccepted(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count)
 
     def generic_update(self, patch_url, patch_data, assertResponse=None):
+        patch_url = self.localize_url(patch_url)
         obj_count = self.test_type.objects.count()
         resp = self.api_client.patch(patch_url, format='json',
                                      data=patch_data)
@@ -183,13 +194,16 @@ class MozdnsAPITests(NoNameserverViewTests):
 
     def test_changing_only_one_field(self):
         resp, post_data = self.generic_create(self.post_data())
-        _, (_, new_object_url) = resp.items()
+        new_object_url = resp['Location']
         change_post_data = {}
         change_post_data['description'] = "==DIFFERENT=="
         post_data['description'] = "==DIFFERENT=="
         resp, patch_data = self.generic_update(
-            new_object_url, change_post_data)
-        new_resp = self.api_client.get(new_object_url, format='json')
+            new_object_url, change_post_data
+        )
+        new_resp = self.api_client.get(
+            new_object_url, format='json', follow=True
+        )
         updated_obj_data = json.loads(new_resp.content)
         self.compare_data(post_data, updated_obj_data)
 
@@ -203,8 +217,10 @@ class MozdnsAPITests(NoNameserverViewTests):
         self.assertHttpCreated(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count + 1)
         # Get the object and check it's views
-        _, (_, new_object_url) = resp.items()
-        new_resp = self.api_client.get(new_object_url, format='json')
+        new_object_url = resp['Location']
+        new_resp = self.api_client.get(
+            new_object_url, format='json', follow=True
+        )
         self.assertValidJSONResponse(new_resp)
         new_obj_data = json.loads(new_resp.content)
         self.assertTrue('views' in new_obj_data)
@@ -216,7 +232,9 @@ class MozdnsAPITests(NoNameserverViewTests):
         resp, patch_data = self.generic_update(new_object_url, post_data)
         self.assertEqual(self.test_type.objects.count(), obj_count)
         self.assertTrue('views' in new_obj_data)
-        new_resp = self.api_client.get(new_object_url, format='json')
+        new_resp = self.api_client.get(
+            new_object_url, format='json', follow=True
+        )
         updated_obj_data = json.loads(new_resp.content)
         for view_name in updated_obj_data['views']:
             self.assertTrue(view_name in views)
@@ -228,16 +246,18 @@ class MozdnsAPITests(NoNameserverViewTests):
         resp, patch_data = self.generic_update(new_object_url, post_data)
         self.assertEqual(self.test_type.objects.count(), obj_count)
         self.assertTrue('views' in new_obj_data)
-        new_resp = self.api_client.get(new_object_url, format='json')
+        new_resp = self.api_client.get(
+            new_object_url, format='json', follow=True
+        )
         updated_obj_data = json.loads(new_resp.content)
         for view_name in updated_obj_data['views']:
             self.assertTrue(view_name in views)
 
 
-class MangleTests(ResourceTestCase):
+class MangleTests(ResourceTestCase, TestCaseUtils):
     test_type = CNAME
-    object_list_url = "/mozdns/api/v{0}_dns/{1}/"
-    object_url = "/mozdns/api/v{0}_dns/{1}/{2}/"
+    object_list_url = "/en-US/mozdns/api/v{0}_dns/{1}/"
+    object_url = "/en-US/mozdns/api/v{0}_dns/{1}/{2}/"
 
     def setUp(self):
         super(MangleTests, self).setUp()
@@ -252,6 +272,7 @@ class MangleTests(ResourceTestCase):
         create_url = self.object_list_url.format(
             API_VERSION, str(self.test_type.__name__).lower()
         )
+        create_url = self.localize_url(create_url)
         resp = self.api_client.post(create_url, format='json', data=post_data)
         self.assertHttpBadRequest(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count)
@@ -261,7 +282,9 @@ class MangleTests(ResourceTestCase):
         post_data['fqdn'] = post_data['fqdn'] + '.'
         obj_count = self.test_type.objects.count()
         create_url = self.object_list_url.format(
-            API_VERSION, str(self.test_type.__name__).lower())
+            API_VERSION, str(self.test_type.__name__).lower()
+        )
+        create_url = self.localize_url(create_url)
         resp = self.api_client.post(create_url, format='json', data=post_data)
         self.assertHttpBadRequest(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count)
@@ -271,7 +294,9 @@ class MangleTests(ResourceTestCase):
         post_data['fqdn'] = ''
         obj_count = self.test_type.objects.count()
         create_url = self.object_list_url.format(
-            API_VERSION, str(self.test_type.__name__).lower())
+            API_VERSION, str(self.test_type.__name__).lower()
+        )
+        create_url = self.localize_url(create_url)
         resp = self.api_client.post(create_url, format='json', data=post_data)
         self.assertHttpBadRequest(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count)
@@ -285,7 +310,9 @@ class MangleTests(ResourceTestCase):
         post_data['fqdn'] = 'secondbar.x.y.' + domain.name
         obj_count = self.test_type.objects.count()
         create_url = self.object_list_url.format(
-            API_VERSION, str(self.test_type.__name__).lower())
+            API_VERSION, str(self.test_type.__name__).lower()
+        )
+        create_url = self.localize_url(create_url)
         resp = self.api_client.post(create_url, format='json', data=post_data)
         self.assertHttpBadRequest(resp)
         self.assertEqual(self.test_type.objects.count(), obj_count)
@@ -299,10 +326,10 @@ class MangleTests(ResourceTestCase):
         }
 
 
-class DomainLeakTests(ResourceTestCase):
+class DomainLeakTests(ResourceTestCase, TestCaseUtils):
     test_type = CNAME
-    object_list_url = "/mozdns/api/v{0}_dns/{1}/"
-    object_url = "/mozdns/api/v{0}_dns/{1}/{2}/"
+    object_list_url = "/en-US/mozdns/api/v{0}_dns/{1}/"
+    object_url = "/en-US/mozdns/api/v{0}_dns/{1}/{2}/"
 
     def setUp(self):
         super(DomainLeakTests, self).setUp()
@@ -312,7 +339,9 @@ class DomainLeakTests(ResourceTestCase):
         # Check how many are there first.
         domain_count = Domain.objects.count()
         create_url = self.object_list_url.format(
-            API_VERSION, str(self.test_type.__name__).lower())
+            API_VERSION, str(self.test_type.__name__).lower()
+        )
+        create_url = self.localize_url(create_url)
         post_data = self.post_data()
         resp = self.api_client.post(create_url, format='json', data=post_data)
         self.assertHttpBadRequest(resp)
@@ -657,8 +686,10 @@ class StaticIntrV4APITests(MozdnsAPITests, ResourceTestCase):
         del post_data['system']
         post_data['system_hostname'] = self.s.hostname
         resp, post_data = self.generic_create(post_data)
-        _, (_, new_object_url) = resp.items()
-        new_resp = self.api_client.get(new_object_url, format='json')
+        new_object_url = resp['Location']
+        new_resp = self.api_client.get(
+            new_object_url, format='json', follow=True
+        )
         self.assertValidJSONResponse(new_resp)
         new_obj_data = json.loads(new_resp.content)
         self.compare_data(post_data, new_obj_data)

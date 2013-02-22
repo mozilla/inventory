@@ -48,7 +48,7 @@ class BaseRecordTestCase(object):
         # updated, and that the view 'record_ajax' can handle a non-valid
         # object.
         start_obj_count = self.test_type.objects.all().count()
-        resp = self.c.post('/mozdns/record/record_ajax/',
+        resp = self.c.post('/en-US/mozdns/record/record_ajax/',
                            data=self.update_rdtype(self.post_data()))
         self.assertEqual(resp.status_code, 200)
         new_obj_count = self.test_type.objects.all().count()
@@ -57,7 +57,7 @@ class BaseRecordTestCase(object):
 
         # Now update. Make sure no new object was created.
         post_data = self.update_pk(self.update_rdtype(self.post_data()), obj_)
-        resp = self.c.post('/mozdns/record/record_ajax/', data=post_data)
+        resp = self.c.post('/en-US/mozdns/record/record_ajax/', data=post_data)
         self.assertEqual(resp.status_code, 200)
         after_update_obj_count = self.test_type.objects.all().count()
         self.assertEqual(new_obj_count, after_update_obj_count)
@@ -65,14 +65,14 @@ class BaseRecordTestCase(object):
         # Now causes an error
         post_data = self.update_pk(self.update_rdtype(self.post_data()), obj_)
         post_data['ttl'] = 'charaters'
-        resp = self.c.post('/mozdns/record/record_ajax/', data=post_data)
+        resp = self.c.post('/en-US/mozdns/record/record_ajax/', data=post_data)
         after_error_obj_count = self.test_type.objects.all().count()
         self.assertEqual(new_obj_count, after_error_obj_count)
         self.assertEqual(resp.status_code, 200)
 
     def test_delete(self):
         start_obj_count = self.test_type.objects.all().count()
-        resp = self.c.post('/mozdns/record/record_ajax/',
+        resp = self.c.post('/en-US/mozdns/record/record_ajax/',
                            data=self.update_rdtype(self.post_data()))
         self.assertEqual(resp.status_code, 200)
         new_obj_count = self.test_type.objects.all().count()
@@ -82,7 +82,7 @@ class BaseRecordTestCase(object):
         new_obj = self.test_type.objects.all().order_by('pk')[0]
         self.test_type.objects.all()[0]
 
-        resp = self.c.post('/mozdns/record/delete/{0}/{1}/'.format(
+        resp = self.c.post('/en-US/mozdns/record/delete/{0}/{1}/'.format(
                            self.rdtype, new_obj.pk))
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
@@ -93,7 +93,7 @@ class BaseRecordTestCase(object):
 
     def test_bad_delete(self):
         start_obj_count = self.test_type.objects.all().count()
-        resp = self.c.post('/mozdns/record/record_ajax/',
+        resp = self.c.post('/en-US/mozdns/record/record_ajax/',
                            data=self.update_rdtype(self.post_data()))
         self.assertEqual(resp.status_code, 200)
         new_obj_count = self.test_type.objects.all().count()
@@ -103,7 +103,7 @@ class BaseRecordTestCase(object):
         new_obj = self.test_type.objects.all().order_by('pk')[0]
         self.test_type.objects.all()[0]
 
-        resp = self.c.post('/mozdns/record/delete/{0}/{1}/'.format(
+        resp = self.c.post('/en-US/mozdns/record/delete/{0}/{1}/'.format(
                            self.rdtype, new_obj.pk + 1))
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(
@@ -131,7 +131,7 @@ class BaseRecordTestCase(object):
 
         start_obj_count = self.test_type.objects.all().count()
         post_data['views'] = [self.public_view.pk]
-        resp = self.c.post('/mozdns/record/record_ajax/', data=post_data)
+        resp = self.c.post('/en-US/mozdns/record/record_ajax/', data=post_data)
         self.assertEqual(resp.status_code, 200)
         new_obj_count = self.test_type.objects.all().count()
         # Nothing should have been created
@@ -140,7 +140,7 @@ class BaseRecordTestCase(object):
         ns.views.add(self.public_view)
         # Okay, we should be able to add to the public view now
         start_obj_count = self.test_type.objects.all().count()
-        resp = self.c.post('/mozdns/record/record_ajax/', data=post_data)
+        resp = self.c.post('/en-US/mozdns/record/record_ajax/', data=post_data)
         new_obj_count = self.test_type.objects.all().count()
         self.assertEqual(start_obj_count + 1, new_obj_count)
 
@@ -230,7 +230,7 @@ class NameserverRecordTests(BaseRecordTestCase, TestCase):
         post_data['domain'] = ns.domain.pk
         post_data['views'] = [self.private_view.pk]
         post_data['record_pk'] = ns.pk
-        resp = self.c.post('/mozdns/record/record_ajax/',
+        resp = self.c.post('/en-US/mozdns/record/record_ajax/',
                            data=post_data)
         self.assertEqual(resp.status_code, 200)
         # Make sure it's still there
@@ -245,7 +245,7 @@ class NameserverRecordTests(BaseRecordTestCase, TestCase):
         post_data = self.update_rdtype(self.post_data())
         post_data['views'] = [self.public_view.pk]
         post_data['record_pk'] = ns.pk
-        resp = self.c.post('/mozdns/record/record_ajax/',
+        resp = self.c.post('/en-US/mozdns/record/record_ajax/',
                            data=post_data)
         self.assertEqual(resp.status_code, 200)
         # Make sure it's still there
