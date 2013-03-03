@@ -75,7 +75,7 @@
             newBlock.insertAfter(blocks.last());
         });
         $('#zoneForm').submit(function (){
-            $.post('/mozdns/create_zone/create_zone_ajax/',
+            $.post('/en-US/mozdns/create_zone/create_zone_ajax/',
                 $('#zoneForm').serialize(),
                 function (data) {
                     console.log(data);
