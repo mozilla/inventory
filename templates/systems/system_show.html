@@ -140,6 +140,24 @@
 <div style="clear:both;"></div>
 </dl>
 
+<dl class="show">
+<dt>Network Adapters: </dt>
+<dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;">
+<pre>
+    {{ adapter }} 
+    <table>
+    <tr><th>Adapter Name</th><th>IP Address</th><th>Mac Address</th></tr>
+    {% for adapter in adapters %}
+        <tr><td>{{adapter.adapter_name}}</td><td>{{ adapter.ipv4_address }}</td><td>{{ adapter.mac_address }}</td></tr>
+
+    {% endfor %}
+    </table>
+
+</pre></dd>
+<div style="clear:both;"></div>
+</dl>
+
+
 <!--- Disabling this until DHCP is deployed -->
 <div style="clear:both;display:none;">
 <dl class="show">
