@@ -32,6 +32,7 @@
                         <li><a href='{{ "system-home"|url() }}'>Systems</a></li>
                         <li><a href="{{ "system_rack-list"|url() }}">Racks</a></li>
                         {% if not read_only %}
+                        <li><a href="/systems/oncall/">Oncall</a></li>
                         <li><a href="{{ "user-system-list"|url() }}">Unmanaged</a></li>
                         <li><a href="{{ "owner-list"|url() }}">Owners</a></li>
                         <li><a href="{{ "license-list"|url() }}">User Licenses</a></li>
