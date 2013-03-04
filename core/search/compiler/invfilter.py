@@ -86,10 +86,10 @@ class TextFilter(_Filter):
 
 
 class REFilter(TextFilter):
-    num_match = re.compile("\[(\d+)-(\d+)\]")
+    num_match = re.compile("\{(\d+)-(\d+)\}")
 
     def _expand_number_regex(self, value):
-        """We want to turn something like /hp-node[31-40].phx1 into
+        """We want to turn something like /hp-node{31-40}.phx1 into
             '/hp-node(31|32|33|34|35|36|37|38|39|40).phx1'"""
         matches = self.num_match.findall(value)
         for low, high in matches:
@@ -99,7 +99,7 @@ class REFilter(TextFilter):
             for i in xrange(int(low), int(high) + 1):
                 new_value += "{0}|".format(i)
             new_value = '(' + new_value.strip('|') + ')'
-            value = value.replace('[{0}-{1}]'.format(low, high), new_value)
+            value = value.replace('{{{0}-{1}}}'.format(low, high), new_value)
         return value
 
     def compile_Q(self, value):
