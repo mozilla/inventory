@@ -18,7 +18,7 @@ from libs import ldap_lib
 import settings
 from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from libs.jinja import render_to_response as render_to_response
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -127,6 +127,7 @@ def owner_create(request):
             'form': form,
            },
            RequestContext(request))
+
 def license_new(request):
     initial = {}
     if request.method == 'POST':
@@ -141,17 +142,13 @@ def license_new(request):
             'form': form,
            },
            RequestContext(request))
-@csrf_exempt
+
 def license_quicksearch_ajax(request):
     """Returns systems sort table"""
-    """
-        Try to get quicksearch from post
-        If fail, try to get from GET
-        return None otherwise
-    """
-    search = request.POST.get('quicksearch', None)
-    if not search:
-        search = request.GET.get('quicksearch', None)
+    # Try to get quicksearch from post
+    # If fail, try to get from GET
+    # return None otherwise
+    search = request.GET.get('quicksearch', None)
     if search:
         filters = [Q(**{"%s__icontains" % t: search})
                         for t in models.UserLicense.search_fields]
@@ -160,11 +157,11 @@ def license_quicksearch_ajax(request):
                     reduce(operator.or_, filters))
     else:
         licenses = None
-
     return render_to_response('user_systems/license_quicksearch.html', {
             'licenses': licenses,
            },
            RequestContext(request))
+
 @csrf_exempt
 def user_system_quicksearch_ajax(request):
     """Returns systems sort table"""
