@@ -398,3 +398,7 @@ ul {
 span.helptext {
     display: none;
 }
+
+.plane-link {
+    color: rgb(0, 0, 0);
+}

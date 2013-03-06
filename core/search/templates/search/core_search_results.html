@@ -2,52 +2,52 @@
 <div id="ajax_results" width="100%">
 <div id="meta">
     {% if meta['counts']['soa'] %}
-        {{ meta['counts']['soa'] }} <a href="#q={{search}}&SOA">SOA</a> records |
+        {{ meta['counts']['soa'] }} <a href="#q={{meta['search']}}&SOA">SOA</a> records |
     {% else %}
         zero SOA records |
     {% endif %}
     {% if meta['counts']['A'] %}
-        {{ meta['counts']['A'] }} <a href="#q={{search}}&Address">A/AAAA</a> records |
+        {{ meta['counts']['A'] }} <a href="#q={{meta['search']}}&Address">A/AAAA</a> records |
     {% else %}
         zero A/AAAA records |
     {% endif %}
     {% if meta['counts']['CNAME'] %}
-        {{ meta['counts']['CNAME'] }} <a href="#q={{search}}&CNAME">CNAME</a> records |
+        {{ meta['counts']['CNAME'] }} <a href="#q={{meta['search']}}&CNAME">CNAME</a> records |
     {% else %}
         zero CNAME records |
     {% endif %}
     {% if meta['counts']['DOMAIN'] %}
-        {{ meta['counts']['DOMAIN'] }} <a href="#q={{search}}&Domain">Domains</a> |
+        {{ meta['counts']['DOMAIN'] }} <a href="#q={{meta['search']}}&Domain">Domains</a> |
     {% else %}
         zero Domains |
     {% endif %}
     {% if meta['counts']['INTR'] %}
-        {{ meta['counts']['INTR'] }} <a href="#q={{search}}&Interface">INTR</a> records |
+        {{ meta['counts']['INTR'] }} <a href="#q={{meta['search']}}&Interface">INTR</a> records |
     {% else %}
         zero INTR records |
     {% endif %}
     {% if meta['counts']['SYSTEM'] %}
-        {{ meta['counts']['SYSTEM'] }} <a href="#q={{search}}&System">Systems</a> |
+        {{ meta['counts']['SYSTEM'] }} <a href="#q={{meta['search']}}&System">Systems</a> |
     {% else %}
         zero Systems |
     {% endif %}
     {% if meta['counts']['MX'] %}
-        {{ meta['counts']['MX'] }} <a href="#q={{search}}&MX">MX</a> records |
+        {{ meta['counts']['MX'] }} <a href="#q={{meta['search']}}&MX">MX</a> records |
     {% else %}
         zero MX records |
     {% endif %}
     {% if meta['counts']['NS'] %}
-        {{ meta['counts']['NS'] }} <a href="#q={{search}}&NS">NS</a> records |
+        {{ meta['counts']['NS'] }} <a href="#q={{meta['search']}}&NS">NS</a> records |
     {% else %}
         zero NS records |
     {% endif %}
     {% if meta['counts']['PTR'] %}
-        {{ meta['counts']['PTR'] }} <a href="#q={{search}}&PTR">PTR</a> records |
+        {{ meta['counts']['PTR'] }} <a href="#q={{meta['search']}}&PTR">PTR</a> records |
     {% else %}
         zero PTR records |
     {% endif %}
     {% if meta['counts']['TXT'] %}
-        {{ meta['counts']['TXT'] }} <a href="#q={{search}}&TXT">TXT</a> records
+        {{ meta['counts']['TXT'] }} <a href="#q={{meta['search']}}&TXT">TXT</a> records
     {% else %}
         zero TXT records
     {% endif %}
@@ -56,7 +56,7 @@
 </div>
 <br/>
 {% if objects['SYSTEM'] %}
-    <h4><a name="q={{search}}&System">Systems</a></h4>
+    <h4><a class='plane-link' name="q={{meta['search']}}&System">Systems</a></h4>
     <table class="tablesorter system-table">
         <thead>
         <tr>
@@ -106,52 +106,52 @@
 
 {% import 'record/draw_record_table.html' as drawer %}
 {% if objects['SOA'] %}
-    <h4><a name="q={{search}}&SOA">SOA</a></h4>
+    <h4><a class='plane-link' name="q={{meta['search']}}&SOA">SOA</a></h4>
     {{ drawer.draw_record_table('SOA', objects['SOA'], table_class='tablesorter record-table', table_id='soa-table') }}
 {% endif %}
 
 {% if objects['DOMAIN'] %}
-    <h4><a name="q={{search}}&Domain">Domains</a></h4>
+    <h4><a class='plane-link' name="q={{meta['search']}}&Domain">Domains</a></h4>
     {{ drawer.draw_record_table('DOMAIN', objects['DOMAIN'], table_class='tablesorter record-table', table_id='domain-table') }}
 {% endif %}
 
 {% if objects['NS'] %}
-    <h4><a name="q={{search}}&Nameserver">Nameserver</a></h4>
+    <h4><a class='plane-link' name="q={{meta['search']}}&Nameserver">Nameserver</a></h4>
     {{ drawer.draw_record_table('NS', objects['NS'], table_class='tablesorter record-table', table_id='ns-table') }}
 {% endif %}
 
 {% if objects['MX'] %}
-    <h4><a name="q={{search}}&MX">MX</a> Records</h4>
+    <h4><a class='plane-link' name="q={{meta['search']}}&MX">MX</a> Records</h4>
     {{ drawer.draw_record_table('MX', objects['MX'], table_class='tablesorter record-table', table_id='mx-table') }}
 {% endif %}
 
 {% if objects['SRV'] %}
-    <h4><a name="q={{search}}&SRV">SRV</a> Records</h4>
+    <h4><a class='plane-link' name="q={{meta['search']}}&SRV">SRV</a> Records</h4>
     {{ drawer.draw_record_table('SRV', objects['SRV'], table_class='tablesorter record-table', table_id='srv-table') }}
 {% endif %}
 
 {% if objects['TXT'] %}
-    <h4><a name="q={{search}}&TXT">TXT</a> Records</h4>
+    <h4><a class='plane-link' name="q={{meta['search']}}&TXT">TXT</a> Records</h4>
     {{ drawer.draw_record_table('TXT', objects['TXT'], table_class='tablesorter record-table', table_id='txt-table') }}
 {% endif %}
 
 {% if objects['CNAME'] %}
-    <h4><a name="q={{search}}&CNAME">CNAME</a> Records</h4>
+    <h4><a class='plane-link' name="q={{meta['search']}}&CNAME">CNAME</a> Records</h4>
     {{ drawer.draw_record_table('CNAME', objects['CNAME'], table_class='tablesorter record-table', table_id='cname-table') }}
 {% endif %}
 
 {% if objects['INTR'] %}
-    <h4><a name="q={{search}}&Interface">Interface</a> Records</h4>
+    <h4><a class='plane-link' name="q={{meta['search']}}&Interface">Interface</a> Records</h4>
     {{ drawer.draw_record_table('INTR', objects['INTR'], table_class='tablesorter intr-table', table_id='intr-table') }}
 {% endif %}
 
 {% if objects['A'] %}
-<h4><a id="q={{search}}&Address">Address</a> Records</h4>
+<h4><a id="q={{meta['search']}}&Address">Address</a> Records</h4>
     {{ drawer.draw_record_table('A', objects['A'], table_class='tablesorter addr-table', table_id='addr-table') }}
 {% endif %}
 
 {% if objects['PTR'] %}
-    <h4><a name="q={{search}}&PTR">PTR</a> Records</h4>
+    <h4><a class='plane-link' name="q={{meta['search']}}&PTR">PTR</a> Records</h4>
     {{ drawer.draw_record_table('PTR', objects['PTR'], table_class='tablesorter ptr-table', table_id='ptr-table') }}
 {% endif %}
 </div>
