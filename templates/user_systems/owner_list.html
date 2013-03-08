@@ -51,7 +51,7 @@
 <script>
 	$().ready(function(){
         add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "{{ 'owners-quicksearch'|url() }}");
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{{ 'owners-quicksearch'|url() }}");
 	});
 </script>
 {% endblock %}
