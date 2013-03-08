@@ -48,34 +48,4 @@ class RestrictToRemoteMiddleware:
         request.MOBILE = False
         if getattr(view_func, 'sysadmin_only', False) and _in_group(request.user, 'build'):
             return HttpResponseForbidden("You are not authorized to view this page")
-        if settings.DEV == True:
-            return None
-        ## Check if connecting to /tokenapi.
-        ## IF so then we don't need to check the rest of this stuff. The API will validate credentials
-        path_list = request.path.split('/')
-        if path_list[1] == 'tokenapi' or path_list[2] == 'tokenapi':
-            return None
-
-        try:
-            if request.META['REMOTE_ADDR'] == '127.0.0.1':
-                return None
-        except:
-            pass
-        if not settings.REMOTE_LOGINS_ON:
-            return None
-
-
-        if not request.user.is_authenticated() or _in_group(request.user, 'build'):
-            request.read_only = True
-
-        if request.user.is_superuser or _in_group(request.user, 'ops'):
-            return None
-
-        if getattr(view_func, 'allow_build', False) and _in_group(request.user, 'build'):
-            request.read_only = True
-            return None
-
-        if getattr(view_func, 'allow_anyone', False):
-            return None
-
-        return HttpResponseForbidden("You are not authorized to view this page")
+        return
