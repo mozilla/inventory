@@ -7,8 +7,10 @@ from mozdns.nameserver.models import Nameserver
 from mozdns.soa.models import SOA
 from mozdns.tests.utils import random_label, random_byte
 
+
 def localize(url):
     return '/en-US' + url
+
 
 class CreateZoneTests(TestCase):
 

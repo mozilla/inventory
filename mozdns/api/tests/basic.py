@@ -19,6 +19,7 @@ import simplejson as json
 
 API_VERSION = '1'
 
+
 class TestCaseUtils(object):
     def localize_url(self, url):
         if 'en-US' not in url:
