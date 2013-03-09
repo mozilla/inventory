@@ -246,7 +246,7 @@ class DNSBuilder(SVNBuilderMixin):
         Find all dns tasks that indicate we need to rebuild a certain zone.
         Evalutate the queryset so nothing slips in (our DB isolation *should*
         cover this). This will ensure that if a record is changed during the
-        build, their build request will not be deleted and will be serviced
+        build it's build request will not be deleted and will be serviced
         during the next build.
 
         If the build is successful we will delete all the scheduled tasks
@@ -324,7 +324,11 @@ class DNSBuilder(SVNBuilderMixin):
 
     def lock(self):
         """
+<<<<<<< HEAD
         Try to write a lock file. Return True if we get the lock, else return
+=======
+        Trys to write a lock file. Returns True if we get the lock, else return
+>>>>>>> first attempt. r?
         False.
         """
         try:
@@ -355,8 +359,7 @@ class DNSBuilder(SVNBuilderMixin):
 
     def unlock(self):
         """
-        Try to remove the lock file. Fail very loudly if the lock doesn't exist
-        and this function is called.
+        Trys to remove the lock file.
         """
         if not self.lock_fd:
             return False
