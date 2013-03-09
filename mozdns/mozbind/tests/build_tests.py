@@ -81,10 +81,12 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         if not c:
             a.ttl = 8
             a.save()
-        b.PUSH_TO_PROD = False
+
         self.assertTrue(SOA.objects.get(pk=root_domain.soa.pk).dirty)
         tmp_serial = SOA.objects.get(pk=root_domain.soa.pk).serial
-        b.build_dns()  # Serial get's incrimented and written to svn
+
+        b.PUSH_TO_PROD = False  # Task isn't deleted
+        b.build_dns()  # Serial get's incrimented
         self.assertEqual(
             SOA.objects.get(pk=root_domain.soa.pk).serial, tmp_serial + 1
         )
@@ -93,21 +95,25 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         # removed.
         self.assertEqual((3, 2), b.svn_lines_changed(b.PROD_DIR))
 
-        b.PUSH_TO_PROD = True
         tmp_serial = SOA.objects.get(pk=root_domain.soa.pk).serial
         self.assertFalse(SOA.objects.get(pk=root_domain.soa.pk).dirty)
+
+        b.PUSH_TO_PROD = True
         b.build_dns()
         self.assertFalse(SOA.objects.get(pk=root_domain.soa.pk).dirty)
+        # Serial is again incremented because PUSH_TO_PROD was False during the
+        # last build. When PUSH_TO_PROD is false, no scheduled tasts are
+        # deleted so we should still see this soa being rebuilt.
         self.assertEqual(
-            SOA.objects.get(pk=root_domain.soa.pk).serial, tmp_serial
+            SOA.objects.get(pk=root_domain.soa.pk).serial, tmp_serial + 1
         )
         self.assertEqual((0, 0), b.svn_lines_changed(b.PROD_DIR))
 
         # no lines should have changed if we would have built again
-        b.PUSH_TO_PROD = False
-        #b.DEBUG = True
+
         self.assertFalse(SOA.objects.get(pk=root_domain.soa.pk).dirty)
         tmp_serial = SOA.objects.get(pk=root_domain.soa.pk).serial
+        b.PUSH_TO_PROD = False
         b.build_dns()
         self.assertEqual(SOA.objects.get(pk=root_domain.soa.pk).serial,
                          tmp_serial)

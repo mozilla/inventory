@@ -59,15 +59,13 @@ class PTR(Ip, ViewMixin, ObjectUrlMixin, DisplayMixin):
         self.clean(update_reverse_domain=kwargs.pop('update_reverse_domain',
                                                     True))
         if self.reverse_domain and self.reverse_domain.soa:
-            self.reverse_domain.soa.dirty = True
-            self.reverse_domain.soa.save()
+            self.reverse_domain.soa.schedule_rebuild()
             # The reverse_domain field is in the Ip class.
         super(PTR, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         if self.reverse_domain.soa:
-            self.reverse_domain.soa.dirty = True
-            self.reverse_domain.soa.save()
+            self.reverse_domain.soa.schedule_rebuild()
         super(PTR, self).delete(*args, **kwargs)
 
     def validate_no_cname(self):

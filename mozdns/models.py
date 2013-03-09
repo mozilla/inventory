@@ -131,17 +131,20 @@ class MozdnsRecord(ViewMixin, DisplayMixin, ObjectUrlMixin):
 
     def delete(self, *args, **kwargs):
         if self.domain.soa:
-            self.domain.soa.dirty = True
-            self.domain.soa.save()
-        call_prune_tree = kwargs.pop('call_prune_tree', True)
+            self.domain.soa.schedule_rebuild()
+
         from mozdns.utils import prune_tree
+        call_prune_tree = kwargs.pop('call_prune_tree', True)
         objs_domain = self.domain
+
         super(MozdnsRecord, self).delete(*args, **kwargs)
+
         if call_prune_tree:
             prune_tree(objs_domain)
 
     def save(self, *args, **kwargs):
         self.full_clean()
+
         if self.pk:
             # We need to get the domain from the db. If it's not our current
             # domain, call prune_tree on the domain in the db later.
@@ -150,15 +153,17 @@ class MozdnsRecord(ViewMixin, DisplayMixin, ObjectUrlMixin):
                 db_domain = None
         else:
             db_domain = None
+
         no_build = kwargs.pop("no_build", False)
         super(MozdnsRecord, self).save(*args, **kwargs)
+
         if no_build:
             pass
         else:
             # Mark the soa
             if self.domain.soa:
-                self.domain.soa.dirty = True
-                self.domain.soa.save()
+                self.domain.soa.schedule_rebuild()
+
         if db_domain:
             from mozdns.utils import prune_tree
             prune_tree(db_domain)

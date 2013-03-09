@@ -10,6 +10,8 @@ from settings import MOZDNS_BASE_URL
 from core.keyvalue.models import KeyValue
 from core.keyvalue.utils import AuxAttr
 
+from core.task.models import Task
+
 import reversion
 
 from gettext import gettext as _
@@ -133,22 +135,35 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
                 return True
         return False
 
+    def schedule_rebuild(self, commit=True):
+        Task.schedule_zone_rebuild(self)
+        self.dirty = True
+        if commit:
+            self.save()
+
     def save(self, *args, **kwargs):
-        # Look a the value of this object in the db. Did anything change? If
-        # yes, mark yourself as 'dirty'.
         self.full_clean()
-        if self.pk:
+        if not self.pk:
+            new = True
+            self.dirty = True
+        elif self.dirty:
+            new = False
+        else:
+            new = False
             db_self = SOA.objects.get(pk=self.pk)
             fields = ['primary', 'contact', 'expire', 'retry',
                       'refresh', 'description']
-            # Leave out serial so rebuilds don't cause a never ending build
-            # cycle
+            # Leave out serial and dirty so rebuilds don't cause a never ending
+            # build cycle
             for field in fields:
                 if getattr(db_self, field) != getattr(self, field):
-                    self.dirty = True
-        else:  # No pk means we are a new object
-            self.dirty = True
+                    self.schedule_rebuild(commit=False)
+
         super(SOA, self).save(*args, **kwargs)
+
+        if new:
+            # Need to call this after save because new objects won't have a pk
+            self.schedule_rebuild(commit=False)
 
     def __str__(self):
         return "{0}".format(str(self.description))

@@ -4,5 +4,4 @@ def update_soa(record):
     """
     if record and record.domain and record.domain.soa:
         record.domain.soa.serial += 1
-        record.domain.soa.dirty = True
-        record.domain.soa.save()
+        record.domain.soa.schedule_rebuild()

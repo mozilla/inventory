@@ -10,13 +10,13 @@ import os
 import re
 import time
 
-from django.db import transaction
-
 from settings.dnsbuilds import (
     STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE, NAMED_CHECKZONE_OPTS,
     MAX_ALLOWED_LINES_CHANGED, MAX_ALLOWED_CONFIG_LINES_REMOVED,
     NAMED_CHECKZONE, NAMED_CHECKCONF, LAST_RUN_FILE, BIND_PREFIX
 )
+
+from core.task.models import Task
 
 from mozdns.domain.models import SOA
 from mozdns.view.models import View
@@ -38,7 +38,8 @@ class SVNBuilderMixin(object):
     vcs_type = 'svn'
 
     def svn_lines_changed(self, dirname):
-        """This function will collect some metrics on how many lines were added
+        """
+        This function will collect some metrics on how many lines were added
         and removed during the build process.
 
         :returns: (int, int) -> (lines_added, lines_removed)
@@ -81,6 +82,7 @@ class SVNBuilderMixin(object):
                 if ignore.match(line):
                     return True
             return False
+
         for line in stdout.split('\n'):
             if svn_ignore(line):
                 continue
@@ -91,9 +93,11 @@ class SVNBuilderMixin(object):
         return la, lr
 
     def svn_sanity_check(self, lines_changed):
-        """If sanity checks fail, this function will return a string which is
+        """
+        If sanity checks fail, this function will return a string which is
         True-ish. If all sanity cheecks pass, a Falsy value will be
-        returned."""
+        returned.
+        """
         # svn diff changes and react if changes are too large
         if sum(lines_changed) > MAX_ALLOWED_LINES_CHANGED:
             if self.FORCE:
@@ -237,6 +241,29 @@ class DNSBuilder(SVNBuilderMixin):
     def format_title(self, title):
         return "{0} {1} {0}".format('=' * ((30 - len(title)) / 2), title)
 
+    def get_scheduled(self):
+        """
+        Find all dns tasks that indicate we need to rebuild a certain zone.
+        Evalutate the queryset so nothing slips in (our DB isolation *should*
+        cover this). This will ensure that if a record is changed during the
+        build, their build request will not be deleted and will be serviced
+        during the next build.
+
+        If the build is successful we will delete all the scheduled tasks
+        return by this function
+
+        note::
+            When we are not checking files into SVN we do not need to delete
+            the scheduled tasks. Not checking files into SVN is indicative of a
+            troubleshoot build.
+        """
+        ts = [t for t in Task.dns.all()]
+        ts_len = len(ts)
+        self.log("{0} zone{1} requested to be rebuilt".format(
+            ts_len, 's' if ts_len != 1 else '')
+        )
+        return ts
+
     def log(self, msg, log_level='LOG_INFO', **kwargs):
         # Eventually log this stuff into bs
         # Let's get the callers name and log that
@@ -297,7 +324,8 @@ class DNSBuilder(SVNBuilderMixin):
 
     def lock(self):
         """
-        Try to write a lock file. Fail if the lock already exists.
+        Try to write a lock file. Return True if we get the lock, else return
+        False.
         """
         try:
             if not os.path.exists(os.path.dirname(self.LOCK_FILE)):
@@ -306,7 +334,7 @@ class DNSBuilder(SVNBuilderMixin):
                      "({0})...".format(self.LOCK_FILE))
             self.lock_fd = open(self.LOCK_FILE, 'w+')
             fcntl.flock(self.lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            self.log("Lock written.")
+            self.log(self.format_title("Mutex Acquired"))
             return True
         except IOError, exc_value:
             self.lock_fd = None
@@ -580,7 +608,7 @@ class DNSBuilder(SVNBuilderMixin):
                                                file_meta['rel_fname'])
         return file_meta
 
-    def build_zone_files(self):
+    def build_zone_files(self, soa_pks_to_rebuild):
         zone_stmts = {}
 
         for soa in SOA.objects.all():
@@ -602,28 +630,19 @@ class DNSBuilder(SVNBuilderMixin):
                 # Also generate a zone statement and add it to a dictionary for
                 # later use during BIND configuration generation.
 
-                @transaction.commit_manually
-                def soa_was_dirty(soa):
-                    # Use this function to break out of existing transaction to
-                    # see if anything has changed.
-                    transaction.commit()
-                    was_dirty = SOA.objects.get(pk=soa.pk).dirty
-                    transaction.commit()
-                    return was_dirty
-
-                force_rebuild = soa_was_dirty(soa)
+                force_rebuild = soa.pk in soa_pks_to_rebuild or soa.dirty
+                if force_rebuild:
+                    soa.dirty = False
+                    soa.save()
 
                 self.log('====== Processing {0} {1} ======'.format(
                     root_domain, soa.serial)
                 )
                 views_to_build = []
-                self.log("SOA was seen with dity == {0}".
-                         format(force_rebuild), root_domain=root_domain)
-
-                # By setting dirty to false now rather than later we get around
-                # the edge case that someone updates a record mid build.
-                soa.dirty = False
-                soa.save()
+                self.log(
+                    "SOA was seen with dirty == {0}".format(force_rebuild),
+                    root_domain=root_domain
+                )
 
                 # This for loop decides which views will be canidates for
                 # rebuilding.
@@ -712,8 +731,7 @@ class DNSBuilder(SVNBuilderMixin):
                                 file_meta['prod_fname'], root_domain
                             )
             except Exception:
-                soa.dirty = True
-                soa.save()
+                soa.schedule_rebuild()
                 raise
 
         return zone_stmts
@@ -758,12 +776,24 @@ class DNSBuilder(SVNBuilderMixin):
         else:
             return False
 
+    def goto_out(self):
+        self.log(self.format_title("Release Mutex"))
+        self.unlock()
+
     def build_dns(self):
         if self.stop_update_exists():
             return
         self.log('Building...')
         if not self.lock():
             return
+
+        dns_tasks = self.get_scheduled()
+
+        if not dns_tasks and not self.FORCE:
+            self.log("Nothing to do!")
+            self.goto_out()
+            return
+
         try:
             if self.CLOBBER_STAGE or self.FORCE:
                 self.clear_staging(force=True)
@@ -771,7 +801,10 @@ class DNSBuilder(SVNBuilderMixin):
 
             # zone files
             if self.BUILD_ZONES:
-                self.build_config_files(self.build_zone_files())
+                soa_pks_to_rebuild = set(int(t.task) for t in dns_tasks)
+                self.build_config_files(
+                    self.build_zone_files(soa_pks_to_rebuild)
+                )
             else:
                 self.log("BUILD_ZONES is False. Not "
                          "building zone files.")
@@ -790,6 +823,12 @@ class DNSBuilder(SVNBuilderMixin):
                          "--clobber-stage on the next run.")
             else:
                 self.clear_staging()
+
+            if self.PUSH_TO_PROD:
+                # Only delete the scheduled tasks we saw at the top of the
+                # function
+                map(lambda t: t.delete(), dns_tasks)
+
         # All errors are handled by caller (this function)
         except BuildError:
             self.log('Error during build. Not removing staging')
@@ -799,6 +838,5 @@ class DNSBuilder(SVNBuilderMixin):
             raise
         finally:
             # Clean up
-            self.log(self.format_title("Release Mutex"))
-            self.unlock()
+            self.goto_out()
         self.log('Successful build is successful.')

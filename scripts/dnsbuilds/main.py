@@ -40,7 +40,8 @@ def main():
                         "copious amounts of text.")
     parser.add_argument('--force', dest='FORCE',
                         action='store_true', default=False, help="Ignore "
-                        "all change delta thresholds and clobber stagig area.")
+                        "all change delta thresholds, clobber stagig area, "
+                        "and build even when no tasks are scheduled.")
     parser.add_argument('--status', dest='STATUS',
                         action='store_true', default=False, help="Display "
                         "info about the build configuration and exit.")

@@ -71,19 +71,28 @@ class Allocation(models.Model):
         db_table = u'allocations'
         ordering = ['name']
 
+
 class ScheduledTask(models.Model):
     task = models.CharField(max_length=255, blank=False, unique=True)
     type = models.CharField(max_length=255, blank=False)
     objects = QuerySetManager()
+
     class QuerySet(QuerySet):
         def delete_all_reverse_dns(self):
             self.filter(type='reverse_dns_zone').delete()
+
         def delete_all_dhcp(self):
             self.filter(type='dhcp').delete()
+
+        def dns_tasks(self):
+            return self.filter(type='dns')
+
         def get_all_dhcp(self):
             return self.filter(type='dhcp')
+
         def get_all_reverse_dns(self):
             return self.filter(type='reverse_dns_zone')
+
         def get_next_task(self, type=None):
             if type is not None:
                 try:
@@ -92,6 +101,7 @@ class ScheduledTask(models.Model):
                     return None
             else:
                 return None
+
         def get_last_task(self, type=None):
             if type is not None:
                 try:
@@ -100,9 +110,11 @@ class ScheduledTask(models.Model):
                     return None
             else:
                 return None
+
     class Meta:
         db_table = u'scheduled_tasks'
         ordering = ['task']
+
 
 class Contract(models.Model):
     contract_number = models.CharField(max_length=255, blank=True)

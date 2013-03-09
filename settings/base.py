@@ -47,6 +47,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'base',
     'base.base',
     'core',
+    'core.task',
     'core.site',
     'core.vlan',
     'core.network',
@@ -152,6 +153,7 @@ for mc in TMP_MIDDLEWARE_CLASSES:
         continue
     MIDDLEWARE_CLASSES.append(mc)
 MIDDLEWARE_CLASSES = tuple(MIDDLEWARE_CLASSES)
+del TMP_MIDDLEWARE_CLASSES
 
 INTERNAL_IPS = ('127.0.0.1','10.22.74.139','10.250.2.54')
 

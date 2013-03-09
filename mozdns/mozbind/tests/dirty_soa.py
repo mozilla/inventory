@@ -13,6 +13,7 @@ from mozdns.tests.utils import create_fake_zone
 from core.interface.static_intr.models import StaticInterface
 
 from systems.models import System
+from core.task.models import Task
 
 
 class DirtySOATests(TestCase):
@@ -40,6 +41,7 @@ class DirtySOATests(TestCase):
         self.assertTrue(self.rsoa.bind_render_record() not in ('', None))
 
     def generic_dirty(self, Klass, create_data, update_data, local_soa):
+        Task.dns.all().delete()  # Delete all tasks
         local_soa.dirty = False
         local_soa.save()
         rec = Klass(**create_data)
@@ -49,7 +51,10 @@ class DirtySOATests(TestCase):
         local_soa = SOA.objects.get(pk=local_soa.pk)
         self.assertTrue(local_soa.dirty)
 
+        self.assertEqual(1, Task.dns.all().count())
+
         # Now try updating
+        Task.dns.all().delete()  # Delete all tasks
         local_soa.dirty = False
         local_soa.save()
         local_soa = SOA.objects.get(pk=local_soa.pk)
@@ -60,7 +65,10 @@ class DirtySOATests(TestCase):
         local_soa = SOA.objects.get(pk=local_soa.pk)
         self.assertTrue(local_soa.dirty)
 
+        self.assertEqual(1, Task.dns.all().count())
+
         # Now delete
+        Task.dns.all().delete()  # Delete all tasks
         local_soa.dirty = False
         local_soa.save()
         local_soa = SOA.objects.get(pk=local_soa.pk)
@@ -68,6 +76,8 @@ class DirtySOATests(TestCase):
         rec.delete()
         local_soa = SOA.objects.get(pk=local_soa.pk)
         self.assertTrue(local_soa.dirty)
+
+        self.assertEqual(1, Task.dns.all().count())
 
     def test_dirty_a(self):
         create_data = {
