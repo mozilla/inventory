@@ -324,11 +324,7 @@ class DNSBuilder(SVNBuilderMixin):
 
     def lock(self):
         """
-<<<<<<< HEAD
-        Try to write a lock file. Return True if we get the lock, else return
-=======
         Trys to write a lock file. Returns True if we get the lock, else return
->>>>>>> first attempt. r?
         False.
         """
         try:

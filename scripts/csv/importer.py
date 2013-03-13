@@ -39,16 +39,16 @@ class Generator(object):
         Here we want to make a list of callbacks that will get chained into one
         another.
 
-        1)
+        Phase 0)
         System attr headers will have an new system model pushed through their
-        handles and they will set attributes.
+        handlers and they will set attributes.
 
-        2)
+        Phase 1)
         System related headers will have a system model (may or maynot have a
-        pk) pushed through their handlers and they will set the correct value
+        pk) pushed through their handlers and they will set the correct values
         on the system.
 
-        3)
+        Phase 2)
         System key values will have their system attribute set and then may or
         maynot be saved.
         """
@@ -119,13 +119,15 @@ class Generator(object):
         # Phase 2 key value paires
         kv_cbs = []  # keyvalue call backs
         for action, key, value in phase_2:
-            def keyvalue_callback(system, key=key, value=value):
+            def keyvalue_cb(system, key=key, value=value):
                 return KeyValue.objects.get_or_create(
                     system=system, key=key, value=value
                 )[0]
-            keyvalue_callback.__name__ = key + ' ' + value
 
-            kv_cbs.append(keyvalue_callback)
+            # Set the function name for debugging purposes
+            keyvalue_cb.__name__ = key + ' ' + value
+            kv_cbs.append(keyvalue_cb)
+
         return s, kv_cbs
 
 
