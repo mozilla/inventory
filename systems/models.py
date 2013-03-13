@@ -591,8 +591,7 @@ class System(DirtyFieldsMixin, models.Model):
                     remote_user = 'changed_user'
                 tmp = SystemChangeLog(system=system,changed_by = remote_user,changed_text = save_string, changed_date = datetime.datetime.now())
                 tmp.save()
-        except Exception, e:
-            print e
+        except Exception:
             pass
 
         if not self.id:
