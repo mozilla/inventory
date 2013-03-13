@@ -74,7 +74,7 @@ class Resolver(Generics):
     @system_kv
     def all_system_keyvalue(self, **kwargs):
         patterns = []
-        for key_type in ('mac_address', 'ip_address'):
+        for key_type in ('mac_address', 'ip_address', 'name'):
             patterns.append(re.compile('nic.\d+.{0}.\d+'.format(key_type)))
             patterns.append(re.compile('mgmt.\d+.{0}.\d+'.format(key_type)))
         return self.generic_kevalue(patterns)
