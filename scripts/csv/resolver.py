@@ -104,8 +104,8 @@ class Resolver(Generics):
         return self.generic_char(name, values, **kwargs)
 
     @system_attr
-    def switch_port(self, **kwargs):
-        name = 'switch_port'
+    def switch_ports(self, **kwargs):
+        name = 'switch_ports'
         values = ['switch_ports']
         return self.generic_char(name, values, **kwargs)
 
