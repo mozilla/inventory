@@ -863,19 +863,19 @@ def getoncall(request, oncall_type):
     if format == 'basic':
         response = profile.irc_nick
     elif format in ('json', 'delimited', 'meta'):
-        attrs = {
-            "irc_nic": profile.irc_nick or '',
-            "ldap_username": profile.user.username or '',
-            "pager_type": profile.pager_type or '',
-            "pager_number": profile.pager_number or '',
-            "epager_address": profile.epager_address or ''
-        }
+        attrs = (
+            ("irc_nic", profile.irc_nick or ''),
+            ("ldap_username", profile.user.username or ''),
+            ("pager_type", profile.pager_type or ''),
+            ("pager_number", profile.pager_number or ''),
+            ("epager_address", profile.epager_address or '')
+        )
         if format == 'json':
-            response = json.dumps(attrs)
+            response = json.dumps(dict(attrs))
         elif format == 'delimited':
-            response = ':'.join([el for el in attrs.values()])
+            response = ':'.join([el[0] for el in attrs])
         elif format == 'meta':
-            response = ':'.join([el for el in attrs.keys()])
+            response = ':'.join([el[1] for el in attrs])
 
     return HttpResponse(response)
 
