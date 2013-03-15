@@ -21,6 +21,7 @@ from django.test.client import RequestFactory
 from jinja2.filters import contextfilter
 
 import models
+from systems.models import OncallAssignment
 from libs.jinja import render_to_response as render_to_response
 from middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 from Rack import Rack
@@ -823,16 +824,62 @@ def racks(request):
            },
            RequestContext(request))
 
-def getoncall(request, type):
-    return_irc_nick = ''
-    if type == 'desktop':
-        return_irc_nick = models.OncallAssignment.objects.get(oncall_type='desktop').user.get_profile().irc_nick
-    elif type == 'sysadmin':
-        return_irc_nick = models.OncallAssignment.objects.get(oncall_type='sysadmin').user.get_profile().irc_nick
-    elif type == 'services':
-        return_irc_nick = models.OncallAssignment.objects.get(oncall_type='services').user.get_profile().irc_nick
 
-    return HttpResponse(return_irc_nick)
+def getoncall(request, oncall_type):
+    """
+    Returns information about who is oncall. Oncall types include 'desktop',
+    'sysadmin', and 'services'.
+
+    Use ?format=<format> to determine the format of the response.
+
+    Format 'delimited':
+        <IRC nick>:<Username>:<Pager type>:<Pager number>:<Epager address>
+
+    Format 'json':
+        {
+            "irc_nic": <IRC nick>,
+            "ldap_username": <Username>,
+            "pager_type": <Pager type>,
+            "pager_number": <Pager number>,
+            "epager_address": <Epager address>
+        }
+
+    Format 'meta':
+        The field names returned by 'delimited'
+
+    You can use the 'meta' format like you would use the first line of a CSV to
+    determine what fields are being returned by 'delimited'.
+    """
+
+    if oncall_type not in ('desktop', 'sysadmin', 'services'):
+        return HttpResponse('nobody')
+
+    profile = OncallAssignment.objects.get(
+        oncall_type=oncall_type
+    ).user.get_profile()
+
+    format = request.GET.get('format', 'basic')
+
+    if format == 'basic':
+        response = profile.irc_nick
+    elif format in ('json', 'delimited', 'meta'):
+        attrs = {
+            "irc_nic": profile.irc_nick or '',
+            "ldap_username": profile.user.username or '',
+            "pager_type": profile.pager_type or '',
+            "pager_number": profile.pager_number or '',
+            "epager_address": profile.epager_address or ''
+        }
+        if format == 'json':
+            response = json.dumps(attrs)
+        elif format == 'delimited':
+            response = ':'.join([el for el in attrs.values()])
+        elif format == 'meta':
+            response = ':'.join([el for el in attrs.keys()])
+
+    return HttpResponse(response)
+
+
 def oncall(request):
     from forms import OncallForm
     #current_desktop_oncall = models.UserProfile.objects.get_current_desktop_oncall
