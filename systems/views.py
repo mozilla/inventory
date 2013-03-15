@@ -832,9 +832,6 @@ def getoncall(request, oncall_type):
 
     Use ?format=<format> to determine the format of the response.
 
-    Format 'delimited':
-        <IRC nick>:<Username>:<Pager type>:<Pager number>:<Epager address>
-
     Format 'json':
         {
             "irc_nic": <IRC nick>,
@@ -843,6 +840,9 @@ def getoncall(request, oncall_type):
             "pager_number": <Pager number>,
             "epager_address": <Epager address>
         }
+
+    Format 'delimited':
+        <IRC nick>:<Username>:<Pager type>:<Pager number>:<Epager address>
 
     Format 'meta':
         The field names returned by 'delimited'
@@ -914,7 +914,7 @@ def oncall(request):
             tmp = models.OncallAssignment.objects.get(oncall_type='services')
             tmp.user = User.objects.get(username=current_services_oncall)
             tmp.save()
-            
+
             form.save()
             return HttpResponseRedirect('')
 
@@ -922,45 +922,7 @@ def oncall(request):
         form = OncallForm(initial = initial)
     return render(request, 'systems/generic_form.html', {'current_services_oncall':current_services_oncall, 'current_desktop_oncall':current_desktop_oncall,'current_sysadmin_oncall':current_sysadmin_oncall, 'form':form})
 
-def clear_oncall():
-    from django.db import connection, transaction
-    cursor = connection.cursor()
-    cursor.execute("UPDATE `user_profiles` set `current_desktop_oncall` = 0, `current_sysadmin_oncall` = 0, `current_services_oncall` = 0")
-    transaction.commit_unless_managed()
 
-def clear_oncall_orm():
-    from django.contrib.auth.models import User
-    users = User.objects.all()
-    for user in users:
-        try:
-            profile = user.get_profile()
-            profile.current_sysadmin_oncall = 0
-            profile.current_desktop_oncall = 0
-            profile.current_services_oncall = 0
-            profile.save()
-            user.save()
-        except Exception, e:
-            continue
-
-    return True
-def set_oncall(type, username):
-    from django.contrib.auth.models import User
-    try:
-        new_oncall = User.objects.get(username=username)
-        if type=='desktop':
-            new_oncall.get_profile().current_desktop_oncall = 1
-        elif type=='sysadmin':
-            new_oncall.get_profile().current_sysadmin_oncall = 1
-        elif type=='services':
-            new_oncall.get_profile().current_services_oncall = 1
-        elif type=='all':
-            new_oncall.get_profile().current_sysadmin_oncall = 1
-            new_oncall.get_profile().current_desktop_oncall = 1
-            new_oncall.get_profile().current_services_oncall = 1
-        new_oncall.get_profile().save()
-        new_oncall.save()
-    except Exception, e:
-        print e
 def rack_delete(request, object_id):
     from models import SystemRack
     rack = get_object_or_404(SystemRack, pk=object_id)
