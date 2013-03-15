@@ -152,3 +152,16 @@ class Resolver(Generics):
             'handler': _system_status
         }
         return bundle
+
+    @system_related
+    def server_model(self, **kwargs):
+        def _server_model(s, value):
+            sm = ServerModel.objects.get(model=value)
+            s.server_model = sm
+            return s
+        bundle = {
+            'name': 'server_model',
+            'values': ['server_model'],
+            'handler': _server_model
+        }
+        return bundle
