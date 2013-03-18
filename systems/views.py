@@ -873,9 +873,9 @@ def getoncall(request, oncall_type):
         if format == 'json':
             response = json.dumps(dict(attrs))
         elif format == 'delimited':
-            response = ':'.join([el[0] for el in attrs])
-        elif format == 'meta':
             response = ':'.join([el[1] for el in attrs])
+        elif format == 'meta':
+            response = ':'.join([el[0] for el in attrs])
 
     return HttpResponse(response)
 
