@@ -138,7 +138,7 @@ class SVNBuilderMixin(object):
             cwd = os.getcwd()
             os.chdir(self.PROD_DIR)
             self.log("Calling `svn up` in {0}".format(self.PROD_DIR))
-            command_str = "svn up"
+            command_str = "svn up --accept mine-full --non-interactive"
             stdout, stderr, returncode = self.shell_out(command_str)
             if returncode != 0:
                 raise BuildError("Failed to svn up."
