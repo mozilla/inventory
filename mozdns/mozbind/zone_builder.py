@@ -18,13 +18,14 @@ DEFAULT_TTL = 3600
 
 
 def render_soa_only(soa, root_domain):
-    BUILD_STR = _("{root_domain}.     IN   SOA     {primary}. {contact}. (\n"
+    BUILD_STR = _("{root_domain}.  {ttl}  IN   SOA   {primary}. {contact}. (\n"
                   "\t\t{{serial}}     ; Serial\n"
                   "\t\t{refresh}     ; Refresh\n"
                   "\t\t{retry}     ; Retry\n"
                   "\t\t{expire}     ; Expire\n"
                   "\t\t{minimum}     ; Minimum\n"
                   ")\n\n".format(
+                      ttl=soa.ttl,
                       root_domain=root_domain.name, primary=soa.primary,
                       contact=soa.contact, refresh=str(soa.refresh),
                       retry=str(soa.retry), expire=str(soa.expire),
