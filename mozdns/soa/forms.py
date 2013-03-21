@@ -5,4 +5,3 @@ from mozdns.forms import BaseForm
 class SOAForm(BaseForm):
     class Meta:
         model = SOA
-        exclude = ('serial', 'dirty',)
