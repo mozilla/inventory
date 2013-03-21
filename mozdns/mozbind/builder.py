@@ -199,7 +199,7 @@ class SVNBuilderMixin(object):
                 return False
         finally:
             os.chdir(cwd)  # go back!
-            self.log("Changing pwd to {0}".format(cwd))
+            self.log("Changing cwd to {0}".format(cwd))
 
         lines_changed = self.svn_lines_changed(self.PROD_DIR)
         self.svn_sanity_check(lines_changed)
@@ -220,7 +220,7 @@ class SVNBuilderMixin(object):
                     raise BuildError(
                         "Wow! Too many lines removed from the config dir ({0} "
                         "lines removed). Manually make sure this commit is "
-                        "okay." .format(config_lines_removed)
+                        "okay.".format(config_lines_removed)
                     )
 
             self.log("PUSH_TO_PROD is True. Checking into "
