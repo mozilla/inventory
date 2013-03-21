@@ -65,8 +65,7 @@ class BuildScriptTests(object):
         self.assertEqual(0, rets.returncode)
 
     def tearDown(self):
-        #shutil.rmtree('/tmp/fake/')
-        pass
+        shutil.rmtree('/tmp/fake/')
 
     def svn_info(self):
         cwd = os.getcwd()

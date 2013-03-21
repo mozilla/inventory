@@ -10,8 +10,10 @@ from mozdns.address_record.models import AddressRecord
 from mozdns.view.models import View
 from mozdns.tests.utils import random_label, random_byte
 from mozdns.mozbind.builder import DNSBuilder, BuildError
-
 from mozdns.tests.utils import create_fake_zone
+
+from core.task.models import Task
+
 
 from scripts.dnsbuilds.tests.build_tests import BuildScriptTests
 
@@ -209,13 +211,16 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b.svn_checkin(lc)
 
     def test_svn_conflict(self):
+        """
+        This uses tasks as a block box measurement to see if conflicts are
+        being handled
+        """
         root_domain = create_fake_zone('conflict')
         b1 = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
-                       LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
-                       FIRST_RUN=True, PUSH_TO_PROD=True,
-                       STOP_UPDATE_FILE=self.stop_update_file)
+                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
+                        FIRST_RUN=True, PUSH_TO_PROD=True,
+                        STOP_UPDATE_FILE=self.stop_update_file)
 
-        b1.DEBUG = True
         b1.build_dns()  # This checked stuff in
 
         # Check the repo out somewhere elst
@@ -244,10 +249,22 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
 
         # Add something to the end of the file to cause a collision
         a = AddressRecord.objects.create(
-            label="zeenada", domain=root_domain, ip_type='4', ip_str='255.0.0.0'
+            label="zeenada", domain=root_domain, ip_type='4',
+            ip_str='255.0.0.0'
         )
         a.views.add(View.objects.get(name='public'))
-        import pdb;pdb.set_trace()
+
+        # Alright, we should have conflicts here. See if we detect it by
+        # counting how many tasks need to be serviced. If the number remains
+        # the same that means we aborted the build due to a conflict
+        pre_task_count = Task.objects.all().count()
         b1.build_dns()
+        post_task_count = Task.objects.all().count()
+        self.assertEqual(pre_task_count, post_task_count)
 
-
+        # Conflicts should be resolved. Let's see if we build successfully
+        pre_task_count = Task.objects.all().count()
+        b1.build_dns()
+        post_task_count = Task.objects.all().count()
+        self.assertTrue(pre_task_count != 0)
+        self.assertEqual(0, post_task_count)

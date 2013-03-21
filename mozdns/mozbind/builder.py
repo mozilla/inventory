@@ -35,6 +35,8 @@ class SVNBuilderMixin(object):
     svn_ignore = [re.compile("---\s.+\s+\(revision\s\d+\)"),
                   re.compile("\+\+\+\s.+\s+\(working copy\)")]
 
+    svn_conflict = [re.compile("C\s.*")]
+
     vcs_type = 'svn'
 
     def svn_lines_changed(self, dirname):
@@ -56,19 +58,13 @@ class SVNBuilderMixin(object):
         os.chdir(dirname)
         try:
             command_str = "svn add --force .".format(dirname)
-            self.log("Calling `{0}` in {1}".
-                     format(command_str, dirname))
-            stdout, stderr, returncode = self.shell_out(command_str)
-            if returncode != 0:
-                raise BuildError("Failed to add files to svn."
-                                 "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
-                                 format(command_str, stdout, stderr))
+            self.log("Calling `{0}` in {1}".format(command_str, dirname))
+            self.shell_out(command_str, message="Failed to add files to svn.")
+
             command_str = "svn diff --depth=infinity ."
-            stdout, stderr, returncode = self.shell_out(command_str)
-            if returncode != 0:
-                raise BuildError("Failed to add files to svn."
-                                 "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
-                                 format(command_str, stdout, stderr))
+            stdout, stderr, returncode = self.shell_out(
+                command_str, message="Couldn't diff."
+            )
         except Exception:
             raise
         finally:
@@ -117,40 +113,90 @@ class SVNBuilderMixin(object):
             ci_message = _("Checking in DNS. {0} lines were added and {1} were"
                            " removed".format(*lines_changed))
             self.log("Commit message: {0}".format(ci_message))
+
             command_str = "svn ci {0} -m \"{1}\"".format(
-                self.PROD_DIR, ci_message)
-            stdout, stderr, returncode = self.shell_out(command_str)
-            if returncode != 0:
-                raise BuildError(
-                    "Failed to svn up.\n"
-                    "command: {0}:\n"
-                    "stdout: {1}\n"
-                    "stderr:{2}".  format(command_str, stdout, stderr)
-                )
-            else:
-                self.log("Changes have been checked in.")
+                self.PROD_DIR, ci_message
+            )
+
+            self.shell_out(command_str, message="Failed to svn ci")
+            self.log("Changes have been checked in.")
         finally:
             os.chdir(cwd)  # go back!
             self.log("Changing pwd to {0}".format(cwd))
         return
 
+    def detect_conflict(self):
+        """
+        Calls svn up and then checks to see if there were any conflicts. If
+        there were conflicts return True, else returns False.
+        """
+        self.log(
+            "Calling `svn up --non-interactive` in {0}".format(self.PROD_DIR)
+        )
+        command_str = "svn up --non-interactive"
+        stdout, stderr, returncode = self.shell_out(
+            command_str, message="Failed to svn up"
+        )
+
+        conflicts = False
+        for line in stdout.split('\n'):
+            for conflict in self.svn_conflict:
+                if conflict.match(line):
+                    conflicts = True
+                    self.log("Detected conflict!")
+                    self.log(
+                        "command: {0}:\n"
+                        "stdout: {1}\n"
+                        "stderr:{2}".format(command_str, stdout, stderr)
+                    )
+                    break
+            if conflicts:
+                break
+        return conflicts
+
+    def resolve_conflict(self):
+        self.log(
+            "Calling `svn revert -R .` to resolve conflict".format(
+                self.PROD_DIR)
+        )
+        command_str = "svn revert -R ."
+        stdout, stderr, returncode = self.shell_out(
+            command_str,
+            message="Failed to recover from conflict."
+        )
+
     def vcs_checkin(self):
-        command_str = "svn add --force .".format(self.PROD_DIR)
-        stdout, stderr, returncode = self.shell_out(command_str)
+        """
+        :returns: success, whether or not the checkin was successful
+
+        A case we need to handle:
+
+        1   a) Someone checks in conflict     <---+- a/b happen concurrently
+            b) Inventory starts build         <---+
+
+        2)  Inventory finishes build and does `svn up`
+
+        3)  Inventory does `svn up --non-interactive`. Checks the output of
+            `svn status` for lines that begin with 'C'. There is a CONFLICT
+
+        4)  Inventory does `svn revert -R . && svn up`.
+            - This will clear up any conflicts but will also destroy any
+              changes inventory made during the build.
+
+        5)  Inventory starts a new build process and hopes another conflict
+            doesn't happen
+
+        """
         try:
             cwd = os.getcwd()
             os.chdir(self.PROD_DIR)
-            import pdb;pdb.set_trace()
-            self.log("Calling `svn up` in {0}".format(self.PROD_DIR))
-            command_str = "svn up"
-            stdout, stderr, returncode = self.shell_out(command_str)
-            if returncode != 0:
-                raise BuildError(
-                    "Failed to svn up.\n"
-                    "command: {0}:\n"
-                    "stdout: {1}\n"
-                    "stderr:{2}".  format(command_str, stdout, stderr)
-                )
+            command_str = "svn add --force .".format(self.PROD_DIR)
+            stdout, stderr, returncode = self.shell_out(
+                command_str, message='failed to add files'
+            )
+            if self.detect_conflict():  # Will call svn up
+                self.resolve_conflict()
+                return False
         finally:
             os.chdir(cwd)  # go back!
             self.log("Changing pwd to {0}".format(cwd))
@@ -180,6 +226,8 @@ class SVNBuilderMixin(object):
             self.log("PUSH_TO_PROD is True. Checking into "
                      "svn.")
             self.svn_checkin(lines_changed)
+
+        return True
 
 
 class DNSBuilder(SVNBuilderMixin):
@@ -421,7 +469,8 @@ class DNSBuilder(SVNBuilderMixin):
             fd.write(data)
         return stage_fname
 
-    def shell_out(self, command, use_shlex=True):
+    def shell_out(self, command, use_shlex=True, require_success=True,
+                  message=''):
         """A little helper function that will shell out and return stdout,
         stderr and the return code."""
         if use_shlex:
@@ -431,6 +480,13 @@ class DNSBuilder(SVNBuilderMixin):
         p = subprocess.Popen(command_args, stderr=subprocess.PIPE,
                              stdout=subprocess.PIPE)
         stdout, stderr = p.communicate()
+        if require_success and p.returncode != 0:
+            raise BuildError(
+                message +
+                "command: {0}:\n"
+                "stdout: {1}\n"
+                "stderr:{2}".format(command, stdout, stderr)
+            )
         return stdout, stderr, p.returncode
 
     def named_checkzone(self, zone_file, root_domain):
@@ -439,9 +495,7 @@ class DNSBuilder(SVNBuilderMixin):
         """
         # Make sure we have the write tools to do the job
         command_str = "test -f {0}".format(NAMED_CHECKZONE)
-        stdout, stderr, returncode = self.shell_out(command_str)
-        if returncode != 0:
-            raise BuildError("Couldn't find named-checkzone.")
+        self.shell_out(command_str, message="Couldn't find named-checkzone")
 
         # Check the zone file.
         command_str = "{0} {1} {2} {3}".format(
@@ -452,31 +506,24 @@ class DNSBuilder(SVNBuilderMixin):
             format(NAMED_CHECKZONE, root_domain.name, zone_file),
             root_domain=root_domain
         )
-        stdout, stderr, returncode = self.shell_out(command_str)
-        if returncode != 0:
-            raise BuildError("\nnamed-checkzone failed on zone {0}. "
-                             "\ncommand: {1}\nstdout: {2}\nstderr:{3}\n".
-                             format(root_domain.name, command_str, stdout,
-                             stderr))
+        self.shell_out(command_str, message='named-checkzone failed on zone')
 
     def named_checkconf(self, conf_file):
         command_str = "test -f {0}".format(NAMED_CHECKCONF)
-        stdout, stderr, returncode = self.shell_out(command_str)
-        if returncode != 0:
-            raise BuildError("Couldn't find {0}".format(NAMED_CHECKCONF))
+        self.shell_out(
+            command_str, message="Couldn't find {0}".format(NAMED_CHECKCONF)
+        )
 
         command_str = "{0} {1}".format(NAMED_CHECKCONF, conf_file)
-        self.log("Calling `{0} {1}` ".
-                 format(NAMED_CHECKCONF, conf_file))
-        stdout, stderr, returncode = self.shell_out(command_str)
-        if returncode != 0:
-            raise BuildError("\nnamed-checkconf rejected config {0}. "
-                             "\ncommand: {1}\nstdout: {2}\nstderr:{3}\n".
-                             format(conf_file, command_str, stdout,
-                             stderr))
+        self.log("Calling `{0} {1}` ".format(NAMED_CHECKCONF, conf_file))
+        self.shell_out(
+            command_str,
+            message='named-checkconf rejected config {0}.'.format(conf_file)
+        )
 
     def stage_to_prod(self, src):
-        """Copy file over to PROD_DIR. Return the new location of the
+        """
+        Copy file over to PROD_DIR. Return the new location of the
         file.
         """
 
@@ -817,7 +864,7 @@ class DNSBuilder(SVNBuilderMixin):
 
             self.log(self.format_title("VCS Checkin"))
             if self.BUILD_ZONES and self.PUSH_TO_PROD:
-                self.vcs_checkin()
+                successful_checkin = self.vcs_checkin()
             else:
                 self.log("PUSH_TO_PROD is False. Not checking "
                          "into {0}".format(self.vcs_type))
@@ -830,9 +877,11 @@ class DNSBuilder(SVNBuilderMixin):
             else:
                 self.clear_staging()
 
-            if self.PUSH_TO_PROD:
+            if self.PUSH_TO_PROD and successful_checkin:
                 # Only delete the scheduled tasks we saw at the top of the
                 # function
+                # Also, if the checking was not successful, don't delete the
+                # tasks
                 map(lambda t: t.delete(), dns_tasks)
 
         # All errors are handled by caller (this function)
