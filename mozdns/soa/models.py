@@ -121,6 +121,9 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     def get_debug_build_url(self):
         return MOZDNS_BASE_URL + "/bind/build_debug/{0}/".format(self.pk)
 
+    def get_fancy_edit_url(self):
+        return '/mozdns/soa/{0}/update'.format(self.pk)
+
     def delete(self, *args, **kwargs):
         if self.domain_set.exists():
             raise ValidationError(

@@ -207,3 +207,47 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         lc = b.svn_lines_changed(b.PROD_DIR)
         self.assertEqual((4, 3), lc)
         b.svn_checkin(lc)
+
+    def test_svn_conflict(self):
+        root_domain = create_fake_zone('conflict')
+        b1 = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                       LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
+                       FIRST_RUN=True, PUSH_TO_PROD=True,
+                       STOP_UPDATE_FILE=self.stop_update_file)
+
+        b1.DEBUG = True
+        b1.build_dns()  # This checked stuff in
+
+        # Check the repo out somewhere elst
+        command_str = "svn co file://{0} {1}".format(
+            self.svn_repo, self.prod_dir2
+        )
+        b1.shell_out(command_str)
+
+        # Calculate the path to the zone file so we can tamper with it.
+        fm = b1.get_file_meta(
+            View.objects.get(name='public'), root_domain,
+            root_domain.soa
+        )
+
+        # Make local changes
+        fname = fm['prod_fname'].replace(self.prod_dir, self.prod_dir2)
+        with open(fname, 'a') as fd:
+            fd.write(";foobar")
+
+        # Check those changes in.
+        b1.PROD_DIR = self.prod_dir2  # Cheat and swap the dirs
+        b1.vcs_checkin()
+
+        b1.PROD_DIR = self.prod_dir  # Fix our little cheat
+        b1.FORCE = True  # Force a build
+
+        # Add something to the end of the file to cause a collision
+        a = AddressRecord.objects.create(
+            label="zeenada", domain=root_domain, ip_type='4', ip_str='255.0.0.0'
+        )
+        a.views.add(View.objects.get(name='public'))
+        import pdb;pdb.set_trace()
+        b1.build_dns()
+
+

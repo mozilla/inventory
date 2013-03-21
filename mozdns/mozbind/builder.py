@@ -121,9 +121,12 @@ class SVNBuilderMixin(object):
                 self.PROD_DIR, ci_message)
             stdout, stderr, returncode = self.shell_out(command_str)
             if returncode != 0:
-                raise BuildError("Failed to check in changes."
-                                 "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
-                                 format(command_str, stdout, stderr))
+                raise BuildError(
+                    "Failed to svn up.\n"
+                    "command: {0}:\n"
+                    "stdout: {1}\n"
+                    "stderr:{2}".  format(command_str, stdout, stderr)
+                )
             else:
                 self.log("Changes have been checked in.")
         finally:
@@ -137,13 +140,17 @@ class SVNBuilderMixin(object):
         try:
             cwd = os.getcwd()
             os.chdir(self.PROD_DIR)
+            import pdb;pdb.set_trace()
             self.log("Calling `svn up` in {0}".format(self.PROD_DIR))
-            command_str = "svn up --accept mine-full --non-interactive"
+            command_str = "svn up"
             stdout, stderr, returncode = self.shell_out(command_str)
             if returncode != 0:
-                raise BuildError("Failed to svn up."
-                                 "\ncommand: {0}:\nstdout: {1}\nstderr:{2}".
-                                 format(command_str, stdout, stderr))
+                raise BuildError(
+                    "Failed to svn up.\n"
+                    "command: {0}:\n"
+                    "stdout: {1}\n"
+                    "stderr:{2}".  format(command_str, stdout, stderr)
+                )
         finally:
             os.chdir(cwd)  # go back!
             self.log("Changing pwd to {0}".format(cwd))

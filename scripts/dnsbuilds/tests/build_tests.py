@@ -23,7 +23,8 @@ from mozdns.soa.models import SOA
 
 
 class BuildScriptTests(object):
-    """These test cases test the build scripts and should be able to run
+    """
+    These test cases test the build scripts and should be able to run
     outside of the django test runner. No checkins should happen during any
     test.
     """
@@ -32,6 +33,7 @@ class BuildScriptTests(object):
         self.stage_dir = '/tmp/fake/stage/inv_zones/'
         self.svn_dir = '/tmp/fake/dnsconfig/'
         self.prod_dir = '/tmp/fake/dnsconfig/inv_zones/'
+        self.prod_dir2 = '/tmp/fake/dnsconfig/inv_zones2/'
         self.svn_repo = '/tmp/fake/svn_repo'
         self.lock_file = '/tmp/fake/lock.fake'
         self.stop_update = '/tmp/fake/stop.update'
@@ -48,6 +50,14 @@ class BuildScriptTests(object):
 
         command_str = "svn co file://{0} {1}".format(self.svn_repo,
                                                      self.prod_dir)
+        rets = subprocess.Popen(shlex.split(command_str),
+                                stderr=subprocess.PIPE,
+                                stdout=subprocess.PIPE)
+        stdout, stderr = rets.communicate()
+        self.assertEqual(0, rets.returncode)
+
+        command_str = "svn co file://{0} {1}".format(self.svn_repo,
+                                                     self.prod_dir2)
         rets = subprocess.Popen(shlex.split(command_str),
                                 stderr=subprocess.PIPE,
                                 stdout=subprocess.PIPE)
