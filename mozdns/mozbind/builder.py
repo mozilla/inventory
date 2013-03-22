@@ -267,31 +267,27 @@ class DNSBuilder(SVNBuilderMixin):
         except IOError, exc_value:
             if exc_value[0] == 11:
                 is_locked = True
-        if is_locked:
-            print "IS_LOCKED=True"
-        else:
-            print "IS_LOCKED=False"
-        print "LOCK_FILE={0}".format(self.LOCK_FILE)
 
-        if os.path.exists(self.STOP_UPDATE_FILE):
-            print "STOP_UPDATE_FILE_EXISTS=True"
-        else:
-            print "STOP_UPDATE_FILE_EXISTS=False"
-        print "STOP_UPDATE_FILE={0}".format(self.STOP_UPDATE_FILE)
+        state = {
+            'IS_LOCKED': True if is_locked else False,
+            'LOCK_FILE': self.LOCK_FILE,
+            'STOP_UPDATE_FILE_EXISTS': (
+                True if os.path.exists(self.STOP_UPDATE_FILE) else False
+            ),
+            'STOP_UPDATE_FILE': self.STOP_UPDATE_FILE,
+            'STAGE_DIR_EXISTS': (
+                True if os.path.exists(self.STAGE_DIR) else False
+            ),
+            'STAGE_DIR': self.STAGE_DIR,
+            'PROD_DIR_EXISTS': (
+                True if os.path.exists(self.PROD_DIR) else False
+            ),
+            'PROD_DIR': self.PROD_DIR,
+            'LAST_RUN_FILE': self.LAST_RUN_FILE,
+        }
 
-        if os.path.exists(self.STAGE_DIR):
-            print "STAGE_DIR_EXISTS=True"
-        else:
-            print "STAGE_DIR_EXISTS=False"
-        print "STAGE_DIR={0}".format(self.STAGE_DIR)
-
-        if os.path.exists(self.PROD_DIR):
-            print "PROD_DIR_EXISTS=True"
-        else:
-            print "PROD_DIR_EXISTS=False"
-        print "PROD_DIR={0}".format(self.PROD_DIR)
-
-        print "LAST_RUN_FILE={0}".format(self.LAST_RUN_FILE)
+        for k, v in state.iteritems():
+            print '{0}={1}'.format(k, v)
 
     def format_title(self, title):
         return "{0} {1} {0}".format('=' * ((30 - len(title)) / 2), title)
@@ -471,14 +467,17 @@ class DNSBuilder(SVNBuilderMixin):
 
     def shell_out(self, command, use_shlex=True, require_success=True,
                   message=''):
-        """A little helper function that will shell out and return stdout,
-        stderr and the return code."""
+        """
+        A little helper function that will shell out and return stdout, stderr
+        and the return code.
+        """
         if use_shlex:
             command_args = shlex.split(command)
         else:
             command_args = command
-        p = subprocess.Popen(command_args, stderr=subprocess.PIPE,
-                             stdout=subprocess.PIPE)
+        p = subprocess.Popen(
+            command_args, stderr=subprocess.PIPE, stdout=subprocess.PIPE
+        )
         stdout, stderr = p.communicate()
         if require_success and p.returncode != 0:
             raise BuildError(
@@ -490,7 +489,8 @@ class DNSBuilder(SVNBuilderMixin):
         return stdout, stderr, p.returncode
 
     def named_checkzone(self, zone_file, root_domain):
-        """Shell out and call named-checkzone on the zone file. If it returns
+        """
+        Shell out and call named-checkzone on the zone file. If it returns
         with errors raise a BuildError.
         """
         # Make sure we have the write tools to do the job
@@ -528,8 +528,9 @@ class DNSBuilder(SVNBuilderMixin):
         """
 
         if not src.startswith(self.STAGE_DIR):
-            raise BuildError("Improper file '{0}' passed to "
-                             "stage_to_prod".format(src))
+            raise BuildError(
+                "Improper file '{0}' passed to stage_to_prod".format(src)
+            )
         dst = src.replace(self.STAGE_DIR, self.PROD_DIR)
         dst_dir = os.path.dirname(dst)
 
@@ -544,8 +545,9 @@ class DNSBuilder(SVNBuilderMixin):
             shutil.copy2(src, dst)
             self.log("Copied {0} to {1}".format(src, dst))
         except (IOError, os.error) as why:
-            raise BuildError("cp -p {0} {1} caused {2}".format(src,
-                             dst, str(why)))
+            raise BuildError(
+                "cp -p {0} {1} caused {2}".format(src, dst, str(why))
+            )
         except shutil.Error:
             raise
         return dst
@@ -576,8 +578,10 @@ class DNSBuilder(SVNBuilderMixin):
         self.write_stage_zone(
             stage_fname, root_domain, file_meta['rel_fname'], view_data
         )
-        self.log("Built stage_{0}_file to {1}".format(view.name, stage_fname),
-                 root_domain=root_domain)
+        self.log(
+            "Built stage_{0}_file to {1}".format(view.name, stage_fname),
+            root_domain=root_domain
+        )
         self.named_checkzone(stage_fname, root_domain)
 
         prod_fname = self.stage_to_prod(stage_fname)
@@ -669,19 +673,21 @@ class DNSBuilder(SVNBuilderMixin):
             # it as dirty so it can be rebuild
             try:
                 root_domain = soa.root_domain  # This is an expensive lookup
-                # General order of things:
-                # * Find which views should have a zone file built and add them
-                # to a list.
-                # * If any of the view's zone file have been tampered with or
-                # the zone is new, trigger the rebuilding of all the zone's
-                # view files. (rebuil all views in a zone keeps the serial
-                # synced across all views)
-                # * Either rebuild all of a zone's view files because one view
-                # needed to be rebuilt due to tampering or the zone was dirty
-                # (again, this is to keep their serial synced) or just call
-                # named-checkzone on the existing zone files for good measure.
-                # Also generate a zone statement and add it to a dictionary for
-                # later use during BIND configuration generation.
+                """
+                General order of things:
+                * Find which views should have a zone file built and add them
+                  to a list.
+                * If any of the view's zone file have been tampered with or
+                  the zone is new, trigger the rebuilding of all the zone's
+                  view files. (rebuil all views in a zone keeps the serial
+                  synced across all views)
+                * Either rebuild all of a zone's view files because one view
+                  needed to be rebuilt due to tampering or the zone was dirty
+                  (again, this is to keep their serial synced) or just call
+                  named-checkzone on the existing zone files for good measure.
+                  Also generate a zone statement and add it to a dictionary for
+                  later use during BIND configuration generation.
+                """
 
                 force_rebuild = soa.pk in soa_pks_to_rebuild or soa.dirty
                 if force_rebuild:

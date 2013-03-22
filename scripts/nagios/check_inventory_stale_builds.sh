@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BIN=""
+BIN="../dnsbuilds/main.py"
 PREFIX="[DEV] "
 
 STALE_THRESHOLD=$((60 * 6))  # 6 Min
@@ -20,7 +20,7 @@ then
     if [ $delta -gt $STALE_THRESHOLD ]
     then
         echo -n "$PREFIX"
-        echo "CRITICAL: Inventory DNS Builds haven't ran for $mins minutes."
+        echo "Inventory DNS Builds haven't ran for $mins minutes."
         if [ $STOP_UPDATE_FILE_EXISTS == 'True' ]
         then
             RET=$WARN
@@ -29,11 +29,11 @@ then
         fi
     else
         echo -n "$PREFIX"
-        echo "OK: Inventory DNS Builds have resumed."
+        echo "Inventory DNS Builds have resumed."
     fi
 else
     echo -n "$PREFIX"
-    echo "WARNING: The LAST_RUN_FILE ("$(hostname)":"$LAST_RUN_FILE") was not found."
+    echo "The LAST_RUN_FILE ("$(hostname)":"$LAST_RUN_FILE") was not found."
     RET=$WARN
 fi
 

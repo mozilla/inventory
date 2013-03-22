@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BIN=""
+BIN="../dnsbuilds/main.py"
 PREFIX="[DEV] "
 
 CRIT=2
@@ -12,11 +12,11 @@ eval $($BIN --status)
 if [ $STOP_UPDATE_FILE_EXISTS == 'True' ]
 then
     echo -n "$PREFIX"
-    echo "CRITICAL: Inventory DNS Builds have stopped. Stop update file at" $(hostname)":"$STOP_UPDATE_FILE
+    echo "Inventory DNS Builds have stopped. Stop update file at" $(hostname)":"$STOP_UPDATE_FILE
     RET=$CRIT
 else
     echo -n "$PREFIX"
-    echo "OK: Inventory DNS Builds will resume. Stop update file has been removed"
+    echo "Inventory DNS Builds will resume. Stop update file has been removed"
 fi
 
-exit 0
+exit $RET
