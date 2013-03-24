@@ -15,7 +15,7 @@ urlpatterns = patterns('',
     # Example:
 
 
-    # Uncomment the admin/doc line below and add 'django.contrib.admindocs' 
+    # Uncomment the admin/doc line below and add 'django.contrib.admindocs'
     # to INSTALLED_APPS to enable admin documentation:
     # (r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
@@ -27,6 +27,7 @@ urlpatterns = patterns('',
     (r'^a(\d+)/$', 'systems.views.system_show_by_asset_tag'),
     (r'^systems/', include('systems.urls')),
     (r'^en-US/systems/', include('systems.urls')),
+    (r'^oncall/', include('oncall.urls')),
     (r'^reports/', include('reports.urls')),
     (r'^dhcp/', include('dhcp.urls')),
     (r'^truth/', include('truth.urls')),
@@ -47,7 +48,7 @@ urlpatterns = patterns('',
 )
 
 if settings.DEBUG:
-    urlpatterns += patterns('', 
+    urlpatterns += patterns('',
         (r'^static/(?P<path>.*)$', allow_anyone(static.serve),
             {'document_root': settings.STATIC_DOC_ROOT}),
     )

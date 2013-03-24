@@ -12,7 +12,6 @@ from django.core.exceptions import ValidationError
 from django.db.models.signals import post_save
 from django.db.models.query import QuerySet
 from django.contrib.auth.models import User
-from django.db import IntegrityError
 
 from dhcp.models import DHCP
 from settings import BUG_URL
@@ -20,7 +19,6 @@ from settings import BUG_URL
 
 import datetime
 import re
-import pdb
 import socket
 
 
@@ -140,23 +138,6 @@ class Location(models.Model):
     class Meta:
         db_table = u'locations'
         ordering = ['name']
-
-class OncallAssignment(models.Model):
-    """
-        oncall_type are 1 of 3 choices currently
-        services, desktop, sysadmin
-        if more oncall categories need added
-        insert into oncall_assignment(oncall_type) values ('<new_oncall_type>');
-    """
-    user = models.ForeignKey(User)
-    oncall_type = models.CharField(max_length=128, blank=True)
-
-    def __unicode__(self):
-        return "%s - %s" % (self.oncall_type, self.oncall_user)
-
-    class Meta:
-        db_table = u'oncall_assignment'
-        ordering = ['oncall_type']
 
 class PortData(models.Model):
     ip_address = models.CharField(max_length=15, blank=True)
@@ -682,31 +663,6 @@ class SystemChangeLog(models.Model):
 #    user = models.ForeignKey(User, unique=True)
 #    class Meta:
 ##        db_table = u'user_profiles'
-
-class OncallManager(models.Manager):
-    def filter(self, *args, **kwargs):
-        try:
-            return self.get_query_set().filter(**kwargs)[0]
-        except IndexError:
-            """
-                We tried to get an object here, but it doesn't exist
-                Let's create and add one
-            """
-            ots = OncallTimestamp(
-                    oncall_type=kwargs['oncall_type'],
-                    updated_on=datetime.datetime.now(),
-                    )
-            ots.save()
-            return ots
-
-
-class OncallTimestamp(models.Model):
-    oncall_type = models.CharField(max_length=128, null=False, blank=False)
-    updated_on = models.DateTimeField(null=False, blank=False)
-    objects = OncallManager()
-
-    class Meta:
-        db_table = u'oncall_timestamp'
 
 
 class UserProfile(models.Model):

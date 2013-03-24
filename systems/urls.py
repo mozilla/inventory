@@ -1,8 +1,10 @@
 from django.conf.urls.defaults import *
-from django.views.generic.list_detail import object_detail, object_list
-from models import ServerModel, Location, Allocation, SystemRack, KeyValue
+from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 
-from misc.generic_views import create_object, update_object, delete_object, gen_mod_dict, gen_info_dict, gen_del_dict
+from models import ServerModel
+
+from misc.generic_views import create_object, gen_mod_dict
 
 urlpatterns = patterns('systems',
     (r'^quicksearch/$', 'views.system_quicksearch_ajax'),
@@ -26,8 +28,11 @@ urlpatterns = patterns('systems',
     (r'^ajax_check_dupe_nic/(?P<system_id>\d+)/(?P<adapter_number>\d+)[/]$', 'views.check_dupe_nic'),
     (r'^system_auto_complete_ajax[/]$', 'views.system_auto_complete_ajax'),
     (r'^ajax_check_dupe_nic_name/(?P<system_id>\d+)/(?P<adapter_name>.*)[/]$', 'views.check_dupe_nic_name'),
-    url(r'^oncall[/]$', 'views.oncall', name='oncall-view'),
-    (r'^getoncall[/](?P<oncall_type>.*)[/]$', 'views.getoncall'),
+
+    # TODO, Depricate these
+    url(r'^oncall/$', lambda *args: redirect(reverse('oncall'))),
+    url(r'^getoncall/$', lambda *args: redirect(reverse('getoncall'))),
+
     url(r'^csv/$', 'views.system_csv', name="system-csv"),
     url(r'^releng_csv/$', 'views.system_releng_csv', name="system-csv"),
     url(r'^csv/import/$', 'views.csv_import', name='system-csv-import'),
@@ -40,7 +45,6 @@ urlpatterns = patterns('systems',
     url(r'^racks/bylocation/(?P<location>\d+)/$', 'views.racks_by_location', name='system-racks-by-location'),
     url(r'^server_models/new/$', create_object, gen_mod_dict(ServerModel, 'server_model-list'), name="server_model-new"),
     url(r'^server_models/edit/(?P<object_id>\d+)/$', 'views.server_model_edit', name="server_model-edit"),
-   
     url(r'^server_models/$', 'views.server_model_list', name="server_model-list"),
     url(r'^server_models/create_ajax/$', 'views.server_model_create_ajax', name="server_model_create_ajax"),
     url(r'^server_models/list_ajax/$', 'views.server_model_list_ajax', name="server_model_list_ajax"),

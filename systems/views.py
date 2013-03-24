@@ -1,12 +1,11 @@
 from django.views.decorators.csrf import csrf_exempt
 import csv
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import  redirect, get_object_or_404, render
+from django.shortcuts import  redirect, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils import translation
@@ -21,7 +20,6 @@ from django.test.client import RequestFactory
 from jinja2.filters import contextfilter
 
 import models
-from systems.models import OncallAssignment
 from libs.jinja import render_to_response as render_to_response
 from middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 from Rack import Rack
@@ -823,104 +821,6 @@ def racks(request):
             'read_only': getattr(request, 'read_only', False),
            },
            RequestContext(request))
-
-
-def getoncall(request, oncall_type):
-    """
-    Returns information about who is oncall. Oncall types include 'desktop',
-    'sysadmin', and 'services'.
-
-    Use ?format=<format> to determine the format of the response.
-
-    Format 'json':
-        {
-            "irc_nic": <IRC nick>,
-            "ldap_username": <Username>,
-            "pager_type": <Pager type>,
-            "pager_number": <Pager number>,
-            "epager_address": <Epager address>
-        }
-
-    Format 'delimited':
-        <IRC nick>:<Username>:<Pager type>:<Pager number>:<Epager address>
-
-    Format 'meta':
-        The field names returned by 'delimited'
-
-    You can use the 'meta' format like you would use the first line of a CSV to
-    determine what fields are being returned by 'delimited'.
-    """
-
-    if oncall_type not in ('desktop', 'sysadmin', 'services'):
-        return HttpResponse('nobody')
-
-    profile = OncallAssignment.objects.get(
-        oncall_type=oncall_type
-    ).user.get_profile()
-
-    format = request.GET.get('format', 'basic')
-
-    if format == 'basic':
-        response = profile.irc_nick
-    elif format in ('json', 'delimited', 'meta'):
-        attrs = (
-            ("irc_nic", profile.irc_nick or ''),
-            ("ldap_username", profile.user.username or ''),
-            ("pager_type", profile.pager_type or ''),
-            ("pager_number", profile.pager_number or ''),
-            ("epager_address", profile.epager_address or '')
-        )
-        if format == 'json':
-            response = json.dumps(dict(attrs))
-        elif format == 'delimited':
-            response = ':'.join([el[1] for el in attrs])
-        elif format == 'meta':
-            response = ':'.join([el[0] for el in attrs])
-
-    return HttpResponse(response)
-
-
-def oncall(request):
-    from forms import OncallForm
-    #current_desktop_oncall = models.UserProfile.objects.get_current_desktop_oncall
-    #import pdb; pdb.set_trace()
-    current_desktop_oncall = models.OncallAssignment.objects.get(oncall_type='desktop').user.username
-    current_sysadmin_oncall = models.OncallAssignment.objects.get(oncall_type='sysadmin').user.username
-    current_services_oncall = models.OncallAssignment.objects.get(oncall_type='services').user.username
-
-    initial = {
-        'desktop_support':current_desktop_oncall,
-        'sysadmin_support':current_sysadmin_oncall,
-        'services_support':current_services_oncall,
-            }
-    if request.method == 'POST':
-        form = OncallForm(request.POST, initial=initial)
-        if form.is_valid():
-            """
-               Couldn't get the ORM to update properly so running a manual transaction. For some reason, the model refuses to refresh
-            """
-            current_desktop_oncall = form.cleaned_data['desktop_support']
-            current_sysadmin_oncall = form.cleaned_data['sysadmin_support']
-            current_services_oncall = form.cleaned_data['services_support']
-            """
-                Set each of the 3 respective oncall areas to the posted values
-            """
-            tmp = models.OncallAssignment.objects.get(oncall_type='desktop')
-            tmp.user = User.objects.get(username=current_desktop_oncall)
-            tmp.save()
-            tmp = models.OncallAssignment.objects.get(oncall_type='sysadmin')
-            tmp.user = User.objects.get(username=current_sysadmin_oncall)
-            tmp.save()
-            tmp = models.OncallAssignment.objects.get(oncall_type='services')
-            tmp.user = User.objects.get(username=current_services_oncall)
-            tmp.save()
-
-            form.save()
-            return HttpResponseRedirect('')
-
-    else:
-        form = OncallForm(initial = initial)
-    return render(request, 'systems/generic_form.html', {'current_services_oncall':current_services_oncall, 'current_desktop_oncall':current_desktop_oncall,'current_sysadmin_oncall':current_sysadmin_oncall, 'form':form})
 
 
 def rack_delete(request, object_id):
