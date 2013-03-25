@@ -29,13 +29,25 @@ class OncallTest(TestCase):
         oncalls = User.objects.select_related().filter(
             userprofile__is_desktop_oncall=1
         )
-        self.assertEqual(len(oncalls), 3)
+        self.assertEqual(len(oncalls), 2)
 
     def test_sysadmin_oncall_count(self):
         oncalls = User.objects.select_related().filter(
             userprofile__is_sysadmin_oncall=1
         )
         self.assertEqual(len(oncalls), 3)
+
+    def test_pgsql_oncall_count(self):
+        oncalls = User.objects.select_related().filter(
+            userprofile__is_pgsqldba_oncall=1
+        )
+        self.assertEqual(len(oncalls), 1)
+
+    def test_mysqlsql_oncall_count(self):
+        oncalls = User.objects.select_related().filter(
+            userprofile__is_mysqldba_oncall=1
+        )
+        self.assertEqual(len(oncalls), 1)
 
     def test_oncall_index_page(self):
         """
@@ -48,7 +60,7 @@ class OncallTest(TestCase):
             len(resp.context['form'].fields['desktop'].choices), 2
         )
         self.assertEqual(
-            len(resp.context['form'].fields['sysadmin'].choices), 2
+            len(resp.context['form'].fields['sysadmin'].choices), 3
         )
 
         resp = self.client.get('/en-US/systems/oncall/', follow=True)

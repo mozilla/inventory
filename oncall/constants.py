@@ -1,5 +1,7 @@
 ONCALL_TYPES = (
     'sysadmin',
-    'desktop',
     'services',
+    'mysqldba',
+    'pgsqldba',
+    'desktop',
 )

@@ -675,15 +675,14 @@ class UserProfile(models.Model):
     is_desktop_oncall = models.BooleanField()
     is_sysadmin_oncall = models.BooleanField()
     is_services_oncall = models.BooleanField()
-    #is_mysqldba_oncall = models.BooleanField()
-    #is_pgsqldba_oncall = models.BooleanField()
+    is_mysqldba_oncall = models.BooleanField()
+    is_pgsqldba_oncall = models.BooleanField()
 
     current_desktop_oncall = models.BooleanField()
     current_sysadmin_oncall = models.BooleanField()
     current_services_oncall = models.BooleanField()
-
-    #current_mysqldba_oncall = models.BooleanField()
-    #current_pgsqldba_oncall = models.BooleanField()
+    current_mysqldba_oncall = models.BooleanField()
+    current_pgsqldba_oncall = models.BooleanField()
 
     irc_nick = models.CharField(max_length=128, null=True, blank=True)
     api_key = models.CharField(max_length=255, null=True, blank=True)
@@ -694,6 +693,12 @@ class UserProfile(models.Model):
 
     class Meta:
         db_table = u'user_profiles'
+
+    def __str__(self):
+        return "{0}".format(self.user.username)
+
+    def __repr__(self):
+        return "<UserProfile {0}>".format(self.user.username)
 
     class QuerySet(QuerySet):
         def get_all_desktop_oncall(self):
