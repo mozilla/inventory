@@ -681,6 +681,7 @@ class UserProfile(models.Model):
     current_desktop_oncall = models.BooleanField()
     current_sysadmin_oncall = models.BooleanField()
     current_services_oncall = models.BooleanField()
+
     #current_mysqldba_oncall = models.BooleanField()
     #current_pgsqldba_oncall = models.BooleanField()
 
