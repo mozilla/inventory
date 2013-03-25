@@ -31,7 +31,9 @@ class OncallForm(forms.Form):
             # dynamically add fields for each oncall type
             self.fields[onc_type] = forms.ChoiceField(
                 label=onc_type.title() + ' Oncall',
-                choices=make_choices('userprofile__is_services_oncall'),
+                choices=make_choices(
+                    'userprofile__is_{0}_oncall'.format(onc_type)
+                ),
                 initial=cur_onc_name
             )
 
