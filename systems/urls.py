@@ -2,6 +2,9 @@ from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 
+# TODO, fix apache auth for oncall!
+from oncall.views import getoncall, oncall
+
 from models import ServerModel
 
 from misc.generic_views import create_object, gen_mod_dict
@@ -30,8 +33,8 @@ urlpatterns = patterns('systems',
     (r'^ajax_check_dupe_nic_name/(?P<system_id>\d+)/(?P<adapter_name>.*)[/]$', 'views.check_dupe_nic_name'),
 
     # TODO, Depricate these
-    url(r'^oncall/$', lambda *args: redirect(reverse('oncall'))),
-    url(r'^getoncall/$', lambda *args: redirect(reverse('getoncall'))),
+    url(r'^oncall/$', oncall),
+    url(r'^getoncall[/](?P<oncall_type>.*)[/]$', getoncall),
 
     url(r'^csv/$', 'views.system_csv', name="system-csv"),
     url(r'^releng_csv/$', 'views.system_releng_csv', name="system-csv"),
