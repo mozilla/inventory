@@ -671,18 +671,29 @@ class UserProfile(models.Model):
             ('sms', 'sms'),
     )
     user = models.ForeignKey(User, unique=True)
+
     is_desktop_oncall = models.BooleanField()
     is_sysadmin_oncall = models.BooleanField()
     is_services_oncall = models.BooleanField()
+    #is_mysqldba_oncall = models.BooleanField()
+    #is_pgsqldba_oncall = models.BooleanField()
+
     current_desktop_oncall = models.BooleanField()
     current_sysadmin_oncall = models.BooleanField()
     current_services_oncall = models.BooleanField()
+    #current_mysqldba_oncall = models.BooleanField()
+    #current_pgsqldba_oncall = models.BooleanField()
+
     irc_nick = models.CharField(max_length=128, null=True, blank=True)
     api_key = models.CharField(max_length=255, null=True, blank=True)
     pager_type = models.CharField(choices=PAGER_CHOICES, max_length=255, null=True, blank=True)
     pager_number = models.CharField(max_length=255, null=True, blank=True)
     epager_address = models.CharField(max_length=255, null=True, blank=True)
     objects = QuerySetManager()
+
+    class Meta:
+        db_table = u'user_profiles'
+
     class QuerySet(QuerySet):
         def get_all_desktop_oncall(self):
             self.filter(is_desktop_oncall=1)
@@ -698,7 +709,4 @@ class UserProfile(models.Model):
             self.filter(is_sysadmin_oncall=1)
         def get_current_sysadmin_oncall(self):
             self.filter(current_sysadmin_oncall=1).select_related()
-
-    class Meta:
-        db_table = u'user_profiles'
 
