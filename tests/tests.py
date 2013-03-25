@@ -7,3 +7,4 @@ from dhcp.tests import *
 from api_v3.tests import *
 from mozdns.tests.all import *
 from core.tests.all import *
+from oncall.tests import *

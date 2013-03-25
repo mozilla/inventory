@@ -6,11 +6,8 @@ from oncall.models import OncallTimestamp, OncallAssignment
 from oncall.constants import ONCALL_TYPES
 
 
-users = User.objects.select_related()
-
-
 def make_choices(oncall_type):
-    oncall_users = users.filter(**{oncall_type: 1})
+    oncall_users = User.objects.filter(**{oncall_type: 1})
     return [(u, u.get_profile().irc_nick) for u in oncall_users]
 
 
