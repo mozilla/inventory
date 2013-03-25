@@ -39,7 +39,7 @@ def update_info(ctx):
 @task
 def update_db(ctx):
     with ctx.lcd(settings.SRC_DIR):
-        #ctx.local('python2.6 manage.py migrate')
+        ctx.local('python2.6 manage.py migrate')
         ctx.local('python2.6 manage.py migrate --list')
 
 @task
