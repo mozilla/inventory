@@ -12,7 +12,8 @@ from mozdns.domain.utils import name_to_domain
 
 
 class Domain(models.Model, ObjectUrlMixin):
-    """A Domain is used as a foreign key for most DNS records.
+    """
+    A Domain is used as a foreign key for most DNS records.
 
     A domain's SOA should be shared by only domains within it's zone.
 
@@ -75,7 +76,6 @@ class Domain(models.Model, ObjectUrlMixin):
     .. warning::
 
         Deleting a domain will delete all records associated to that domain.
-
     """
 
     id = models.AutoField(primary_key=True)
@@ -96,9 +96,18 @@ class Domain(models.Model, ObjectUrlMixin):
     class Meta:
         db_table = 'domain'
 
+    def __str__(self):
+        return "{0}".format(self.name)
+
+    def __repr__(self):
+        return "<Domain '{0}'>".format(self.name)
+
     @property
     def rdtype(self):
         return 'DOMAIN'
+
+    def get_edit_url(self):
+        return '/mozdns/domain/{0}/update/'.format(self.pk)
 
     def details(self):
         return (
@@ -178,12 +187,6 @@ class Domain(models.Model, ObjectUrlMixin):
             if db_self.name != self.name and self.domain_set.exists():
                 raise ValidationError("Child domains rely on this domain's "
                                       "name remaining the same.")
-
-    def __str__(self):
-        return "{0}".format(self.name)
-
-    def __repr__(self):
-        return "<Domain '{0}'>".format(self.name)
 
     def check_for_children(self):
         if self.domain_set.exists():
