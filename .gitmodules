@@ -13,3 +13,6 @@
 [submodule "vendor-local/src/django-south"]
 	path = vendor-local/src/django-south
 	url = git://github.com/lambdafu/django-south.git
+[submodule "vendor-local/src/parsley"]
+	path = vendor-local/src/parsley
+	url = https://github.com/washort/parsley

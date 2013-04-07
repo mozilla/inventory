@@ -146,7 +146,7 @@
 {% endif %}
 
 {% if objects['A'] %}
-<h4><a id="q={{meta['search']}}&Address">Address</a> Records</h4>
+<h4><a class='plane-link' id="q={{meta['search']}}&Address">Address</a> Records</h4>
     {{ drawer.draw_record_table('A', objects['A'], table_class='tablesorter addr-table', table_id='addr-table') }}
 {% endif %}
 

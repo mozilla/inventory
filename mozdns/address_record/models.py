@@ -145,4 +145,5 @@ class AddressRecord(BaseAddressRecord):
         unique_together = ("label", "domain", "fqdn", "ip_upper", "ip_lower",
                            "ip_type")
 
+
 reversion.register(AddressRecord)

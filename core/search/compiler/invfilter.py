@@ -57,7 +57,7 @@ class _Filter(object):
     def __repr__(self):
         return "<{1}>".format(self.__class__, self)
 
-    def compile_Q(self, ntype):
+    def compile_Q(self):
         pass
 
 
@@ -74,14 +74,13 @@ def build_filter(filter_, fields, filter_type):
 class TextFilter(_Filter):
     def __init__(self, rvalue):
         self.value = rvalue
-        self.Q = self.compile_Q(rvalue)
 
-    def compile_Q(self, value):
+    def compile_Q(self):
         # Value is the search term
         result = []
         for name, Klass in searchables:
             result.append(
-                build_filter(value, Klass.search_fields, 'icontains'))
+                build_filter(self.value, Klass.search_fields, 'icontains'))
         return result
 
 
@@ -89,53 +88,56 @@ class REFilter(TextFilter):
     num_match = re.compile("\{(\d+)-(\d+)\}")
 
     def _expand_number_regex(self, value):
-        """We want to turn something like /hp-node{31-40}.phx1 into
-            '/hp-node(31|32|33|34|35|36|37|38|39|40).phx1'"""
+        """
+        We want to turn something like /hp-node{31-40}.phx1 into
+            '/hp-node(31|32|33|34|35|36|37|38|39|40).phx1'
+        """
         matches = self.num_match.findall(value)
         for low, high in matches:
+            padding = min(len(low), len(high))
             if int(low) >= int(high):
                 continue
             new_value = ""
             for i in xrange(int(low), int(high) + 1):
-                new_value += "{0}|".format(i)
+                new_value += "{0}|".format(str(i).rjust(padding, '0'))
             new_value = '(' + new_value.strip('|') + ')'
             value = value.replace('{{{0}-{1}}}'.format(low, high), new_value)
         return value
 
-    def compile_Q(self, value):
+    def compile_Q(self):
         result = []
-        value = self._expand_number_regex(value)
+        value = self._expand_number_regex(self.value)
         for name, Klass in searchables:
             result.append(build_filter(value, Klass.search_fields, 'regex'))
         return result
 
 
 class DirectiveFilter(_Filter):
-    def __init__(self, rvalue, directive, dvalue):
-        self.value = rvalue
+    def __init__(self, directive, dvalue):
         self.directive = directive
         self.dvalue = dvalue
-        self.Q = self.compile_Q(directive, dvalue)
 
-    def compile_Q(self, directive, dvalue):
-        if directive == 'view':
-            return build_view_qsets(dvalue)
-        elif directive == 'network':
-            return build_network_qsets(dvalue)
-        elif directive == 'vlan':
-            return build_vlan_qsets(dvalue)
-        elif directive == 'zone':
-            return build_zone_qsets(dvalue)
-        elif directive == 'range':
-            return build_range_qsets(dvalue)
-        elif directive == 'type':
-            return build_rdtype_qsets(dvalue)
-        elif directive == 'site':
-            return build_site_qsets(dvalue)
-        elif directive == 'ip':
-            return build_ip_qsets(dvalue)
+    def compile_Q(self):
+        if self.directive == 'view':
+            return build_view_qsets(self.dvalue)
+        elif self.directive == 'network':
+            return build_network_qsets(self.dvalue)
+        elif self.directive == 'vlan':
+            return build_vlan_qsets(self.dvalue)
+        elif self.directive == 'zone':
+            return build_zone_qsets(self.dvalue)
+        elif self.directive == 'range':
+            return build_range_qsets(self.dvalue)
+        elif self.directive == 'type':
+            return build_rdtype_qsets(self.dvalue)
+        elif self.directive == 'site':
+            return build_site_qsets(self.dvalue)
+        elif self.directive == 'ip':
+            return build_ip_qsets(self.dvalue)
         else:
-            raise BadDirective("Unknown Directive '{0}'".format(directive))
+            raise BadDirective(
+                "Unknown Directive '{0}'".format(self.directive)
+            )
 
 
 def build_rdtype_qsets(rdtype):

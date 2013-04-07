@@ -7,6 +7,7 @@ from core.search.compiler.django_compile import compile_to_django
 import simplejson as json
 from gettext import gettext as _
 
+from MySQLdb import OperationalError
 from jinja2 import Environment, PackageLoader, ChoiceLoader
 env = Environment(loader=ChoiceLoader(
     [PackageLoader('mozdns.record', 'templates'),
@@ -41,8 +42,11 @@ def handle_shady_search(search):
 
 def search_ajax(request):
     template = env.get_template('search/core_search_results.html')
+    error_template = env.get_template('search/core_search_error.html')
 
     def html_response(**kwargs):
+        if 'error_messages' in kwargs:
+            return error_template.render(**kwargs)
         overflow_results = {}
         for type_, count in kwargs['meta']['counts'].items():
             if count > MAX_NUM_OBJECTS:
@@ -64,6 +68,8 @@ def search_dns_text(request):
         return response_str
 
     def text_response(**kwargs):
+        if 'error_messages' in kwargs:
+            return json.dumps({'text_response': kwargs['error_messages']})
         response_str = ""
         # XXX make this a for loop you noob
         for type_ in ['SOA', 'NS', 'MX', 'SRV', 'CNAME', 'SSHFP', 'TXT',
@@ -85,12 +91,16 @@ def _search(request, response):
 
     obj_map, error_resp = compile_to_django(search)
     if not obj_map:
-        return HttpResponse(json.dumps({'error_messages': error_resp}))
+        return HttpResponse(response(**{'error_messages': error_resp}))
     obj_counts = {}
     total_objects = 0
-    for type_, q in obj_map.iteritems():
-        obj_counts[type_] = q.count() if q else 0
-        total_objects += obj_counts[type_]
+    try:  # We might have to catch shitty regular expressions
+        for type_, q in obj_map.iteritems():
+            obj_counts[type_] = q.count() if q else 0
+            total_objects += obj_counts[type_]
+    except OperationalError as why:
+        return HttpResponse(response(**{'error_messages': str(why)}))
+
     results = {
         'meta': {
             'counts': obj_counts,

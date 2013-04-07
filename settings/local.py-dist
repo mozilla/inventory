@@ -125,5 +125,3 @@ FROM_EMAIL_ADDRESS = 'inventory@example.com'
 DHCP_CONFIG_OUTPUT_DIRECTORY = '/data/dhcpconfig-autodeploy'
 UNAUTHORIZED_EMAIL_ADDRESS = ('manager@example.com')
 PISTON_IGNORE_DUPE_MODELS = True
-
-YACC_DIR = ''  # Where should ply put it's parsetab.py file?

@@ -1,8 +1,14 @@
 from itertools import izip
 
-from core.search.compiler.invparse import build_parser
-from core.search.compiler.invfilter import BadDirective
-from core.search.compiler.utils import make_stack, istype
+from parsley import wrapGrammar
+from ometa.runtime import ParseError
+
+
+from core.search.compiler.invdsl import ICompiler
+from core.search.compiler.invfilter import (
+    DirectiveFilter, REFilter, TextFilter, BadDirective
+)
+
 from core.search.compiler.invfilter import searchables
 
 
@@ -21,59 +27,6 @@ def search_type(search, rdtype):
     return obj_map[rdtype], None
 
 
-def compile_q_objects(search):
-    """
-    This function returns a tuple where the first element is a list of
-    unevaluated querysets. If there were errors processing the search string,
-    the first element in the tuble is None and the second is a string
-    describing the error.
-    """
-    parse = build_parser()
-    try:
-        root_node = parse(search)
-        exec_stack = list(reversed(make_stack(root_node)))
-        qs = compile_Q(exec_stack)[0]  # The first element on the stack is the
-                                       # result list
-        return qs, None
-    except (SyntaxError, BadDirective) as why:
-        return None, str(why)
-
-
-def compile_Q(stack):
-    q_stack = []
-    while True:
-        try:
-            top = stack.pop()
-        except IndexError:
-            return q_stack
-        if istype(top, 'FILTER'):
-            q_stack.append(top.Q)
-        elif istype(top, 'NOT'):
-            term = q_stack.pop()
-            q_stack.append(map(lambda Q: ~Q, term))
-            continue
-        elif istype(top, 'AND') or istype(top, 'OR'):
-            t1 = q_stack.pop()
-            t2 = q_stack.pop()
-            q_result = []
-            for qi, qj in izip(t1, t2):
-                if istype(top, 'AND'):
-                    if qi and qj:
-                        q_result.append(qi & qj)
-                    else:  # Something AND nothing is nothing
-                        q_result.append(None)
-                elif istype(top, 'OR'):
-                    if qi and qj:
-                        q_result.append(qi | qj)
-                    elif qi:
-                        q_result.append(qi)
-                    elif qj:
-                        q_result.append(qj)
-                    else:
-                        q_result.append(None)
-            q_stack.append(q_result)
-
-
 def qs_to_object_map(qs):
     obj_map = {}
     for q, (type_, Klass) in izip(qs, searchables):
@@ -83,3 +36,50 @@ def qs_to_object_map(qs):
             obj_map[type_] = Klass.objects.filter(q)
     obj_map['misc'] = []
     return obj_map
+
+
+def compile_q_objects(search):
+    compiler = wrapGrammar(DjangoCompiler)
+    try:
+        qs = compiler(search).expr()
+        return qs, None
+    except (BadDirective, ParseError) as why:
+        return None, str(why)
+
+
+class DjangoCompiler(ICompiler):
+    # directive, regexpr, and text all return a list of Qsets
+    def directive(self, directive, value):
+        return DirectiveFilter(directive, value).compile_Q()
+
+    def regexpr(self, reg_expr):
+        return REFilter(reg_expr).compile_Q()
+
+    def text(self, text):
+        return TextFilter(text).compile_Q()
+
+    def compile(self, initial, values):
+        ret = initial
+        for op, value in values:
+            ret = map(lambda args: op(*args), izip(ret, value))
+        return ret
+
+    def OR_op(self):
+        def OR(q, p):
+            if q and p:
+                return q | p
+            return q or p or None
+        return OR
+
+    def AND_op(self, *args):
+        def AND(q, p):
+            if q and p:
+                return q & p
+            # Something AND nothing is nothing
+            return None
+        return AND
+
+    def NOT_op(self):
+        def NOT(t):
+            return map(lambda Q: ~Q, t)
+        return NOT
