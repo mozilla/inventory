@@ -276,21 +276,20 @@ def build_zone_qsets(zone):
             domains += _get_zone_domains(sub_domain)
         return domains
 
-    domains = _get_zone_domains(root_domain)
+    zone_domains = _get_zone_domains(root_domain)
 
-    if root_domain.is_reverse:
-        domains = [Q(reverse_domain=domain) for domain in domains]
-    else:
-        domains = [Q(domain=domain) for domain in domains]
+    domains = [Q(domain=domain) for domain in zone_domains]
+    reverse_domains = [Q(reverse_domain=domain) for domain in zone_domains]
 
     zone_query = reduce(operator.or_, domains, Q())
+    reverse_zone_query = reduce(operator.or_, reverse_domains, Q())
 
     result = []
     for name, Klass in searchables:
-        if hasattr(Klass, 'domain') and not root_domain.is_reverse:
+        if hasattr(Klass, 'domain'):
             result.append(zone_query)
-        elif hasattr(Klass, 'reverse_domain') and root_domain.is_reverse:
-            result.append(zone_query)
+        elif hasattr(Klass, 'reverse_domain'):
+            result.append(reverse_zone_query)
         elif name == 'SOA':
             result.append(Q(pk=root_domain.soa.pk))
         else:
