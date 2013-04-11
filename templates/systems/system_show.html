@@ -148,7 +148,14 @@
 
 <script>
     $(document).ready(function(){
-        display_inpage_search_results('{{system.hostname}}', '#system-dns-info');
+        display_inpage_search_results('{{system.hostname}}', '#system-dns-info', function (){
+            var first_width = '45%';
+            var last_width = '20px';  // The edit column
+            $('.tablesorter th:first-child').css('width', first_width)
+            $('.tablesorter th:first-child').css('width', first_width)
+            $('.tablesorter th:last-child').css('width', last_width)
+            $('.tablesorter th:last-child').css('width', last_width)
+        });
     });
 </script>
 <div id="system-dns-info">
@@ -165,7 +172,7 @@
 <dt>Network Adapters: </dt>
 <dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;">
 <pre>
-    {{ adapter }} 
+    {{ adapter }}
     <table>
     <tr><th>NIC</th><th>IP Address</th><th>Mac Address</th><th>DHCP Scope</th><th>DHCP Hostname</th></tr>
     {% for adapter in adapters %}

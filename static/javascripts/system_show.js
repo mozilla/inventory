@@ -1,4 +1,4 @@
-function display_inpage_search_results(query, results_selector){
+function display_inpage_search_results(query, results_selector, callback){
     $.get('/en-US/core/search/search_ajax/',
         {
             'format': 'table',
@@ -11,5 +11,6 @@ function display_inpage_search_results(query, results_selector){
                 $(results_selector).empty();
                 $(results_selector).append(data);
             }
+            callback();
         });
 }
