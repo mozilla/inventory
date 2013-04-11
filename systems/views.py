@@ -23,10 +23,11 @@ import models
 from libs.jinja import render_to_response as render_to_response
 from middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 from Rack import Rack
-from MozInvAuthorization.KeyValueACL import KeyValueACL 
+from MozInvAuthorization.KeyValueACL import KeyValueACL
 from core.interface.static_intr.models import StaticInterface
 import simplejson as json
 from mozdns.utils import ensure_label_domain, prune_tree
+from forms import SystemForm
 
 
 # Import resources
@@ -580,9 +581,6 @@ def save_network_adapter(request, id):
     return HttpResponseRedirect('/systems/get_network_adapters/' + id)
 
 
-
-
-
 @allow_anyone
 def system_show(request, id):
     system = get_object_or_404(models.System, pk=id)
@@ -613,14 +611,14 @@ def system_show(request, id):
     intrs = StaticInterface.objects.filter(system = system)
 
     return render_to_response('systems/system_show.html', {
-            'system': system,
-            'interfaces': intrs,
-            'adapters': adapters,
-            'key_values': key_values,
-            'is_release': is_release,
-            'read_only': getattr(request, 'read_only', False),
-           },
-           RequestContext(request))
+        'system': system,
+        'interfaces': intrs,
+        'adapters': adapters,
+        'key_values': key_values,
+        'is_release': is_release,
+        'read_only': getattr(request, 'read_only', False),
+        },
+        RequestContext(request))
 
 @allow_anyone
 def system_show_by_asset_tag(request, id):
@@ -642,8 +640,8 @@ def system_show_by_asset_tag(request, id):
            },
            RequestContext(request))
 
+
 def system_view(request, template, data, instance=None):
-    from forms import SystemForm
     if request.method == 'POST':
         form = SystemForm(request.POST, instance=instance)
         if form.is_valid():
@@ -655,10 +653,12 @@ def system_view(request, template, data, instance=None):
 
     data['form'] = form
 
-    return render_to_response(template, 
-                data,
-                request
-            )
+    return render_to_response(template,
+        data,
+        request
+    )
+
+
 @csrf_exempt
 def system_new(request):
     return system_view(request, 'systems/system_new.html', {})
@@ -675,10 +675,12 @@ def system_edit(request, id):
         pass
 
     return system_view(request, 'systems/system_edit.html', {
-            'system': system,
-            'dhcp_scopes':dhcp_scopes,
-            'revision_history':models.SystemChangeLog.objects.filter(system=system).order_by('-id')
-            }, system)
+        'system': system,
+        'dhcp_scopes':dhcp_scopes,
+        'revision_history':models.SystemChangeLog.objects.filter(system=system).order_by('-id')
+        },
+        system
+    )
 
 
 def system_delete(request, id):

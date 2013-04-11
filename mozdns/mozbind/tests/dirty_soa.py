@@ -33,7 +33,7 @@ class DirtySOATests(TestCase):
         self.rsoa.dirty = False
         self.rsoa.save()
 
-        self.s = System()
+        self.s = System(hostname="foo.mozilla.com")
         self.s.save()
 
     def test_print_soa(self):

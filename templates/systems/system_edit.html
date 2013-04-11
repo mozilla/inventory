@@ -351,7 +351,9 @@ ul.css-tabs a.current {
 <!--<div id='image-loading' style='position: fixed; top: 50%; left: 50%; z-index:5000; display: none;'>
     <img src='/static/images/ajax-loader-large.gif'>
 </div> -->
-    {{form.errors}}
+    <div>
+        {{form.errors}}
+    </div>
     <form class="editform" action="" method="post">
         {% include "systems/system_form_snippet.html" %}
         <input type="submit" name="Submit" value="Save" />

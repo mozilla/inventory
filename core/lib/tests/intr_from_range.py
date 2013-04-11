@@ -16,7 +16,7 @@ from systems.models import System
 
 class LibTestsRange(TestCase):
     def setUp(self):
-        self.system = System()
+        self.system = System(hostname="foo.mozilla.com")
         d1 = create_fake_zone("mozilla.com.edu", suffix="")
         self.soa = d1.soa
 

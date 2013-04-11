@@ -34,7 +34,7 @@ class CNAMEStaticRegTests(TestCase):
         self.f_c.save()
         self.r1 = self.create_domain(name="10")
         self.r1.save()
-        self.n = System()
+        self.n = System(hostname="foo.mozilla.com")
         self.n.clean()
         self.n.save()
 

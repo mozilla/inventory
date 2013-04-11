@@ -32,6 +32,7 @@ class LocationForm(forms.ModelForm):
 class AllocationForm(forms.ModelForm):
     class Meta:
         model = models.Allocation
+
 class RackFilterForm(forms.Form):
 
     location = forms.ChoiceField(
@@ -70,26 +71,33 @@ def return_data_if_true(f):
 
 
 class SystemForm(forms.ModelForm):
-
     rack_order = forms.DecimalField(
         required=False,
-        widget=forms.TextInput(attrs={'size': '3'}))
+        widget=forms.TextInput(attrs={'size': '3'})
+    )
+
     purchase_date = forms.DateField(
-            required=False,
-            widget=SelectDateWidget(years=range(1999,datetime.today().year + 2)), 
-            initial=datetime.now()
-            )
+        required=False,
+        widget=SelectDateWidget(years=range(1999,datetime.today().year + 2)),
+        initial=datetime.now()
+    )
+
     change_password = forms.DateField(
         required=False,
-        widget=SelectDateWidget)
-    #notes = forms.CharField(
-    #    required=False,
-    #    widget = forms.widgets.Textarea(attrs={'style': 'width: 922px; height: 240px;'})
-    #)
-    #licenses = forms.CharField(
-    #    required=False,
-    #    widget = forms.widgets.Textarea(attrs={'style': 'width: 922px; height: 240px;'})
-    #)
+        widget=SelectDateWidget
+    )
+
+    warranty_start = forms.DateField(
+        required=False,
+        widget=SelectDateWidget(years=range(1999,datetime.today().year + 5)),
+        initial=datetime.now()
+    )
+
+    warranty_end = forms.DateField(
+        required=False,
+        widget=SelectDateWidget(years=range(1999,datetime.today().year + 50)),
+        initial=datetime.now()
+    )
 
     def clean_hostname(self):
         """
@@ -141,19 +149,17 @@ class SystemForm(forms.ModelForm):
 
     @return_data_if_true
     def clean_system_status(self):
-	name_status = self.data.get('js_status_name')
-	color_status = self.data.get('js_status_color')
-	code_color_status = self.data.get('js_status_code')
-	if name_status is not None and code_color_status is not None and color_status is not None:
-		status_model, c= models.SystemStatus.objects.get_or_create(
-			status=name_status,
-		        color = color_status,	
-			color_code= code_color_status,
-					
-		)
-		return status_model
-	
-	return None
+        name_status = self.data.get('js_status_name')
+        color_status = self.data.get('js_status_color')
+        code_color_status = self.data.get('js_status_code')
+        if name_status is not None and code_color_status is not None and color_status is not None:
+            status_model, c = models.SystemStatus.objects.get_or_create(
+                status=name_status,
+                color=color_status,
+                color_code=code_color_status,
+            )
+            return status_model
+        return None
 
 
     class Meta:
@@ -168,18 +174,20 @@ class SystemForm(forms.ModelForm):
                   'system_rack',
                   'system_type',
                   'rack_order',
-                  'asset_tag',
                   'is_dhcp_server',
                   'is_dns_server',
                   'is_nagios_server',
                   'is_puppet_server',
                   'is_switch',
-                  'purchase_date',
                   'change_password',
-                  'purchase_price',
                   'operating_system',
                   'server_model',
                   'allocation',
+                  'asset_tag',
+                  'purchase_date',
+                  'purchase_price',
+                  'warranty_start',
+                  'warranty_end',
                   'licenses',
                   'notes',
                   )

@@ -372,6 +372,8 @@ class System(DirtyFieldsMixin, models.Model):
         choices=YES_NO_CHOICES, blank=True, null=True)
     is_switch = models.IntegerField(
         choices=YES_NO_CHOICES, blank=True, null=True)
+    warranty_start = models.DateTimeField(blank=True, null=True)
+    warranty_end = models.DateTimeField(blank=True, null=True)
 
     objects = models.Manager()
     build_objects = BuildManager()
@@ -416,6 +418,25 @@ class System(DirtyFieldsMixin, models.Model):
         return self.notes
 
     def save(self, *args, **kwargs):
+        self.save_history(kwargs)
+        self.full_clean()
+        super(System, self).save(*args, **kwargs)
+
+    def clean(self):
+        self.validate_warranty()
+
+    def validate_warranty(self):
+        if (self.warranty_start or self.warranty_end and
+                not (self.warranty_start and self.warranty_end)):
+            raise ValidationError(
+                "Warranty must have a start and end date"
+            )
+        if self.warranty_start > self.warranty_end:
+            raise ValidationError(
+                "warranty start date should be before the end date"
+            )
+
+    def save_history(self, kwargs):
         request = kwargs.pop('request', None)
         try:
             changes = self.get_dirty_fields()
@@ -453,8 +474,6 @@ class System(DirtyFieldsMixin, models.Model):
         if not self.id:
             self.created_on = datetime.datetime.now()
         self.updated_on = datetime.datetime.now()
-
-        super(System, self).save(*args, **kwargs)
 
     def get_edit_url(self):
         return "/systems/edit/{0}/".format(self.pk)
@@ -619,7 +638,6 @@ class System(DirtyFieldsMixin, models.Model):
                             self.update_host_for_migration(fqdn[0])
                             updated = True
                     except Exception:
-                        #print e
                         pass
             if not updated:
                 pass

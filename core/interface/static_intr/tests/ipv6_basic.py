@@ -37,7 +37,7 @@ class V6StaticInterTests(TestCase):
         self.r1.save()
         self.r2 = self.create_domain(name="1", ip_type='6')
         self.r2.save()
-        self.n = System()
+        self.n = System(hostname="foo.mozilla.com")
         self.n.clean()
         self.n.save()
 

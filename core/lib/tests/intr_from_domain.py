@@ -14,7 +14,7 @@ from systems.models import System
 
 class LibTestsDomain(TestCase):
     def setUp(self):
-        self.system = System()
+        self.system = System(hostname="foo.mozilla.com")
         Domain.objects.get_or_create(name="com")
         Domain.objects.get_or_create(name="mozilla.com")
 

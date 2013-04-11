@@ -50,7 +50,7 @@ class NSTestsModels(TestCase):
         self._128 = self.create_domain(name='128', ip_type='4')
         self._128.save()
 
-        self.s = System()
+        self.s = System(hostname="foo.mozilla.com")
         self.s.save()
 
     def do_add(self, domain, server):

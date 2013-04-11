@@ -1,37 +1,40 @@
-#!/usr/bin/python
-"""
-This file demonstrates two different styles of tests (one doctest and one
-unittest). These will both pass when you run "manage.py test".
+import datetime
+import time
 
-Replace these with more appropriate tests for your application.
-"""
-
-import sys
-import os
-_base = os.path.dirname(__file__)
-site_root = os.path.realpath(os.path.join(_base, '../'))
-from django.core.urlresolvers import reverse
-sys.path.append(site_root)
-import manage
-from django.test import TestCase
-from django.test.client import Client
-from models import System
-from core.range.models import Range
-from mozdns.domain.models import Domain
-from core.network.models import Network
-from mozdns.view.models import View
-from core.vlan.models import Vlan
-from core.site.models import Site
 try:
     import json
 except:
-    from django.utils import simplejson as json
+    import simplejson as json
 
+from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
+from django.test import TestCase
+from django.test.client import Client
+
+from models import System
+from mozdns.domain.models import Domain
+from mozdns.view.models import View
 from mozdns.tests.utils import create_fake_zone
-from inventory.systems import models
+from core.range.models import Range
+from core.network.models import Network
+from core.vlan.models import Vlan
+from core.site.models import Site
+
+from systems import models
 from test_utils import setup_test_environment
 
 setup_test_environment()
+
+class LocalizeUtils(object):
+    def localize_url(self, url):
+        if 'en-US' not in url:
+            if 'http://testserver/' in url:
+                url = url.replace(
+                    'http://testserver/', 'http://testserver/en-US/'
+                )
+            else:
+                url = '/en-US' + url
+        return url
 
 
 class SystemDatagridTest(TestCase):
@@ -156,7 +159,7 @@ class BlankTest(TestCase):
         self.assertEqual(False, system.check_for_adapter(3))
 
 
-class SimpleTest(TestCase):
+class SystemTest(TestCase, LocalizeUtils):
     fixtures = ['testdata.json']
     system_post = {
         'Submit': 'Save',
@@ -188,7 +191,42 @@ class SimpleTest(TestCase):
         self.client = Client()
 
     def test_system_creation(self):
-        res = self.client.post('/system/new/', self.system_post)
+        self.client.post('/system/new/', self.system_post)
+
+    def test_system_update(self):
+        s = System.objects.create(hostname='foo.mozilla.com')
+        new_hostname = 'foo1.mozilla.com'
+        post_data = {
+            'hostname': new_hostname
+        }
+        resp = self.client.post(
+            self.localize_url(s.get_edit_url()), post_data, follow=True
+        )
+        self.assertTrue(resp.status_code in (200, 201))
+        s = System.objects.get(pk=s.pk)
+        self.assertEqual(s.hostname, new_hostname)
+
+    def test_failed_validation(self):
+        # Make sure that if a ValidationError is raised that we get a 200 and
+        # not an ISE
+        s = System.objects.create(hostname='foo.mozilla.com')
+        # Bad warrenty dates should cause a VE
+        post_data = {
+            'warrant_start_year': '2013',
+            'warrant_start_month': '12',
+            'warrant_start_day': '12',
+            'warrant_end_year': '2012',
+            'warrant_end_month': '12',
+            'warrant_end_dat': '12'
+        }
+        resp = self.client.post(
+            self.localize_url(s.get_edit_url()), post_data, follow=True
+        )
+        self.assertTrue(resp.status_code in (200, 201))
+        s = System.objects.get(pk=s.pk)
+        # Hostname should be the same
+        self.assertEqual(s.hostname, 'foo.mozilla.com')
+
 
     def test_quicksearch_by_hostname(self):
         resp = self.client.post(
@@ -213,6 +251,17 @@ class SimpleTest(TestCase):
     def test_server_models_index(self):
         resp = self.client.get("/en-US/systems/server_models/", follow=True)
         self.assertEqual(resp.status_code, 200)
+
+    def test_create(self):
+        System.objects.create(hostname='foo.mozilla.com')
+
+    def test_bad_warranty(self):
+        s = System.objects.create(hostname='foo.mozilla.com')
+        earlier = datetime.date.fromtimestamp(time.time() - 3600)
+        now = datetime.datetime.now()
+        s.warranty_start = now
+        s.warranty_end = earlier
+        self.assertRaises(ValidationError, s.save)
 
 
 class ServerModelTest(TestCase):

@@ -396,7 +396,7 @@ class V4RangeTests(TestCase):
         network = self.s
         rtype = 's'
         ip_type = '4'
-        system = System()
+        system = System(hostname="foo.mozilla.com")
 
         kwargs = {
             'start_str': start_str, 'end_str': end_str,

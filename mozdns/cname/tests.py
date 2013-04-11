@@ -39,7 +39,7 @@ class CNAMETests(TestCase):
         self.r1 = create_fake_zone("10.in-addr.arpa", suffix="")
         self.r1.save()
 
-        self.s = System()
+        self.s = System(hostname="foo.mozilla.com")
         self.s.save()
 
     def do_add(self, label, domain, data):

@@ -85,7 +85,7 @@ class UsageTests(TestCase):
         a.full_clean()
         a.save()
 
-        s = System()
+        s = System(hostname="foo.mozilla.com")
         s.save()
         intr = StaticInterface(
             label="foo", domain=self.domain, ip_str="10.0.1.4",

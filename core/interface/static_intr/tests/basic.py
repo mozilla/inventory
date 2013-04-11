@@ -39,7 +39,7 @@ class StaticInterTests(TestCase):
 
         self.r2 = self.create_domain(name="128")
         self.r2.save()
-        self.n = System()
+        self.n = System(hostname="foo.mozilla.com")
         self.n.clean()
         self.n.save()
         View.objects.get_or_create(name="private")

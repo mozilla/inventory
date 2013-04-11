@@ -67,6 +67,13 @@
 <dd>{{ system.purchase_price }}</dd>
 <div style="clear:both;"></div>
 
+{% if system.warranty_start %}
+<dt>Warrenty: </dt>
+<dd>{{ system.warranty_start.year }}-{{ system.warranty_start.month }}-{{ system.warranty_start.day }} to
+  {{ system.warranty_end.year }}-{{ system.warranty_end.month }}-{{ system.warranty_end.day }}</dd>
+<div style="clear:both;"></div>
+{% endif %}
+
 <dt>Operating System:</dt>
 <dd>{{ system.operating_system }}</dd>
 <div style="clear:both;"></div>

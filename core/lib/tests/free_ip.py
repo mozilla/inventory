@@ -16,7 +16,7 @@ from systems.models import System
 
 class LibTestsFreeIP(TestCase):
     def setUp(self):
-        self.system = System()
+        self.system = System(hostname="foo.mozilla.com")
         d1 = create_fake_zone("mozilla.com.com", suffix="")
         soa = d1.soa
 
