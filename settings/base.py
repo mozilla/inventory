@@ -3,7 +3,6 @@
 
 from funfactory.settings_base import *
 
-
 # Bundles is a dictionary of two dictionaries, css and js, which list css files
 # and js files that can be bundled together by the minify app.
 MINIFY_BUNDLES = {
@@ -32,10 +31,12 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.admin',
-    #'django_nose',
+    'django_nose',
     'piston',
-    #'south',
+    'south',
     'systems',
+    'oncall',
+    'migrate_dns',
     'user_systems',
     'build',
     'dhcp',
@@ -43,14 +44,50 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'api',
     'api_v2',
     'reports',
+    'mozdns',
+    'base',
+    'base.base',
+    'core',
+    'core.task',
+    'core.site',
+    'core.vlan',
+    'core.network',
+    'core.range',
+    'core.build',
+    'core.lib',
+    'core.interface',
+    'core.interface.static_intr',
+    'core.search',
+    'core.lib',
+    'core.keyvalue',
+    'mozdns',
+    'mozdns.address_record',
+    'mozdns.cname',
+    'mozdns.domain',
+    'mozdns.ip',
+    'mozdns.mx',
+    'mozdns.nameserver',
+    'mozdns.ptr',
+    'mozdns.soa',
+    'mozdns.sshfp',
+    'mozdns.srv',
+    'mozdns.txt',
+    'mozdns.view',
+    'mozdns.mozbind',
+    'mozdns.record',
+    'mozdns.create_zone',
+    #'debug_toolbar',
     'tastypie',
     'tastytools',
+    'reversion',
+    'reversion_compare',
 ]
 
 
 # Because Jinja2 is the default template loader, add any non-Jinja templated
 # apps here:
 JINGO_EXCLUDE_APPS = [
+    #'debug_toolbar',
     'build',
     'admin',
     'user_systems',
@@ -81,10 +118,65 @@ DJANGO_TEMPLATE_APPS = [
 LOGGING = dict(loggers=dict(playdoh = {'level': logging.INFO}))
 AUTH_PROFILE_MODULE = 'systems.UserProfile'
 AUTHENTICATION_BACKENDS = (
-        'middleware.restrict_by_api_token.RestrictByToken',  
+        'middleware.restrict_by_api_token.RestrictByToken',
         'django.contrib.auth.backends.RemoteUserBackend',
-    )
+)
 AUTH_PROFILE_MODULE = "systems.UserProfile"
 PISTON_IGNORE_DUPE_MODELS = True
+
+ROOT_URLCONF = 'mozilla_inventory.urls'
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+
+#########################################################
+#                   MOZ DNS                             #
+#########################################################
+
+JINJA_CONFIG = {'autoescape': False}
+DEBUG_TOOLBAR_PANELS = (
+    'debug_toolbar.panels.version.VersionDebugPanel',
+    'debug_toolbar.panels.timer.TimerDebugPanel',
+    'debug_toolbar.panels.settings_vars.SettingsVarsDebugPanel',
+    'debug_toolbar.panels.headers.HeaderDebugPanel',
+    'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
+    'debug_toolbar.panels.template.TemplateDebugPanel',
+    'debug_toolbar.panels.sql.SQLDebugPanel',
+    'debug_toolbar.panels.signals.SignalDebugPanel',
+    'debug_toolbar.panels.logger.LoggingPanel',
+)
+TMP_MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (
+    'reversion.middleware.RevisionMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
+)
+MIDDLEWARE_CLASSES = []
+for mc in TMP_MIDDLEWARE_CLASSES:
+    if mc == 'session_csrf.CsrfMiddleware':
+        continue
+    MIDDLEWARE_CLASSES.append(mc)
+MIDDLEWARE_CLASSES = tuple(MIDDLEWARE_CLASSES)
+del TMP_MIDDLEWARE_CLASSES
+
+INTERNAL_IPS = ('127.0.0.1','10.22.74.139','10.250.2.54')
+
+def custom_show_toolbar(request):
+    return True # Always show toolbar, for example purposes only.
+
+DEBUG_TOOLBAR_CONFIG = {
+    'INTERCEPT_REDIRECTS': False,
+    'SHOW_TOOLBAR_CALLBACK': custom_show_toolbar,
+    'HIDE_DJANGO_SQL': False,
+    'TAG': 'div',
+    'ENABLE_STACKTRACES' : True,
+}
+
+#############################################################
+#                       MOZ DNS                             #
+#############################################################
+from settings.dnsbuilds import *
+MOZDNS_BASE_URL = "/mozdns"
+CORE_BASE_URL = "/core"
 ROOT_URLCONF = 'inventory.urls'
+BUILD_PATH = '/home/juber/dnsbuilds/'
+
+# HACK HACK This will need to be fixed
+from settings.local import *

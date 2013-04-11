@@ -1,0 +1,34 @@
+{% extends "core/core_base.html" %}
+
+{% block title %}
+    {{ form_title }}
+{% endblock %}
+
+{% block content %}
+
+    <script language="Javascript" type="text/javascript" src="/static/javascripts/dhcp_raw_include.js">
+        document.onload = function (e) {
+            text_area = document.getElementById("id_dhcpd_raw_include");
+            text_area.style.display = 'none';
+        }
+    </script>
+    <span class="dns-title">Edit {{ form.instance.network_str }}</span>
+    <div>
+        <span>Back to <a href="{{ form.instance.get_absolute_url() }}">{{ form.instance.network_str }}</a></span>
+    </div>
+    <div>
+        <span>See <a href="/core/build/{{form.instance.pk}}/">DHCP Build Output</a>.</span>
+    </div>
+    <div>
+        <span><a href='/core/keyvalue/network/{{form.instance.pk}}/'>Edit</a> Key Value Store</span>
+    </div>
+    <br>
+    <form class="well form-horizontal" method="post" action="">
+        {{ form.as_p() }}
+        <i>Warning! The raw include is not validated programatically. Edit at your own risk!</i>
+        <input type="button" value="Hide/Display DHCP subnet raw include." onclick='hide_text_area("id_dhcpd_raw_include")' />
+        </br>
+        </br>
+        <input type="submit" value="Submit" />
+    </form>
+{% endblock %}

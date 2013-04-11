@@ -1,0 +1,4 @@
+{{ object.fqdn }}
+{{ object.label }}
+{{ object.data }}
+{{ object.domain.name }}

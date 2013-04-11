@@ -6,85 +6,11 @@ except ImportError:
     from django.utils.functional import wraps  # Python 2.3, 2.4 fallback.
 
 import models
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from django.contrib.auth.models import User
 import re
 
 
-class OncallForm(forms.Form):
-    desktop_support_choices = [(m, m.get_profile().irc_nick) for m in User.objects.select_related().filter(userprofile__is_desktop_oncall=1)]
-    sysadmin_support_choices = [(m, m.get_profile().irc_nick) for m in User.objects.select_related().filter(userprofile__is_sysadmin_oncall=1)]
-    services_support_choices = [(m, m.get_profile().irc_nick) for m in User.objects.select_related().filter(userprofile__is_services_oncall=1)]
-
-                    
-    desktop_support = forms.ChoiceField(label='Desktop Oncall',
-        choices= desktop_support_choices)
-    desktop_support_timestamp = forms.DateTimeField()
-    services_support_timestamp = forms.DateTimeField()
-    sysadmin_support_timestamp = forms.DateTimeField()
-    sysadmin_support = forms.ChoiceField(label='Sysadmin Oncall',
-        choices= sysadmin_support_choices)
-    services_support = forms.ChoiceField(label='Services Oncall',
-        choices= services_support_choices)
-    
-    def clean(self):
-        cleaned_data = super(OncallForm, self).clean()
-        """
-            Check when desktop was updated last
-        """
-        from_db_desktop_support = models.OncallTimestamp.objects.filter(
-                oncall_type='desktop_support').updated_on
-        if from_db_desktop_support != cleaned_data['desktop_support_timestamp']:
-            raise forms.ValidationError('Midair Collision on setting Desktop Oncall, please refresh')
-
-        """
-            Check when sysadmin was updated last
-        """
-        from_db_sysadmin_support = models.OncallTimestamp.objects.filter(
-                oncall_type='sysadmin_support').updated_on
-        if from_db_sysadmin_support != cleaned_data['sysadmin_support_timestamp']:
-            raise forms.ValidationError('Midair Collision on setting Sysadmin Oncall, please refresh')
-
-        """
-            Check when services was updated last
-        """
-        from_db_services_support = models.OncallTimestamp.objects.filter(
-                oncall_type='services_support').updated_on
-        if from_db_services_support != cleaned_data['services_support_timestamp']:
-            raise forms.ValidationError('Midair Collision on setting Services Oncall, please refresh')
-
-        return cleaned_data
-
-    class Meta:
-        model = User
-
-    def save(self, *args, **kwargs):
-        if not self.initial['desktop_support'] == self.cleaned_data['desktop_support']:
-            onc = models.OncallTimestamp.objects.get(oncall_type='desktop_support')
-            onc.updated_on = datetime.now()
-            onc.save()
-        if not self.initial['services_support'] == self.cleaned_data['services_support']:
-            onc = models.OncallTimestamp.objects.get(oncall_type='services_support')
-            onc.updated_on = datetime.now()
-            onc.save()
-        if not self.initial['sysadmin_support'] == self.cleaned_data['sysadmin_support']:
-            onc = models.OncallTimestamp.objects.get(oncall_type='sysadmin_support')
-            onc.updated_on = datetime.now()
-            onc.save()
-
-    def __init__(self, *args, **kwargs):
-        super(OncallForm, self).__init__(*args, **kwargs)
-        from django.forms.widgets import HiddenInput
-        self.fields['desktop_support_timestamp'].widget = HiddenInput()
-        self.fields['desktop_support_timestamp'].initial = models.OncallTimestamp.objects.filter(
-                oncall_type='desktop_support').updated_on
-        self.fields['sysadmin_support_timestamp'].widget = HiddenInput()
-        self.fields['sysadmin_support_timestamp'].initial = models.OncallTimestamp.objects.filter(
-                oncall_type='sysadmin_support').updated_on
-        self.fields['services_support_timestamp'].widget = HiddenInput()
-        self.fields['services_support_timestamp'].initial = models.OncallTimestamp.objects.filter(
-                oncall_type='services_support').updated_on
 
 def has_changed(instance, field):
     old_value = instance.__class__._default_manager.\
@@ -110,7 +36,7 @@ class RackFilterForm(forms.Form):
 
     location = forms.ChoiceField(
         required=False,
-        choices=[('0', 'All')] + [(m.id, m)
+        choices=[('', 'All')] + [(m.id, m)
                     for m in models.Location.objects.all()])
     status = forms.ChoiceField(
         required=False,
@@ -126,9 +52,9 @@ class RackFilterForm(forms.Form):
                     for m in models.Allocation.objects.all()])
     def __init__(self, *args, **kwargs):
         super(RackFilterForm, self).__init__(*args, **kwargs)
-        self.fields['location'].choices = [('0', 'All')] + [(m.id, m) for m in models.Location.objects.all()]
+        self.fields['location'].choices = [('', 'All')] + [(m.id, m) for m in models.Location.objects.all()]
         self.fields['status'].choices = [('', 'All')] + [(m.id, m) for m in models.SystemStatus.objects.all()]
-        self.fields['rack'].choices = [(m.id, m.location.name + ' ' +  m.name) for m in models.SystemRack.objects.all().order_by('location','name')]
+        self.fields['rack'].choices = [('', 'All')] + [(m.id, m.location.name + ' ' +  m.name) for m in models.SystemRack.objects.all().order_by('location','name')]
         self.fields['allocation'].choices = [('', 'All')] + [(m.id, m) for m in models.Allocation.objects.all()]
 
 
@@ -240,6 +166,7 @@ class SystemForm(forms.ModelForm):
                   'oob_switch_port',
                   'system_status',
                   'system_rack',
+                  'system_type',
                   'rack_order',
                   'asset_tag',
                   'is_dhcp_server',

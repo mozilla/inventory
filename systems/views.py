@@ -1,5 +1,5 @@
+from django.views.decorators.csrf import csrf_exempt
 import csv
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
@@ -8,24 +8,35 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import  redirect, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
-try:
-    import json
-except:
-    from django.utils import simplejson as json
+from django.utils import translation
+
 import _mysql_exceptions
 
 import models
 from middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 
 import re
-from django.test.client import Client
+from django.test.client import RequestFactory
 from jinja2.filters import contextfilter
-from django.utils import translation
+
+import models
 from libs.jinja import render_to_response as render_to_response
-from jingo import render
-from django.views.decorators.csrf import csrf_exempt
+from middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 from Rack import Rack
 from MozInvAuthorization.KeyValueACL import KeyValueACL 
+from core.interface.static_intr.models import StaticInterface
+import simplejson as json
+from mozdns.utils import ensure_label_domain, prune_tree
+
+
+# Import resources
+from api_v2.dhcp_handler import DHCPHandler
+from api_v2.keyvalue_handler import KeyValueHandler
+
+
+# Use this object to generate request objects for calling tastypie views
+factory = RequestFactory()
+
 # Source: http://nedbatchelder.com/blog/200712/human_sorting.html
 # Author: Ned Batchelder
 def tryint(s):
@@ -44,6 +55,7 @@ def sort_nicely(l):
     """ Sort the given list in the way that humans expect.
     """
     l.sort(key=alphanum_key)
+
 def parse_title_num(title):
    val = 0
    try:
@@ -52,13 +64,14 @@ def parse_title_num(title):
       pass
    return val
 
-def check_dupe_nic(request,system_id,adapter_number):
+def check_dupe_nic(request,system_id, adapter_number):
     try:
         system = models.System.objects.get(id=system_id)
         found = system.check_for_adapter(adapter_number)
     except:
         pass
     return HttpResponse(found)
+
 def check_dupe_nic_name(requessdft,system_id,adapter_name):
     try:
         system = models.System.objects.get(id=system_id)
@@ -66,6 +79,7 @@ def check_dupe_nic_name(requessdft,system_id,adapter_name):
     except:
         pass
     return HttpResponse(found)
+
 @allow_anyone
 def system_rack_elevation(request, rack_id):
     r = Rack(rack_id)
@@ -80,6 +94,109 @@ def system_rack_elevation(request, rack_id):
         'data':data,
         },
         RequestContext(request))
+
+
+def get_next_intr_name(request, system_pk):
+    system = get_object_or_404(models.System, pk=system_pk)
+    interface_type, primary, alias = system.get_next_adapter()
+    return HttpResponse(json.dumps({'success': True,
+        'intr_name': "{0}{1}.{2}".format(interface_type, primary, alias)}))
+
+@csrf_exempt
+def create_adapter(request, system_id):
+    if not request.POST.get('is_ajax', False):
+        return HttpResponse("Ajax only homie.")
+
+    from api_v3.system_api import SystemResource
+    from mozdns.view.models import View
+    system = get_object_or_404(models.System, id=system_id)
+    ip_address = request.POST.get('ip_address', '')
+    mac_address = request.POST.get('mac_address', '')
+    intr_name = request.POST.get('interface', '')
+
+    # Determine whether to enable or disable DNS and DHCP
+    if request.POST.get('enable_dhcp', '') == 'false':
+        enable_dhcp = False
+    else:
+        enable_dhcp = True
+    if request.POST.get('enable_dns', '') == 'false':
+        enable_dns = False
+    else:
+        enable_dns = True
+
+    # Determine which DNS views to to enable. (Won't matter if DNS is not
+    # enabled)
+    if request.POST.get('enable_public', '') == 'false':
+        enable_public = False
+    else:
+        enable_public = True
+
+    if request.POST.get('enable_private', '') == 'false':
+        enable_private = False
+    else:
+        enable_private = True
+
+    if not intr_name:
+        return HttpResponse(json.dumps({'success': False, 'error_message':
+            "Please specify a interface name or select to have the name "
+            "automatically generated."}))
+
+    # Figure out label and domain
+    fqdn = request.POST.get('fqdn', '')
+    try:
+        label, domain = ensure_label_domain(fqdn)
+        # If we hit we need to back out of creating this interface,
+        # make sure to call prune_tree on this domain.
+    except ValidationError, e:
+        return HttpResponse(json.dumps({'success': False,
+            'error_message': "Error creating label and domain: "
+            "{0}".format(" ".join(e.messages))}))
+
+    # Determine the keys to store later when nameing the interface.
+    try:
+        x = SystemResource.extract_nic_attrs(intr_name)
+        interface_type, primary, alias = x
+    except ValidationError, e:
+        prune_tree(domain)
+        return HttpResponse(json.dumps({'success': False, 'error_message':
+            " ".join(e.messages)}))
+
+    # Create the Interface
+    s = StaticInterface(label=label, mac=mac_address, domain=domain,
+        ip_str=ip_address, ip_type='4', system=system,
+        dhcp_enabled=enable_dhcp, dns_enabled=enable_dns)
+    try:
+        s.clean()
+        s.save()
+    except ValidationError, e:
+        prune_tree(domain)
+        return HttpResponse(json.dumps({'success': False, 'error_message':
+            "Failed to create an interface: {0}".format(" ".join(e.messages))}))
+
+    # Configure views
+    if enable_dns:
+        if enable_public:
+            public = View.objects.get(name='public')
+            s.views.add(public)
+        if enable_private:
+            private = View.objects.get(name='private')
+            s.views.add(private)
+        s.save()
+
+
+    # Add key value pairs
+    s.update_attrs()
+    try:
+        s.attrs.primary = primary
+        s.attrs.interface_type = interface_type
+        s.attrs.alias = alias
+    except AttributeError, e:
+        return HttpResponse(json.dumps({'success': True, 'error_message':
+            "The Interface was created but there were other errors: ".join(
+                e.messages)}))
+
+    return HttpResponse(json.dumps({'success': True}))
+
 
 @allow_anyone
 def system_auto_complete_ajax(request):
@@ -235,7 +352,7 @@ def home(request):
     """Index page"""
     return render_to_response('systems/index.html', {
             'read_only': getattr(request, 'read_only', False),
-            'is_build': getattr(request.user.groups.all(), 'build', False),
+            #'is_build': getattr(request.user.groups.all(), 'build', False),
            })
 
 @allow_anyone
@@ -474,8 +591,10 @@ def system_show(request, id):
     show_nics_in_key_value = False
     is_release = False
     try:
-        client = Client()
-        adapters = json.loads(client.get('/api/v2/keyvalue/3/', {'key_type':'adapters_by_system','system':system.hostname}, follow=True).content)
+        request = factory.get('/api/v2/keyvalue/3/',
+                {'key_type':'adapters_by_system','system':system.hostname})
+        h = KeyValueHandler()
+        adapters = h.read(request, key_value_id='3')
     except:
         adapters = []
     if system.allocation is 'release':
@@ -491,8 +610,11 @@ def system_show(request, id):
     else:
         key_values = system.keyvalue_set.exclude(key__istartswith='nic.')
 
+    intrs = StaticInterface.objects.filter(system = system)
+
     return render_to_response('systems/system_show.html', {
             'system': system,
+            'interfaces': intrs,
             'adapters': adapters,
             'key_values': key_values,
             'is_release': is_release,
@@ -544,10 +666,10 @@ def system_new(request):
 @csrf_exempt
 def system_edit(request, id):
     system = get_object_or_404(models.System, pk=id)
-    client = Client()
     dhcp_scopes = None
     try:
-        dhcp_scopes = json.loads(client.get('/api/v2/dhcp/phx-vlan73/get_scopes_with_names/', follow=True).content)
+        h = DHCPHandler()
+        dhcp_scopes = h.read(request, dhcp_scope='phx-vlan73', dhcp_action='get_scopes_with_names')
     except Exception, e:
         print e
         pass
@@ -597,11 +719,13 @@ def system_releng_csv(request):
 
 def get_expanded_key_value_store(request, system_id):
     try:
-        from django.test.client import Client
-        client = Client()
         system = models.System.objects.get(id=system_id)
-        resp = client.get('/api/keyvalue/?keystore=%s' % (system.hostname), follow=True)
-        return_obj = resp.content.replace("\n","<br />")
+        request = factory.get('/api/v2/keyvalue/3/',
+                {'key_type':'adapters_by_system','system':system.hostname})
+        h = KeyValueHandler()
+        request = factory.get('/api/keyvalue/?keystore=%s' % (system.hostname), follow=True)
+        resp = json.dumps(h.read(request, key_value_id='3'))
+        return_obj = resp.replace(",",",<br />")
     except:
         return_obj = 'This failed'
     return HttpResponse(return_obj)
@@ -698,97 +822,7 @@ def racks(request):
            },
            RequestContext(request))
 
-def getoncall(request, type):
-    return_irc_nick = ''
-    if type == 'desktop':
-        return_irc_nick = models.OncallAssignment.objects.get(oncall_type='desktop').user.get_profile().irc_nick
-    elif type == 'sysadmin':
-        return_irc_nick = models.OncallAssignment.objects.get(oncall_type='sysadmin').user.get_profile().irc_nick
-    elif type == 'services':
-        return_irc_nick = models.OncallAssignment.objects.get(oncall_type='services').user.get_profile().irc_nick
 
-    return HttpResponse(return_irc_nick)
-def oncall(request):
-    from forms import OncallForm
-    #current_desktop_oncall = models.UserProfile.objects.get_current_desktop_oncall
-    #import pdb; pdb.set_trace()
-    current_desktop_oncall = models.OncallAssignment.objects.get(oncall_type='desktop').user.username
-    current_sysadmin_oncall = models.OncallAssignment.objects.get(oncall_type='sysadmin').user.username
-    current_services_oncall = models.OncallAssignment.objects.get(oncall_type='services').user.username
-
-    initial = {
-        'desktop_support':current_desktop_oncall,
-        'sysadmin_support':current_sysadmin_oncall,
-        'services_support':current_services_oncall,
-            }
-    if request.method == 'POST':
-        form = OncallForm(request.POST, initial=initial)
-        if form.is_valid():
-            """
-               Couldn't get the ORM to update properly so running a manual transaction. For some reason, the model refuses to refresh
-            """
-            current_desktop_oncall = form.cleaned_data['desktop_support']
-            current_sysadmin_oncall = form.cleaned_data['sysadmin_support']
-            current_services_oncall = form.cleaned_data['services_support']
-            """
-                Set each of the 3 respective oncall areas to the posted values
-            """
-            tmp = models.OncallAssignment.objects.get(oncall_type='desktop')
-            tmp.user = User.objects.get(username=current_desktop_oncall)
-            tmp.save()
-            tmp = models.OncallAssignment.objects.get(oncall_type='sysadmin')
-            tmp.user = User.objects.get(username=current_sysadmin_oncall)
-            tmp.save()
-            tmp = models.OncallAssignment.objects.get(oncall_type='services')
-            tmp.user = User.objects.get(username=current_services_oncall)
-            tmp.save()
-            
-            form.save()
-            return HttpResponseRedirect('')
-
-    else:
-        form = OncallForm(initial = initial)
-    return render(request, 'systems/generic_form.html', {'current_services_oncall':current_services_oncall, 'current_desktop_oncall':current_desktop_oncall,'current_sysadmin_oncall':current_sysadmin_oncall, 'form':form})
-
-def clear_oncall():
-    from django.db import connection, transaction
-    cursor = connection.cursor()
-    cursor.execute("UPDATE `user_profiles` set `current_desktop_oncall` = 0, `current_sysadmin_oncall` = 0, `current_services_oncall` = 0")
-    transaction.commit_unless_managed()
-
-def clear_oncall_orm():
-    from django.contrib.auth.models import User
-    users = User.objects.all()
-    for user in users:
-        try:
-            profile = user.get_profile()
-            profile.current_sysadmin_oncall = 0
-            profile.current_desktop_oncall = 0
-            profile.current_services_oncall = 0
-            profile.save()
-            user.save()
-        except Exception, e:
-            continue
-
-    return True
-def set_oncall(type, username):
-    from django.contrib.auth.models import User
-    try:
-        new_oncall = User.objects.get(username=username)
-        if type=='desktop':
-            new_oncall.get_profile().current_desktop_oncall = 1
-        elif type=='sysadmin':
-            new_oncall.get_profile().current_sysadmin_oncall = 1
-        elif type=='services':
-            new_oncall.get_profile().current_services_oncall = 1
-        elif type=='all':
-            new_oncall.get_profile().current_sysadmin_oncall = 1
-            new_oncall.get_profile().current_desktop_oncall = 1
-            new_oncall.get_profile().current_services_oncall = 1
-        new_oncall.get_profile().save()
-        new_oncall.save()
-    except Exception, e:
-        print e
 def rack_delete(request, object_id):
     from models import SystemRack
     rack = get_object_or_404(SystemRack, pk=object_id)
@@ -800,6 +834,7 @@ def rack_delete(request, object_id):
                 'rack': rack,
             },
             RequestContext(request))
+
 
 def rack_edit(request, object_id):
     rack = get_object_or_404(models.SystemRack, pk=object_id)
@@ -813,10 +848,14 @@ def rack_edit(request, object_id):
     else:
         form = SystemRackForm(instance=rack)
 
-    return render_to_response('systems/generic_form.html', {
+    return render_to_response(
+        'systems/generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def rack_new(request):
     from forms import SystemRackForm
     initial = {}
@@ -828,17 +867,25 @@ def rack_new(request):
     else:
         form = SystemRackForm(initial=initial)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_show(request, object_id):
     object = get_object_or_404(models.Location, pk=object_id)
 
-    return render_to_response('systems/location_detail.html', {
+    return render_to_response(
+        'systems/location_detail.html',
+        {
             'object': object,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_edit(request, object_id):
     location = get_object_or_404(models.Location, pk=object_id)
     from forms import LocationForm
@@ -851,10 +898,14 @@ def location_edit(request, object_id):
     else:
         form = LocationForm(instance=location)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_new(request):
     from forms import LocationForm
     initial = {}
@@ -866,10 +917,14 @@ def location_new(request):
     else:
         form = LocationForm(initial=initial)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def server_model_edit(request, object_id):
     server_model = get_object_or_404(models.ServerModel, pk=object_id)
     from forms import ServerModelForm
@@ -882,10 +937,13 @@ def server_model_edit(request, object_id):
     else:
         form = ServerModelForm(instance=server_model)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
 
 @csrf_exempt
 def operating_system_create_ajax(request):
@@ -893,10 +951,11 @@ def operating_system_create_ajax(request):
         if 'name' in request.POST and 'version' in request.POST:
             name = request.POST['name']
             version = request.POST['version']
-        models.OperatingSystem(name=name,version=version).save()
+        models.OperatingSystem(name=name, version=version).save()
         return operating_system_list_ajax(request)
     else:
         return HttpResponse("OK")
+
 
 @csrf_exempt
 def server_model_create_ajax(request):
@@ -904,46 +963,60 @@ def server_model_create_ajax(request):
         if 'model' in request.POST and 'vendor' in request.POST:
             model = request.POST['model']
             vendor = request.POST['vendor']
-        models.ServerModel(vendor=vendor,model=model).save()
+        models.ServerModel(vendor=vendor, model=model).save()
         return server_model_list_ajax(request)
     else:
         return HttpResponse("OK")
 
+
 def operating_system_list_ajax(request):
     ret = []
     for m in models.OperatingSystem.objects.all():
-        ret.append({'id':m.id, 'name': "%s - %s" % (m.name, m.version)})
+        ret.append({'id': m.id, 'name': "%s - %s" % (m.name, m.version)})
 
     return HttpResponse(json.dumps(ret))
+
 
 def server_model_list_ajax(request):
     ret = []
     for m in models.ServerModel.objects.all():
-        ret.append({'id':m.id, 'name': "%s - %s" % (m.vendor, m.model)})
+        ret.append({'id': m.id, 'name': "%s - %s" % (m.vendor, m.model)})
 
     return HttpResponse(json.dumps(ret))
+
 
 def server_model_show(request, object_id):
     object = get_object_or_404(models.ServerModel, pk=object_id)
 
-    return render_to_response('systems/servermodel_detail.html', {
+    return render_to_response(
+        'systems/servermodel_detail.html',
+        {
             'object': object,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def server_model_list(request):
     object_list = models.ServerModel.objects.all()
-    print object_list
-    return render_to_response('systems/servermodel_list.html', {
+    return render_to_response(
+        'systems/servermodel_list.html',
+        {
             'object_list': object_list,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_show(request, object_id):
     object = get_object_or_404(models.Allocation, pk=object_id)
 
-    return render_to_response('systems/allocation_detail.html', {
+    return render_to_response(
+        'systems/allocation_detail.html',
+        {
             'object': object,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_edit(request, object_id):
     allocation = get_object_or_404(models.Allocation, pk=object_id)
     from forms import AllocationForm
@@ -956,16 +1029,24 @@ def allocation_edit(request, object_id):
     else:
         form = AllocationForm(instance=allocation)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_list(request):
     object_list = models.Allocation.objects.all()
-    return render_to_response('systems/allocation_list.html', {
+    return render_to_response(
+        'systems/allocation_list.html',
+        {
             'object_list': object_list,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def allocation_new(request):
     from forms import AllocationForm
     initial = {}
@@ -977,18 +1058,27 @@ def allocation_new(request):
     else:
         form = AllocationForm(initial=initial)
 
-    return render_to_response('generic_form.html', {
+    return render_to_response(
+        'generic_form.html',
+        {
             'form': form,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def location_list(request):
     object_list = models.Location.objects.all()
-    return render_to_response('systems/location_list.html', {
+    return render_to_response(
+        'systems/location_list.html',
+        {
             'object_list': object_list,
-           },
-           RequestContext(request))
+        },
+        RequestContext(request))
+
+
 def csv_import(request):
     from forms import CSVImportForm
+
     def generic_getter(field):
         return field
 
@@ -1042,8 +1132,9 @@ def csv_import(request):
             for line in csv_reader:
                 cur_data = dict(zip(headers, line))
 
-                system_data = dict((a, getter(cur_data.get(a, None)))
-                                        for a, getter in ALLOWED_COLUMNS.iteritems())
+                system_data = dict(
+                    (a, getter(cur_data.get(a, None)))
+                    for a, getter in ALLOWED_COLUMNS.iteritems())
 
                 s = models.System(**system_data)
                 try:
@@ -1057,10 +1148,11 @@ def csv_import(request):
     else:
         form = CSVImportForm()
 
-    return render_to_response('systems/csv_import.html', {
-        'form': form,
-        'allowed_columns': ALLOWED_COLUMNS,
-        'new_systems': new_systems,
+    return render_to_response(
+        'systems/csv_import.html',
+        {
+            'form': form,
+            'allowed_columns': ALLOWED_COLUMNS,
+            'new_systems': new_systems,
         },
         RequestContext(request))
-

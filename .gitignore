@@ -1,5 +1,6 @@
 settings_local.py
 settings/local.py
+settings/dnsbuilds.py
 *.py[co]
 *.sw[po]
 .coverage
@@ -17,8 +18,12 @@ tmp/*
 *.mo
 src/
 .vagrant
+build/
+*/*.*_auto__.*
+migrations/*
 private.json
 truth.json
 private_tests.py
 tastytools/*.pyc
 *.pyc
+mdns/migrate/zone_configs/

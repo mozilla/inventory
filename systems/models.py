@@ -9,16 +9,16 @@
 
 from django.db import models
 from django.core.exceptions import ValidationError
-
-from dhcp.models import DHCP
 from django.db.models.signals import post_save
 from django.db.models.query import QuerySet
-import datetime
-import re
 from django.contrib.auth.models import User
+
+from dhcp.models import DHCP
 from settings import BUG_URL
 
-import pdb
+
+import datetime
+import re
 import socket
 
 
@@ -69,19 +69,28 @@ class Allocation(models.Model):
         db_table = u'allocations'
         ordering = ['name']
 
+
 class ScheduledTask(models.Model):
     task = models.CharField(max_length=255, blank=False, unique=True)
     type = models.CharField(max_length=255, blank=False)
     objects = QuerySetManager()
+
     class QuerySet(QuerySet):
         def delete_all_reverse_dns(self):
             self.filter(type='reverse_dns_zone').delete()
+
         def delete_all_dhcp(self):
             self.filter(type='dhcp').delete()
+
+        def dns_tasks(self):
+            return self.filter(type='dns')
+
         def get_all_dhcp(self):
             return self.filter(type='dhcp')
+
         def get_all_reverse_dns(self):
             return self.filter(type='reverse_dns_zone')
+
         def get_next_task(self, type=None):
             if type is not None:
                 try:
@@ -90,6 +99,7 @@ class ScheduledTask(models.Model):
                     return None
             else:
                 return None
+
         def get_last_task(self, type=None):
             if type is not None:
                 try:
@@ -98,9 +108,11 @@ class ScheduledTask(models.Model):
                     return None
             else:
                 return None
+
     class Meta:
         db_table = u'scheduled_tasks'
         ordering = ['task']
+
 
 class Contract(models.Model):
     contract_number = models.CharField(max_length=255, blank=True)
@@ -126,23 +138,6 @@ class Location(models.Model):
     class Meta:
         db_table = u'locations'
         ordering = ['name']
-
-class OncallAssignment(models.Model):
-    """
-        oncall_type are 1 of 3 choices currently
-        services, desktop, sysadmin
-        if more oncall categories need added
-        insert into oncall_assignment(oncall_type) values ('<new_oncall_type>');
-    """
-    user = models.ForeignKey(User)
-    oncall_type = models.CharField(max_length=128, blank=True)
-
-    def __unicode__(self):
-        return "%s - %s" % (self.oncall_type, self.oncall_user)
-
-    class Meta:
-        db_table = u'oncall_assignment'
-        ordering = ['oncall_type']
 
 class PortData(models.Model):
     ip_address = models.CharField(max_length=15, blank=True)
@@ -188,10 +183,13 @@ class KeyValue(models.Model):
         return self.key if self.key else ''
 
     def __repr__(self):
-        return self.key if self.key else ''
+        return "<{0}: '{1}'>".format(self.key, self.value)
+
     def save(self, *args, **kwargs):
+
         if re.match('^nic\.\d+\.mac_address\.\d+$', self.key):
             self.value = validate_mac(self.value)
+
         super(KeyValue, self).save(*args, **kwargs)
 
 
@@ -332,6 +330,7 @@ class System(DirtyFieldsMixin, models.Model):
     licenses = models.TextField(blank=True, null=True)
     allocation = models.ForeignKey('Allocation', blank=True, null=True)
     system_rack = models.ForeignKey('SystemRack', blank=True, null=True)
+    system_type = models.ForeignKey('SystemType', blank=True, null=True)
     rack_order = models.DecimalField(null=True, blank=True, max_digits=6, decimal_places=2)
     switch_ports = models.CharField(max_length=255, blank=True, null=True)
     patch_panel_port = models.CharField(max_length=255, blank=True, null=True)
@@ -348,6 +347,8 @@ class System(DirtyFieldsMixin, models.Model):
     is_switch = models.IntegerField(choices=YES_NO_CHOICES, blank=True, null=True)
     #network_adapter = models.ForeignKey('NetworkAdapter', blank=True, null=True)
 
+    search_fields = "hostname", "serial", "notes", "asset_tag", "oob_ip"
+
     @property
     def primary_ip(self):
         try:
@@ -356,6 +357,138 @@ class System(DirtyFieldsMixin, models.Model):
         except:
             return None
 
+    def get_edit_url(self):
+        return "/systems/edit/{0}/".format(self.pk)
+
+    def get_absolute_url(self):
+        return "/systems/show/{0}/".format(self.pk)
+
+    def update_adapter(self, **kwargs):
+        from api_v3.system_api import SystemResource
+        interface = kwargs.pop('interface', None)
+        ip_address = kwargs.pop('ip_address', None)
+        mac_address = kwargs.pop('mac_address', None)
+
+        if not interface:
+            raise ValidationError("Interface required to update")
+
+        for intr in self.staticinterface_set.all():
+            if intr.interface_name() == interface:
+                if ip_address:
+                    intr.ip_str = ip_address
+                if mac_address:
+                    intr.mac = mac_address
+                intr.save()
+        return True
+                
+
+        """
+            method to update a netwrok adapter
+
+            :param **kwargs: keyword arguments of what to update
+            :type **kwargs: dict
+            :return: True on deletion, exception on failure
+        """
+    def delete_adapter(self, adapter_name):
+        from api_v3.system_api import SystemResource
+        """
+            method to get the next adapter
+            we'll want to always return an adapter with a 0 alias
+            take the highest primary if exists, increment by 1 and return
+
+            :param adapter_name: The name of the adapter to delete
+            :type adapter_name: str
+            :return: True on deletion, exception raid if not exists
+        """
+        adapter_type, primary, alias = SystemResource.extract_nic_attrs(adapter_name)
+        #self.staticinterface_set.get(type = adapter_type, primary = primary, alias = alias).delete()
+        for i in self.staticinterface_set.all():
+            i.update_attrs()
+            if i.attrs.interface_type == adapter_type and i.attrs.primary == primary and i.attrs.alias == alias:
+                i.delete()
+        return True
+
+
+    def get_adapters(self):
+        """
+            method to get all adapters
+            :return: list of objects and attributes if exist, None if empty
+        """
+        adapters = None
+        if self.staticinterface_set.count() > 0:
+            adapters = []
+            for i in self.staticinterface_set.all():
+                i.update_attrs()
+                adapters.append(i)
+        return adapters
+
+    def get_next_adapter(self, intr_type='eth'):
+        """
+            method to get the next adapter
+            we'll want to always return an adapter with a 0 alias
+            take the highest primary if exists, increment by 1 and return
+
+            :param type: The type of network adapter
+            :type type: str
+            :return: 3 strings 'adapter_name', 'primary_number', 'alias_number'
+        """
+        if self.staticinterface_set.count() == 0:
+            return intr_type, '0', '0'
+        else:
+            primary_list = []
+            for i in self.staticinterface_set.all():
+                i.update_attrs()
+                try:
+                    primary_list.append(int(i.attrs.primary))
+                except AttributeError, e:
+                    continue
+
+            ## sort and reverse the list to get the highest
+            ## perhaps someday come up with the lowest available
+            ## this should work for now
+            primary_list.sort()
+            primary_list.reverse()
+            if not primary_list:
+                return intr_type, '0', '0'
+            else:
+                return intr_type, str(primary_list[0] + 1), '0'
+
+    def get_next_key_value_adapter(self):
+        """
+            Return the first found adapter from the
+            key value store. This will go away,
+            once we are on the StaticInterface
+            based system
+        """
+        ret = {}
+        ret['mac_address'] = None
+        ret['ip_address'] = None
+        ret['num'] = None
+        ret['dhcp_scope'] = None
+        ret['name'] = 'nic0'
+        key_value = self.keyvalue_set.filter(key__startswith='nic', key__icontains='mac_address')[0]
+        m = re.search('nic\.(\d+)\.mac_address\.0', key_value.key)
+        ret['num'] = int(m.group(1))
+        key_value_set = self.keyvalue_set.filter(key__startswith='nic.%s' % ret['num'])
+        if len(key_value_set) > 0:
+            for kv in key_value_set:
+                m = re.search('nic\.\d+\.(.*)\.0', kv.key)
+                if m:
+                    ret[m.group(1)] = str(kv.value)
+            return ret
+        else:
+            return False
+        #System.keyvalue_set.filter(name__startswith='nic' % key_id).delete()
+
+
+    def delete_key_value_adapter_by_index(self, index):
+        """
+            Delete a set of key_value items by index
+            if index = 0
+            delete where keyvalue.name startswith nic.0
+        """
+        self.keyvalue_set.filter(key__startswith='nic.%i' % index).delete()
+        return True
     @property
     def primary_reverse(self):
         try:
@@ -440,8 +573,7 @@ class System(DirtyFieldsMixin, models.Model):
                     remote_user = 'changed_user'
                 tmp = SystemChangeLog(system=system,changed_by = remote_user,changed_text = save_string, changed_date = datetime.datetime.now())
                 tmp.save()
-        except Exception, e:
-            print e
+        except Exception:
             pass
 
         if not self.id:
@@ -454,6 +586,9 @@ class System(DirtyFieldsMixin, models.Model):
         return self.hostname
     def get_switches(self):
         return System.objects.filter(is_switch=1)
+
+    def get_absolute_url(self):
+        return "/systems/show/{0}/".format(self.pk)
 
     def check_for_adapter(self, adapter_id):
         adapter_id = int(adapter_id)
@@ -530,31 +665,6 @@ class SystemChangeLog(models.Model):
 #    class Meta:
 ##        db_table = u'user_profiles'
 
-class OncallManager(models.Manager):
-    def filter(self, *args, **kwargs):
-        try:
-            return self.get_query_set().filter(**kwargs)[0]
-        except IndexError:
-            """
-                We tried to get an object here, but it doesn't exist
-                Let's create and add one
-            """
-            ots = OncallTimestamp(
-                    oncall_type=kwargs['oncall_type'],
-                    updated_on=datetime.datetime.now(),
-                    )
-            ots.save()
-            return ots
-
-
-class OncallTimestamp(models.Model):
-    oncall_type = models.CharField(max_length=128, null=False, blank=False)
-    updated_on = models.DateTimeField(null=False, blank=False)
-    objects = OncallManager()
-
-    class Meta:
-        db_table = u'oncall_timestamp'
-
 
 class UserProfile(models.Model):
     PAGER_CHOICES = (
@@ -562,18 +672,35 @@ class UserProfile(models.Model):
             ('sms', 'sms'),
     )
     user = models.ForeignKey(User, unique=True)
+
     is_desktop_oncall = models.BooleanField()
     is_sysadmin_oncall = models.BooleanField()
     is_services_oncall = models.BooleanField()
+    is_mysqldba_oncall = models.BooleanField()
+    is_pgsqldba_oncall = models.BooleanField()
+
     current_desktop_oncall = models.BooleanField()
     current_sysadmin_oncall = models.BooleanField()
     current_services_oncall = models.BooleanField()
+    current_mysqldba_oncall = models.BooleanField()
+    current_pgsqldba_oncall = models.BooleanField()
+
     irc_nick = models.CharField(max_length=128, null=True, blank=True)
     api_key = models.CharField(max_length=255, null=True, blank=True)
     pager_type = models.CharField(choices=PAGER_CHOICES, max_length=255, null=True, blank=True)
     pager_number = models.CharField(max_length=255, null=True, blank=True)
     epager_address = models.CharField(max_length=255, null=True, blank=True)
     objects = QuerySetManager()
+
+    class Meta:
+        db_table = u'user_profiles'
+
+    def __str__(self):
+        return "{0}".format(self.user.username)
+
+    def __repr__(self):
+        return "<UserProfile {0}>".format(self.user.username)
+
     class QuerySet(QuerySet):
         def get_all_desktop_oncall(self):
             self.filter(is_desktop_oncall=1)
@@ -589,7 +716,4 @@ class UserProfile(models.Model):
             self.filter(is_sysadmin_oncall=1)
         def get_current_sysadmin_oncall(self):
             self.filter(current_sysadmin_oncall=1).select_related()
-
-    class Meta:
-        db_table = u'user_profiles'
 

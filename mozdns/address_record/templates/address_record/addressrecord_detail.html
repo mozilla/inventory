@@ -1,0 +1,42 @@
+{% extends "mozdns/mozdns_detail.html" %}
+
+{% block content %}
+
+<div class='dns-title'>Address Record {{ object.fqdn }}</div>
+    {% if object.domain %}
+        <a class="btn" href="{{ object.domain.get_absolute_url() }}">View Domain</a>
+    {% endif %}
+
+        <a class="btn" href="{{ object.get_edit_url() }}">Edit</a>
+        <a class="btn" href="{{ object.get_delete_url() }}">Delete</a>
+
+    {% from "base/tables.html" import render_table %}
+
+    <table class="table">
+        <thead>
+            {% for item, value in object.details() %}
+                <th>{{ item }}</th>
+            {% endfor %}
+                <th>Views</th>
+        </thead>
+
+        <tbody>
+            <tr>
+            {% for item, value in object.details() %}
+                <td>
+                    {% if interface and value == 'A' %}
+                        A/PTR
+                    {% else %}
+                        {{ value }}
+                    {% endif %}
+                </td>
+            {% endfor %}
+            <td>
+            {% for view in object.views.all() %}
+                    {{ view }}
+            {% endfor %}
+            </td>
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}

@@ -1,4 +1,4 @@
-{% extends "jinja_base.html" %}
+{% extends "base.html" %}
 {% block content %}
 <div>
 
@@ -45,6 +45,10 @@
 
 <dt>Cost:</dt>
 <dd>{{ user_system.cost }}</dd>
+<div style="clear:both;"></div>
+
+<dt>Cost Center:</dt>
+<dd>{{ user_system.cost_center }}</dd>
 <div style="clear:both;"></div>
 
 <dt>Notes:</dt>

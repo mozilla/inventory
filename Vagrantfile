@@ -19,7 +19,7 @@ Vagrant::Config.run do |config|
     config.vm.box = "lucid32"
     config.vm.box_url = "http://files.vagrantup.com/lucid32.box"
 
-    config.vm.forward_port("web", 8000, 8000)
+    config.vm.forward_port 8000, 8000
 
     # Increase vagrant's patience during hang-y CentOS bootup
     # see: https://github.com/jedi4ever/veewee/issues/14

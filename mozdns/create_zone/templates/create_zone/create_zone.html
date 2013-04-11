@@ -1,0 +1,173 @@
+{% extends "mozdns/mozdns_base.html" %}
+
+{% block head %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.js" type="text/javascript"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.js" type="text/javascript"></script>
+    <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
+{% endblock %}
+
+{% block content %}
+    <script>
+    $(document).ready(function(){
+        $('#useTemplate').click(function (){
+            $("#templateZones").dialog({
+                title: 'Choose a zone to use as a template.',
+                autoShow: false,
+                minWidth: 280,
+                modal: true,
+                buttons: {
+                    Cancel: function() {
+                        // pass
+                        $("#zones").css('display', 'none');
+                        $(this).dialog("close");
+                    }
+                }
+            });
+            $("#zones").css('display', 'block');
+            $("#zones").focus();
+            $("#zones").autocomplete({
+                minLength: 0,
+                source: {{zones}},
+                focus: function( event, ui ) {
+                    $("#zones").val( ui.item.label );
+                    return false;
+                },
+                select: function( event, ui ) {
+                    $("#zones").val(ui.item.label);
+                    window.location = window.location.pathname + "?template_zone=" + ui.item.label
+                    return false;
+                }
+            });
+        });
+        $("#zoneForm").data('blockCounter', 1);
+        removeButtons = $('#zoneForm').find('.remove-entry:not(:first)');
+        if (removeButtons){
+            $(removeButtons).css('visibility', 'visible');
+            removeButtons.click(function(){
+                $(this).closest('tr').remove();
+            });
+        }
+
+        $('#btnMore').click(function() {
+            var form, blocsk, newBlock, newEntry, nextFree;
+            var removeButton, newTTL;
+
+
+            form = $("#zoneForm");
+            blockCounter = form.data('blockCounter');
+            form.data('blockCounter', blockCounter + 1);
+            blocks = form.find(".nameserver-block");
+            newBlock = $(blocks.last()).clone();
+            newEntry = newBlock.find(".nameserver-entry");
+            newTTL = newBlock.find(".nameserver-ttl");
+
+            blockCounter += 1;
+
+            newEntry.attr('name', 'nameserver_' + blockCounter);
+            newTTL.attr('name', 'ttl_' + blockCounter);
+            // Bind remove handler
+            removeButton = newBlock.find('.remove-entry');
+            $(removeButton).css('visibility', 'visible');
+            removeButton.click(function(){
+                $(this).closest('tr').remove();
+            });
+            newBlock.insertAfter(blocks.last());
+        });
+        $('#zoneForm').submit(function (){
+            $.post('/en-US/mozdns/create_zone/create_zone_ajax/',
+                $('#zoneForm').serialize(),
+                function (data) {
+                    console.log(data);
+                    data = $.parseJSON(data)
+                    if (data['success']){
+                        window.location = data['success_url'];
+                    } else {
+                        $('#errors').html(data['error']);
+                    }
+
+                }
+                ).error(function(e) { console.log(e); alert(e);
+                    var newDoc = document.open("text/html", "replace");
+                    newDoc.write(e.responseText);
+                    newDoc.close();
+                    $('#form-message').html("<p>Error</p>");
+                });
+            return false;
+        }); // end submit()
+    });
+    </script>
+    <style>
+        .nameserver {
+            display:block;
+        }
+        p#errors {
+            color: red;
+        }
+    </style>
+
+    <input type='button' value='Use another zone as a template' id='useTemplate'>
+    <div id='templateZones' style="display:none;">
+        <input id="zones" style="width:20em;"/>
+    </div>
+
+    <div class="form-container">
+    <form id='zoneForm' method='POST'>
+        <h3>Create a new DNS Zone</h3>
+        {% if message %}
+            <p><i>{{message}}</i></p>
+        {% endif %}
+        <div>
+            <p id='errors'></p>
+        </div>
+        <table>
+        <caption>Fillout the information needed to create the SOA record.</caption>
+        <tbody>
+            <tr>
+                <th><label>Domain:</label></th>
+                <td><input class="" type='text' name='root_domain' value={{root_domain}}></td>
+            </tr>
+
+        <caption>SOA Record</caption>
+            <tr>
+                <th><label>Primary:</label></th>
+                <td><input class="" type='text' name='soa_primary' value='{{primary}}'></td>
+            </tr>
+            <tr>
+                <th><label>Contact:</label></th>
+                <td><input class="" type='text' name='soa_contact' value='{{contact}}'></td>
+            </tr>
+        </tbody>
+        </table>
+
+        <h5>Nameservers <input type='button' id='btnMore' value='Add another NS'></h5>
+        <table>
+        <caption>Add nameservers for this zone.</caption>
+        <tbody>
+            {% if not nss %}
+            <tr class='nameserver-block'>
+                <th><label>NS:</label></th>
+                <td><input class="nameserver-entry" type='text' name='nameserver_1'></td>
+                <th><label>TTL:</label></th>
+                <td><input class="nameserver-ttl" type='text' name='ttl_1' value="3600"> <input class='remove-entry' id='first-remove'type='button' value='-' style='visibility:hidden;'></td>
+            </tr>
+            {% endif %}
+            {% for ns in nss %}
+            <tr class='nameserver-block'>
+                    <td><input class="nameserver-entry" type='text' name='nameserver_{{loop.index}}' value="{{ns.server}}"></td>
+                    <td>
+                        <input class="nameserver-ttl" type='text'
+                        name='ttl_{{loop.index}}' value="{{ns.ttl}}">
+                        <input class='remove-entry' id='first-remove'type='button' value='-'
+                        {% if loop.first %}
+                            style='visibility:hidden;'
+                        {% endif %}
+                        ></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+        <input type='submit' value='Create Zone With This Configuration'>
+    </form>
+    </div>
+{% endblock %}

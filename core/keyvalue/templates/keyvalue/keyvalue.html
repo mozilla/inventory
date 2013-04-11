@@ -1,0 +1,177 @@
+{% extends "core/core_base.html" %}
+
+{% block head %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.js" type="text/javascript"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.js" type="text/javascript"></script>
+    <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+    <script language="Javascript" type="text/javascript" src="/static/javascripts/attribute_adder.js"></script>
+    <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
+{% endblock %}
+
+{% block content %}
+    <script>
+    $(document).ready(function(){
+        var form = $("#keyvalue-form");
+        form.data('objectCounter', 1);
+        function add_an_attr(template, prefix){
+            var form = $("#keyvalue-form");
+            // Increment the number of new objects
+            var objCounter = form.data('objectCounter');
+            form.data('objCounter', objCounter + 1);
+
+            var newKV = $(template).clone();
+            var newKey = newKV.find(".attr-kv-k");
+            var newValue = newKV.find(".attr-kv-v");
+            console.log(newKey);
+            console.log(newValue);
+
+            var newError = $('#errors_').clone();
+
+            newKV.attr('data-errors', 'errors_' + objCounter);
+            newError.attr('id', 'errors_' + objCounter);
+
+
+            //newEntry.attr('name', 'nameserver_' + objCounter);
+            newKey.attr('name', prefix + '_new_key_' + objCounter);
+            //newTTL.attr('name', 'ttl_' + objCounter);
+            newValue.attr('name', prefix + '_new_value_' + objCounter);
+            // Bind remove handler
+            var removeButton = newKV.find('.delete-key');
+            removeButton.click(function(){
+                $(this).closest('tr').remove();
+                newError.remove();
+            });
+            $('#keyvalue-pairs').append(newKV);
+            $('#keyvalue-pairs').append(newError);
+            form.data('objectCounter', objCounter + 1);
+        }
+        $('#add-adhoc-attr').click(function() {
+            add_an_attr($('#adhoc-template'), 'attr');
+        });
+        $('#add-attr').click(function() {
+            add_an_attr($('#attr-template'), 'attr');
+        });
+        form.submit(function (){
+            console.log("[DEBUG] Submit pressed");
+
+            var success = true;
+            $('#keyvalue-pairs .kv').each(function (index, el) {
+                var key_pk = $(el).attr('data-pk');
+                var key = $(el).find('.attr-kv-k').val()
+                var value = $(el).find('.attr-kv-v').val()
+                var delete_key = $(el).find('.delete-key').is(':checked');
+                var kv_css_class = $(el).attr('data-errors');
+                console.log("Key is : " + key + " Value is: " + value);
+
+                var errors = $('#'+kv_css_class);
+                $.ajax({
+                    type: 'POST',
+                    async: false,
+                    url: '/en-US/core/keyvalue/validate_keyvalue_ajax/',
+                    data: { key: key, value: value, key_pk: key_pk,
+                            kv_class: '{{kv_class}}', obj_pk: '{{obj_pk}}',
+                            delete_key: delete_key },
+                    success: function (data) {
+                                var data = $.parseJSON(data);
+                                if (data['success']){
+                                    errors.css('display', 'none');
+                                } else {
+                                    errors.css('display', 'block');
+                                    errors.find('td').html(data['message']);
+                                    success = false;
+                                }
+                             },
+                    error: function(e) {
+                                var newDoc = document.open("text/html", "replace");
+                                newDoc.write(e.responseText);
+                                newDoc.close();
+                           },
+                });
+            });
+            if (success) {
+                alert("All keys were updated/deleted/created!");
+                return true;
+            }
+            return false;
+        });
+        return false;
+    });
+    </script>
+    <div id='kv-templates' style='display:none;'>
+        <table style='table-layout: fixed;overflow: hidden;'>
+        <table>
+            <tr id='attr-template' class='kv' data-errors='<set me>' data-pk=''>
+                <th><label class='attribute-label' >Attribute:</label></th>
+                <td>
+                    <select class='attr-kv-k'>
+                        {% for option in aa_options %}
+                        <option value="{{option}}">{{option}}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <th><label class='value-label' >Value:</label></th>
+                <td><input class='attr-kv-v' type='text' value=""></td>
+                <th>
+                    <input class='delete-key' type='button' value='Remove' style=''>
+                </th>
+            </td>
+            <tr id='errors_' style='display:none;'>
+                <td style='width:100px;'></td>
+            </tr>
+
+            </tr>
+            <tr id='adhoc-template' class='kv' data-errors='<set me>' data-pk=''>
+                <th><label class='attribute-label' >Attribute:</label></th>
+                <td><input class="attr-kv-k" type='text' value=""></td>
+                <th><label class='value-label' >Value:</label></th>
+                <td><input class='attr-kv-v' type='text' value=""> </td>
+                <th>
+                    <input class='delete-key' type='button' value='Remove' style=''>
+                </th>
+            </td>
+        </table>
+    </div>
+    <h3>Editing KV Store for: <a href='{{object.get_absolute_url()}}'>{{object}}</a></h3>
+    <input type='button' id='add-attr' value="Add New Attribute">
+    <input type='button' id='add-adhoc-attr' value="Add New (Adhoc) Attribute">
+    <form id='keyvalue-form' method='POST'>
+        <table id='keyvalue-pairs'>
+        {% for kv in attrs %}
+                <tr class='kv' data-errors='errors_existing_{{kv.id}}' data-pk={{kv.id}}>
+                    <th style='width:100px'><label>Attribute:</label></th>
+                    <td><input disabled='true' class="attr-kv-k" name='exising_k_{{kv.id}}'
+                        type='text' value="{{kv.key | e}}"></td>
+                    <th><label>Value:</label></th>
+                    <td><input class="attr-kv-v" name='existing_v_{{kv.id}}'
+                        type='text' value="{{kv.value | e}}"> </td>
+                    <th><label>Mark for deletion</label>
+                        <input class='delete-key' name='existing_delete_{{kv.id}}' type='checkbox' style=''>
+                    </th>
+                </tr>
+                <tr id='errors_existing_{{kv.id}}' style='display:none;'>
+                    <td style='width:100px;'></td>
+                </tr>
+        {% endfor %}
+        </table>
+        <input type='submit' value='Submit'>
+    </form>
+    <div>
+        {% if docs %}
+        <table border='5' class='tablesorter'>
+            <tr>
+                <th>Attribute</th>
+                <th>Description</th>
+            </tr>
+            {% for attr, doc in docs %}
+                {% if doc %}
+                    <tr>
+                        <td><b>{{attr}}</b></td>
+                        <td><pre>{{doc}}</pre></td>
+                    </tr>
+                {% endif %}
+            {% endfor%}
+        </table>
+        {% endif %}
+    </div>
+    </div>
+{% endblock %}

@@ -14,40 +14,79 @@
       <link rel="stylesheet" href="{{ MEDIA_URL }}stylesheets/blueprint/ie.css" type="text/css" media="screen, projection">
     <![endif]-->
     <link href="{{ MEDIA_URL }}stylesheets/screen.css" media="screen" rel="stylesheet" type="text/css" />
-     <link rel="shortcut icon" href="/static/images/favicon.ico">           
-     <link rel="icon" href="/static/images/favicon.ico"> 
+    <link href="{{ MEDIA_URL }}css/header_menu.css" media="screen" rel="stylesheet" type="text/css" />
+     <link rel="shortcut icon" href="/static/images/favicon.ico">
+     <link rel="icon" href="/static/images/favicon.ico">
 
     {% block head %}{% endblock %}
 
 </head>
 <body>
-    
-<div id="header">
-    <div class="container">
-        <h1 id="inventory"><a href="/">Inventory</a></h1>
+<div class="header-bar">
+    <div class="header nav-bar">
+    <h1><a href="/">Inventory</a></h1>
+            <ul>
+                <li>
+                    <a>Systems</a>
+                    <ul>
+                        <li><a href='{{ "system-home"|url() }}'>Systems</a></li>
+                        <li><a href="{{ "system_rack-list"|url() }}">Racks</a></li>
+                        {% if not read_only %}
+                        <li><a href="/systems/oncall/">Oncall</a></li>
+                        <li><a href="{{ "user-system-list"|url() }}">Unmanaged</a></li>
+                        <li><a href="{{ "owner-list"|url() }}">Owners</a></li>
+                        <li><a href="{{ "license-list"|url() }}">User Licenses</a></li>
+                        <li><a href="{{ "build-list"|url() }}">Release</a></li>
+                        <li><a href="{{ "location-list"|url() }}">Locations</a></li>
+                        <li><a href="{{ "system-csv-import"|url() }}">CSV Import</a></li>
+                        <li><a href="{{ "server_model-list"|url() }}">Models</a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+                <li>
+                    <a>DNS</a>
+                    <ul>
+                        {% for rdtype in ['CNAME', 'MX', 'NS', 'SRV', 'SSHFP', 'PTR', 'TXT'] %}
+                        <li><a href="/mozdns/record/search/{{rdtype}}/">{{rdtype}}</a></li>
+                        {% endfor %}
+                        <li><a href="/mozdns/record/search/A/">A/AAAA</a></li>
+                        <li><a href="/mozdns/record/search/DOMAIN/">Domain</a></li>
+                        <li><a href="/mozdns/record/search/SOA/">SOA</a></li>
+                        <li><a href="/mozdns/create_zone/">New Zone</a></li>
+                    </ul>
+                </li>
+                <li><a href="/dhcp/show/">DHCP</a>
+                    <ul>
+                        <li><a class="nav-link" href="/dhcp/show/">Scopes</a></li>
+                    </ul>
+                </li>
+
+                <li><a href="/core/">IPAM</a>
+                    <ul>
+                        <li><a class="nav-link" href="/core/search/">Search</a></li>
+                        <!--
+                        <li><a class="nav-link" href="/core/site/">Site</a></li>
+                        <li><a class="nav-link" href="/core/network/">Network</a></li>
+                        <li><a class="nav-link" href="/core/vlan/">Vlan</a></li>
+                        <li><a class="nav-link" href="/core/range/">Range</a></li>
+                        -->
+                    </ul>
+                </li>
+                {% if not read_only %}
+                <li>
+                    <a>Other</a>
+                    <ul>
+                        <li><a href="{{ "truth-list"|url() }}">Truth DB</a></li>
+                        <li><a href="{{ "report-home"|url() }}">Reporting</a></li>
+                        <li><a href="{{ "allocation-list"|url() }}">Allocations</a></li>
+                        <li><a href="{{ "location-list"|url() }}">Location</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+            </ul>
     </div>
 </div>
 <div id="main" class="container"> 
-    <div id="hd">
-        <div id="toptabs">
-            <ul id="app-buttons">
-<!-- @TODO Implement Reverses -->
-                <li><a href="/">Systems</a></li>
-                <li><a href="/systems/racks/">Racks</a></li>
-                {% if not read_only %}
-                <li><a href="/user_systems/">Unmanaged</a></li>
-                <li><a href="/user_systems/owners/">Owners</a></li>
-                <li><a href="/user_systems/licenses/">User Licenses</a></li>
-                <li><a href="/build/">Release</a></li>
-                <li><a href="/misc/">Misc</a></li>
-                <li><a href="/dhcp/show/">DHCP</a></li>
-                <li><a href="/truth/">Truth Database</a></li>
-                <li><a href="/reports/">Reporting</a></li>
-                <li><a href="/systems/oncall/">On Call</a></li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
     <div id="bd">
         {% block content %}{% endblock %}
     </div>

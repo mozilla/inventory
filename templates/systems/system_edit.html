@@ -1,4 +1,4 @@
-{% extends "jinja_base.html" %}
+{% extends "base.html" %}
 {% block subtitle %} - {{ system.hostname }} - edit{% endblock %}
 {% block head %}
 <script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>
@@ -409,7 +409,7 @@ ul.css-tabs a.current {
         </p>
         <p>
             <label for='host_name'>DHCP Option Host Name</label>
-            <input type='text' id='quick_add_option_host_name' name='quick_add_option_host_name' value='' />
+            <input type='text' id='quick_add_option_host_name' name='quick_add_option_host_name' value='{{system.hostname}}' />
         </p>
         <p>
             <label for='host_name'>Host Name</label>

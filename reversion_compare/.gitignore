@@ -1,0 +1,9 @@
+*.py[co]
+*.log
+*~
+*.egg-info
+dist
+build
+*.db3
+.pydevproject
+.settings

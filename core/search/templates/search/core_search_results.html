@@ -1,0 +1,157 @@
+<div id='overflow-info' data-objs='{{overflow_results}}' data-max-obj-num='{{MAX_NUM_OBJECTS}}'></div>
+<div id="ajax_results" width="100%">
+<div id="meta">
+    {% if meta['counts']['soa'] %}
+        {{ meta['counts']['soa'] }} <a href="#q={{meta['search']}}&SOA">SOA</a> records |
+    {% else %}
+        zero SOA records |
+    {% endif %}
+    {% if meta['counts']['A'] %}
+        {{ meta['counts']['A'] }} <a href="#q={{meta['search']}}&Address">A/AAAA</a> records |
+    {% else %}
+        zero A/AAAA records |
+    {% endif %}
+    {% if meta['counts']['CNAME'] %}
+        {{ meta['counts']['CNAME'] }} <a href="#q={{meta['search']}}&CNAME">CNAME</a> records |
+    {% else %}
+        zero CNAME records |
+    {% endif %}
+    {% if meta['counts']['DOMAIN'] %}
+        {{ meta['counts']['DOMAIN'] }} <a href="#q={{meta['search']}}&Domain">Domains</a> |
+    {% else %}
+        zero Domains |
+    {% endif %}
+    {% if meta['counts']['INTR'] %}
+        {{ meta['counts']['INTR'] }} <a href="#q={{meta['search']}}&Interface">INTR</a> records |
+    {% else %}
+        zero INTR records |
+    {% endif %}
+    {% if meta['counts']['SYSTEM'] %}
+        {{ meta['counts']['SYSTEM'] }} <a href="#q={{meta['search']}}&System">Systems</a> |
+    {% else %}
+        zero Systems |
+    {% endif %}
+    {% if meta['counts']['MX'] %}
+        {{ meta['counts']['MX'] }} <a href="#q={{meta['search']}}&MX">MX</a> records |
+    {% else %}
+        zero MX records |
+    {% endif %}
+    {% if meta['counts']['NS'] %}
+        {{ meta['counts']['NS'] }} <a href="#q={{meta['search']}}&NS">NS</a> records |
+    {% else %}
+        zero NS records |
+    {% endif %}
+    {% if meta['counts']['PTR'] %}
+        {{ meta['counts']['PTR'] }} <a href="#q={{meta['search']}}&PTR">PTR</a> records |
+    {% else %}
+        zero PTR records |
+    {% endif %}
+    {% if meta['counts']['TXT'] %}
+        {{ meta['counts']['TXT'] }} <a href="#q={{meta['search']}}&TXT">TXT</a> records
+    {% else %}
+        zero TXT records
+    {% endif %}
+</div>
+<div id='search-time' style='margin-top: 2px;' >
+</div>
+<br/>
+{% if objects['SYSTEM'] %}
+    <h4><a class='plane-link' name="q={{meta['search']}}&System">Systems</a></h4>
+    <table class="tablesorter system-table">
+        <thead>
+        <tr>
+            <th>Hostname</th>
+            <th>OOB</th>
+            <th>Model</th>
+            <th>Rack</th>
+            <th>Serial</th>
+            <th>Asset</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for s in objects['SYSTEM'] %}
+        <tr>
+            <td>{{ s.hostname }}</td>
+            <td>{{ s.oob_ip }}</td>
+            <td>{{ s.server_model if s.server_model_id else "" }}</td>
+            <td>{{ s.system_rack if s.system_rack_id else "" }}</td>
+            <td>{{ s.serial }}</td>
+            <td>{{ s.asset_tag }}   </td>
+            <td>{{ s.system_status }}   </td>
+            <td><a href='{{ s.get_absolute_url() }}'>View</a> <a href='{{ s.get_edit_url() }}'>Edit</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% if misc %}
+    <table class="tablesorter">
+        <thead>
+        <tr>
+            <th>Networks, Sites, and Vlans</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for object in misc %}
+            <tr>
+                <td><a href="{{ object.get_absolute_url() }}">{{ object }}</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+
+{% import 'record/draw_record_table.html' as drawer %}
+{% if objects['SOA'] %}
+    <h4><a class='plane-link' name="q={{meta['search']}}&SOA">SOA</a></h4>
+    {{ drawer.draw_record_table('SOA', objects['SOA'], table_class='tablesorter record-table', table_id='soa-table') }}
+{% endif %}
+
+{% if objects['DOMAIN'] %}
+    <h4><a class='plane-link' name="q={{meta['search']}}&Domain">Domains</a></h4>
+    {{ drawer.draw_record_table('DOMAIN', objects['DOMAIN'], table_class='tablesorter record-table', table_id='domain-table') }}
+{% endif %}
+
+{% if objects['NS'] %}
+    <h4><a class='plane-link' name="q={{meta['search']}}&Nameserver">Nameserver</a></h4>
+    {{ drawer.draw_record_table('NS', objects['NS'], table_class='tablesorter record-table', table_id='ns-table') }}
+{% endif %}
+
+{% if objects['MX'] %}
+    <h4><a class='plane-link' name="q={{meta['search']}}&MX">MX</a> Records</h4>
+    {{ drawer.draw_record_table('MX', objects['MX'], table_class='tablesorter record-table', table_id='mx-table') }}
+{% endif %}
+
+{% if objects['SRV'] %}
+    <h4><a class='plane-link' name="q={{meta['search']}}&SRV">SRV</a> Records</h4>
+    {{ drawer.draw_record_table('SRV', objects['SRV'], table_class='tablesorter record-table', table_id='srv-table') }}
+{% endif %}
+
+{% if objects['TXT'] %}
+    <h4><a class='plane-link' name="q={{meta['search']}}&TXT">TXT</a> Records</h4>
+    {{ drawer.draw_record_table('TXT', objects['TXT'], table_class='tablesorter record-table', table_id='txt-table') }}
+{% endif %}
+
+{% if objects['CNAME'] %}
+    <h4><a class='plane-link' name="q={{meta['search']}}&CNAME">CNAME</a> Records</h4>
+    {{ drawer.draw_record_table('CNAME', objects['CNAME'], table_class='tablesorter record-table', table_id='cname-table') }}
+{% endif %}
+
+{% if objects['INTR'] %}
+    <h4><a class='plane-link' name="q={{meta['search']}}&Interface">Interface</a> Records</h4>
+    {{ drawer.draw_record_table('INTR', objects['INTR'], table_class='tablesorter intr-table', table_id='intr-table') }}
+{% endif %}
+
+{% if objects['A'] %}
+<h4><a class='plane-link' id="q={{meta['search']}}&Address">Address</a> Records</h4>
+    {{ drawer.draw_record_table('A', objects['A'], table_class='tablesorter addr-table', table_id='addr-table') }}
+{% endif %}
+
+{% if objects['PTR'] %}
+    <h4><a class='plane-link' name="q={{meta['search']}}&PTR">PTR</a> Records</h4>
+    {{ drawer.draw_record_table('PTR', objects['PTR'], table_class='tablesorter ptr-table', table_id='ptr-table') }}
+{% endif %}
+</div>

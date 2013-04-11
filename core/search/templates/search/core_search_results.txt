@@ -1,0 +1,19 @@
+{% macro display_objs(objs, pk=False) -%}
+    {% if objs -%}
+    {% for obj in objs -%}
+{{ obj.bind_render_record() }}
+    {% endfor -%}
+    {% endif -%}
+{%- endmacro %}
+
+{{ display_objs(nss) -}}
+{{ display_objs(mxs) -}}
+{{ display_objs(srvs) -}}
+{{ display_objs(txts) -}}
+{{ display_objs(cnames) -}}
+{{ display_objs(addrs) -}}
+{{ display_objs(intrs) -}}
+{{ display_objs(ptrs) -}}
+{% for intr in intrs -%}
+{{ intr.bind_render_record(reverse=True) }}
+{% endfor %}

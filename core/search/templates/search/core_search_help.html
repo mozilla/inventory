@@ -1,0 +1,167 @@
+<script>
+    $(document).ready(function (){
+        $('#help_button').click(function (){
+            var s_dialog = $("#help-text").dialog({
+                        title: 'How to use this search.',  // Click the selected record
+                        autoShow: false,
+                        minWidth: 520,
+                        buttons: {
+                            OK: function() {
+                                $(this).dialog("close");
+                            }
+                        }
+                    });
+            s_dialog.show();
+        });
+    });
+
+</script>
+<div id='help-text' style="display: none;">
+<style>
+td {
+    vertical-align: top;
+}
+</style>
+<table border="1">
+    <caption>Search Patterns</caption>
+    <tr>
+        <td>
+            a-zA-Z0-9.
+        </td>
+        <td>
+            <p>
+            Filter objects with <b>plain text</b> words. Objects that match <b>all of the words</b>
+            are returned.
+            </p>
+            <p><code>[ foopy scl3 ]</code></p>
+            <p><code>[ puppet phx1 ]</code></p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            '/'
+        </td>
+        <td>
+            <p>
+            Words that start with the <b>forward slash</b> are assumed to be <b>regex patterns</b>.
+            </p>
+            <p><i>Note: The regular language is that of MySQL. Here is a <a href='http://dev.mysql.com/doc/refman/5.1/en/regexp.html'>reference</a></i></p>
+            <p><code>[ /^puppet\d+ ]</code></p>
+        </td>
+    </tr>
+</table>
+<table border="1">
+    <caption>Operators</caption>
+    <tr>
+        <td>
+            '!'
+        </td>
+        <td>
+            <p>
+            The dash character '!' can be used to <b>negate</b> any search pattern. It can also negate the
+            <code>type</code> directive and parameters in parenthesis.
+            </p>
+        </td>
+    </tr>
+</table>
+<table border="1">
+    <caption>Directives</caption>
+    <tr>
+        <td>
+            type=:
+        </td>
+        <td>
+            <p>
+            The 'type' directive can be used to <b>target a type</b> of object. Type is case
+            insensitive.  <i>Important: A search query contaning the type directive with no other
+            filter will return all objects of that type and might take a while to complete
+            depending on how many objects exist.</i> </p>
+            <p><code>[ type=:CNAME web ]</code></p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            zone=:
+        </td>
+        <td>
+            <p>
+            The 'zone' directive filters DNS records by <b>DNS zone</b>
+            </p>
+            <p><code>[ zone=:phx1.mozilla.com ]</code></p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            site=:
+        </td>
+        <td>
+            <p>
+            The 'site' directive can be used to search for objects that have IP addresses that fall
+            into one of the <b>networks associated with a site</b> (datacenter or business unit).
+            <a href=/core/site/>A list of all Sites</a>
+            </p>
+            <p><code>[ site=:scl2 ]</code></p>
+        </td>
+    </tr>
+    <tr>
+        <td style='avertical-align:text-top;'>
+            vlan=:
+        </td>
+        <td>
+            <p>
+            The 'vlan' directive can be used to search for objects that have IP addresses within one
+            of the <b>networks associated with a specific vlan</b>. <i>Note that vlans can exist in
+            multiple data centers</i>. <a href=/core/vlan/>A list of all Vlans</a>
+            </p>
+            <p><code>[ vlan=:db ]</code></p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            network=:
+        </td>
+        <td>
+            <p>
+            The 'network' directive can be used to search for objects that have <b>IP addresses within
+            a network</b>.
+            </p>
+            <p><code>[ network=:10.22.3.0/23 ]</code></p>
+        </td>
+    </tr>
+        <td>
+            range=:
+        </td>
+        <td>
+            <p>
+            The 'range' directive can be used to search for objects that have IP addresses within
+            a specific range. For example: To see all objects have an IP greater than 10.8.2.0 and
+            less than 10.8.2.30, search <code>range=:10.8.2.0,10.8.2.30</code>.
+            </p>
+        </td>
+    </tr>
+</table>
+<table border="1">
+    <caption>Examples</caption>
+    <tr>
+        <td>
+            <p>
+            <code>puppet site=:scl3 type=:A</code>
+            </p>
+            <p>
+            Find all A records in scl3 that have the string 'puppet' in their name.
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <p>
+            <code>/^node[1-9]\.seamicro (type=:A OR type=:PTR) network=:10.8.32.0/24</code>
+            </p>
+            <p>
+            Find all A and PTR records who's name match the regex '^node[1-9]\.seamicro' that are also in
+            the network 10.8.0.0/16.
+            </p>
+        </td>
+    </tr>
+</table>
+</div>

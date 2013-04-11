@@ -1,0 +1,183 @@
+THIS IS HEAVILY HACKED
+{{https://secure.travis-ci.org/jedie/django-reversion-compare.png?branch=master|Build Status on travis-ci.org}}
+
+= django-reversion-compare =
+
+**django-reversion-compare** is an extension to [[https://github.com/etianen/django-reversion/|django-reversion]] that provides a history compare view to compare two versions of a model which is under reversion.
+
+Comparing model versions is not a easy task. Maybe there are different view how this should looks like.
+This project will gives you a generic way to see whats has been changed.
+
+Many parts are customizable by overwrite methods or subclassing, see above.
+
+== Requirements ==
+
+* Django 1.4 or newer
+* [[https://github.com/jedie/django-tools/|django-tools]] (**only** for running the unittests!)
+
+== installation ==
+
+Just use:
+{{{
+pip install django-reversion-compare
+}}}
+
+Optional you can install [[https://code.google.com/p/google-diff-match-patch/|google-diff-match-patch]] otherwise difflib would be used.
+The easiest way it to use the unofficial package [[http://pypi.python.org/pypi/diff-match-patch/|diff-match-patch]], e.g.:
+{{{
+pip install diff-match-patch
+}}}
+
+=== setup ===
+
+Add **reversion_compare** to **INSTALLED_APPS** in your settings.py, e.g.:
+{{{
+INSTALLED_APPS = (
+    'django...',
+    ...
+    'reversion', # https://github.com/etianen/django-reversion
+    'reversion_compare', # https://github.com/jedie/django-reversion-compare
+    ...
+)
+}}}
+
+=== usage ===
+
+Inherit from **CompareVersionAdmin** instead of **VersionAdmin** to get the compare feature.
+
+admin.py e.g.:
+{{{
+from django.contrib import admin
+from reversion_compare.admin import CompareVersionAdmin
+
+from my_app.models import ExampleModel
+
+class ExampleModelAdmin(CompareVersionAdmin):
+    pass
+
+admin.site.register(ExampleModel, ExampleModelAdmin)
+}}}
+
+=== customize ===
+
+It's possible to change the look for every field or for a entire field type.
+You must only define a methods to your admin class with this name scheme:
+
+* {{{ "compare_%s" % field_name }}}
+* {{{ "compare_%s" % field.get_internal_type() }}}
+
+If there exist no method with this name scheme, the {{{ fallback_compare() }}} method would be used.
+
+example for specify a compare method for a model field by name:
+
+{{{
+class YourAdmin(CompareVersionAdmin):
+    def compare_foo_bar(self, obj_compare):
+        """ compare the foo_bar model field """
+        return "%r <-> %r" % (obj_compare.value1, obj_compare.value2)
+}}}
+
+
+== screenshots ==
+
+Here some screenshots of django-reversion-compare: 
+
+----
+
+How to select the versions to compare:
+
+{{http://www.pylucid.org/static/pylucid.org/screenshots_PyLucid/django-reversion/django-reversion-compare_v0_1_0-01.png|django-reversion-compare_v0_1_0-01.png}}
+
+----
+
+from **v0.1.0**: DateTimeField compare (last update), TextField compare (content) with small changes and a ForeignKey compare (child model instance was added):
+
+{{http://www.pylucid.org/static/pylucid.org/screenshots_PyLucid/django-reversion/django-reversion-compare_v0_1_0-02.png|django-reversion-compare_v0_1_0-02.png}}
+
+----
+
+from **v0.1.0**: Same as above, but the are more lines changed in TextField and the ForeignKey relation was removed:
+
+{{http://www.pylucid.org/static/pylucid.org/screenshots_PyLucid/django-reversion/django-reversion-compare_v0_1_0-03.png|django-reversion-compare_v0_1_0-03.png}}
+
+----
+
+Example screenshot from **v0.3.0**: a many-to-many field compare (friends, hobbies): 
+
+{{http://www.pylucid.org/static/pylucid.org/screenshots_PyLucid/django-reversion/django-reversion-compare_v0_3_0-01.png|django-reversion-compare_v0_3_0-01.png}}
+
+* In the first line, the m2m object has been changed.
+* line 2: A m2m object was deleted
+* line 3: A m2m object was removed from this entry (but not deleted)
+* line 4: This m2m object has not changed
+
+== test ==
+
+=== start local server ===
+
+We ship a simple test project. To use this, do this steps:
+
+{{{
+$ cd path/to/django-reversion-compare/reversion_compare_test_project/
+django-reversion-compare/reversion_compare_test_project$ ./reset.sh # creates test.db3 with syncdb and run createsuperuser
+django-reversion-compare/reversion_compare_test_project$ ./manage.py runserver --traceback
+}}}
+
+See, also: [[http://github.com/jedie/django-reversion-compare/tree/master/reversion_compare_test_project|reversion_compare_test_project]]
+
+=== run unittests ===
+
+via setup.py:
+{{{
+$ cd path/to/django-reversion-compare
+django-reversion-compare$ ./setup.py test
+}}}
+
+via manage.py:
+{{{
+$ cd path/to/django-reversion-compare/reversion_compare_test_project/
+django-reversion-compare/reversion_compare_test_project$ ./manage.py test reversion_compare
+}}}
+
+
+== changelog ==
+
+* v0.3.4 - 20.06.2012:
+** Use VersionAdmin.revision_manager rather than default_revision_manager, contributed by Mark Lavin - see: [[https://github.com/jedie/django-reversion-compare/pull/7|pull request 7]]
+** Use logging for all debug prints, contributed by Bojan Mihelac - see: [[https://github.com/jedie/django-reversion-compare/pull/8|pull request 8]]
+* v0.3.3 - 11.06.2012:
+** Bugfix "ValueError: zero length field name in format" with Python 2.6 [[https://github.com/jedie/django-reversion-compare/issues/5|issues 5]]
+* v0.3.2 - 04.06.2012:
+** Bugfix for Python 2.6 in unified_diff(), see: [[https://github.com/jedie/django-reversion-compare/issues/5|AttributeError: 'module' object has no attribute '_format_range_unified']]
+* v0.3.1 - 01.06.2012:
+** Bugfix: force unicode in html diff
+** Bugfix in unittests
+* v0.3.0 - 16.05.2012:
+** Enhanced handling of m2m changes with follow and non-follow relations.
+* v0.2.2 - 15.05.2012:
+** Compare many-to-many in the right way.
+* v0.2.1 - 10.05.2012:
+** Bugfix for models which has no m2m field: https://github.com/jedie/django-reversion-compare/commit/c8e042945a6e78e5540b6ae27666f9b0cfc94880
+* v0.2.0 - 09.05.2012:
+** many-to-many compare works, too.
+* v0.1.0 - 08.05.2012:
+** First release
+* v0.0.1 - 08.05.2012:
+** collect all compare stuff from old "diff" branch
+** see also:  https://github.com/etianen/django-reversion/issues/147
+
+
+== Links ==
+
+| IRC                 | [[http://www.pylucid.org/permalink/304/irc-channel|#pylucid on freenode.net]]
+| Github              | [[http://github.com/jedie/django-reversion-compare]]
+| Python Packages     | [[http://pypi.python.org/pypi/django-reversion-compare/]]
+| Travis CI           | [[http://travis-ci.org/jedie/django-reversion-compare]]
+
+=== contact ===
+
+Come into the conversation, besides the github communication features:
+
+| Forum   | [[http://www.pylucid.org/en/forum/13/|official 'django-reversion-compare' Forum]]
+| IRC     | #pylucid on freenode.net (Yes, the PyLucid channel...)
+| webchat | http://webchat.freenode.net/?channels=pylucid

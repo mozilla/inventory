@@ -1,0 +1,27 @@
+{% extends "mozdns/mozdns_base.html" %}
+
+{% block title %}
+    {{ form_title }}
+{% endblock %}
+
+{% block content %}
+
+    <script language="Javascript" type="text/javascript" src="/static/javascripts/attribute_adder.js">
+    </script>
+    <div>
+        <span class="dns-title">Edit {{ form.instance }}</span>
+    </div>
+    <div>
+        <span>Back to <a href="{{ form.instance.get_absolute_url() }}">{{ soa }}</a></span>
+    </div>
+    <div>
+        <span><a href='/core/keyvalue/soa/{{form.instance.pk}}/'>Edit</a> Key Value Store</span>
+    </div>
+    <br>
+    <form class="well form-horizontal" method="post" action="">
+        {{ form.as_p() }}
+        </br>
+        <input type="submit" value="Submit" />
+        <br/>
+    </form>
+{% endblock %}

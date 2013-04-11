@@ -1,0 +1,33 @@
+{% extends "core/core_base.html" %}
+
+{% block content %}
+<style type="text/css">
+    /* minimal style for the diffs */
+    del, ins {
+        color: #000;
+        text-decoration: none;
+    }
+    del { background-color: #ffe6e6; }
+    ins { background-color: #e6ffe6; }
+    sup.follow { color: #5555ff; }
+</style>
+
+    <div id="content-main">
+
+        <a href="{{obj.get_history_url()}}">Back to Object History</a>
+
+        <p class="help">
+        Compare {{obj}} at <strong>{{ version1.revision.date_created }}</strong> with <strong>{{ version2.revision.date_created }}</strong>:
+        </p>
+        {% for field_diff in compare_data %}
+            <h4>{{ field_diff.field.verbose_name }}</h4>
+            <div class="module">
+                <p>{{ field_diff.diff }}</p>
+            </div>
+        {% endfor %}
+        {% if not compare_data %}
+            <h4>No changes</h4>
+        {% endif %}
+
+    </div>
+{% endblock %}

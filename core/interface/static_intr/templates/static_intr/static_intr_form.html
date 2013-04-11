@@ -1,0 +1,11 @@
+{% extends "base/base.html" %}
+
+
+{% block dns_content %}
+    <div class='dns-title'>{{ form_title }}</div>
+
+    <form class="well form-horizontal" method="post" action="">
+        {{ form.as_p() }}
+        <input type="submit" value="Submit" />
+    </form>
+{% endblock %}

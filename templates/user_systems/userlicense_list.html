@@ -1,17 +1,41 @@
-{% extends "jinja_base.html" %}
+{% extends "base.html" %}
 {% block content %}
 
+<script>
+	$(document).ready(function(){
+        add_tablesorter($('.listtable')[0]);
+        add_quicksearch($("#quicksearch"), $("#search_hits"), "{{ 'license-quicksearch'|url() }}");
+        $("input").keypress(function(event) {
+            if (event.which == 13) {
+                event.preventDefault();
+                $("#quicksearch-button").click();
+            }
+        });
+        $('#quicksearch-button').click(function (){
+            console.log("clicked");
+            $.get('/en-US/user_systems/licenses/quicksearch/',
+            { quicksearch: $('#quicksearch-val').val() },
+            function (data) {
+                $('#search_hits').empty();
+                $('#search_hits').append(data);
+                $("#search_hits table").tablesorter();
+            });
+            return false;
+        });
+
+
+	});
+</script>
     <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
 <div style="margin-top: 1em; float:right;">
-    <form action="/licenses/quicksearch" onSubmit="return false;">
-        <strong>Quick Search:</strong> <input id="quicksearch" type="text" name="quicksearch" /><input type='submit' name='submit' value='Go' />
-    </form>
+    <strong>Quick Search:</strong> <input id="quicksearch-val" type="text" name="quicksearch" autofocus="autofocus"/><input id='quicksearch-button' type='submit' value='Go' />
 </div>
 <h2>Listing Licenses</h2>
 <a href="{{ 'license-new'|url() }}">Create New</a>
 
 <br />
-<div id="search_hits"></div>
+<div id="search_hits">
+</div>
 <table class="listtable tablesorter">
 	<thead>
         <tr>
@@ -62,10 +86,4 @@
     </td></tr>
     </tfoot>
 </table>
-<script>
-	$().ready(function(){
-        add_tablesorter($('.listtable')[0]);
-        add_quicksearch($("#quicksearch"), $("#search_hits"), "/en-US{{ 'license-quicksearch'|url() }}");
-	});
-</script>
 {% endblock %}

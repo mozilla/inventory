@@ -1,11 +1,11 @@
-{% extends "jinja_base.html" %}
+{% extends "base.html" %}
 {% block subtitle %} - {{ kv }} - edit{% endblock %}
 {% block content %}
     <h2>Key Value Pair - {{kv}}</h2>
     {{form.errors}}
     <form class="editform" action="." method="post">
 <table>
-        {% for field in form %}                                                                                                                                                                                                                          
+        {% for field in form %}
             {% if not field.is_hidden %}
             <tr><td class='label_td'>{{ field.label_tag() }}{% if field.field.required %}<span class="special_class">*</span>{% endif %}:</td><td class='input_td'>{{ field }}{{ field.errors }}</td></tr>
             {% else %}

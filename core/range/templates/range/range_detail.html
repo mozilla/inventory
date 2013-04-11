@@ -1,0 +1,50 @@
+{% extends "core/core_base.html" %}
+
+
+{% block content %}
+    <script>
+        $(document).ready(function (){
+            $('#usage_area').html("<img id='loading' style='margin-top:5%;margin-bottom:2%;display:block;' src='{{MEDIA_URL}}images/loading.gif'>");
+            $.get('/core/range/range_usage_ajax/',
+                { start: '{{range.start_str}}', end: '{{range.end_str}}' },
+                function (data) {
+                    $('#usage_area').empty();
+                    $('#usage_area').html(data);
+                });
+        });
+
+    </script>
+    <div>
+        <span class='dns-title'>Range: Start {{ range.start_str }} End: {{ range.end_str}}</span>
+    </div>
+
+
+    {% block action_bar %}
+        {% if range.get_edit_url %}
+            <a class="btn btn-primary" href="{{ range.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if range.get_delete_url %}
+            <a class="btn btn-danger" href="{{ range.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+    <br>
+    <p>This range is in the network <a href='{{ range.network.get_absolute_url()}}'>{{ range.network.network_str }}</a>
+    {% if range.network.vlan %}
+    , which is associated with the vlan <a href="{{ range.network.vlan.get_absolute_url() }}">{{ range.network.vlan.name }} ({{ range.network.vlan.number }})</a>
+    {% endif %}
+
+    {% if range.network.site %}
+    in <a href="{{ range.network.site.get_absolute_url() }}">{{ range.network.site.get_full_name() }}</a>.
+    {% else %}
+    .
+    {% endif %}
+    <span>See <a href="/core/build/{{range.network.pk}}/">DHCP Build Output</a>.</span>
+
+    <div id='usage_area'>
+    </div>
+
+{% endblock %}

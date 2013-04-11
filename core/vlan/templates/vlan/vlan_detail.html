@@ -1,0 +1,36 @@
+{% extends "core/core_base.html" %}
+
+
+{% block content %}
+    <div class='dns-title'><h3>Vlan: <code>{{ vlan }}</code><h3></div>
+
+    {% block action_bar %}
+        {% if vlan.get_edit_url %}
+            <a class="btn btn-primary" href="{{ vlan.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if vlan.get_delete_url %}
+            <a class="btn btn-danger" href="{{ vlan.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+
+        <div>
+            <div style='float:left;'>
+            {% from 'core/core_macros.html' import display_details %}
+            {{ display_details(vlan.details(), caption="Vlan Attributes", obj=vlan) }}
+            </div>
+
+            <div style='float:left; margin-left: 3em;'>
+            {% from 'core/core_macros.html' import display_kv %}
+            {{ display_kv(attrs, obj=vlan, kv_type='vlan') }}
+            </div>
+
+            <div style='float:left; margin-left: 3em;'>
+                {% from 'core/core_macros.html' import display_networks %}
+                {{ display_networks(vlan.network_set.all(), caption="Networks in " + vlan.name, first_header="Network", extra_style="") }}
+            </div>
+        </div>
+{% endblock %}

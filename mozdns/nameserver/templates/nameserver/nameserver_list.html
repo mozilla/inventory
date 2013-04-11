@@ -1,0 +1,9 @@
+{% extends "mozdns/mozdns_list.html" %}
+
+{% block nameserver_nav %}
+    {{ super() }}
+
+    <span class="nav-item">
+        <a class="sub-link nav-link" href="/mozdns/nameserver/create/">Create NS</a>
+    </span>
+{% endblock %}

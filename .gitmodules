@@ -1,3 +1,18 @@
 [submodule "vendor"]
 	path = vendor
 	url = git@github.com:rtucker-mozilla/mozilla_inventory_lib.git
+[submodule "vendor-local/src/iscpy"]
+	path = vendor-local/src/iscpy
+	url = git://github.com/uberj/iscpy.git
+[submodule "vendor-local/src/dnspython"]
+	path = vendor-local/src/dnspython
+	url = https://github.com/uberj/dnspython.git
+[submodule "vendor-local/src/django-reversion"]
+	path = vendor-local/src/django-reversion
+	url = https://github.com/etianen/django-reversion.git
+[submodule "vendor-local/src/django-south"]
+	path = vendor-local/src/django-south
+	url = git://github.com/lambdafu/django-south.git
+[submodule "vendor-local/src/parsley"]
+	path = vendor-local/src/parsley
+	url = https://github.com/washort/parsley

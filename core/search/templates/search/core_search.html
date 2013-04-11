@@ -1,0 +1,250 @@
+{% extends "core/core_base.html" %}
+{% block head %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.js" type="text/javascript"></script>
+    <script src="{{ MEDIA_URL }}js/jquery-ui-1.8.11.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.11.custom.css" type="text/css" />
+    <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+{% endblock %}
+{% block content %}
+
+<style type="text/css">
+.center{
+    text-align: center;
+}
+div advanced-search-knobs input{
+    display:inline;
+}
+
+</style>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("input").keypress(function(event) {
+            if (event.which == 13) {
+                event.preventDefault();
+                $("#btn_s").click();
+            }
+        });
+        function get_advanced_search_options(){
+            var adv_str = ""
+            var select_types = [];
+            if($('#SOA_f').attr('checked')){
+                select_types.push("type=:SOA");
+            }
+            if($('#A_f').attr('checked')){
+                select_types.push("type=:A");
+            }
+            if ($('#CNAME_f').attr('checked')) {
+                select_types.push("type=:CNAME");
+            }
+            if ($('#Domain_f').attr('checked')) {
+                select_types.push("type=:Domain");
+            }
+            if ($('#INTR_f').attr('checked')) {
+                select_types.push("type=:INTR");
+            }
+            if ($('#System_f').attr('checked')) {
+                select_types.push("type=:System");
+            }
+            if ($('#MX_f').attr('checked')) {
+                select_types.push("type=:MX");
+            }
+            if ($('#NS_f').attr('checked')) {
+                select_types.push("type=:NS");
+            }
+            if ($('#PTR_f').attr('checked')) {
+                select_types.push("type=:PTR");
+            }
+            if ($('#SRV_f').attr('checked')) {
+                select_types.push("type=:SRV");
+            }
+            if ($('#TXT_f').attr('checked')) {
+                select_types.push("type=:TXT");
+            }
+            if (select_types.length != 0) {
+                adv_str = adv_str + " (" + select_types.join(" OR ") + ")";
+            }
+            if ($('#zone-select :selected').val() != 'Any') {
+                if (adv_str != "") {
+                    adv_str = adv_str + " AND "
+                }
+                adv_str = adv_str + "zone=:" + $('#zone-select :selected').val()
+            }
+            if ($('input[name=view-group]:radio:checked').length) {
+                if($('input[name=view-group]:radio:checked').val() == 'both') {
+                    // pass
+                } else {
+                    if (adv_str != "") {
+                        adv_str = adv_str + " AND "
+                    }
+                    view_filter = "view=:" + $('input[name=view-group]:radio:checked').val();
+                    adv_str = adv_str + view_filter;
+
+                }
+            }
+            return adv_str;
+        }
+        function get_and_display_search(){
+            search = document.getElementById('id_search').value;
+            window.location.hash = '#q='+search;
+            // First make the banner go away. Then push everthing to the left... just like google.
+            $('#banner_text').empty();
+            $('#banner_area').css('text-align', 'left');
+            $('.banner').css('margin-bottom', '10px');
+            $('#btn_i').remove();
+            $('#results').html("<img id='loading' style='margin-top:5%;margin-bottom:2%;display:block;' src='{{MEDIA_URL}}images/loading.gif'>");
+            var start = new Date().getTime();
+
+            // We might want to abort this.
+            $('#stop_search').css('display', 'inline');
+            var search_request = $.get('/core/search/search_ajax/',
+                    {
+                        'search': search,
+                        'advanced_search': get_advanced_search_options(),
+                    },
+                    function update_results(data){
+                        $('#stop_search').css('display', 'none');
+                        results = document.getElementById('results');
+                        results.innerHTML = data;
+                        // Every table needs to have it's feilds configured.
+                        $(".system-table").tablesorter({
+                            sortList: [[0,1]],
+                            headers: {
+                                0: { sorter:'hostname' },
+                                1: { sorter:'ipAddress' },
+                            }
+                        });
+                        $(".record-table").tablesorter({
+                            sortList: [[0,1]],
+                            headers: {
+                                0: { sorter:'hostname' },
+                                1: { sorter:false },
+                                2: { sorter:'hostname' },
+                            }
+                        });
+                        $(".intr-table").tablesorter({
+                            sortList: [[0,1],[2,1]],
+                            headers: {
+                                0: { sorter:'hostname' },
+                                1: { sorter:false },
+                                2: { sorter:'ipAddress' },
+                            }
+                        });
+                        $(".ptr-table").tablesorter({
+                            sortList: [[0,1],[2,1]],
+                            headers: {
+                                0: { sorter:'ipAddress' },
+                                1: { sorter:false },
+                                2: { sorter:'hostname' },
+                            }
+                        });
+                        $(".addr-table").tablesorter({
+                            sortList: [[0,1],[2,1]],
+                            headers: {
+                                1: { sorter:false },
+                                2: { sorter:'ipAddress' },
+                            }
+                        });
+                        $(".tablesorter th:last-child").css('width', '40px');
+
+                        var end = new Date().getTime();
+                        var time = end - start;
+                        $('#search-time').html('In ('+time/1000+' seconds)');
+                        var or = jQuery.parseJSON($('#overflow-info').attr('data-objs'));
+                        var max_obj_num = jQuery.parseJSON($('#overflow-info').attr('data-max-obj-num'));
+                        console.log(or);
+                        console.log(max_obj_num);
+                        msg = ""
+                        for (var key in or){
+                            if (or[key] > max_obj_num){
+                                msg += or[key] + " " + key + " objects were returned.  Results truncated to " + max_obj_num + ".\n"
+                            }
+                            console.log(key + " " + or[key]);
+                        }
+                        if (msg != ""){
+                            msg += "Please be more specific with your search query."
+                            alert(msg);
+                        }
+            }).error(function(e) {
+                console.log(e);
+                if (e['statusText'] != "abort"){
+                    var newDoc = document.open("text/html", "replace");
+                    newDoc.write(e.responseText);
+                    newDoc.close();
+                } else {
+                    $('#results').html('');
+                }
+            });
+            $('#stop_search').click(function (){
+                search_request.abort();
+            });
+        }
+
+        $('#btn_s').click(function (){
+                get_and_display_search();
+        });
+        $('#btn_i').click(function (){
+                get_and_display_search();
+        });
+        $('#advanced_button').click(function (){
+            $('#advanced-search-knobs').toggle();
+        });
+        // hash, we use that data as the initial data.
+        var params = window.location.hash.split('&');
+        console.log(window.location.hash);
+        if ( window.location.hash && params.length >= 1){
+            $('#id_search').attr('value', params[0].substr(3));
+            get_and_display_search();
+        } else if ("{{search}}" != "") {
+            get_and_display_search();
+        }
+    });
+</script>
+<div id="banner_area" class="banner center">
+    <div id='banner_text'><h1>Inventory</h1></div>
+    <input class='search_tools' id="id_search" type="text" size="50" name="search" value="{{ search }}" autofocus="autofocus" style='margin-bottom; 20px'>
+    <div style='display:block;'></div>
+    <input class='search_tools' value="Search" title="Search" type="button" id="btn_s">
+    <input value="I'm Feeling Lucky" title="I'm Feeling Lucky" name="lucky" type="submit" id="btn_i">
+    <input class='search_tools' value="Help" title="Help" type="button" id="help_button">
+    <input class='search_tools' value="Advanced Search" title="Advanced Search" type="button" id="advanced_button">
+    <div id='advanced-search-knobs' style="display:none;">
+        <span>Filter by object type: </span>
+        <div id='selectors'>
+            <label for='SOA_f'>SOA: <input type='checkbox' id='SOA_f'/></label>
+            <label for='A_f'>A/AAAA: <input type='checkbox' id='A_f'/></label>
+            <label for='CNAME_f'>CNAME: <input type='checkbox' id='CNAME_f'/></label>
+            <label for='Domain_f'>Domain: <input type='checkbox' id='Domain_f'/></label>
+            <label for='INTR_f'>INTR: <input type='checkbox' id='INTR_f'/></label>
+            <label for='System_f'>System: <input type='checkbox' id='System_f'/></label>
+            <label for='MX_f'>MX: <input type='checkbox' id='MX_f'/></label>
+            <label for='NS_f'>NS: <input type='checkbox' id='NS_f'/></label>
+            <label for='PTR_f'>PTR: <input type='checkbox' id='PTR_f'/></label>
+            <label for='SRV_f'>SRV: <input type='checkbox' id='SRV_f'/></label>
+            <label for='TXT_f'>TXT: <input type='checkbox' id='TXT_f'/></label>
+        </div>
+        <span>Filter by DNS view:</span>
+        <div id='view-select'>
+            <input type='radio' name='view-group' id='both' value='both' checked="checked"/>Both
+            <input type='radio' name='view-group' id='public' value='public'/>Public
+            <input type='radio' name='view-group' id='private' value='private'/>Private
+        </div>
+        <span>Filter by DNS zone:</span>
+        <select id='zone-select'>
+            <option value='Any'/>Any Zone</option>
+            {% for zone in zones %}
+            <option value='{{zone}}'/>{{zone}}</option>
+            {% endfor %}
+        </select>
+        <div id='network-select'>
+        </div>
+        <div id='site-select'>
+        </div>
+        <div id='vlan-select'>
+        </div>
+    </div>
+</div>
+<div id="results" width="100%">
+</div>
+<input class='search_tools' value="Stop Search" title="Stop Search" type="button" id="stop_search" style="display:none;">
+{% include 'search/core_search_help.html' %}
+{% endblock %}

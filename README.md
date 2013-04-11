@@ -1,4 +1,8 @@
-Mozilla Inventory
-=======
+=========
+Inventory
+=========
 
-Mozilla's Inventory is a web application template based on Playdoh and django.
+Inventory keeps inventory of all the things.
+
+Unofficial docs, see http://people.mozilla.com/~juber/public/docs/html/
+(Please point out mistakes)

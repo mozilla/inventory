@@ -1,0 +1,19 @@
+{% extends "mozdns/mozdns_detail.html" %}
+
+{% block content %}
+    {{ super() }}
+
+    {% from "base/tables.html" import render_table %}
+    <p><a href='/mozdns/bind/build_debug/{{ soa.pk }}/'>See compiled BIND file for this Zone</a></p>
+
+    {% if dom_matrix %}
+        <h3> Domains </h3>
+        {{ render_table(dom_headers, dom_matrix, dom_urls, views=False) }}
+    {% endif %}
+
+    {% if rdom_matrix %}
+        <h3> Reverse Domains </h3>
+        {{ render_table(rdom_headers, rdom_matrix, rdom_urls, views=False) }}
+    {% endif %}
+
+{% endblock %}

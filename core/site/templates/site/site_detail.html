@@ -1,0 +1,63 @@
+{% extends "core/core_base.html" %}
+
+
+{% block content %}
+    <div class='dns-title'><h3>{{ site.get_full_name() }}</h3></div>
+    <div>
+    {% if site.parent %}
+        Parent site: <a href='{{ site.parent.get_absolute_url() }}'>{{ site.parent.get_full_name() }}</a>
+        </br>
+    {% endif %}
+    </div>
+
+
+    {% block action_bar %}
+        {% if site.get_edit_url %}
+            <a class="btn btn-primary" href="{{ site.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if site.get_delete_url %}
+            <a class="btn btn-danger" href="{{ site.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+
+
+        <div>
+            {% from 'core/core_macros.html' import display_details %}
+            <div style='float:left;'>
+            {{ display_details(site.details(), obj=site) }}
+            </div>
+
+            <div style='float:left; margin-left: 3em;'>
+                {% from 'core/core_macros.html' import display_kv %}
+                {{ display_kv(attrs, obj=site, kv_type='site') }}
+            </div>
+
+            <div style='float:left; margin-left: 3em;'>
+            {% if child_sites %}
+                <table class="tablesorter" >
+                    <caption>Sub Sites</caption>
+                    <tr>
+                        <th>Site</th>
+                    </tr>
+                    {% for child_site in child_sites %}
+                        <tr>
+                            <td>
+                                <a href='{{ child_site.get_absolute_url() }}'>{{ child_site.get_full_name() }}</a>
+                        </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            {% endif %}
+            </div>
+        </div>
+
+
+        <div style='display:table;'>
+            {% from 'core/core_macros.html' import display_networks %}
+            {{ display_networks(site.network_set.all(), first_header="Networks homed in "+site.get_full_name()+".", extra_style="width: 100%; margin-left:3em;") }}
+        </div>
+{% endblock %}

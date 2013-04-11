@@ -1,0 +1,66 @@
+{% extends "core/core_base.html" %}
+
+
+{% block content %}
+    <div class='dns-title'><h3>{{ network }}</h3></div>
+
+    {% block action_bar %}
+        {% if network.get_edit_url %}
+            <a class="btn btn-primary" href="{{ network.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if network.get_delete_url %}
+            <a class="btn btn-danger" href="{{ network.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+
+    <br>
+    <span>See <a href="/core/build/{{network.pk}}/">DHCP Build Output</a>.</span>
+
+        <div>
+            <div style='float:left;'>
+            {% from 'core/core_macros.html' import display_details %}
+            {{ display_details(network.details(), caption="Network Attributes", obj=network) }}
+            </div>
+
+            <div style='float:left; margin-left: 3em;'>
+            {% from 'core/core_macros.html' import display_kv %}
+            {{ display_kv(attrs, obj=network, kv_type='network') }}
+            </div>
+
+            <div style='float:left; margin-left: 3em;'>
+            {% from 'core/core_macros.html' import display_networks %}
+            {{ display_networks(eldars, caption="Parent Network", first_header="Network", extra_style="") }}
+            </div>
+
+            <div style='float:left; margin-left: 3em;'>
+            {{ display_networks(sub_networks, first_header="Sub Networks", extra_style="") }}
+            </div>
+        </div>
+
+
+        {% if ranges %}
+                <div style='display:inline-block; margin-left: 3em;'>
+                <table class="tablesorter">
+                        <caption>Ranges</caption>
+                        <th>Type</th>
+                        <th>Start</th>
+                        <th>End</th>
+                        <th>Usage</th>
+
+                        {% for range in ranges %}
+                        <tr>
+                            <td>{{ range.get_rtype_display() }}</td>
+                            <td><a href='{{range.get_absolute_url()}}'>{{ range.start_str }}</a></td>
+                            <td><a href='{{range.get_absolute_url()}}'>{{ range.end_str }}</a></td>
+                            {% set ru = range.range_usage() %}
+                            <td>{{ ru['precent_used']}}</td>
+                        </tr>
+                        {% endfor %}
+                </table>
+                </div>
+        {% endif %}
+{% endblock %}

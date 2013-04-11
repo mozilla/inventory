@@ -1,0 +1,38 @@
+{% extends "mozdns/mozdns_detail.html" %}
+
+{% block content %}
+
+<div class='dns-title'>PTR {{ object.name }}</div>
+    {% if object.reverse_domain %}
+        <a class="btn" href="{{ object.reverse_domain.get_absolute_url() }}">View Reverse Domain</a>
+    {% endif %}
+
+        <a class="btn" href="{{ object.get_edit_url() }}">Edit</a>
+        <a class="btn" href="{{ object.get_delete_url() }}">Delete</a>
+
+    {% from "base/tables.html" import render_table %}
+
+    <table class="table">
+        <thead>
+            {% for item, value in object.details() %}
+                <th>{{ item }}</th>
+            {% endfor %}
+                <th>Views</th>
+        </thead>
+
+        <tbody>
+            <tr>
+            {% for item, value in object.details() %}
+                <td>
+                    {{ value }}
+                </td>
+            {% endfor %}
+            {% for view in object.views.all() %}
+                <td>
+                    {{ view }}
+                </td>
+            {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}

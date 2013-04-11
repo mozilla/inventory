@@ -1,4 +1,4 @@
-{% extends "jinja_base.html" %}
+{% extends "base.html" %}
 {% block subtitle %}: Key Value Store{% endblock %}
 {% block content %}
 {% block head %}
@@ -150,7 +150,7 @@ jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function ( oSettings, iDelay )
 			"fnRowCallback": function( nRow, aData, iDisplayIndex ) {
 						/* Append the grade to the default row class name */
                     if(aData[2]){
-                        $('td:eq(2)', nRow).html('<a href="/truth/edit/' + aData[2] + '">Edit</a>&nbsp;<a href="/truth/delete/' + aData[2]+ '/" onclick="return confirm(\'Are you sure?\');">Delete</a>');
+                        $('td:eq(2)', nRow).html('<a href="/truth/edit/' + aData[2] + '/">Edit</a>&nbsp;<a href="/truth/delete/' + aData[2]+ '/" onclick="return confirm(\'Are you sure?\');">Delete</a>');
                     }
 					return nRow;
 			},
