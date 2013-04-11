@@ -372,8 +372,8 @@ class System(DirtyFieldsMixin, models.Model):
         choices=YES_NO_CHOICES, blank=True, null=True)
     is_switch = models.IntegerField(
         choices=YES_NO_CHOICES, blank=True, null=True)
-    warranty_start = models.DateTimeField(blank=True, null=True)
-    warranty_end = models.DateTimeField(blank=True, null=True)
+    warranty_start = models.DateTimeField(blank=True, null=True, default=None)
+    warranty_end = models.DateTimeField(blank=True, null=True, default=None)
 
     objects = models.Manager()
     build_objects = BuildManager()
@@ -426,8 +426,7 @@ class System(DirtyFieldsMixin, models.Model):
         self.validate_warranty()
 
     def validate_warranty(self):
-        if (self.warranty_start or self.warranty_end and
-                not (self.warranty_start and self.warranty_end)):
+        if bool(self.warranty_start) ^ bool(self.warranty_end):
             raise ValidationError(
                 "Warranty must have a start and end date"
             )

@@ -90,13 +90,11 @@ class SystemForm(forms.ModelForm):
     warranty_start = forms.DateField(
         required=False,
         widget=SelectDateWidget(years=range(1999,datetime.today().year + 5)),
-        initial=datetime.now()
     )
 
     warranty_end = forms.DateField(
         required=False,
         widget=SelectDateWidget(years=range(1999,datetime.today().year + 50)),
-        initial=datetime.now()
     )
 
     def clean_hostname(self):
