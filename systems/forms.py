@@ -166,6 +166,7 @@ class SystemForm(forms.ModelForm):
                   'oob_switch_port',
                   'system_status',
                   'system_rack',
+                  'system_type',
                   'rack_order',
                   'asset_tag',
                   'is_dhcp_server',
