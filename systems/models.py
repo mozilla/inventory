@@ -294,6 +294,10 @@ class SystemRack(models.Model):
     name = models.CharField(max_length=255, blank=True)
     location = models.ForeignKey('Location')
 
+    class Meta:
+        db_table = u'system_racks'
+        ordering = ['name']
+
     def __unicode__(self):
         return "%s - %s" % (self.name, self.location.name)
 
@@ -304,19 +308,15 @@ class SystemRack(models.Model):
     def systems(self):
         return self.system_set.select_related().order_by('rack_order')
 
-    class Meta:
-        db_table = u'system_racks'
-        ordering = ['name']
-
 
 class SystemType(models.Model):
     type_name = models.CharField(max_length=255, blank=True)
 
-    def __unicode__(self):
-        return self.type_name
-
     class Meta:
         db_table = u'system_types'
+
+    def __unicode__(self):
+        return self.type_name
 
 
 class SystemStatus(models.Model):
