@@ -101,7 +101,9 @@ def _search(request, response):
     except OperationalError as why:
         return HttpResponse(response(**{'error_messages': str(why)}))
 
+    format = request.GET.get('format', '')
     results = {
+        'format': format,
         'meta': {
             'counts': obj_counts,
             'total_objects': total_objects,

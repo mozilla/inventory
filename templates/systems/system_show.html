@@ -2,6 +2,7 @@
 {% block subtitle %} - {{ system.hostname }} - show{% endblock %}
 {% block content %}
 <script type="text/javascript" src="/static/javascripts/master_form_utils.js"></script>
+<script type="text/javascript" src="/static/javascripts/system_show.js"></script>
 <!-- ^ Contains the make smart name function -->
 
 <div>
@@ -143,8 +144,17 @@
   <div style="clear:both;"></div>
 {% endif %}
 
-</div><div>
+</div>
 
+<script>
+    $(document).ready(function(){
+        display_inpage_search_results('{{system.hostname}}', '#system-dns-info');
+    });
+</script>
+<div id="system-dns-info">
+</div>
+
+<div>
 <dl class="show">
 <dt>Notes: </dt>
 <dd style="float:left; font-size:medium; margin: 3px 0 0 -3px;"><pre style='width: 700px; white-space: normal;'>{{ system.notes_with_link }}</pre></dd>
