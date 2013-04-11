@@ -2,7 +2,7 @@ from django.db import models
 from systems.models import OperatingSystem, ServerModel
 from datetime import datetime, timedelta, date
 from django.db.models.query import QuerySet
-from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, BUG_URL
+from settings import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS, BUG_URL
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 

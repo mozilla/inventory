@@ -161,6 +161,8 @@ INTERNAL_IPS = ('127.0.0.1','10.22.74.139','10.250.2.54')
 def custom_show_toolbar(request):
     return True # Always show toolbar, for example purposes only.
 
+BUG_URL = 'https://bugzilla.mozilla.org/show_bug.cgi?id='
+
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
     'SHOW_TOOLBAR_CALLBACK': custom_show_toolbar,
