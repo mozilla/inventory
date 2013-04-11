@@ -330,6 +330,7 @@ class System(DirtyFieldsMixin, models.Model):
     licenses = models.TextField(blank=True, null=True)
     allocation = models.ForeignKey('Allocation', blank=True, null=True)
     system_rack = models.ForeignKey('SystemRack', blank=True, null=True)
+    system_type = models.ForeignKey('SystemType', blank=True, null=True)
     rack_order = models.DecimalField(null=True, blank=True, max_digits=6, decimal_places=2)
     switch_ports = models.CharField(max_length=255, blank=True, null=True)
     patch_panel_port = models.CharField(max_length=255, blank=True, null=True)
