@@ -37,19 +37,12 @@ class ObjectUrlMixin(object):
     # assign a better field.  Something like "url handle".  TODO2. Using
     # db_table for now. It looks weird, but it works.
     def get_absolute_url(self):
-        """
-        Return the absolute url of an object.
-        """
-        return MOZDNS_BASE_URL + "/{0}/{1}/".format(
-            self._meta.db_table, self.pk
-        )
-
-    def absolute_url(self):
-        return self.get_absolute_url()
+        return self.get_fancy_edit_url()
 
     def get_history_url(self):
-        return "/reversion_compare/history_view/{0}/{1}/".format(self.rdtype,
-                                                                 self.pk)
+        return "/reversion_compare/history_view/{0}/{1}/".format(
+            self.rdtype, self.pk
+        )
 
     def get_edit_url(self):
         """
@@ -59,14 +52,48 @@ class ObjectUrlMixin(object):
 
     def get_fancy_edit_url(self):
         return MOZDNS_BASE_URL + _(
-            "/record/update/{0}/{1}/").format(self.rdtype,
-                                              self.pk)
+            "/record/update/{0}/{1}/").format(self.rdtype, self.pk)
 
     def get_delete_url(self):
         """
         Return the delete url of an object.
         """
         return MOZDNS_BASE_URL + "/{0}/{1}/delete/".format(
+            self._meta.db_table, self.pk
+        )
+
+    def get_create_url(self):
+        """
+        Return the create url of the type of object.
+        """
+        return MOZDNS_BASE_URL + "/{0}/create/".format(self._meta.db_table)
+
+
+class DBTableURLMixin(object):
+    def get_fancy_edit_url(self):
+        return self.get_edit_url()
+
+    def get_edit_url(self):
+        """
+        Return the delete url of an object.
+        """
+        return MOZDNS_BASE_URL + "/{0}/{1}/update/".format(
+            self._meta.db_table, self.pk
+        )
+
+    def get_delete_url(self):
+        """
+        Return the delete url of an object.
+        """
+        return MOZDNS_BASE_URL + "/{0}/{1}/delete/".format(
+            self._meta.db_table, self.pk
+        )
+
+    def get_absolute_url(self):
+        """
+        Return the delete url of an object.
+        """
+        return MOZDNS_BASE_URL + "/{0}/{1}/".format(
             self._meta.db_table, self.pk
         )
 

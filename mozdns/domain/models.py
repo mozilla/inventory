@@ -2,7 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 from mozdns.soa.models import SOA
-from mozdns.mixins import ObjectUrlMixin
+from mozdns.mixins import DBTableURLMixin
 from mozdns.validation import validate_domain_name
 from mozdns.validation import do_zone_validation
 from mozdns.search_utils import smart_fqdn_exists
@@ -11,7 +11,7 @@ from mozdns.validation import validate_reverse_name
 from mozdns.domain.utils import name_to_domain
 
 
-class Domain(models.Model, ObjectUrlMixin):
+class Domain(models.Model, DBTableURLMixin):
     """
     A Domain is used as a foreign key for most DNS records.
 
@@ -105,9 +105,6 @@ class Domain(models.Model, ObjectUrlMixin):
     @property
     def rdtype(self):
         return 'DOMAIN'
-
-    def get_edit_url(self):
-        return '/mozdns/domain/{0}/update/'.format(self.pk)
 
     def details(self):
         return (
