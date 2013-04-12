@@ -11,10 +11,20 @@ import os
 black_list = (
     'svc.mozilla.com',
     'services.mozilla.com',
-    )
+)
 
 PRIVATE = os.path.join(settings.ZONE_PATH, "config/zones.private")
 PUBLIC = os.path.join(settings.ZONE_PATH, "config/zones.public")
+
+def show_possible_imports(zones_file, view):
+    CONFIG = os.path.join(settings.ZONE_PATH, zones_file)
+    zones = MakeNamedDict(open(CONFIG).read())
+    m_c = ('python manage.py dns_migrate_single_zone {view} {zone_name} '
+            '$ZONES_PREFIX/{fname}')
+    for zone_name, zone_meta in zones['orphan_zones'].iteritems():
+        print m_c.format(
+            view=view, zone_name=zone_name, fname=zone_meta['file']
+        )
 
 def do_import():
     private_zones = MakeNamedDict(open(PRIVATE).read())
