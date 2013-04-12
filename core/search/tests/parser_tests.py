@@ -87,7 +87,7 @@ class ANDTest(T):
         self.assertTrue(callable(self.parse(t)))
 
     def test2(self):
-        t = 'aND'
+        t = 'AND'
         self.assertTrue(callable(self.parse(t)))
 
 
@@ -99,7 +99,7 @@ class ORTest(T):
         self.assertTrue(callable(self.parse(t)))
 
     def test2(self):
-        t = 'oR'
+        t = 'OR'
         self.assertTrue(callable(self.parse(t)))
 
 
@@ -212,4 +212,14 @@ class EXPRTests(T):
     def test26(self):
         t = "type=:foo.bar !type=:baz"
         out = "(('type', 'foo.bar') AND (NOT ('type', 'baz')))"
+        self.assertEqual(out, self.parse(t))
+
+    def test27(self):
+        t = "mozillaecuador.org OR mozillaecuador.org"
+        out = "(mozillaecuador.org OR mozillaecuador.org)"
+        self.assertEqual(out, self.parse(t))
+
+    def test28(self):
+        t = "mozillaecuadOR.org"
+        out = "mozillaecuadOR.org"
         self.assertEqual(out, self.parse(t))

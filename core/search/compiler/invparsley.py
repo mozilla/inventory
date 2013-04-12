@@ -12,14 +12,15 @@ grammar = """
 #   - compile
 
 ws = ' '*
+wss = ' '+
 not_ws = :c ?(c not in (' ', '\t')) -> c
 letter = :c ?('a' <= c <= 'z' or 'A' <= c <= 'Z') -> c
 special = '_' | '.' | '-' | ':' | ','
 
 # Lexical Operators
 NOT = '!'
-AND = <letter+>:and_ ?(and_.lower() == 'and') -> self.AND_op()
-OR = <letter+>:or_ ?(or_.lower() == 'or') -> self.OR_op()
+AND = <letter+>:and_ ?(and_ == 'AND') -> self.AND_op()
+OR = <letter+>:or_ ?(or_ == 'OR') -> self.OR_op()
 
 # Directive
 EQ = '=:'
@@ -31,7 +32,7 @@ DRCT = <d_lhs+>:d EQ <d_rhs+>:v -> self.directive(d, v)
 RE = '/' <(not_ws)+>:r -> self.regexpr(r)
 
 # Regular text
-text = (~OR ~AND ~NOT (letterOrDigit | special ))+
+text = (~OR ~AND ~NOT <(letterOrDigit | special )+>:t) -> t
 TEXT = <text+>:t -> self.text(t)
 
 
@@ -53,13 +54,13 @@ parens = '(' ws expr:e ws ')' -> e
 # 3) e_or
 
 # x AND y  <-- Explicit AND
-e_and = AND:op ws value:v -> (op, v)
+e_and = AND:op wss value:v -> (op, v)
 
 # x y  <-- Implicit AND
 i_and = (' '+ ~OR ~AND) value:v -> (self.AND_op(), v)
 
 # x OR y  <-- Explicit OR
-e_or = OR:op ws expr_2:v -> (op, v)
+e_or = OR:op wss expr_2:v -> (op, v)
 
 
 # Compile
