@@ -9,15 +9,11 @@
 {% endblock %}
 
 {% block content %}
-    {# Edit form (hidden) #}
-    {#  form (hidden) #}
-    {# List objects #}
     <script>
-
     $(document).ready(function(){
         // A little bit of js to handle the timing of doing search results
         var timerHandle;
-        var timeOutInterval = 200; //1 second
+        var timeOutInterval = 200; // 2 seconds
         $('#search-query').keyup(function(){
             clearTimeout(timerHandle);
             if ($('#search-query').val()){
@@ -28,7 +24,6 @@
         $('#create-button').click(function(){
             window.location = '/mozdns/record/create/{{record_type}}/';
         });
-
     });
     </script>
 

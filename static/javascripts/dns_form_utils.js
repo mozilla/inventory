@@ -37,6 +37,7 @@ function select_state(state) {
             insert_new_form(data.attr('record_type'), data.attr('record_pk'),
                 function (){
                     bind_smart_names();
+                    bind_view_ip_type_detection();
                 },
                 function (){
                     if ($('#object_redirect_url').attr('record-url')) {
@@ -63,7 +64,7 @@ function select_state(state) {
                 insert_new_form(data.record_type, '',
                     function (){
                         bind_smart_names();
-                        return;
+                        bind_view_ip_type_detection();
                     },
                     function (){
                         if ($('#object_redirect_url').attr('record-url')) {
@@ -77,7 +78,7 @@ function select_state(state) {
                 insert_new_form(data.attr('record_type'), data.attr('record_pk'),
                     function (){
                         fix_css();
-                        return;
+                        bind_view_ip_type_detection();
                     },
                     function (){
                     }
@@ -400,6 +401,44 @@ function make_free_ip_search(target_ip_str, start, end, dialog_div, message_area
                 // pass
                 $(this).dialog("close");
             }
+        }
+    });
+}
+
+function set_ip_type(ip){
+    if(ip.indexOf('.') > 0) {
+        $("#id_ip_type option[value='4']").attr("selected", "selected");
+        $("#id_ip_type option[value='6']").removeAttr("selected");
+    } else if(ip.indexOf(':') > 0) {
+        $("#id_ip_type option[value='4']").removeAttr("selected");
+        $("#id_ip_type option[value='6']").attr("selected", "selected");
+    }
+}
+
+function bind_view_ip_type_detection() {
+    // If an ip starts with '10' automatically set the private view
+    // If an ip starts with '63.245' automatically set the public view
+    var public_prefixs = ['63.245', '2620:0101', '2620:101'];
+    var private_prefixs = ['10'].concat(public_prefixs);
+    var found = false; // Help us only do view detect once
+
+    var i; // loop var
+
+    $('#id_ip_str').keyup(function(){
+        set_ip_type($('#id_ip_str').val());
+        function do_detect(prefixs, view_el){
+            var ip_str = $('#id_ip_str').val();
+            for(i = 0; i < prefixs.length; i++) {
+                if (ip_str.substring(0, prefixs[i].length) === prefixs[i]) {
+                    $(view_el).attr('checked', 'checked');
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found) {  // Only do view detect if we havne't done it before
+            do_detect(private_prefixs, '#id_views_0');
+            do_detect(public_prefixs, '#id_views_1');
         }
     });
 }
