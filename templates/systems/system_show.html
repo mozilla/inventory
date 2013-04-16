@@ -73,6 +73,9 @@
 <dd>{{ system.warranty_start.year }}-{{ system.warranty_start.month }}-{{ system.warranty_start.day }} to
   {{ system.warranty_end.year }}-{{ system.warranty_end.month }}-{{ system.warranty_end.day }}</dd>
 <div style="clear:both;"></div>
+{% else %}
+<dt>Warrenty: </dt>
+<dd>None</dd>
 {% endif %}
 
 <dt>Operating System:</dt>

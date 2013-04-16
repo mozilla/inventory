@@ -237,18 +237,18 @@ class SystemHandler(BaseHandler):
                     s.purchase_price = request.POST['purchase_price']
                 if 'purchase_date' in request.POST:
                     s.purchase_date = request.POST['purchase_date']
+                if 'warranty_start' in request.POST:
+                    s.warranty_start = request.POST['warranty_start']
+                if 'warranty_end' in request.POST:
+                    s.warranty_end = request.POST['warranty_end']
                 if 'oob_ip' in request.POST:
                     s.oob_ip = request.POST['oob_ip']
-
                 if 'hostname' in request.POST:
                     s.hostname = request.POST['hostname']
-
                 if 'notes' in request.POST:
                     s.notes = request.POST['notes']
-
                 if 'notes_append' in request.POST:
                     s.notes = "%s\n%s" % (s.notes, request.POST['notes_append'])
-
                 if 'oob_switch_port' in request.POST:
                     s.oob_switch_port = request.POST['oob_switch_port']
 
