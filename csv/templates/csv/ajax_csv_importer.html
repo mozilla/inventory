@@ -1,0 +1,15 @@
+{% if error %}
+    {{ error }}
+{% else %}
+    <code>
+    {% for bundle in result %}
+        --------------------------------------------------------------
+        {% for attr in attrs %}
+            {{ attr }}: {{ getattr(bundle['system'], attr) }}
+        {% endfor %}
+        {% for kv in bundle['kvs'] %}
+            {{ kv.key }}: {{ kv.value }}
+        {% endfor %}
+    {% endfor %}
+    </code>
+{% endif %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+    <style>
+        #csv-data {
+            width: 98%;
+        }
+        #csv-results {
+            margin-top: 20px;
+            background-color: white;
+        }
+    </style>
+    <script src="{{ MEDIA_URL }}javascripts/csv_importer.js" type="text/javascript"></script>
+    <div>
+        <form id='csv-form'>
+            <textarea id='csv-data' rows="10" cols="500" name='csv-data'>
+hostname
+example.mozilla.com
+            </textarea>
+            <input type="checkbox" name="save" value="save"><span>Write csv to the database</span><br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+    <div>
+    <a href='/en-US/csv/format/'>CSV Field Reference</a>
+    </div>
+    <div id='csv-results'>
+    </div>
+{% endblock %}

@@ -1,14 +1,7 @@
-import sys
 import operator
-import os
 import re
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                os.pardir, os.pardir)))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-import manage
-
-from resolver import Resolver
+from csv.resolver import Resolver
 from systems.models import *
 
 
@@ -18,19 +11,19 @@ class Generator(object):
         self.headers = headers
         self.delimiter = ','
 
-        system_attr_bundles = [
+        self.system_attr_bundles = [
             (handle, b(self.r))
             for handle, b
             in self.r.system_attrs.iteritems()
         ]
 
-        system_related_bundles = [
+        self.system_related_bundles = [
             (handle, b(self.r))
             for handle, b
             in self.r.system_relateds.iteritems()
         ]
 
-        system_kv_bundles = [
+        self.system_kv_bundles = [
             (handle, b(self.r))
             for handle, b
             in self.r.system_kvs.iteritems()
@@ -53,11 +46,12 @@ class Generator(object):
         maynot be saved.
         """
         bundle_lists = [
-            system_attr_bundles, system_related_bundles, system_kv_bundles
+            self.system_attr_bundles, self.system_related_bundles,
+            self.system_kv_bundles
         ]
         action_list = []
         fail = False
-        for header in headers:
+        for (header, raw_header) in headers:
             found_handler = False
 
             for (phase, bundle_list) in enumerate(bundle_lists):
@@ -77,16 +71,16 @@ class Generator(object):
                     handler_matches = bundle.get('match_func', re_in)
 
                     if handler_matches(header):
-                        action_list.append((phase, header, bundle['handler']))
+                        # related attributes use raw_header
+                        action_list.append((phase, raw_header, bundle['handler']))
                         found_handler = True
                         break  # Break the inner loop
 
             if found_handler:
                 continue
-            print "Couldn't find handler for header {0}".format(header)
-            fail = True
+            fail = "Couldn't find handler for header {0}".format(header)
         if fail:
-            raise Exception()
+            raise Exception(fail)
         self.action_list = action_list
 
     def handle(self, line):
@@ -101,7 +95,7 @@ class Generator(object):
             if phase == 0:
                 phase_0.append((action, item))
             elif phase == 1:
-                phase_1.append((action, item))
+                phase_1.append((action, header, item))
             elif phase == 2:
                 phase_2.append((action, header, item))
             else:
@@ -113,16 +107,19 @@ class Generator(object):
             s = action(s, item)
 
         # Phase 1 Related fields
-        for action, item in phase_1:
-            s = action(s, item)
+        for action, header, item in phase_1:
+            s = action(s, header, item)
 
         # Phase 2 key value paires
         kv_cbs = []  # keyvalue call backs
         for action, key, value in phase_2:
-            def keyvalue_cb(system, key=key, value=value):
-                return KeyValue.objects.get_or_create(
-                    system=system, key=key, value=value
-                )[0]
+            def keyvalue_cb(system, key=key, value=value, save=True):
+                if save:
+                    return KeyValue.objects.get_or_create(
+                        system=system, key=key, value=value
+                    )[0]
+                else:
+                    return KeyValue(system=system, key=key, value=value)
 
             # Set the function name for debugging purposes
             keyvalue_cb.__name__ = key + ' ' + value
@@ -131,29 +128,45 @@ class Generator(object):
         return s, kv_cbs
 
 
-def main(fname):
+def csv_import(lines, save=True):
     r = Resolver()
+    generator = None
+
+    def make_header(header):
+        # sometimes headers have a '%' in them. We want everything to the
+        # left of the first '%'
+        return header.split('%')[0].lower(), header
+
+    ret = []
+    for line in [line.strip() for line in lines]:
+        if not line:
+            continue
+        if not generator:
+            generator = Generator(
+                r, [make_header(header) for header in line.split(',')]
+            )
+            continue
+        s, kv_callbacks = generator.handle(line)
+        try:
+            # Do this so we can run this multiple times
+            existing = System.objects.get(hostname=s.hostname)
+            s.pk = existing.pk  # Hackity hacky sack
+        except System.DoesNotExist:
+            pass
+        if save:
+            s.save()
+
+        kvs = []
+        for cb in kv_callbacks:
+            kvs.append(cb(s, save=save))
+        ret.append({'system': s, 'kvs': kvs})
+    return ret
+
+
+def main(fname):
     host = "http://toolsdev1.dmz.scl3.mozilla.com:8000"
     query = host + '/en-US/core/search/#q'
     with open(fname, 'r') as fd:
-        generator = None
-        for line in fd.readlines():
-            if not generator:
-                generator = Generator(
-                    r, [l.strip().lower() for l in line.split(',')]
-                )
-                continue
-            s, kv_callbacks = generator.handle(line)
-            try:
-                # Do this so we can run this multiple times
-                existing = System.objects.get(hostname=s.hostname)
-                s.pk = existing.pk  # Hackity hacky sack
-            except System.DoesNotExist:
-                pass
-            s.save()
-
-            for cb in kv_callbacks:
-                cb(s)
-            query += s.hostname + ' OR '
+        csv_import(fd.readlines())
 
     print query.strip(' OR ')

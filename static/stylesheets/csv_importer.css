@@ -1,0 +1,12 @@
+
+.csv tbody tr > td:first-child {
+    width: 35%;
+    text-align: center;
+}
+.csv {
+    width: 400px;
+}
+
+.system-related-doc div p {
+    background-color:#000;
+}
