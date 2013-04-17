@@ -23,6 +23,23 @@ class Generics(object):
         }
         return bundle
 
+    def generic_float(self, name, values, default=None):
+        def validate(s, value):
+            try:
+                value = float(value)
+            except ValueError:
+                raise ValidationError(
+                    "{0} {1} coult not be coerced into a float".format(name, value)
+                )
+            setattr(s, name, value)
+            return s
+        bundle = {
+            'name': name,
+            'values': values,
+            'handler': validate
+        }
+        return bundle
+
     def generic_char(self, name, values, default=None):
         bundle = {
             'name': name,
@@ -86,7 +103,7 @@ class Resolver(Generics):
     def rack_order(self, **kwargs):
         name = 'rack_order'
         values = ['rack_order']
-        return self.generic_integer(name, values, **kwargs)
+        return self.generic_float(name, values, **kwargs)
 
     @system_attr
     def notes(self, **kwargs):
@@ -224,7 +241,7 @@ class Resolver(Generics):
     def rack_order(self, **kwargs):
         name = 'rack_order'
         values = ['rack_order']
-        return self.generic_integer(name, values, **kwargs)
+        return self.generic_float(name, values, **kwargs)
 
     @system_attr
     def notes(self, **kwargs):
