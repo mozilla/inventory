@@ -1,6 +1,7 @@
 import operator
 import re
 
+from django.core.exceptions import ValidationError
 from csv.resolver import Resolver
 from systems.models import *
 
@@ -52,6 +53,7 @@ class Generator(object):
         action_list = []
         fail = False
         for (header, raw_header) in headers:
+            header = header.strip()
             found_handler = False
 
             for (phase, bundle_list) in enumerate(bundle_lists):
@@ -80,7 +82,7 @@ class Generator(object):
                 continue
             fail = "Couldn't find handler for header {0}".format(header)
         if fail:
-            raise Exception(fail)
+            raise ValidationError(fail)
         self.action_list = action_list
 
     def handle(self, line):
@@ -99,7 +101,7 @@ class Generator(object):
             elif phase == 2:
                 phase_2.append((action, header, item))
             else:
-                raise Exception("wut?")
+                raise ValidationError("wut?")
 
         # Phase 0 System attributes
         s = System()
@@ -122,7 +124,8 @@ class Generator(object):
                     return KeyValue(system=system, key=key, value=value)
 
             # Set the function name for debugging purposes
-            keyvalue_cb.__name__ = key + ' ' + value
+            keyvalue_cb.__name__ = "{0} {1}".format(key, value)
+
             kv_cbs.append(keyvalue_cb)
 
         return s, kv_cbs

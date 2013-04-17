@@ -12,7 +12,7 @@
         <p>
         <b>System Attributes</b> are attributes assigned directly to a
         system. They don't have forien keys and are usually something that can
-        be stored as text or integert.
+        be stored as text or an integer.
         </p>
 
         <p>
@@ -21,6 +21,32 @@
         SystemRack). It is important to make sure that the objects you refer to
         with realted attributes already exist before they are refered to in a
         csv.
+        </p>
+        </p>
+        Related objects need to be identified by search terms when they are
+        assigned to a system. This means that objects that have composite keys
+        will sometimes need to be filtered by multiple values. Take for example
+        the <code>OperationSystem</code>, which is determined by it's
+        <code>version</code> <i>and</i> it's <code>name</code>.
+        To specify both a version a name for an operating system,
+        delimit your csv header with field names appended to the normal field
+        title. For example, if you wanted to assign the OperatingSystem
+        'Redhat 6.2', you would need to have a csv header like:
+        </p>
+
+        <p>
+            <code>      operation_system%name%version</code>
+        </p>
+
+        <p>
+        Your data would need the same sort of delimiter scheme:
+        </p>
+
+        <p>
+            <code>        Redhad Enterprise Linux%6.2</code>
+        </p>
+        <p>For a nice overview of Inventory's database scheme, see
+        <a href='http://people.mozilla.com/~juber/public/inventory.png'>this picture</a>
         </p>
         </td>
         </table>
@@ -37,37 +63,6 @@
     {% endfor %}
     </div>
 
-    <div class='system-related-doc'>
-        <h4>Related Field Format</h4>
-        <table class='tablesorter'>
-            <td>
-                </p>
-                Related objects need to be identified by search terms when they are
-                assigned to a system. This means that objects that have composite keys
-                will sometimes need to be filtered by multiple values. Take for example
-                the <code>OperationSystem</code>, which is determined by it's
-                <code>version</code> <i>and</i> it's <code>name</code>.
-                To specify both a version a name for an operating system,
-                delimit your csv header with field names appended to the normal field
-                title. For example, if you wanted to assign the OperatingSystem
-                'Redhat 6.2', you would need to have a csv header like:
-                </p>
-
-                <p>
-                    <code>      operation_system%name%version</code>
-                </p>
-
-                <p>
-                Your data would need the same sort of delimiter scheme:
-                </p>
-
-                <p>
-                    <code>        Redhat%6.2</code>
-                </p>
-            </td>
-        </table>
-    </div>
-
     <div class='system-related'>
     <h4>System Related Attributes</h3>
     {% for field_name, bundle in  generator.system_related_bundles %}
@@ -75,6 +70,7 @@
             <caption>{{field_name}}</caption>
             <tr><td>Allowable headers:</td><td>{{', '.join(bundle['values'])}}</td></tr>
             <tr><td>Schema column name:</td><td>{{field_name}}</td></tr>
+            <tr><td>Filter names:</td><td>{{', '.join(bundle['filter_fields'])}}</td></tr>
         <table>
     {% endfor %}
     </div>

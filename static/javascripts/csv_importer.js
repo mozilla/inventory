@@ -1,22 +1,17 @@
 $(document).ready(function () {
+    $("#clear-csv-data").click(function() {
+        console.log("clearing");
+        $('#csv-data').val('');
+    });
+
     $("#csv-form").submit(function( event ) {
-        console.log("foo");
-        console.log( $('#csv-form').serialize() );
-        /*
-        $.post("/en-US/csv/ajax_csv_importer/", $('#csv-form').serialize(), function (data) {
-            console.log('data')
-            $('#csv-results').empty();
-            $('#csv-results').append('<h3>Results</h3>');
-            $('#csv-results').append(data);
-        });
-        */
+        $('#csv-results').empty();
         $.ajax({
             type: "POST",
             url: "/en-US/csv/ajax_csv_importer/",
             data: $('#csv-form').serialize(),
             success: function (data) {
                 console.log('data')
-                $('#csv-results').empty();
                 $('#csv-results').append(data);
             },
             error: function (e) {
@@ -31,11 +26,4 @@ $(document).ready(function () {
         });
         return false;
     });
-});
-
-$(document).ajaxError(function(e) {
-    console.log(e)
-    //var newDoc = document.open("text/html", "replace");
-    //newDoc.write(e.responseText);
-    //newDoc.close();
 });

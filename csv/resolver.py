@@ -2,14 +2,16 @@
 # http://people.mozilla.com/~juber/public/inventory.png
 
 from systems.models import *
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+from django.core.exceptions import (
+    MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
+)
 
 
 class Generics(object):
     def generic_integer(self, name, values, default=None):
         def validate(s, value):
             if not value.isdigit():
-                raise Exception(
+                raise ValidationError(
                     "{0} {1} was not the right type".format(name, value)
                 )
             setattr(s, name, value)
@@ -170,11 +172,10 @@ class Resolver(Generics):
         values = ['warranty_end']
         return self.generic_char(name, values, **kwargs)
 
-    def cannot_find(self, field):
-        raise Exception(
+    def cannot_find(self, field, value):
+        raise ValidationError(
             "Unfortunatly, we could not determine a {0} to use given the "
-            "value {0}. Use the primary key of the {0} for better "
-            "results.".format(field)
+            "value '{1}'".format(field, value)
         )
 
     def get_related_simple(self, field, value, Klass):
@@ -185,7 +186,7 @@ class Resolver(Generics):
         obj = self._get_pk_related(value, Klass)
         if obj:
             return obj
-        self.cannot_find(field)
+        self.cannot_find(field, value)
 
     def get_related(self, field, value, Klass, delimiter='%'):
         """
@@ -194,10 +195,12 @@ class Resolver(Generics):
         """
         fields = field.split('%')
         if '%' not in field or len(fields) < 1:
-            raise Exception(
+            raise ValidationError(
                 "We need to determine what fields to search for when looking "
                 "for objects coresponding to the {0} header. Please specify "
-                "them by doing something like: {0}%<field_name> ".format(field)
+                "some filter fields by doing something like: {0}%({1})'".format(
+                    field, ' | '.join(self.get_field_names(Klass))
+                )
             )
         fields = field.split('%')[1:]
         values = value.split('%')
@@ -206,12 +209,12 @@ class Resolver(Generics):
         obj = self._get_dict_related(search, Klass)
         if obj:
             return obj
-        self.cannot_find(field)
+        self.cannot_find(field, value)
 
     def _get_dict_related(self, search, Klass):
         try:
             return Klass.objects.get(**search)
-        except MultipleObjectsReturned:
+        except (MultipleObjectsReturned, Klass.DoesNotExist):
             pass
 
     def _get_pk_related(self, value, Klass):
@@ -220,6 +223,10 @@ class Resolver(Generics):
         except ObjectDoesNotExist:
             pass
 
+    # XXX this should really be in the classes themselves
+    def get_field_names(self, Klass):
+        return [field.name for field in Klass._meta.fields]
+
     @system_related
     def systemrack(self, **kwargs):
         def _systemrack(s, header, value):
@@ -227,6 +234,7 @@ class Resolver(Generics):
             return s
         bundle = {
             'name': 'systemrack',
+            'filter_fields': self.get_field_names(SystemRack),
             'values': ['system_rack'],
             'handler': _systemrack
         }
@@ -239,6 +247,7 @@ class Resolver(Generics):
             return s
         bundle = {
             'name': 'systemstatus',
+            'filter_fields': self.get_field_names(SystemStatus),
             'values': ['system_status'],
             'handler': _system_status
         }
@@ -251,6 +260,7 @@ class Resolver(Generics):
             return s
         bundle = {
             'name': 'server_model',
+            'filter_fields': self.get_field_names(ServerModel),
             'values': ['server_model'],
             'handler': _server_model
         }
@@ -264,6 +274,7 @@ class Resolver(Generics):
             return s
         bundle = {
             'name': 'operating_system',
+            'filter_fields': self.get_field_names(OperatingSystem),
             'values': ['operating_system'],
             'handler': _operating_system
         }
@@ -276,6 +287,7 @@ class Resolver(Generics):
             return s
         bundle = {
             'name': 'allocation',
+            'filter_fields': self.get_field_names(ServerModel),
             'values': ['allocation'],
             'handler': _allocation
         }
@@ -284,10 +296,11 @@ class Resolver(Generics):
     @system_related
     def system_type(self, **kwargs):
         def _system_type(s, header, value):
-            s.allocation = self.get_related(header, value, ServerModel)
+            s.allocation = self.get_related(header, value, SystemType)
             return s
         bundle = {
             'name': 'system_type',
+            'filter_fields': self.get_field_names(SystemType),
             'values': ['system_type'],
             'handler': _system_type
         }

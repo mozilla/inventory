@@ -417,6 +417,10 @@ class System(DirtyFieldsMixin, models.Model):
                 self.notes = re.sub(pattern, bug_link, self.notes)
         return self.notes
 
+    @classmethod
+    def field_names(cls):
+        return [field.name for field in cls._meta.fields]
+
     def save(self, *args, **kwargs):
         self.save_history(kwargs)
         self.clean()
@@ -430,7 +434,9 @@ class System(DirtyFieldsMixin, models.Model):
             raise ValidationError(
                 "Warranty must have a start and end date"
             )
-        if self.warranty_start > self.warranty_end:
+        if not self.warranty_start:
+            return
+        if self.warranty_start.timetuple() > self.warranty_end.timetuple():
             raise ValidationError(
                 "warranty start date should be before the end date"
             )

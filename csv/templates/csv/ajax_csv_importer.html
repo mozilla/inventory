@@ -1,37 +1,50 @@
+<style>
+    .results code {
+        border:5px solid white;
+    }
+</style>
 {% if 'error' in result %}
     <code>
-    {{ result['error'] }}
+        {% for error in result['error'] %}
+            {{ error }}
+        {% endfor %}
     </code>
 {% else %}
-    <h3>Proposed Systems</h3>
-    <code>
-    <table>
+    <table class='tablesorter results'>
+        {% if save %}
+            <caption><h3>Systems (all fields saved)</h3></caption>
+        {% else %}
+            <caption><h3>Proposed Changes</h3></caption>
+        {% endif %}
     {% for bundle in result %}
-        <tr>
-            <td>{{ "+- {0} {1}+".format(bundle['system'].hostname, '-' * (100 - len(bundle['system'].hostname))) }}</td>
-        </tr>
+        <th>
+            {% if bundle['system'].pk %}
+                <a href='{{ bundle['system'].get_absolute_url() }}'>{{ bundle['system'].hostname }}</a>
+            {% else %}
+                {{bundle['system'].hostname}} ( Not created yet )
+            {% endif %}
+        </th>
+        <th></th>
         {% for attr in attrs %}
-            <tr>
-                <td>| {{ attr }}: {{ getattr(bundle['system'], attr) }}</td>
-            </tr>
+            {% if getattr(bundle['system'], attr) %}
+                <tr>
+                    <td>{{ attr }}</td><td>{{ getattr(bundle['system'], attr) }}</td>
+                </tr>
+            {% endif %}
         {% endfor %}
         <tr>
-            <td>+- Key Value Pairs ------------------------------------------+</td>
+            <td><b>Added Key Value Pairs</b></td><td></td>
         </tr>
         {% if not bundle['kvs'] %}
             <tr>
-                <td>| No KV pairs</td>
+                <td><i>No KV pairs</i></td></td><td></td>
             </tr>
         {% endif %}
         {% for kv in bundle['kvs'] %}
             <tr>
-                <td>| {{ kv.key }}: {{ kv.value }}</td>
+                <td>{{ kv.key }}</td><td>{{ kv.value }}</td>
             </tr>
         {% endfor %}
-        <tr>
-            <td>+------------------------------------------------------------+</td>
-        </tr>
     {% endfor %}
     </table>
-    </code>
 {% endif %}

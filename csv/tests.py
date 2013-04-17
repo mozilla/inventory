@@ -100,5 +100,4 @@ class CSVTests(TestCase):
         foobob.mozilla.com,2011-03-01,2012-03-12
         """.split('\n')
         ret = csv_import(test_csv, save=False)
-        import pdb;pdb.set_trace()
         self.assertTrue(ret[0]['kvs'])

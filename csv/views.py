@@ -1,5 +1,4 @@
-import simplejson as json
-
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.shortcuts import render
 
@@ -16,21 +15,22 @@ def csv_importer(request):
     })
 
 def ajax_csv_importer(request):
-    save = request.POST.get('save', False)
+    save = True if request.POST.get('save', False) else False
     raw_csv_data = request.POST.get('csv-data', '')
 
     @transaction.commit_manually
     def do_csv_import(data):
         try:
-            result = csv_import(data, save=True if save else False)
+            return csv_import(data, save=save)
+        except ValidationError, e:
+            transaction.rollback()
+            return {'error': e.messages}
         except Exception, e:
             transaction.rollback()
-            import pdb;pdb.set_trace()
-            return {'error': e.messages}
-        transaction.commit()
-        return result
+            return {'error': ['Error: ' + e.message]}
+        finally:
+            transaction.commit()
 
-    import pdb;pdb.set_trace()
     result = do_csv_import(raw_csv_data.split('\n'))
 
     attrs = [field.name for field in System._meta.fields]
@@ -39,6 +39,7 @@ def ajax_csv_importer(request):
         'attrs': attrs,
         'result': result,
         'getattr': getattr,
+        'save': save,
         'len': len
     })
 
