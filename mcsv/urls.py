@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import url, patterns
-from csv.views import *
+from mcsv.views import *
 
 
 urlpatterns = patterns('',

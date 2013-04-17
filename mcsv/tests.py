@@ -1,12 +1,6 @@
-# These tests are similar to the ones in the scripts directory. They not ran on
-# real data so the testing db needs to be filled with info.
-
-from django.test.client import Client
 from django.test import TestCase
-from csv.importer import csv_import
-from csv.importer import Generator
+from mcsv.importer import csv_import
 from systems.models import OperatingSystem, System
-
 
 
 class CSVTests(TestCase):
@@ -45,7 +39,7 @@ class CSVTests(TestCase):
         foobob.mozilla.com,foo%1.1
         """.split('\n')
         ret = csv_import(test_csv)
-        self.assertEqual(1 , len(ret))
+        self.assertEqual(1, len(ret))
         self.assertTrue(ret[0]['system'])
 
     def test_multiple(self):
@@ -64,7 +58,7 @@ class CSVTests(TestCase):
         before = System.objects.all().count()
         ret = csv_import(test_csv)
         after = System.objects.all().count()
-        self.assertEqual(9 , len(ret))
+        self.assertEqual(9, len(ret))
         self.assertEqual(before, after - 9)
 
     def test_multiple_no_save(self):
@@ -83,7 +77,7 @@ class CSVTests(TestCase):
         before = System.objects.all().count()
         ret = csv_import(test_csv, save=False)
         after = System.objects.all().count()
-        self.assertEqual(9 , len(ret))
+        self.assertEqual(9, len(ret))
         self.assertEqual(before, after)
 
     def test_keyvalue(self):
@@ -99,5 +93,7 @@ class CSVTests(TestCase):
         hostname,warranty_start,warranty_end
         foobob.mozilla.com,2011-03-01,2012-03-12
         """.split('\n')
-        ret = csv_import(test_csv, save=False)
-        self.assertTrue(ret[0]['kvs'])
+        csv_import(test_csv, save=True)
+        s = System.objects.get(hostname='foobob.mozilla.com')
+        self.assertTrue(s.warranty_start)
+        self.assertTrue(s.warranty_end)

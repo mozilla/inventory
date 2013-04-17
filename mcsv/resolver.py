@@ -164,13 +164,162 @@ class Resolver(Generics):
     def warranty_start(self, **kwargs):
         name = 'warranty_start'
         values = ['warranty_start']
+        bundle = self.generic_char(name, values, **kwargs)
+        bundle['handler'] = lambda s, c: setattr(s, name,
+                datetime.datetime.strptime('2012-22-12',"%Y-%M-%d")) or s
+        return bundle
+
+    def generic_kevalue(self, re_patterns):
+        """
+        Validate a keyvalue header
+        """
+        def patterns_match(value):
+            for pattern in re_patterns:
+                if pattern.match(value):
+                    return True
+            return False
+
+        def create_kv(s, key, value):
+            return KeyValue.objects.get_or_create(
+                system=s, key=key, value=value
+            )[0]
+
+        bundle = {
+            'name': 'key_value',
+            'match_func': patterns_match,
+            'handler': create_kv
+        }
+        return bundle
+
+
+class Resolver(Generics):
+    def make_tagger(tagged_methods):
+        def tag(func):
+            tagged_methods[func.__name__] = func
+            return func
+        return tag
+
+    system_attrs = {}
+    system_attr = make_tagger(system_attrs)
+
+    system_relateds = {}
+    system_related = make_tagger(system_relateds)
+
+    system_kvs = {}
+    system_kv = make_tagger(system_kvs)
+
+    system_kv_patterns = []
+    for key_type in ('mac_address', 'ip_address', 'name'):
+        system_kv_patterns.append('nic.\d+.{0}.\d+'.format(key_type))
+        system_kv_patterns.append('mgmt.\d+.{0}.\d+'.format(key_type))
+
+    @system_kv
+    def all_system_keyvalue(self, **kwargs):
+        patterns = []
+        for key_pattern in self.system_kv_patterns:
+            patterns.append(re.compile(key_pattern))
+        return self.generic_kevalue(patterns)
+
+    @system_attr
+    def rack_order(self, **kwargs):
+        name = 'rack_order'
+        values = ['rack_order']
+        return self.generic_integer(name, values, **kwargs)
+
+    @system_attr
+    def notes(self, **kwargs):
+        name = 'notes'
+        values = ['notes']
         return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def license(self, **kwargs):
+        name = 'license'
+        values = ['license']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def asset_tag(self, **kwargs):
+        name = 'asset_tag'
+        values = ['asset_tag']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def serial(self, **kwargs):
+        name = 'serial'
+        values = ['serial']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def switch_ports(self, **kwargs):
+        name = 'switch_ports'
+        values = ['switch_ports']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def patch_panel_port(self, **kwargs):
+        name = 'patch_panel_port'
+        values = ['patch_panel_port']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def purchase_price(self, **kwargs):
+        name = 'purchase_price'
+        values = ['purchase_price']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def ram(self, **kwargs):
+        name = 'ram'
+        values = ['ram']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def oob_switch_port(self, **kwargs):
+        name = 'oob_switch_port'
+        values = ['oob_switch_&_port', 'oob_switch_ports']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def oob_ip(self, **kwargs):
+        name = 'oob_ip'
+        values = ['oob_ip']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def hostname(self, **kwargs):
+        name = 'hostname'
+        values = ['host_name', 'hostname']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def purchase_date(self, **kwargs):
+        name = 'purchase_date'
+        values = ['purchase_date']
+        return self.generic_char(name, values, **kwargs)
+
+    def gen_parse_date(self, field):
+        def parse_date(s, value, **kwargs):
+            d = datetime.datetime.strptime(value, "%Y-%M-%d")
+            setattr(s, field, d)
+            return s
+        return parse_date
+
+    @system_attr
+    def warranty_start(self, **kwargs):
+        name = 'warranty_start'
+        values = ['warranty_start']
+        bundle = self.generic_char(name, values, **kwargs)
+        bundle['handler'] = self.gen_parse_date(name)
+        return bundle
 
     @system_attr
     def warranty_end(self, **kwargs):
         name = 'warranty_end'
         values = ['warranty_end']
-        return self.generic_char(name, values, **kwargs)
+        bundle = self.generic_char(name, values, **kwargs)
+        bundle['handler'] = self.gen_parse_date(name)
+        return bundle
 
     def cannot_find(self, field, value):
         raise ValidationError(

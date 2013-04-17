@@ -2,8 +2,8 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.shortcuts import render
 
-from csv.importer import Resolver, Generator
-from csv.importer import csv_import
+from mcsv.importer import Resolver, Generator
+from mcsv.importer import csv_import
 from systems.models import System
 
 
@@ -13,6 +13,7 @@ def csv_importer(request):
     return render(request, 'csv/csv_importer.html', {
         'generator': generator
     })
+
 
 def ajax_csv_importer(request):
     save = True if request.POST.get('save', False) else False
@@ -42,6 +43,7 @@ def ajax_csv_importer(request):
         'save': save,
         'len': len
     })
+
 
 def csv_format(request):
     r = Resolver()

@@ -2,7 +2,7 @@ import operator
 import re
 
 from django.core.exceptions import ValidationError
-from csv.resolver import Resolver
+from mcsv.resolver import Resolver
 from systems.models import *
 
 
@@ -74,7 +74,9 @@ class Generator(object):
 
                     if handler_matches(header):
                         # related attributes use raw_header
-                        action_list.append((phase, raw_header, bundle['handler']))
+                        action_list.append(
+                            (phase, raw_header, bundle['handler'])
+                        )
                         found_handler = True
                         break  # Break the inner loop
 
