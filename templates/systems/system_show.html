@@ -45,7 +45,11 @@
 <div style="clear:both;"></div>
 
 <dt>SystemRack:</dt>
-<dd>{{ system.system_rack }} <b> - </b> {{ system.rack_order }}</dd>
+{% if system.system_rack %}
+    <dd><a href='{{system.system_rack.get_absolute_url()}}'>{{system.system_rack}}</a><b> - </b> {{ system.rack_order }}</dd>
+{% else %}
+    <dd>None<b> - </b> {{ system.rack_order }}</dd>
+{% endif %}
 <div style="clear:both;"></div>
 
 <dt>System Type:</dt>

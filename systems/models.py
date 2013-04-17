@@ -298,6 +298,12 @@ class SystemRack(models.Model):
         db_table = u'system_racks'
         ordering = ['name']
 
+    def get_absolute_url(self):
+        return '/en-US/systems/racks/?rack={0}'.format(self.pk)
+
+    def get_edit_url(self):
+        return '/en-US/systems/racks/edit/{0}/'.format(self.pk)
+
     def __unicode__(self):
         return "%s - %s" % (self.name, self.location.name)
 
