@@ -1,15 +1,37 @@
-{% if error %}
-    {{ error }}
-{% else %}
+{% if 'error' in result %}
     <code>
+    {{ result['error'] }}
+    </code>
+{% else %}
+    <h3>Proposed Systems</h3>
+    <code>
+    <table>
     {% for bundle in result %}
-        --------------------------------------------------------------
+        <tr>
+            <td>{{ "+- {0} {1}+".format(bundle['system'].hostname, '-' * (100 - len(bundle['system'].hostname))) }}</td>
+        </tr>
         {% for attr in attrs %}
-            {{ attr }}: {{ getattr(bundle['system'], attr) }}
+            <tr>
+                <td>| {{ attr }}: {{ getattr(bundle['system'], attr) }}</td>
+            </tr>
         {% endfor %}
+        <tr>
+            <td>+- Key Value Pairs ------------------------------------------+</td>
+        </tr>
+        {% if not bundle['kvs'] %}
+            <tr>
+                <td>| No KV pairs</td>
+            </tr>
+        {% endif %}
         {% for kv in bundle['kvs'] %}
-            {{ kv.key }}: {{ kv.value }}
+            <tr>
+                <td>| {{ kv.key }}: {{ kv.value }}</td>
+            </tr>
         {% endfor %}
+        <tr>
+            <td>+------------------------------------------------------------+</td>
+        </tr>
     {% endfor %}
+    </table>
     </code>
 {% endif %}

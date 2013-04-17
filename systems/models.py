@@ -419,7 +419,7 @@ class System(DirtyFieldsMixin, models.Model):
 
     def save(self, *args, **kwargs):
         self.save_history(kwargs)
-        self.full_clean()
+        self.clean()
         super(System, self).save(*args, **kwargs)
 
     def clean(self):

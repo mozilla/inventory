@@ -9,7 +9,7 @@ from systems.models import OperatingSystem, System
 
 
 
-class MockBuildScriptTests(TestCase):
+class CSVTests(TestCase):
     def setUp(self):
         OperatingSystem.objects.create(name='foo', version='1.1')
         OperatingSystem.objects.create(name='foo', version='2.1')
@@ -92,4 +92,13 @@ class MockBuildScriptTests(TestCase):
         foobob.mozilla.com,keyvalue
         """.split('\n')
         ret = csv_import(test_csv, save=False)
+        self.assertTrue(ret[0]['kvs'])
+
+    def test_warranty_start_end(self):
+        test_csv = """
+        hostname,warranty_start,warranty_end
+        foobob.mozilla.com,2011-03-01,2012-03-12
+        """.split('\n')
+        ret = csv_import(test_csv, save=False)
+        import pdb;pdb.set_trace()
         self.assertTrue(ret[0]['kvs'])

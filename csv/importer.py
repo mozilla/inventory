@@ -155,7 +155,6 @@ def csv_import(lines, save=True):
             pass
         if save:
             s.save()
-
         kvs = []
         for cb in kv_callbacks:
             kvs.append(cb(s, save=save))

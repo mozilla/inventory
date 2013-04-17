@@ -25,22 +25,21 @@ def ajax_csv_importer(request):
             result = csv_import(data, save=True if save else False)
         except Exception, e:
             transaction.rollback()
-            return {'error': e.message}
+            import pdb;pdb.set_trace()
+            return {'error': e.messages}
         transaction.commit()
         return result
 
+    import pdb;pdb.set_trace()
     result = do_csv_import(raw_csv_data.split('\n'))
 
-    import pdb;pdb.set_trace()
-    attrs = System._meta.get_all_field_names()
-    bad_attrs = ['buildattribute']
-    for bad_attr in bad_attrs:
-        attrs.remove(bad_attr)
+    attrs = [field.name for field in System._meta.fields]
 
     return render(request, 'csv/ajax_csv_importer.html', {
         'attrs': attrs,
         'result': result,
-        'getattr': getattr
+        'getattr': getattr,
+        'len': len
     })
 
 def csv_format(request):

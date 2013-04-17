@@ -152,6 +152,24 @@ class Resolver(Generics):
         values = ['host_name', 'hostname']
         return self.generic_char(name, values, **kwargs)
 
+    @system_attr
+    def purchase_date(self, **kwargs):
+        name = 'purchase_date'
+        values = ['purchase_date']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def warranty_start(self, **kwargs):
+        name = 'warranty_start'
+        values = ['warranty_start']
+        return self.generic_char(name, values, **kwargs)
+
+    @system_attr
+    def warranty_end(self, **kwargs):
+        name = 'warranty_end'
+        values = ['warranty_end']
+        return self.generic_char(name, values, **kwargs)
+
     def cannot_find(self, field):
         raise Exception(
             "Unfortunatly, we could not determine a {0} to use given the "

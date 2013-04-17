@@ -17,7 +17,6 @@ $(document).ready(function () {
             success: function (data) {
                 console.log('data')
                 $('#csv-results').empty();
-                $('#csv-results').append('<h3>Results</h3>');
                 $('#csv-results').append(data);
             },
             error: function (e) {
