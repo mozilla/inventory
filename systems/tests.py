@@ -210,7 +210,7 @@ class SystemTest(TestCase, LocalizeUtils):
         # Make sure that if a ValidationError is raised that we get a 200 and
         # not an ISE
         s = System.objects.create(hostname='foo.mozilla.com')
-        # Bad warrenty dates should cause a VE
+        # Bad warranty dates should cause a VE
         post_data = {
             'warrant_start_year': '2013',
             'warrant_start_month': '12',
