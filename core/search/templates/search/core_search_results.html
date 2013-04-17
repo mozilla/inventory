@@ -2,8 +2,8 @@
 <div id="ajax_results" width="100%">
 <div id='overflow-info' data-objs='{{overflow_results}}' data-max-obj-num='{{MAX_NUM_OBJECTS}}'></div>
 <div id="meta">
-    {% if meta['counts']['soa'] -%}
-        {{ meta['counts']['soa'] }} <a href="#q={{meta['search']}}&SOA">SOA</a> records |
+    {% if meta['counts']['SOA'] -%}
+        {{ meta['counts']['SOA'] }} <a href="#q={{meta['search']}}&SOA">SOA</a> records |
     {% else -%}
         zero SOA records |
     {% endif -%}
