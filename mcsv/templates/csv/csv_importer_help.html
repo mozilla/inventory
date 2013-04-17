@@ -43,16 +43,48 @@
         </p>
 
         <p>
-            <code>        Redhad Enterprise Linux%6.2</code>
+            <code>        Red Hat Enterprise Linux%6.2</code>
         </p>
         <p>For a nice overview of Inventory's database scheme, see
-        <a href='http://people.mozilla.com/~juber/public/inventory.png'>this picture</a>
+            <a href='http://people.mozilla.com/~juber/public/inventory.png'>this picture</a>
         </p>
-        <p>Some exmaple csv's
-        <code>
-            hostname,system_rack%name,rack_order,asset_tag,serial,oob_ip,OOB_switch_&_port,nic.0.mac_address.0,system_status%status,nic.0.name.0,server_model%model
-            asset-16312.console.scl2.mozilla.com,102-19,1,16312,USE308WRHS,10.22.4.208,oob1.r102-19:ge-0/0/0,ac:16:2d:87:c2:0c,production,nic0,DL385G8
-        </code>
+        <p>
+            Some exmaple csv documents:
+        </p>
+        <ul>
+            <li><p>
+                <code>
+                    hostname,system_rack%name,oob_ip,OOB_switch_&_port,nic.0.mac_address.0,system_status%status,nic.0.name.0,server_model%model
+                    foo.scl2.mozilla.com,102-19,10.22.4.208,oob1.r102-19:ge-0/0/0,ac:16:2d:87:c2:0c,production,nic0,DL385G8
+                </code>
+            </li></p>
+            <li><p>
+                <code>
+                    hostname,warranty_start,warranty_end,purchase_price
+                    foo.mozilla.com,2012-02-02,2014-02-2,$400
+                </code>
+                </li></p>
+            <li><p>
+                <code>
+                    hostname,operating_system%name%version
+                    foo.mozilla.com,Red Hat Enterprise Linux%6.2
+                </code>
+            </li></p>
+        </ul>
+        <p>
+            <b>Key Value Pairs</b> can be associated with a system using the key as the
+            csv header and the value as the csv value.
+        </p>
+        <p>
+            The keys following key patterns are permissible to be used as
+            headers (\d+ means multiple 'digits')
+            <ul>
+                {% for p in generator.r.system_kv_patterns %}
+                <li>{{p}}</li>
+                {% endfor %}
+            </ul>
+            If you need more, please just ask as it's easy to add
+            a new key/value type.
         </p>
         </td>
         </table>
