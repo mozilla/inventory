@@ -26,7 +26,7 @@ class Generics(object):
     def generic_float(self, name, values, default=None):
         def validate(s, value):
             try:
-                value = float(value)
+                value = str(float(value))
             except ValueError:
                 raise ValidationError(
                     "{0} {1} coult not be coerced into a float".format(name, value)
