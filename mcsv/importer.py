@@ -5,6 +5,11 @@ from django.core.exceptions import ValidationError
 from mcsv.resolver import Resolver
 from systems.models import *
 
+class MockSystem(object):
+    """
+    A fake system where we can stage changes
+    """
+    pass
 
 class Generator(object):
     def __init__(self, resolver, headers, delimiter=','):
@@ -106,7 +111,7 @@ class Generator(object):
                 raise ValidationError("wut?")
 
         # Phase 0 System attributes
-        s = System()
+        s = MockSystem()
         for action, item in phase_0:
             s = action(s, item)
 
@@ -133,7 +138,7 @@ class Generator(object):
         return s, kv_cbs
 
 
-def csv_import(lines, save=True):
+def csv_import(lines, save=True, primary_attr='hostname'):
     r = Resolver()
     generator = None
 
@@ -151,13 +156,15 @@ def csv_import(lines, save=True):
                 r, [make_header(header) for header in line.split(',')]
             )
             continue
-        s, kv_callbacks = generator.handle(line)
+        mock_s, kv_callbacks = generator.handle(line)
         try:
-            # Do this so we can run this multiple times
-            existing = System.objects.get(hostname=s.hostname)
-            s.pk = existing.pk  # Hackity hacky sack
+            get_params = {primary_attr: getattr(mock_s, primary_attr)}
+            s = System.objects.get(**get_params)
+            for attr, value in vars(mock_s).iteritems():
+                setattr(s, attr, value)
         except System.DoesNotExist:
-            pass
+            s = System(**vars(mock_s))
+
         if save:
             s.save()
         kvs = []

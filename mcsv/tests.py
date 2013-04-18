@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from mcsv.importer import csv_import
 from systems.models import OperatingSystem, System
@@ -97,3 +98,56 @@ class CSVTests(TestCase):
         s = System.objects.get(hostname='foobob.mozilla.com')
         self.assertTrue(s.warranty_start)
         self.assertTrue(s.warranty_end)
+
+    def test_override(self):
+        test_csv = """
+        hostname,warranty_start,warranty_end
+        foobob.mozilla.com,2011-03-01,2012-03-12
+        """.split('\n')
+        s = System.objects.create(hostname='foobob.mozilla.com', serial='1234')
+        csv_import(test_csv, save=True)
+        s = System.objects.get(hostname='foobob.mozilla.com')
+        self.assertTrue(s.serial, '1234')
+
+    def test_multiple_save(self):
+        test_csv = """
+        hostname
+        foobob.mozilla.com
+        foobob.mozilla.com
+        """.split('\n')
+        csv_import(test_csv, save=True)
+        csv_import(test_csv, save=False)
+        csv_import(test_csv, save=True)
+        self.assertEqual(
+            1, System.objects.filter(hostname='foobob.mozilla.com').count()
+        )
+
+    def test_invalid_mac(self):
+        test_csv = """
+        hostname,nic.0.mac_address.0
+        foobob.mozilla.com,11:22:33:44:55:66:77
+        """.split('\n')
+        self.assertRaises(ValidationError, csv_import, test_csv, {'save': True})
+
+    def test_get_asset_tag(self):
+        test_csv = """
+        hostname,warranty_start,warranty_end,asset_tag
+        foobob.mozilla.com,2011-03-01,2012-03-12,1234
+        """.split('\n')
+        s = System.objects.create(hostname='foobob.mozilla.com')
+        csv_import(test_csv, save=True)
+        s = System.objects.get(hostname='foobob.mozilla.com')
+        self.assertTrue(s.asset_tag, '1234')
+
+        test_csv = """
+        hostname,warranty_start,warranty_end,asset_tag
+        changed-the-hostname.mozilla.com,2011-03-01,2012-03-12,1234
+        """.split('\n')
+        csv_import(test_csv, save=True, primary_attr='asset_tag')
+        self.assertEqual(
+            0, System.objects.filter(hostname='foobob.mozilla.com').count()
+        )
+        s = System.objects.get(hostname='changed-the-hostname.mozilla.com')
+        self.assertTrue(s)
+        self.assertEqual('1234', s.asset_tag)
+
