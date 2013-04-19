@@ -99,6 +99,16 @@ class CSVTests(TestCase):
         self.assertTrue(s.warranty_start)
         self.assertTrue(s.warranty_end)
 
+    def test_invalid_field(self):
+        test_csv = """
+        hostname,warranty_start,warranty_end
+        foobob.mozilla.com,2011-03-01,20192-03-12
+        """.split('\n')
+        self.assertRaises(ValueError, csv_import, test_csv, {'save': True})
+        #s = System.objects.get(hostname='foobob.mozilla.com')
+        #self.assertTrue(s.warranty_start)
+        #self.assertTrue(s.warranty_end)
+
     def test_override(self):
         test_csv = """
         hostname,warranty_start,warranty_end
@@ -151,3 +161,21 @@ class CSVTests(TestCase):
         self.assertTrue(s)
         self.assertEqual('1234', s.asset_tag)
 
+    def test_two_primary_attribute(self):
+        test_csv = """
+        primary_attribute%hostname,primary_attribute%asset_tag
+        foobob.mozilla.com,123
+        """.split('\n')
+        self.assertRaises(ValidationError, csv_import, test_csv, {'save': True})
+
+    def test_primary_attribute(self):
+        s = System.objects.create(hostname='foobob.mozilla.com')
+        test_csv = """
+        primary_attribute%hostname,hostname
+        foobob.mozilla.com,foobar.mozilla.com
+        """.split('\n')
+        csv_import(test_csv, save=True, primary_attr='asset_tag')
+        # The primary_attr kwarg shouldn't affect anything
+
+        s1 = System.objects.get(pk=s.pk)
+        self.assertEqual('foobar.mozilla.com', s1.hostname)

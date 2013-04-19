@@ -2,7 +2,7 @@
 {% block content %}
     <link rel="stylesheet" href="/static/stylesheets/csv_importer.css" type="text/css" />
     <style>
-        .csv-help code {
+        .example-csv {
             display: block;
         }
     </style>
@@ -14,14 +14,32 @@
         <p>This page lists the possible csv header values that you can use when
         crafting a CSV</p>
         </p>
+
         <p>
-        <b>System Attributes</b> are attributes assigned directly to a
+        <b><a name='System-Attributes'></a>System Attributes</b> are attributes assigned directly to a
         system. They don't have forien keys and are usually something that can
         be stored as text or an integer.
         </p>
 
         <p>
-        <b>System Related Attributes</b> are attributes that <i>are</i>
+        <b><a name='Meta-Attributes'></a>Meta Attributes</b> are used to tell the CSV parser how to handle
+        the CSV. The <b>primary_attribute</b> header can be used to tell the
+        the csv importer to select a system using one hostname, and using the
+        regular header <b>hostname</b>, update the system to a new hostname.
+
+        Take this example csv:
+        <p>
+            <code class='example-csv'>primary_attribute%hostname,hostname</code>
+            <code class='example-csv'>original-hostname.mozilla.com, new-hostname.hostname</code>
+        </p>
+        This would find a system with a hostname of
+        <code>original-hostname.mozilla.com</code> and change it's hostname
+        to <code>new-hostname.hostname</code>.
+
+        </p>
+
+        <p>
+        <b><a name='System-Related-Attributes'></a>System Related Attributes</b> are attributes that <i>are</i>
         relational and correspond to another object in Inventory (like a
         SystemRack). It is important to make sure that the objects you refer to
         with realted attributes already exist before they are refered to in a
@@ -40,7 +58,7 @@
         </p>
 
         <p>
-            <code>      operation_system%name%version</code>
+            <code class='example-csv'>      operation_system%name%version</code>
         </p>
 
         <p>
@@ -57,26 +75,26 @@
             Some <b>exmaple</b> csv documents:
         </p>
             <p>
-                <code>
+                <code class='example-csv'>
                     hostname,system_rack%name,oob_ip,OOB_switch_&_port,nic.0.mac_address.0,system_status%status,nic.0.name.0,server_model%model
                 </code>
-                <code>
+                <code class='example-csv'>
                     foo.scl2.mozilla.com,102-19,10.22.4.208,oob1.r102-19:ge-0/0/0,ac:16:2d:87:c2:0c,production,nic0,DL385G8
                 </code>
             </p>
             <p>
-                <code>
+                <code class='example-csv'>
                     hostname,warranty_start,warranty_end,purchase_price
                 </code>
-                <code>
+                <code class='example-csv'>
                     foo.mozilla.com,2012-02-02,2014-02-2,$400
                 </code>
             </p>
             <p>
-                <code>
+                <code class='example-csv'>
                     hostname,operating_system%name%version
                 </code>
-                <code>
+                <code class='example-csv'>
                     foo.mozilla.com,Red Hat Enterprise pnux%6.2
                 </code>
             </p>
@@ -100,25 +118,34 @@
         </div>
     </div>
     <div class='system-attr'>
-    <h4>System Attributes</h3>
-    {% for field_name, bundle in  generator.system_attr_bundles %}
-        <table class='tablesorter csv'>
-            <caption>{{field_name}}</caption>
-            <tr><td>Allowable headers:</td><td>{{', '.join(bundle['values'])}}</td></tr>
-            <tr><td>Schema column name:</td><td>{{field_name}}</td></tr>
-        <table>
-    {% endfor %}
+    <h3><a href='#Meta-Attributes'>Meta Attributes</a></h3>
+        {% for field_name, bundle in generator.meta_bundles %}
+            <table class='tablesorter csv'>
+                <caption>{{field_name}}</caption>
+                <tr><td>Allowable headers:</td><td>{{', '.join(bundle['values'])}}</td></tr>
+            <table>
+        {% endfor %}
+    </div>
+    <div class='system-attr'>
+        <h3><a href='#System-Attributes'>System Attributes</a></h3>
+        {% for field_name, bundle in  generator.system_attr_bundles %}
+            <table class='tablesorter csv'>
+                <caption>{{field_name}}</caption>
+                <tr><td>Allowable headers:</td><td>{{', '.join(bundle['values'])}}</td></tr>
+                <tr><td>Schema column name:</td><td>{{field_name}}</td></tr>
+            <table>
+        {% endfor %}
     </div>
 
     <div class='system-related'>
-    <h4>System Related Attributes</h3>
-    {% for field_name, bundle in  generator.system_related_bundles %}
-        <table class='tablesorter csv'>
-            <caption>{{field_name}}</caption>
-            <tr><td>Allowable headers:</td><td>{{', '.join(bundle['values'])}}</td></tr>
-            <tr><td>Schema column name:</td><td>{{field_name}}</td></tr>
-            <tr><td>Filter names:</td><td>{{', '.join(bundle['filter_fields'])}}</td></tr>
-        <table>
-    {% endfor %}
+        <h3><a href='#System-Related-Attributes'>System Related Attributes</a></h3>
+        {% for field_name, bundle in  generator.system_related_bundles %}
+            <table class='tablesorter csv'>
+                <caption>{{field_name}}</caption>
+                <tr><td>Allowable headers:</td><td>{{', '.join(bundle['values'])}}</td></tr>
+                <tr><td>Schema column name:</td><td>{{field_name}}</td></tr>
+                <tr><td>Filter names:</td><td>{{', '.join(bundle['filter_fields'])}}</td></tr>
+            <table>
+        {% endfor %}
     </div>
 {% endblock %}

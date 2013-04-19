@@ -5,6 +5,8 @@ from django.core.exceptions import ValidationError
 from mcsv.resolver import Resolver
 from systems.models import *
 
+# XXX so much stripping going on
+
 class MockSystem(object):
     """
     A fake system where we can stage changes
@@ -13,9 +15,16 @@ class MockSystem(object):
 
 class Generator(object):
     def __init__(self, resolver, headers, delimiter=','):
+        # TODO, use stdlib module csv
         self.r = resolver
         self.headers = headers
         self.delimiter = ','
+
+        self.meta_bundles = [
+            (handle, b(self.r))
+            for handle, b
+            in self.r.metas.iteritems()
+        ]
 
         self.system_attr_bundles = [
             (handle, b(self.r))
@@ -39,26 +48,29 @@ class Generator(object):
         another.
 
         Phase 0)
+        These are meta headers. They set attributes that are not saved to an
+        the database.
+
+        Phase 1)
         System attr headers will have an new system model pushed through their
         handlers and they will set attributes.
 
-        Phase 1)
+        Phase 2)
         System related headers will have a system model (may or maynot have a
         pk) pushed through their handlers and they will set the correct values
         on the system.
 
-        Phase 2)
+        Phase 3)
         System key values will have their system attribute set and then may or
         maynot be saved.
         """
         bundle_lists = [
-            self.system_attr_bundles, self.system_related_bundles,
+            self.meta_bundles, self.system_attr_bundles, self.system_related_bundles,
             self.system_kv_bundles
         ]
         action_list = []
         fail = False
         for (header, raw_header) in headers:
-            header = header.strip()
             found_handler = False
 
             for (phase, bundle_list) in enumerate(bundle_lists):
@@ -100,28 +112,35 @@ class Generator(object):
         phase_0 = []
         phase_1 = []
         phase_2 = []
+        phase_3 = []
         for (phase, header, action), item in zip(self.action_list, data):
             if phase == 0:
-                phase_0.append((action, item))
+                phase_0.append((action, header, item))
             elif phase == 1:
-                phase_1.append((action, header, item))
+                phase_1.append((action, item))
             elif phase == 2:
                 phase_2.append((action, header, item))
+            elif phase == 3:
+                phase_3.append((action, header, item))
             else:
                 raise ValidationError("wut?")
 
-        # Phase 0 System attributes
         s = MockSystem()
-        for action, item in phase_0:
-            s = action(s, item)
-
-        # Phase 1 Related fields
-        for action, header, item in phase_1:
+        # Phase 0 meta headers
+        for action, header, item in phase_0:
             s = action(s, header, item)
 
-        # Phase 2 key value paires
+        # Phase 1 System attributes
+        for action, item in phase_1:
+            s = action(s, item)
+
+        # Phase 2 Related fields
+        for action, header, item in phase_2:
+            s = action(s, header, item)
+
+        # Phase 3 key value paires
         kv_cbs = []  # keyvalue call backs
-        for action, key, value in phase_2:
+        for action, key, value in phase_3:
             def keyvalue_cb(system, key=key, value=value, save=True):
                 if save:
                     return KeyValue.objects.get_or_create(
@@ -145,7 +164,7 @@ def csv_import(lines, save=True, primary_attr='hostname'):
     def make_header(header):
         # sometimes headers have a '%' in them. We want everything to the
         # left of the first '%'
-        return header.split('%')[0].lower(), header
+        return map(lambda s: s.strip().lower(), (header.split('%')[0], header))
 
     ret = []
     for line in [line.strip() for line in lines]:
@@ -158,19 +177,33 @@ def csv_import(lines, save=True, primary_attr='hostname'):
             continue
         mock_s, kv_callbacks = generator.handle(line)
         try:
-            get_params = {primary_attr: getattr(mock_s, primary_attr)}
+            if hasattr(mock_s, '_primary_attr'):
+                get_params = {
+                    mock_s._primary_attr: mock_s._primary_value
+                }
+            else:
+                get_params = {
+                    primary_attr: getattr(mock_s, primary_attr)
+                }
+
             s = System.objects.get(**get_params)
+            orig_system = System.objects.get(pk=s.pk)
+
             for attr, value in vars(mock_s).iteritems():
+                if attr.startswith('_'):
+                    continue
                 setattr(s, attr, value)
+
         except System.DoesNotExist:
             s = System(**vars(mock_s))
+            orig_system = None
 
         if save:
             s.save()
         kvs = []
         for cb in kv_callbacks:
             kvs.append(cb(s, save=save))
-        ret.append({'system': s, 'kvs': kvs})
+        ret.append({'system': s, 'orig_system': orig_system, 'kvs': kvs})
     return ret
 
 

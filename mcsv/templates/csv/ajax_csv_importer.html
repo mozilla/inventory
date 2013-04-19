@@ -28,7 +28,15 @@
         {% for attr in attrs %}
             {% if getattr(bundle['system'], attr) %}
                 <tr>
-                    <td>{{ attr }}</td><td>{{ getattr(bundle['system'], attr) }}</td>
+                    <td>{{ attr }}</td>
+                    <td>
+                    {% if bundle['orig_system'] and
+                        not getattr(bundle['orig_system'], attr) == getattr(bundle['system'], attr) %}
+                        {{ getattr(bundle['orig_system'], attr) }} <b>&rarr;</b> {{ getattr(bundle['system'], attr) }}
+                    {% else %}
+                        {{ getattr(bundle['system'], attr) }}
+                    {% endif %}
+                    </td>
                 </tr>
             {% endif %}
         {% endfor %}
