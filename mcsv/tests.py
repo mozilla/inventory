@@ -99,6 +99,16 @@ class CSVTests(TestCase):
         self.assertTrue(s.warranty_start)
         self.assertTrue(s.warranty_end)
 
+    def test_invalid_field(self):
+        test_csv = """
+        hostname,warranty_start,warranty_end
+        foobob.mozilla.com,2011-03-01,20192-03-12
+        """.split('\n')
+        self.assertRaises(ValueError, csv_import, test_csv, {'save': True})
+        #s = System.objects.get(hostname='foobob.mozilla.com')
+        #self.assertTrue(s.warranty_start)
+        #self.assertTrue(s.warranty_end)
+
     def test_override(self):
         test_csv = """
         hostname,warranty_start,warranty_end
