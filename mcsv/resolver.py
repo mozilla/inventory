@@ -1,10 +1,13 @@
 # Reference for relationships and fields:
 # http://people.mozilla.com/~juber/public/inventory.png
 
-from systems.models import *
 from django.core.exceptions import (
     MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
 )
+from systems import models as sys_models
+
+import datetime
+import re
 
 
 class Generics(object):
@@ -29,7 +32,8 @@ class Generics(object):
                 value = str(float(value))
             except ValueError:
                 raise ValidationError(
-                    "{0} {1} coult not be coerced into a float".format(name, value)
+                    "{0} {1} coult not be coerced into a float".format(
+                        name, value)
                 )
             setattr(s, name, value)
             return s
@@ -59,7 +63,7 @@ class Generics(object):
             return False
 
         def create_kv(s, key, value):
-            return KeyValue.objects.get_or_create(
+            return sys_models.KeyValue.objects.get_or_create(
                 system=s, key=key, value=value
             )[0]
 
@@ -182,8 +186,14 @@ class Resolver(Generics):
         name = 'warranty_start'
         values = ['warranty_start']
         bundle = self.generic_char(name, values, **kwargs)
-        bundle['handler'] = lambda s, c: setattr(s, name,
-                datetime.datetime.strptime('2012-22-12',"%Y-%M-%d")) or s
+
+        def _warranty_start(s, c, **args):
+            setattr(
+                s, name, datetime.datetime.strptime('2012-22-12', "%Y-%M-%d")
+            )
+            return s
+
+        bundle['handler'] = _warranty_start
         return bundle
 
     def generic_kevalue(self, re_patterns):
@@ -197,7 +207,7 @@ class Resolver(Generics):
             return False
 
         def create_kv(s, key, value):
-            return KeyValue.objects.get_or_create(
+            return sys_models.KeyValue.objects.get_or_create(
                 system=s, key=key, value=value
             )[0]
 
@@ -245,7 +255,8 @@ class Resolver(Generics):
                     "'primary_attribute%<system-attribute-header>'"
                 )
             s._primary_value = getattr(
-                self.get_related(header, value, System), s._primary_attr
+                self.get_related(header, value, sys_models.System),
+                s._primary_attr
             )
             return s
 
@@ -391,7 +402,8 @@ class Resolver(Generics):
             raise ValidationError(
                 "We need to determine what fields to search for when looking "
                 "for objects coresponding to the {0} header. Please specify "
-                "some filter fields by doing something like: {0}%({1})'".format(
+                "some filter fields by doing something like: "
+                "{0}%({1})'".format(
                     field, ' | '.join(self.get_field_names(Klass))
                 )
             )
@@ -423,11 +435,13 @@ class Resolver(Generics):
     @system_related
     def systemrack(self, **kwargs):
         def _systemrack(s, header, value):
-            s.system_rack = self.get_related(header, value, SystemRack)
+            s.system_rack = self.get_related(
+                header, value, sys_models.SystemRack
+            )
             return s
         bundle = {
             'name': 'systemrack',
-            'filter_fields': self.get_field_names(SystemRack),
+            'filter_fields': self.get_field_names(sys_models.SystemRack),
             'values': ['system_rack'],
             'handler': _systemrack
         }
@@ -436,11 +450,13 @@ class Resolver(Generics):
     @system_related
     def system_status(self, **kwargs):
         def _system_status(s, header, value):
-            s.system_status = self.get_related(header, value, SystemStatus)
+            s.system_status = self.get_related(
+                header, value, sys_models.SystemStatus
+            )
             return s
         bundle = {
             'name': 'systemstatus',
-            'filter_fields': self.get_field_names(SystemStatus),
+            'filter_fields': self.get_field_names(sys_models.SystemStatus),
             'values': ['system_status'],
             'handler': _system_status
         }
@@ -449,11 +465,13 @@ class Resolver(Generics):
     @system_related
     def server_model(self, **kwargs):
         def _server_model(s, header, value):
-            s.system_model = self.get_related(header, value, ServerModel)
+            s.system_model = self.get_related(
+                header, value, sys_models.ServerModel
+            )
             return s
         bundle = {
             'name': 'server_model',
-            'filter_fields': self.get_field_names(ServerModel),
+            'filter_fields': self.get_field_names(sys_models.ServerModel),
             'values': ['server_model'],
             'handler': _server_model
         }
@@ -462,12 +480,12 @@ class Resolver(Generics):
     @system_related
     def operating_system(self, **kwargs):
         def _operating_system(s, header, value):
-            sm = self.get_related(header, value, OperatingSystem)
+            sm = self.get_related(header, value, sys_models.OperatingSystem)
             s.operating_system = sm
             return s
         bundle = {
             'name': 'operating_system',
-            'filter_fields': self.get_field_names(OperatingSystem),
+            'filter_fields': self.get_field_names(sys_models.OperatingSystem),
             'values': ['operating_system'],
             'handler': _operating_system
         }
@@ -476,11 +494,13 @@ class Resolver(Generics):
     @system_related
     def allocation(self, **kwargs):
         def _allocation(s, header, value):
-            s.allocation = self.get_related(header, value, ServerModel)
+            s.allocation = self.get_related(
+                header, value, sys_models.ServerModel
+            )
             return s
         bundle = {
             'name': 'allocation',
-            'filter_fields': self.get_field_names(ServerModel),
+            'filter_fields': self.get_field_names(sys_models.ServerModel),
             'values': ['allocation'],
             'handler': _allocation
         }
@@ -489,11 +509,13 @@ class Resolver(Generics):
     @system_related
     def system_type(self, **kwargs):
         def _system_type(s, header, value):
-            s.allocation = self.get_related(header, value, SystemType)
+            s.allocation = self.get_related(
+                header, value, sys_models.SystemType
+            )
             return s
         bundle = {
             'name': 'system_type',
-            'filter_fields': self.get_field_names(SystemType),
+            'filter_fields': self.get_field_names(sys_models.SystemType),
             'values': ['system_type'],
             'handler': _system_type
         }

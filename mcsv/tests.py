@@ -137,7 +137,58 @@ class CSVTests(TestCase):
         hostname,nic.0.mac_address.0
         foobob.mozilla.com,11:22:33:44:55:66:77
         """.split('\n')
-        self.assertRaises(ValidationError, csv_import, test_csv, {'save': True})
+        self.assertRaises(
+            ValidationError, csv_import, test_csv, {'save': True}
+        )
+
+    def test_update_key_value(self):
+        test_csv = """
+        hostname,nic.0.name.0
+        foobob.mozilla.com,nic0
+        """.split('\n')
+        csv_import(test_csv, save=True)
+        s = System.objects.get(hostname='foobob.mozilla.com')
+        self.assertEqual(1, s.keyvalue_set.filter(key='nic.0.name.0').count())
+        self.assertEqual('nic0', s.keyvalue_set.get(key='nic.0.name.0').value)
+
+        test_csv = """
+        hostname,nic.0.name.0
+        foobob.mozilla.com,nic33
+        """.split('\n')
+        csv_import(test_csv, save=True)
+        s = System.objects.get(hostname='foobob.mozilla.com')
+        self.assertEqual(1, s.keyvalue_set.filter(key='nic.0.name.0').count())
+        self.assertEqual('nic33', s.keyvalue_set.get(key='nic.0.name.0').value)
+
+        test_csv = """
+        hostname,nic.0.mac_address.0
+        foobob.mozilla.com,11:22:33:44:55:66
+        """.split('\n')
+        csv_import(test_csv, save=True)
+        s = System.objects.get(hostname='foobob.mozilla.com')
+        self.assertEqual(
+            1, s.keyvalue_set.filter(key='nic.0.mac_address.0').count()
+        )
+        self.assertEqual(
+            '11:22:33:44:55:66',
+            s.keyvalue_set.get(key='nic.0.mac_address.0').value
+        )
+        test_csv = """
+        hostname,nic.0.mac_address.0,nic.0.name.0
+        foobob.mozilla.com,11:22:33:44:55:66,nic0
+        """.split('\n')
+        csv_import(test_csv, save=False)
+        csv_import(test_csv, save=True)
+        s = System.objects.get(hostname='foobob.mozilla.com')
+        self.assertEqual(
+            1, s.keyvalue_set.filter(key='nic.0.mac_address.0').count()
+        )
+        self.assertEqual(
+            '11:22:33:44:55:66',
+            s.keyvalue_set.get(key='nic.0.mac_address.0').value
+        )
+        self.assertEqual(1, s.keyvalue_set.filter(key='nic.0.name.0').count())
+        self.assertEqual('nic0', s.keyvalue_set.get(key='nic.0.name.0').value)
 
     def test_get_asset_tag(self):
         test_csv = """
@@ -166,7 +217,9 @@ class CSVTests(TestCase):
         primary_attribute%hostname,primary_attribute%asset_tag
         foobob.mozilla.com,123
         """.split('\n')
-        self.assertRaises(ValidationError, csv_import, test_csv, {'save': True})
+        self.assertRaises(
+            ValidationError, csv_import, test_csv, {'save': True}
+        )
 
     def test_primary_attribute(self):
         s = System.objects.create(hostname='foobob.mozilla.com')

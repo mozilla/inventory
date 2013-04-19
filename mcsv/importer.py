@@ -3,15 +3,17 @@ import re
 
 from django.core.exceptions import ValidationError
 from mcsv.resolver import Resolver
-from systems.models import *
+from systems import models as sys_models
 
 # XXX so much stripping going on
+
 
 class MockSystem(object):
     """
     A fake system where we can stage changes
     """
     pass
+
 
 class Generator(object):
     def __init__(self, resolver, headers, delimiter=','):
@@ -65,8 +67,8 @@ class Generator(object):
         maynot be saved.
         """
         bundle_lists = [
-            self.meta_bundles, self.system_attr_bundles, self.system_related_bundles,
-            self.system_kv_bundles
+            self.meta_bundles, self.system_attr_bundles,
+            self.system_related_bundles, self.system_kv_bundles
         ]
         action_list = []
         fail = False
@@ -142,12 +144,25 @@ class Generator(object):
         kv_cbs = []  # keyvalue call backs
         for action, key, value in phase_3:
             def keyvalue_cb(system, key=key, value=value, save=True):
-                if save:
-                    return KeyValue.objects.get_or_create(
+                orig_kv = None
+                if not system.pk:
+                    # It has to be a new key
+                    kv = sys_models.KeyValue(
                         system=system, key=key, value=value
-                    )[0]
+                    )
                 else:
-                    return KeyValue(system=system, key=key, value=value)
+                    # Attempt to find an existing key first
+                    try:
+                        kv = system.keyvalue_set.get(key=key)
+                        kv.value = value
+                        orig_kv = system.keyvalue_set.get(pk=kv.pk)
+                    except system.keyvalue_set.model.DoesNotExist:
+                        kv = sys_models.KeyValue(
+                            system=system, key=key, value=value
+                        )
+                if save:
+                    kv.save()
+                return kv, orig_kv
 
             # Set the function name for debugging purposes
             keyvalue_cb.__name__ = "{0} {1}".format(key, value)
@@ -186,16 +201,16 @@ def csv_import(lines, save=True, primary_attr='hostname'):
                     primary_attr: getattr(mock_s, primary_attr)
                 }
 
-            s = System.objects.get(**get_params)
-            orig_system = System.objects.get(pk=s.pk)
+            s = sys_models.System.objects.get(**get_params)
+            orig_system = sys_models.System.objects.get(pk=s.pk)
 
             for attr, value in vars(mock_s).iteritems():
                 if attr.startswith('_'):
                     continue
                 setattr(s, attr, value)
 
-        except System.DoesNotExist:
-            s = System(**vars(mock_s))
+        except sys_models.System.DoesNotExist:
+            s = sys_models.System(**vars(mock_s))
             orig_system = None
 
         if save:

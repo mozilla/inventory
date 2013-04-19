@@ -48,9 +48,13 @@
                 <td><i>No KV pairs</i></td></td><td></td>
             </tr>
         {% endif %}
-        {% for kv in bundle['kvs'] %}
+        {% for kv, orig_kv in bundle['kvs'] %}
             <tr>
-                <td>{{ kv.key }}</td><td>{{ kv.value }}</td>
+                {% if orig_kv and orig_kv.value != kv.value %}
+                    <td>{{ kv.key }}</td><td>{{ orig_kv.value }} <b>&rarr;</b> {{ kv.value }}
+                {% else %}
+                    <td>{{ kv.key }}</td><td>{{ kv.value }}</td>
+                {% endif %}
             </tr>
         {% endfor %}
     {% endfor %}
