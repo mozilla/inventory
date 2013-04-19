@@ -151,3 +151,21 @@ class CSVTests(TestCase):
         self.assertTrue(s)
         self.assertEqual('1234', s.asset_tag)
 
+    def test_two_primary_attribute(self):
+        test_csv = """
+        primary_attribute%hostname,primary_attribute%asset_tag
+        foobob.mozilla.com,123
+        """.split('\n')
+        self.assertRaises(ValidationError, csv_import, test_csv, {'save': True})
+
+    def test_primary_attribute(self):
+        s = System.objects.create(hostname='foobob.mozilla.com')
+        test_csv = """
+        primary_attribute%hostname,hostname
+        foobob.mozilla.com,foobar.mozilla.com
+        """.split('\n')
+        csv_import(test_csv, save=True, primary_attr='asset_tag')
+        # The primary_attr kwarg shouldn't affect anything
+
+        s1 = System.objects.get(pk=s.pk)
+        self.assertEqual('foobar.mozilla.com', s1.hostname)

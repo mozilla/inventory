@@ -215,6 +215,8 @@ class Resolver(Generics):
             tagged_methods[func.__name__] = func
             return func
         return tag
+    metas = {}
+    meta = make_tagger(metas)
 
     system_attrs = {}
     system_attr = make_tagger(system_attrs)
@@ -229,6 +231,31 @@ class Resolver(Generics):
     for key_type in ('mac_address', 'ip_address', 'name'):
         system_kv_patterns.append('nic.\d+.{0}.\d+'.format(key_type))
         system_kv_patterns.append('mgmt.\d+.{0}.\d+'.format(key_type))
+
+    @meta
+    def primary_attribute(self, **kwargs):
+        def _primary_attribute(s, header, value, **kwargs):
+            try:
+                _, s._primary_attr = map(
+                    lambda s: s.strip(), header.split('%')
+                )
+            except ValueError:
+                raise ValidationError(
+                    "The primary_attribute header must be in the form "
+                    "'primary_attribute%<system-attribute-header>'"
+                )
+            s._primary_value = getattr(
+                self.get_related(header, value, System), s._primary_attr
+            )
+            return s
+
+        bundle = {
+            'name': 'primary_attribute',
+            'filter_fields': ['asset_tag', 'hostname'],
+            'values': ['primary_attribute'],
+            'handler': _primary_attribute,
+        }
+        return bundle
 
     @system_kv
     def all_system_keyvalue(self, **kwargs):
