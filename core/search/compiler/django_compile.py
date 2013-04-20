@@ -39,6 +39,7 @@ def qs_to_object_map(qs):
 
 
 def compile_q_objects(search):
+    search = search.strip()
     compiler = wrapGrammar(DjangoCompiler)
     try:
         qs = compiler(search).expr()
