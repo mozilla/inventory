@@ -387,7 +387,10 @@ class System(DirtyFieldsMixin, models.Model):
     build_objects = BuildManager()
     with_related = SystemWithRelatedManager()
 
-    search_fields = "hostname", "serial", "notes", "asset_tag", "oob_ip"
+    search_fields = (
+        "hostname", "serial", "notes", "asset_tag",
+        "oob_ip","system_rack__location__name", "system_rack__name"
+    )
 
     class Meta:
         db_table = u'systems'

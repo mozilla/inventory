@@ -2,6 +2,16 @@
 <div id="ajax_results" width="100%">
 <div id='overflow-info' data-objs='{{overflow_results}}' data-max-obj-num='{{MAX_NUM_OBJECTS}}'></div>
 <div id="meta">
+    {% if meta['counts']['SYSTEM'] -%}
+        {{ meta['counts']['SYSTEM'] }} <a href="#q={{meta['search']}}&System">Systems</a> |
+    {% else -%}
+        zero Systems |
+    {% endif -%}
+    {% if meta['counts']['RACK'] -%}
+        {{ meta['counts']['RACK'] }} <a href="#q={{meta['search']}}&Rack">Racks</a> |
+    {% else -%}
+        zero Racks |
+    {% endif -%}
     {% if meta['counts']['SOA'] -%}
         {{ meta['counts']['SOA'] }} <a href="#q={{meta['search']}}&SOA">SOA</a> records |
     {% else -%}
@@ -26,11 +36,6 @@
         {{ meta['counts']['INTR'] }} <a href="#q={{meta['search']}}&Interface">INTR</a> records |
     {% else -%}
         zero INTR records |
-    {% endif -%}
-    {% if meta['counts']['SYSTEM'] -%}
-        {{ meta['counts']['SYSTEM'] }} <a href="#q={{meta['search']}}&System">Systems</a> |
-    {% else -%}
-        zero Systems |
     {% endif -%}
     {% if meta['counts']['MX'] -%}
         {{ meta['counts']['MX'] }} <a href="#q={{meta['search']}}&MX">MX</a> records |
@@ -91,8 +96,8 @@
     <table class="tablesorter">
         <thead>
         <tr>
-            <th>Name</th>
             <th>Location</th>
+            <th>Name</th>
             <th></th>
         </tr>
         </thead>
