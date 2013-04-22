@@ -4,57 +4,60 @@
     <style>
         .example-csv {
             display: block;
+            font-size: 9pt;
+            background-color: white;
+            padding-left: 5px;
+        }
+        .csv-help p {
+            font-size: 12pt;
+        }
+        .csv-help div {
+            background-color:white;
         }
     </style>
     <div class='csv-help'>
-        <div class='system-related-doc'>
-        <table class='tablesorter'>
-        <td>
         <h2>Using the CSV importer</h2>
-        <p>This page lists the possible csv header values that you can use when
-        crafting a CSV</p>
+        <p>This page should serve as a reference for CSV header values.</p>
+
+        <p>
+        <b><a href='#SA' name='System-Attributes'>System Attributes</a></b> are attributes assigned directly to a
+        system. They don't have foreign keys and are usually something that can
+        be stored as text or as a number.
         </p>
 
         <p>
-        <b><a name='System-Attributes'></a>System Attributes</b> are attributes assigned directly to a
-        system. They don't have forien keys and are usually something that can
-        be stored as text or an integer.
-        </p>
+        <b><a href='#MA'name='Meta-Attributes'>Meta Attributes</a></b> are used to tell the CSV parser how to handle
+        the CSV. For example, the <b>primary_attribute</b> header can be used to tell the
+        the CSV importer to select a system using one hostname value and replace it with a new hostname value.
 
-        <p>
-        <b><a name='Meta-Attributes'></a>Meta Attributes</b> are used to tell the CSV parser how to handle
-        the CSV. The <b>primary_attribute</b> header can be used to tell the
-        the csv importer to select a system using one hostname, and using the
-        regular header <b>hostname</b>, update the system to a new hostname.
-
-        Take this example csv:
+        Take this example CSV:
         <p>
             <code class='example-csv'>primary_attribute%hostname,hostname</code>
-            <code class='example-csv'>original-hostname.mozilla.com, new-hostname.hostname</code>
+            <code class='example-csv'>original-hostname.mozilla.com, new-hostname.mozilla.com</code>
         </p>
-        This would find a system with a hostname of
-        <code>original-hostname.mozilla.com</code> and change it's hostname
-        to <code>new-hostname.hostname</code>.
-
+        This would find a system with the hostname
+        <code>original-hostname.mozilla.com</code> and change its hostname to
+        <code>new-hostname.mozilla.com</code>.
         </p>
 
         <p>
-        <b><a name='System-Related-Attributes'></a>System Related Attributes</b> are attributes that <i>are</i>
+        <b><a href='#SR' name='System-Related-Attributes'>System Related Attributes</a></b> are attributes that <i>are</i>
         relational and correspond to another object in Inventory (like a
         SystemRack). It is important to make sure that the objects you refer to
         with realted attributes already exist before they are refered to in a
-        csv.
+        CSV.
         </p>
-        </p>
+        <p>
         Related objects need to be identified by search terms when they are
         assigned to a system. This means that objects that have composite keys
         will sometimes need to be filtered by multiple values. Take for example
-        the <code>OperationSystem</code>, which is determined by it's
-        <code>version</code> <i>and</i> it's <code>name</code>.
-        To specify both a version a name for an operating system,
-        delimit your csv header with field names appended to the normal field
-        title. For example, if you wanted to assign the OperatingSystem
-        'Redhat 6.2', you would need to have a csv header like:
+        the <code>OperationSystem</code> class, which is determined by its
+        <code>version</code> <i>and</i> its <code>name</code>.
+        To specify both version and name for an operating system,
+        delimit your CSV header with field names appended to the normal field
+        title. For example, if you wanted to assign the
+        <code>OperatingSystem</code>
+        <code>'Redhat 6.2'</code>, you would need to have a CSV header like:
         </p>
 
         <p>
@@ -66,13 +69,13 @@
         </p>
 
         <p>
-            <code>        Red Hat Enterprise Linux%6.2</code>
+            <code class='example-csv'>        Red Hat Enterprise Linux%6.2</code>
         </p>
         <p>For a nice overview of Inventory's database scheme, see
             <a href='http://people.mozilla.com/~juber/public/inventory.png'>this picture</a>
         </p>
         <p>
-            Some <b>exmaple</b> csv documents:
+            Some <b>exmaple</b> CSV documents:
         </p>
             <p>
                 <code class='example-csv'>
@@ -99,26 +102,25 @@
                 </code>
             </p>
         <p>
-            <b>Key Value Pairs</b> can be associated with a system using the key as the
-            csv header and the value as the csv value.
+            <a href='#KV' name='KV'><b>Key Value Pairs</b></a> can be associated with a system using the key as the
+            CSV header and the value as the CSV value.
         </p>
         <p>
-            The keys following key patterns are permissible to be used as
+            The following key patterns are permissible to be used as
             headers (\d+ means multiple 'digits')
+        </p>
             <ul>
                 {% for p in generator.r.system_kv_patterns %}
                 <li>{{p}}</li>
                 {% endfor %}
             </ul>
+        <p>
             If you need more, please just ask as it's easy to add
             a new key/value type.
         </p>
-        </td>
-        </table>
-        </div>
     </div>
     <div class='system-attr'>
-    <h3><a href='#Meta-Attributes'>Meta Attributes</a></h3>
+    <h2><a name='MA' href='#Meta-Attributes'>Meta Attributes</a></h2>
         {% for field_name, bundle in generator.meta_bundles %}
             <table class='tablesorter csv'>
                 <caption>{{field_name}}</caption>
@@ -127,7 +129,7 @@
         {% endfor %}
     </div>
     <div class='system-attr'>
-        <h3><a href='#System-Attributes'>System Attributes</a></h3>
+        <h2><a name='SA' href='#System-Attributes'>System Attributes</a></h2>
         {% for field_name, bundle in  generator.system_attr_bundles %}
             <table class='tablesorter csv'>
                 <caption>{{field_name}}</caption>
@@ -138,7 +140,7 @@
     </div>
 
     <div class='system-related'>
-        <h3><a href='#System-Related-Attributes'>System Related Attributes</a></h3>
+        <h2><a name='SR' href='#System-Related-Attributes'>System Related Attributes</a></h2>
         {% for field_name, bundle in  generator.system_related_bundles %}
             <table class='tablesorter csv'>
                 <caption>{{field_name}}</caption>
