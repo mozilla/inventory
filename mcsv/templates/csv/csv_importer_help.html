@@ -14,6 +14,13 @@
         .csv-help div {
             background-color:white;
         }
+        table.csv {
+            margin-top: 9px;
+            margin-bottom: 30px;
+        }
+        .csv caption {
+            font-size: 12pt;
+        }
     </style>
     <div class='csv-help'>
         <h2>Using the CSV importer</h2>
@@ -120,18 +127,18 @@
         </p>
     </div>
     <div class='system-attr'>
-    <h2><a name='MA' href='#Meta-Attributes'>Meta Attributes</a></h2>
+    <h4><a name='MA' href='#Meta-Attributes'>Meta Attributes Headers</a></h4>
         {% for field_name, bundle in generator.meta_bundles %}
-            <table class='tablesorter csv'>
+            <table class='csv tablesorter'>
                 <caption>{{field_name}}</caption>
                 <tr><td>Allowable headers:</td><td>{{', '.join(bundle['values'])}}</td></tr>
             <table>
         {% endfor %}
     </div>
     <div class='system-attr'>
-        <h2><a name='SA' href='#System-Attributes'>System Attributes</a></h2>
+        <h4><a name='SA' href='#System-Attributes'>System Attribute Headers</a></h4>
         {% for field_name, bundle in  generator.system_attr_bundles %}
-            <table class='tablesorter csv'>
+            <table class='csv tablesorter'>
                 <caption>{{field_name}}</caption>
                 <tr><td>Allowable headers:</td><td>{{', '.join(bundle['values'])}}</td></tr>
                 <tr><td>Schema column name:</td><td>{{field_name}}</td></tr>
@@ -140,9 +147,9 @@
     </div>
 
     <div class='system-related'>
-        <h2><a name='SR' href='#System-Related-Attributes'>System Related Attributes</a></h2>
+        <h4><a name='SR' href='#System-Related-Attributes'>System Related Attribute Headers</a></h4>
         {% for field_name, bundle in  generator.system_related_bundles %}
-            <table class='tablesorter csv'>
+            <table class='csv tablesorter'>
                 <caption>{{field_name}}</caption>
                 <tr><td>Allowable headers:</td><td>{{', '.join(bundle['values'])}}</td></tr>
                 <tr><td>Schema column name:</td><td>{{field_name}}</td></tr>
