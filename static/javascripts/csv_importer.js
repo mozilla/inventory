@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    alert("This importer is still being tested. Try running your import on https://inventory-dev2.allizom.org/csv/ to confirm things are working before running the import in production.");
+    alert("FYI: You may run your import on https://inventory-dev2.allizom.org/csv/ to confirm things are working before running an import on production.");
     $("#clear-csv-data").click(function() {
         console.log("clearing");
         $('#csv-data').val('');
