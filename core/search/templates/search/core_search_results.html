@@ -86,6 +86,31 @@
         </tbody>
     </table>
 {% endif -%}
+{% if objects['RACK'] -%}
+    <h4><a class='plane-link' name="q={{meta['search']}}&Rack">Racks</a></h4>
+    <table class="tablesorter">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Location</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for r in objects['RACK'] -%}
+        <tr>
+            {% if r.location %}
+                <td>{{ r.location.name }}</td>
+            {% else %}
+                <td></td>
+            {% endif %}
+            <td>{{ r.name }}</td>
+            <td><a href='{{ r.get_absolute_url() }}'>View</a> <a href='{{ r.get_edit_url() }}'>Edit</a></td>
+        </tr>
+        {% endfor -%}
+        </tbody>
+    </table>
+{% endif -%}
 {% if misc -%}
     <table class="tablesorter">
         <thead>

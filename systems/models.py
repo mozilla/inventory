@@ -294,6 +294,8 @@ class SystemRack(models.Model):
     name = models.CharField(max_length=255, blank=True)
     location = models.ForeignKey('Location')
 
+    search_fields = ('name', 'location__name', 'location__address')
+
     class Meta:
         db_table = u'system_racks'
         ordering = ['name']

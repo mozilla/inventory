@@ -24,7 +24,7 @@ from core.utils import IPFilter, one_to_two
 from core.vlan.models import Vlan
 from core.utils import start_end_filter, resolve_ip_type
 
-from systems.models import System
+from systems.models import System, SystemRack
 
 
 class BadDirective(Exception):
@@ -42,6 +42,7 @@ searchables = (
     ('SSHFP', SSHFP),
     ('INTR', StaticInterface),
     ('SYSTEM', System),
+    ('RACK', SystemRack),
     ('TXT', TXT),
 )
 
