@@ -24,106 +24,208 @@
     </style>
     <div class='csv-help'>
         <h2>Using the CSV importer</h2>
-        <p>This page should serve as a reference for CSV header values.</p>
+        <p>
+            This page should serve as a reference for CSV header values and
+            general tips on using the importer.
+        </p>
+        <p><i>Note: All headers and values will have trailing and leading white space removed before being processed!</i></p>
 
         <p>
-        <b><a href='#SA' name='System-Attributes'>System Attributes</a></b> are attributes assigned directly to a
-        system. They don't have foreign keys and are usually something that can
-        be stored as text or as a number.
+            <b><a href='#Preview' name='Preview'>Previewing</a></b> changes that a
+            CSV will make is built into the importer. When the 'Write CSV
+            data to the database' check-box is unchecked (default),
+            clicking 'Send Data' will have <i>no</i> affect on Inventory's
+            database. Instead, the importer will present you with the hypothetical
+            changes being made to a system (if the system already exists) or with
+            a list of systems that would have been created had 'Write CSV data to
+            the database' been checked.
         </p>
 
         <p>
-        <b><a href='#MA'name='Meta-Attributes'>Meta Attributes</a></b> are used to tell the CSV parser how to handle
-        the CSV. For example, the <b>primary_attribute</b> header can be used to tell the
-        the CSV importer to select a system using one hostname value and replace it with a new hostname value.
-
-        Take this example CSV:
+            <b><a href='#SA' name='System-Attributes'>System Attribute</a></b>
+            headers correspond to attributes that are directly
+            assigned to a system. These attributes are not foreign keys and are
+            usually something that can be stored as text or as a number.
+            </p>
         <p>
-            <code class='example-csv'>primary_attribute%hostname,hostname</code>
-            <code class='example-csv'>original-hostname.mozilla.com, new-hostname.mozilla.com</code>
+            A simple example of using <b>system attributes</b> would be to
+            create a new system with the <b>hostname</b> 'example.mozilla.com'
+            with the <b>asset_tag</b> '3423':
         </p>
-        This would find a system with the hostname
-        <code>original-hostname.mozilla.com</code> and change its hostname to
-        <code>new-hostname.mozilla.com</code>.
+        <p>
+                <code class='example-csv'>
+                    hostname, asset_tag
+                </code>
+                <code class='example-csv'>
+                    foo.mozilla.com, 3423
+                </code>
         </p>
 
         <p>
-        <b><a href='#SR' name='System-Related-Attributes'>System Related Attributes</a></b> are attributes that <i>are</i>
+        <b><a href='#SR' name='System-Related-Attributes'>System Related Attribute</a></b>
+        headers correspond to attributes that <i>are</i>
         relational and correspond to another object in Inventory (like a
         SystemRack). It is important to make sure that the objects you refer to
-        with realted attributes already exist before they are refered to in a
-        CSV.
+        with <b>system related attributes</b> already exist before they are
+        referenced in a CSV.
         </p>
         <p>
         Related objects need to be identified by search terms when they are
         assigned to a system. This means that objects that have composite keys
         will sometimes need to be filtered by multiple values. Take for example
-        the <code>OperationSystem</code> class, which is determined by its
+        the <code>OperatingSystem</code> class, which is determined by its
         <code>version</code> <i>and</i> its <code>name</code>.
-        To specify both version and name for an operating system,
-        delimit your CSV header with field names appended to the normal field
-        title. For example, if you wanted to assign the
-        <code>OperatingSystem</code>
-        <code>'Redhat 6.2'</code>, you would need to have a CSV header like:
+        You can use '%' to delimit <b>filter fields</b> (like <code>version</code> and
+        <code>name</code>) after a <b>field header</b>.
+        <p>
+        The general syntax for specifying these <b>filter fields</b> is
+        as follow:
         </p>
 
         <p>
-            <code class='example-csv'>      operation_system%name%version</code>
+            <code class='example-csv'>
+                header := &lt; field_name &gt; % &lt; attribute_list &gt;
+            </code>
+            <code class='example-csv'>
+                attribute_list := &lt; attribute &gt; [% &lt; attribute &gt; [...]]
+            </code>
+        </p>
+
+        <p>For example, if you wanted to assign the
+        <code>OperatingSystem</code> value 'Redhat 6.2', you would have a CSV
+        header like:
         </p>
 
         <p>
-        Your data would need the same sort of delimiter scheme:
+            <code class='example-csv'>      operating_system % name % version</code>
         </p>
 
         <p>
-            <code class='example-csv'>        Red Hat Enterprise Linux%6.2</code>
+        Your CSV data would have the same sort of delimiter scheme:
         </p>
-        <p>For a nice overview of Inventory's database scheme, see
-            <a href='http://people.mozilla.com/~juber/public/inventory.png'>this picture</a>
+
+        <p>
+            <code class='example-csv'>        Red Hat Enterprise Linux % 6.2</code>
         </p>
         <p>
-            Some <b>exmaple</b> CSV documents:
+        Note that the header contains two '%' and three values and the data has
+        one '%' and two values. This is because the first value in a
+        <b>systems related header</b> (in this case
+        <code>operating_system</code>) corresponds to the target attribute on the
+        system, the remaining values after the first '%' are all <b>filter
+            fields</b>.
         </p>
-            <p>
-                <code class='example-csv'>
-                    hostname,system_rack%name,oob_ip,OOB_switch_&_port,nic.0.mac_address.0,system_status%status,nic.0.name.0,server_model%model
-                </code>
-                <code class='example-csv'>
-                    foo.scl2.mozilla.com,102-19,10.22.4.208,oob1.r102-19:ge-0/0/0,ac:16:2d:87:c2:0c,production,nic0,DL385G8
-                </code>
-            </p>
-            <p>
-                <code class='example-csv'>
-                    hostname,warranty_start,warranty_end,purchase_price
-                </code>
-                <code class='example-csv'>
-                    foo.mozilla.com,2012-02-02,2014-02-2,$400
-                </code>
-            </p>
-            <p>
-                <code class='example-csv'>
-                    hostname,operating_system%name%version
-                </code>
-                <code class='example-csv'>
-                    foo.mozilla.com,Red Hat Enterprise pnux%6.2
-                </code>
-            </p>
+
+        <p>
+            A reliable way to assign a system the correct related attribute is to
+            use the '<code>id</code>' <b>filter field</b>.
+            For example, if you wanted to assign the system with
+            the <b>hostname</b> '<code>foobaz.mozilla.com</code>' the rack
+            whose <code>id</code> was equal to the value '8', you would do:
+        </p>
+        <p>
+            <code class='example-csv'>hostname, systemrack % id</code>
+            <code class='example-csv'>foobaz.mozilla.com, 8</code>
+        </p>
+        <p>
+            <b><a href='#MA'name='Meta-Attributes'>Meta Attribute</a></b>
+            headers are used to tell the CSV parser how to handle the
+            CSV. For example, the <b>primary_attribute</b> header (which is the
+            only <b>meta</b> attribute at the moment) can be used
+            to tell the the CSV importer to select a system using a certain
+            <b>system attribute</b>. This can be useful for updating a system's
+            <b>hostname</b>.
+
+            Take this example CSV:
+        </p>
+        <p>
+            <code class='example-csv'>primary_attribute % hostname, hostname</code>
+            <code class='example-csv'>original-hostname.mozilla.com, new-hostname.mozilla.com</code>
+        </p>
+        <p>
+            This would find a system with the hostname
+            <code>original-hostname.mozilla.com</code> and change its hostname to
+            <code>new-hostname.mozilla.com</code>.
+        </p>
+        <p>
+            The <b>primary_attribute</b> has the format:
+        </p>
+        <p>
+            <code class='example-csv'>
+                primary_attribute % &lt; system-attribute &gt;
+            </code>
+        </p>
+        <p>
+            The <code>system-attribute</code> must be one listed under
+            <a href='#SA'>System Attributes</a> and is usually either
+            <b>hostname</b> or <b>asset_tag</b>.
+        </p>
+        <p>
+            Both the <b>meta</b> and <b>system related</b> attributes use '%'
+            in their header values as an auxiliary delimiter (obviously ',' is
+            already take). With <b>meta attributes</b> the first value in the
+            list of '%'-delimited values has internal meaning to the CSV
+            importer. <b>System related attributes</b> use the first value as
+            the name of the system attribute being targeted for assignment.
+        </p>
         <p>
             <a href='#KV' name='KV'><b>Key Value Pairs</b></a> can be associated with a system using the key as the
             CSV header and the value as the CSV value.
         </p>
         <p>
+        The following CSV will create (or update) a system with the hostname
+        <code>foo.mozilla.com</code> to have the keys
+        <code>nic.0.mac_address.0</code> and <code>nic.0.name.0</code> with the
+        values <code>11:22:33:44:55:66</code> and <code>nic0</code>
+        respectively.
+        </p>
+        <p>
+            <code class='example-csv'>
+                hostname, nic.0.mac_address.0, nic.0.name.0
+            </code>
+            <code class='example-csv'>
+                foo.mozilla.com, 11:22:33:44:55:66, nic0
+            </code>
+        </p>
+        <p>
             The following key patterns are permissible to be used as
             headers (\d+ means multiple 'digits')
         </p>
-            <ul>
-                {% for p in generator.r.system_kv_patterns %}
-                <li>{{p}}</li>
-                {% endfor %}
-            </ul>
         <p>
-            If you need more, please just ask as it's easy to add
+                {% for p in generator.r.system_kv_patterns %}
+                <code class='example-csv'>{{p}}</code>
+                {% endfor %}
+        </p>
+        <p>
+            If you need more key types, please just ask as it's easy to add
             a new key/value type.
+        </p>
+        <p>
+            <b><a href='#Examples' name='Examples'>Examples:</a></b>
+        </p>
+        <p>
+            <code class='example-csv'>
+                hostname, system_rack % name, oob_ip, OOB_switch_&_port, nic.0.mac_address.0, system_status % status, nic.0.name.0, server_model % model
+            </code>
+            <code class='example-csv'>
+                foo.scl2.mozilla.com, 102-19, 10.22.4.208, oob1.r102-19:ge-0/0/0, ac:16:2d:87:c2:0c, production, nic0, DL385G8
+            </code>
+        </p>
+        <p>
+            <code class='example-csv'>
+                hostname, warranty_start, warranty_end, purchase_price
+            </code>
+            <code class='example-csv'>
+                foo.mozilla.com, 2012-02-02, 2014-02-2, $400
+            </code>
+        </p>
+        <p>
+            <code class='example-csv'>
+                hostname, operating_system % name % version
+            </code>
+            <code class='example-csv'>
+                foo.mozilla.com, Red Hat Enterprise pnux % 6.2
+            </code>
         </p>
     </div>
     <div class='system-attr'>
@@ -157,4 +259,7 @@
             <table>
         {% endfor %}
     </div>
+    <p>For a nice overview of Inventory's database scheme, see
+        <a href='http://people.mozilla.com/~juber/public/inventory.png'>this picture</a>
+    </p>
 {% endblock %}

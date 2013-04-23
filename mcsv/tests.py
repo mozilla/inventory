@@ -43,6 +43,39 @@ class CSVTests(TestCase):
         self.assertEqual(1, len(ret))
         self.assertTrue(ret[0]['system'])
 
+    def test_get_related_spaces(self):
+        test_csv = """
+        hostname, operating_system        %name
+        baz.mozilla.com,foo
+        """.split('\n')
+        self.assertRaises(Exception, csv_import, test_csv)
+
+        test_csv = """
+        hostname, operating_system % name
+        baz.mozilla.com,foo%foo
+        """.split('\n')
+        self.assertRaises(Exception, csv_import, test_csv)
+
+        test_csv = """
+        hostname,operating_system
+        baz.mozilla.com, foo % foo
+        """.split('\n')
+        self.assertRaises(Exception, csv_import, test_csv)
+
+        test_csv = """
+        hostname,operating_system%version
+        baz.mozilla.com,    foo %foo
+        """.split('\n')
+        self.assertRaises(Exception, csv_import, test_csv)
+
+        test_csv = """
+        hostname,operating_system%name%version
+        foobob.mozilla.com,foo%  1.1
+        """.split('\n')
+        ret = csv_import(test_csv)
+        self.assertEqual(1, len(ret))
+        self.assertTrue(ret[0]['system'])
+
     def test_multiple(self):
         test_csv = """
         hostname,operating_system%name%version
@@ -113,6 +146,16 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,warranty_start,warranty_end
         foobob.mozilla.com,2011-03-01,2012-03-12
+        """.split('\n')
+        s = System.objects.create(hostname='foobob.mozilla.com', serial='1234')
+        csv_import(test_csv, save=True)
+        s = System.objects.get(hostname='foobob.mozilla.com')
+        self.assertTrue(s.serial, '1234')
+
+    def test_override_spaces(self):
+        test_csv = """
+        hostname , warranty_start,  warranty_end
+        foobob.mozilla.com,   2011-03-01 , 2012-03-12
         """.split('\n')
         s = System.objects.create(hostname='foobob.mozilla.com', serial='1234')
         csv_import(test_csv, save=True)

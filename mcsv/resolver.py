@@ -397,7 +397,7 @@ class Resolver(Generics):
         Try to find delimited headers, fall back to normal get_realted_simple
         if they don't exist.
         """
-        fields = field.split('%')
+        fields = map(lambda s: s.strip(), field.split('%'))
         if '%' not in field or len(fields) < 1:
             raise ValidationError(
                 "We need to determine what fields to search for when looking "
@@ -408,7 +408,7 @@ class Resolver(Generics):
                 )
             )
         fields = field.split('%')[1:]
-        values = value.split('%')
+        values = map(lambda s: s.strip(), value.split('%'))
         search = dict(zip(fields, values))
 
         obj = self._get_dict_related(search, Klass)
