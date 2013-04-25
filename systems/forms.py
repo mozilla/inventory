@@ -8,6 +8,8 @@ except ImportError:
 import models
 from datetime import datetime
 
+from systems.constants import VALID_SYSTEM_SUFFIXES
+
 import re
 
 
@@ -105,9 +107,14 @@ class SystemForm(forms.ModelForm):
             Later on we can enforce fqdn by removing the self.instance.pk negate below
         """
         data = self.cleaned_data['hostname']
-        if not re.search('\.mozilla\.(com|net|org)$', data) and not self.instance.pk:
-            raise forms.ValidationError('Hostname requires FQDN')
-        return data
+        if self.instance.pk:
+            return data
+        for suffix in VALID_SYSTEM_SUFFIXES:
+            if data.endswith(suffix):
+                return data
+        raise forms.ValidationError(
+            'Hostname must end in ' + ', '.join(VALID_SYSTEM_SUFFIXES)
+        )
 
     @return_data_if_true
     def clean_operating_system(self):
