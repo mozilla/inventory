@@ -275,3 +275,17 @@ class CSVTests(TestCase):
 
         s1 = System.objects.get(pk=s.pk)
         self.assertEqual('foobar.mozilla.com', s1.hostname)
+
+    def test_primary_attribute2(self):
+        System.objects.create(
+            hostname='foobob.mozilla.com', asset_tag='YM0090PW9G6'
+        )
+        test_csv = """
+        primary_attribute%asset_tag,warranty_start,warranty_end,purchase_date
+        YM0090PW9G6,2010-03-24,2013-03-24,2010-03-24
+        """.split('\n')
+        csv_import(test_csv, save=True)
+        # The primary_attr kwarg shouldn't affect anything
+        s1 = System.objects.get(asset_tag='YM0090PW9G6')
+        self.assertTrue(s1.warranty_start)
+        self.assertTrue(s1.warranty_end)
