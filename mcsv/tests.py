@@ -1,7 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+
 from mcsv.importer import csv_import
 from systems.models import OperatingSystem, System
+
+import datetime
 
 
 class CSVTests(TestCase):
@@ -289,3 +292,18 @@ class CSVTests(TestCase):
         s1 = System.objects.get(asset_tag='YM0090PW9G6')
         self.assertTrue(s1.warranty_start)
         self.assertTrue(s1.warranty_end)
+
+    def test_primary_attribute3(self):
+        System.objects.create(
+            hostname='foobob.mozilla.com', serial='SC07HT03WDKDJ'
+        )
+        test_csv = """
+        primary_attribute%serial,warranty_start,warranty_end,purchase_date
+        SC07HT03WDKDJ,2012-06-06,2013-06-06,2012-06-06
+        """.split('\n')
+        csv_import(test_csv, save=True)
+        # The primary_attr kwarg shouldn't affect anything
+        s1 = System.objects.get(serial='SC07HT03WDKDJ')
+        self.assertEqual(
+            datetime.datetime(2012, 6, 6, 0, 0), s1.warranty_start)
+        self.assertEqual(datetime.datetime(2013, 6, 6, 0, 0), s1.warranty_end)
