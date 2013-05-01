@@ -184,7 +184,7 @@ def csv_import(csv_text, save=True, primary_attr='hostname'):
 
     ret = []
     f = StringIO.StringIO(csv_text)
-    reader = csv.reader(f, delimiter=',', quotechar='"')
+    reader = csv.reader(f, skipinitialspace=True)
 
     def has_something(line):
         return reduce(lambda a, b: b or a, line, False)

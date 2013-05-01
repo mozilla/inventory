@@ -323,3 +323,16 @@ class CSVTests(TestCase):
             s1.switch_ports,
             "switch1.r101-10:xe-0/0/36,switch1.r101-10:xe-1/0/36"
         )
+
+    def test_quoted(self):
+        System.objects.create(
+            hostname='foobob.mozilla.com', serial='xxx'
+        )
+        test_csv = """
+        hostname, switch_ports
+        foobob.mozilla.com, "sdf,asfd,asfd"
+        """
+        csv_import(test_csv, save=True)
+        # The primary_attr kwarg shouldn't affect anything
+        s1 = System.objects.get(hostname='foobob.mozilla.com')
+        self.assertEqual(s1.switch_ports, 'sdf,asfd,asfd')
