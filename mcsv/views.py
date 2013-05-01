@@ -33,7 +33,7 @@ def ajax_csv_importer(request):
         finally:
             transaction.commit()
 
-    result = do_csv_import(raw_csv_data.split('\n'))
+    result = do_csv_import(raw_csv_data)
 
     attrs = [field.name for field in System._meta.fields]
 

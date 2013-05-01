@@ -17,31 +17,31 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,operating_system%name
         baz.mozilla.com,foo
-        """.split('\n')
+        """
         self.assertRaises(Exception, csv_import, test_csv)
 
         test_csv = """
         hostname,operating_system%name
         baz.mozilla.com,foo%foo
-        """.split('\n')
+        """
         self.assertRaises(Exception, csv_import, test_csv)
 
         test_csv = """
         hostname,operating_system
         baz.mozilla.com,foo%foo
-        """.split('\n')
+        """
         self.assertRaises(Exception, csv_import, test_csv)
 
         test_csv = """
         hostname,operating_system%version
         baz.mozilla.com,foo%foo
-        """.split('\n')
+        """
         self.assertRaises(Exception, csv_import, test_csv)
 
         test_csv = """
         hostname,operating_system%name%version
         foobob.mozilla.com,foo%1.1
-        """.split('\n')
+        """
         ret = csv_import(test_csv)
         self.assertEqual(1, len(ret))
         self.assertTrue(ret[0]['system'])
@@ -50,31 +50,31 @@ class CSVTests(TestCase):
         test_csv = """
         hostname, operating_system        %name
         baz.mozilla.com,foo
-        """.split('\n')
+        """
         self.assertRaises(Exception, csv_import, test_csv)
 
         test_csv = """
         hostname, operating_system % name
         baz.mozilla.com,foo%foo
-        """.split('\n')
+        """
         self.assertRaises(Exception, csv_import, test_csv)
 
         test_csv = """
         hostname,operating_system
         baz.mozilla.com, foo % foo
-        """.split('\n')
+        """
         self.assertRaises(Exception, csv_import, test_csv)
 
         test_csv = """
         hostname,operating_system%version
         baz.mozilla.com,    foo %foo
-        """.split('\n')
+        """
         self.assertRaises(Exception, csv_import, test_csv)
 
         test_csv = """
         hostname,operating_system%name%version
         foobob.mozilla.com,foo%  1.1
-        """.split('\n')
+        """
         ret = csv_import(test_csv)
         self.assertEqual(1, len(ret))
         self.assertTrue(ret[0]['system'])
@@ -91,7 +91,7 @@ class CSVTests(TestCase):
         6fooboz.mozilla.com,foo%1.1
         7fooboz.mozilla.com,foo%1.1
         8fooboz.mozilla.com,foo%1.1
-        """.split('\n')
+        """
         before = System.objects.all().count()
         ret = csv_import(test_csv)
         after = System.objects.all().count()
@@ -110,7 +110,7 @@ class CSVTests(TestCase):
         6fooboz.mozilla.com,foo%1.1
         7fooboz.mozilla.com,foo%1.1
         8fooboz.mozilla.com,foo%1.1
-        """.split('\n')
+        """
         before = System.objects.all().count()
         ret = csv_import(test_csv, save=False)
         after = System.objects.all().count()
@@ -121,7 +121,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,nic.0.mac_address.0
         foobob.mozilla.com,keyvalue
-        """.split('\n')
+        """
         ret = csv_import(test_csv, save=False)
         self.assertTrue(ret[0]['kvs'])
 
@@ -129,7 +129,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,warranty_start,warranty_end
         foobob.mozilla.com,2011-03-01,2012-03-12
-        """.split('\n')
+        """
         csv_import(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
         self.assertTrue(s.warranty_start)
@@ -139,7 +139,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,warranty_start,warranty_end
         foobob.mozilla.com,2011-03-01,20192-03-12
-        """.split('\n')
+        """
         self.assertRaises(ValueError, csv_import, test_csv, {'save': True})
         #s = System.objects.get(hostname='foobob.mozilla.com')
         #self.assertTrue(s.warranty_start)
@@ -149,7 +149,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,warranty_start,warranty_end
         foobob.mozilla.com,2011-03-01,2012-03-12
-        """.split('\n')
+        """
         s = System.objects.create(hostname='foobob.mozilla.com', serial='1234')
         csv_import(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
@@ -159,7 +159,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname , warranty_start,  warranty_end
         foobob.mozilla.com,   2011-03-01 , 2012-03-12
-        """.split('\n')
+        """
         s = System.objects.create(hostname='foobob.mozilla.com', serial='1234')
         csv_import(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
@@ -170,7 +170,7 @@ class CSVTests(TestCase):
         hostname
         foobob.mozilla.com
         foobob.mozilla.com
-        """.split('\n')
+        """
         csv_import(test_csv, save=True)
         csv_import(test_csv, save=False)
         csv_import(test_csv, save=True)
@@ -182,7 +182,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,nic.0.mac_address.0
         foobob.mozilla.com,11:22:33:44:55:66:77
-        """.split('\n')
+        """
         self.assertRaises(
             ValidationError, csv_import, test_csv, {'save': True}
         )
@@ -191,7 +191,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,nic.0.name.0
         foobob.mozilla.com,nic0
-        """.split('\n')
+        """
         csv_import(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
         self.assertEqual(1, s.keyvalue_set.filter(key='nic.0.name.0').count())
@@ -200,7 +200,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,nic.0.name.0
         foobob.mozilla.com,nic33
-        """.split('\n')
+        """
         csv_import(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
         self.assertEqual(1, s.keyvalue_set.filter(key='nic.0.name.0').count())
@@ -209,7 +209,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,nic.0.mac_address.0
         foobob.mozilla.com,11:22:33:44:55:66
-        """.split('\n')
+        """
         csv_import(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
         self.assertEqual(
@@ -222,7 +222,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,nic.0.mac_address.0,nic.0.name.0
         foobob.mozilla.com,11:22:33:44:55:66,nic0
-        """.split('\n')
+        """
         csv_import(test_csv, save=False)
         csv_import(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
@@ -240,7 +240,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,warranty_start,warranty_end,asset_tag
         foobob.mozilla.com,2011-03-01,2012-03-12,1234
-        """.split('\n')
+        """
         s = System.objects.create(hostname='foobob.mozilla.com')
         csv_import(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
@@ -249,7 +249,7 @@ class CSVTests(TestCase):
         test_csv = """
         hostname,warranty_start,warranty_end,asset_tag
         changed-the-hostname.mozilla.com,2011-03-01,2012-03-12,1234
-        """.split('\n')
+        """
         csv_import(test_csv, save=True, primary_attr='asset_tag')
         self.assertEqual(
             0, System.objects.filter(hostname='foobob.mozilla.com').count()
@@ -262,7 +262,7 @@ class CSVTests(TestCase):
         test_csv = """
         primary_attribute%hostname,primary_attribute%asset_tag
         foobob.mozilla.com,123
-        """.split('\n')
+        """
         self.assertRaises(
             ValidationError, csv_import, test_csv, {'save': True}
         )
@@ -272,7 +272,7 @@ class CSVTests(TestCase):
         test_csv = """
         primary_attribute%hostname,hostname
         foobob.mozilla.com,foobar.mozilla.com
-        """.split('\n')
+        """
         csv_import(test_csv, save=True, primary_attr='asset_tag')
         # The primary_attr kwarg shouldn't affect anything
 
@@ -286,7 +286,7 @@ class CSVTests(TestCase):
         test_csv = """
         primary_attribute%asset_tag,warranty_start,warranty_end,purchase_date
         YM0090PW9G6,2010-03-24,2013-03-24,2010-03-24
-        """.split('\n')
+        """
         csv_import(test_csv, save=True)
         # The primary_attr kwarg shouldn't affect anything
         s1 = System.objects.get(asset_tag='YM0090PW9G6')
@@ -300,10 +300,26 @@ class CSVTests(TestCase):
         test_csv = """
         primary_attribute%serial,warranty_start,warranty_end,purchase_date
         SC07HT03WDKDJ,2012-06-06,2013-06-06,2012-06-06
-        """.split('\n')
+        """
         csv_import(test_csv, save=True)
         # The primary_attr kwarg shouldn't affect anything
         s1 = System.objects.get(serial='SC07HT03WDKDJ')
         self.assertEqual(
             datetime.datetime(2012, 6, 6, 0, 0), s1.warranty_start)
         self.assertEqual(datetime.datetime(2013, 6, 6, 0, 0), s1.warranty_end)
+
+    def test_two_switches(self):
+        System.objects.create(
+            hostname='foobob.mozilla.com', serial='xxx'
+        )
+        test_csv = """
+        primary_attribute%serial,switch_ports,ram
+        xxx,"switch1.r101-10:xe-0/0/36,switch1.r101-10:xe-1/0/36",1000
+        """
+        csv_import(test_csv, save=True)
+        # The primary_attr kwarg shouldn't affect anything
+        s1 = System.objects.get(serial='xxx')
+        self.assertEqual(
+            s1.switch_ports,
+            "switch1.r101-10:xe-0/0/36,switch1.r101-10:xe-1/0/36"
+        )

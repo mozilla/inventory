@@ -1,5 +1,7 @@
 import operator
 import re
+import StringIO
+import csv
 
 from django.core.exceptions import ValidationError
 from mcsv.resolver import Resolver
@@ -106,11 +108,10 @@ class Generator(object):
             raise ValidationError(fail)
         self.action_list = action_list
 
-    def handle(self, line):
+    def handle(self, data):
         """
         Where the magic happens.
         """
-        data = [d.strip() for d in line.split(self.delimiter)]
         phase_0 = []
         phase_1 = []
         phase_2 = []
@@ -172,7 +173,7 @@ class Generator(object):
         return s, kv_cbs
 
 
-def csv_import(lines, save=True, primary_attr='hostname'):
+def csv_import(csv_text, save=True, primary_attr='hostname'):
     r = Resolver()
     generator = None
 
@@ -182,12 +183,18 @@ def csv_import(lines, save=True, primary_attr='hostname'):
         return map(lambda s: s.strip().lower(), (header.split('%')[0], header))
 
     ret = []
-    for line in [line.strip() for line in lines]:
-        if not line:
+    f = StringIO.StringIO(csv_text)
+    reader = csv.reader(f, delimiter=',', quotechar='"')
+
+    def has_something(line):
+        return reduce(lambda a, b: b or a, line, False)
+
+    for line in [map(lambda s: s.strip(), line) for line in reader]:
+        if not has_something(line):  # allow blank lines
             continue
         if not generator:
             generator = Generator(
-                r, [make_header(header) for header in line.split(',')]
+                r, [make_header(header) for header in line]
             )
             continue
         mock_s, kv_callbacks = generator.handle(line)
