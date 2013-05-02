@@ -19,6 +19,7 @@ import dns.zone
 import pdb
 import ipaddr
 from copy import deepcopy
+import datetime
 
 def buildzone3(job):
     if job == "external":
@@ -216,7 +217,8 @@ def migrate_soa(zone, root_domain_name):
         if exists:
             soa = exists[0]
         else:
-            soa = SOA(serial=rdata.serial, minimum=rdata.minimum,
+            new_serial = int(datetime.datetime.now().strftime("%Y%m%d01"))
+            soa = SOA(serial=new_serial, minimum=rdata.minimum,
                     contact=rdata.rname.to_text().strip('.'),
                     primary=rdata.mname.to_text().strip('.'), description="SOA for"
                     " {0}".format(root_domain_name))

@@ -16,7 +16,7 @@ import reversion
 
 from gettext import gettext as _
 from string import Template
-import time
+import datetime
 
 
 # TODO, put these defaults in a config file.
@@ -59,7 +59,9 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
                                       help_text="Time to Live of this record")
     primary = models.CharField(max_length=100, validators=[validate_name])
     contact = models.CharField(max_length=100, validators=[validate_name])
-    serial = models.PositiveIntegerField(null=False, default=int(time.time()))
+    serial = models.PositiveIntegerField(
+        null=False, default=int(datetime.datetime.now().strftime("%Y%m%d01"))
+    )
     # Indicates when the zone data is no longer authoritative. Used by slave.
     expire = models.PositiveIntegerField(null=False, default=DEFAULT_EXPIRE)
     # The time between retries if a slave fails to contact the master

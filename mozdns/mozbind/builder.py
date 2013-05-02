@@ -9,6 +9,7 @@ import syslog
 import os
 import re
 import time
+import datetime
 
 from settings.dnsbuilds import (
     STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE, NAMED_CHECKZONE_OPTS,
@@ -609,7 +610,9 @@ class DNSBuilder(SVNBuilderMixin):
         force_rebuild, new_serial = False, None
         serial = get_serial(os.path.join(file_meta['prod_fname']))
         if not serial.isdigit():
-            new_serial = int(time.time())
+            new_serial = soa.serial or int(
+                datetime.datetime.now().strftime("%Y%m%d01")
+            )
             force_rebuild = True
             # it's a new serial
             self.log(
@@ -690,7 +693,6 @@ class DNSBuilder(SVNBuilderMixin):
                   Also generate a zone statement and add it to a dictionary for
                   later use during BIND configuration generation.
                 """
-
                 force_rebuild = soa.pk in soa_pks_to_rebuild or soa.dirty
                 if force_rebuild:
                     soa.dirty = False
