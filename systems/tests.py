@@ -257,7 +257,7 @@ class SystemTest(TestCase, LocalizeUtils):
 
     def test_bad_warranty(self):
         s = System.objects.create(hostname='foo.mozilla.com')
-        earlier = datetime.date.fromtimestamp(time.time() - 3600)
+        earlier = datetime.date.fromtimestamp(time.time() - 60 * 60 * 24 * 7)
         now = datetime.datetime.now()
         s.warranty_start = now
         s.warranty_end = earlier
