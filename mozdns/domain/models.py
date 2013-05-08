@@ -166,6 +166,16 @@ class Domain(models.Model, DBTableURLMixin):
             self.is_reverse = True
         self.master_domain = name_to_master_domain(self.name)
 
+        if not self.master_domain and self.name in ('reverse', 'config'):
+            # Right now zone files get placed into invzones/ where directories
+            # corresponding to TLDs are placed. There are also directories
+            # invzones/config/ (where configs are stored) and invzones/reverse/
+            # (where reverse zones are stored) -- we don't want to clobber
+            # these directories with TLD directories.
+            raise ValidationError(
+                "{0} is a reserved TLD name".format(self.name)
+            )
+
         do_zone_validation(self)
         # TODO, can we remove this?
         if self.pk is None:

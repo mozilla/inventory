@@ -56,6 +56,13 @@ class DomainTests(TestCase):
         c2 = Domain(name='moo_foo._foo.cz')
         c2.save()
 
+    def test_reserved_tld(self):
+        d = Domain(name='reverse')
+        self.assertRaises(ValidationError, d.save)
+
+        d = Domain(name='config')
+        self.assertRaises(ValidationError, d.save)
+
     def test_soa_validators(self):
         m = Domain(name='moo')
         m.save()
