@@ -18,7 +18,6 @@
             select_state('create'); // Initial state is searching
             $('#delete-control').css('visibitily', 'hidden');
         }
-        $('#create-button').click(function(){select_state('create')});
     });
     </script>
 
@@ -34,7 +33,7 @@
         </div>
         <div>
         <label/>Add new {{record_type}}</label>
-            <span><a class="dns-action-button" id="create-button"><img src="{{MEDIA_URL}}images/buttons/button-add-icon.png"/></a></span>
+            <span><a href="/mozdns/record/create/{{record_type}}/" class="dns-action-button" id="create-button"><img src="{{MEDIA_URL}}images/buttons/button-add-icon.png"/></a></span>
         </div>
     </div>
 
