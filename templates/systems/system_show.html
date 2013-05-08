@@ -44,11 +44,24 @@
 <dd>{{ system.system_status }}</dd>
 <div style="clear:both;"></div>
 
-<dt>SystemRack:</dt>
+<dt>Rack:</dt>
 {% if system.system_rack %}
-    <dd><a href='{{system.system_rack.get_absolute_url()}}'>{{system.system_rack}}</a><b> - </b> {{ system.rack_order }}</dd>
+    <dd>
+        <a href='{{system.system_rack.get_absolute_url()}}'>{{system.system_rack.name}}</a>
+        <b> - </b> {{ system.rack_order }}
+    </dd>
 {% else %}
     <dd>None<b> - </b> {{ system.rack_order }}</dd>
+{% endif %}
+<div style="clear:both;"></div>
+
+<dt>Rack Location:</dt>
+{% if system.system_rack and system.system_rack.location %}
+    <dd>
+        <a href='{{system.system_rack.location.get_absolute_url()}}'>{{system.system_rack.location.name}}</a>
+    </dd>
+{% else %}
+    <dd><i>Not defined</i></dd>
 {% endif %}
 <div style="clear:both;"></div>
 

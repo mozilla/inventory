@@ -147,6 +147,12 @@ class Location(models.Model):
     def __unicode__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return '/systems/locations/show/{0}/'.format(self.pk)
+
+    def get_edit_url(self):
+        return self.get_absolute_url()
+
 
 class PortData(models.Model):
     ip_address = models.CharField(max_length=15, blank=True)
@@ -300,14 +306,19 @@ class SystemRack(models.Model):
         db_table = u'system_racks'
         ordering = ['name']
 
+    def __str__(self):
+        return "%s - %s" % (
+            self.name, self.location.name if self.location else ''
+        )
+
+    def __unicode__(self):
+        return str(self)
+
     def get_absolute_url(self):
         return '/en-US/systems/racks/?rack={0}'.format(self.pk)
 
     def get_edit_url(self):
         return '/en-US/systems/racks/edit/{0}/'.format(self.pk)
-
-    def __unicode__(self):
-        return "%s - %s" % (self.name, self.location.name)
 
     def delete(self, *args, **kwargs):
         self.system_set.clear()

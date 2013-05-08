@@ -14,7 +14,16 @@ Allocation: {{ filter_form.allocation }}
 {% for rack, systems in racks %}
 <table class="racktable rack" id="rack-{{ rack.id }}" style="width: 72em; margin:auto;">
     <tr>
-    <th colspan="6">{{ rack.location }} - <a href="?rack={{ rack.pk }}">{{ rack }}</a>{% if not read_only %} - <a href="{{ "system_rack-edit"|url(rack.pk) }}">Edit</a> - <a href="{{ "rack-delete"|url(rack.pk) }}">Delete</a>{% endif %}</th>
+        <th colspan="6">
+            {% if rack.location %}
+                Location: <a href="{{ rack.location.get_absolute_url() }}">{{ rack.location }}</a> -
+            {% endif %}
+            Rack: <a href="?rack={{ rack.pk }}">{{ rack }}</a>
+            {% if not read_only %}
+                - <a href="{{ "system_rack-edit"|url(rack.pk) }}">Edit</a>
+                - <a href="{{ "rack-delete"|url(rack.pk) }}">Delete</a>
+            {% endif %}
+        </th>
     </tr>
     <tr style="font-weight:bold;">
         <td style="width:3em;">Order</td>
