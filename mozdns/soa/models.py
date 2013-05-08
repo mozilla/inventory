@@ -156,11 +156,13 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
         else:
             new = False
             db_self = SOA.objects.get(pk=self.pk)
-            fields = ['primary', 'contact', 'expire', 'retry',
-                      'refresh', 'description']
-            # Leave out serial and dirty so rebuilds don't cause a never ending
-            # build cycle
+            fields = [field.name for field in self.__class__._meta.fields]
+            # Introspec and determine if we need to rebuild
             for field in fields:
+                # Leave out serial and dirty so rebuilds don't cause a never
+                # ending build cycle
+                if field in ('serial', 'dirty'):
+                    continue
                 if getattr(db_self, field) != getattr(self, field):
                     self.schedule_rebuild(commit=False)
 
