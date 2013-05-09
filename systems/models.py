@@ -391,8 +391,8 @@ class System(DirtyFieldsMixin, models.Model):
         choices=YES_NO_CHOICES, blank=True, null=True)
     is_switch = models.IntegerField(
         choices=YES_NO_CHOICES, blank=True, null=True)
-    warranty_start = models.DateTimeField(blank=True, null=True, default=None)
-    warranty_end = models.DateTimeField(blank=True, null=True, default=None)
+    warranty_start = models.DateField(blank=True, null=True, default=None)
+    warranty_end = models.DateField(blank=True, null=True, default=None)
 
     objects = models.Manager()
     build_objects = BuildManager()

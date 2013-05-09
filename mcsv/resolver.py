@@ -211,7 +211,7 @@ class Resolver(Generics):
 
     def gen_parse_date(self, field):
         def parse_date(s, value, **kwargs):
-            d = datetime.datetime.strptime(value, "%Y-%m-%d")
+            d = datetime.datetime.strptime(value, "%Y-%m-%d").date()
             setattr(s, field, d)
             return s
         return parse_date
