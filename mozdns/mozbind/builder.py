@@ -678,6 +678,7 @@ class DNSBuilder(SVNBuilderMixin):
                 root_domain = soa.root_domain  # This is an expensive lookup
                 if not root_domain:
                     self.log("No root domain found in zone {0}".format(soa))
+                    continue
                 """
                 General order of things:
                 * Find which views should have a zone file built and add them
