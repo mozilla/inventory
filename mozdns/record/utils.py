@@ -71,8 +71,9 @@ class RecordView(object):
             # We will try to create an object
             object_ = None
 
-        new_object, errors = self.post_handler(object_, record_type,
-                                               request.POST.copy())
+        new_object, errors = self.post_handler(
+            object_, record_type, request.POST.copy()
+        )
 
         if object_:
             verb = "update"
@@ -199,6 +200,9 @@ class DOMAIN_(RecordView):
     Klass = Domain
     form = DomainForm
     DisplayForm = DomainForm
+
+    def modify_qd(self, qd):
+        return qd, None
 
 
 @tag_rdtype
