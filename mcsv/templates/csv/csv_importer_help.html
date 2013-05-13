@@ -133,12 +133,12 @@
             A reliable way to assign a system the correct related attribute is to
             use the '<code>id</code>' <b>filter field</b>.
             For example, if you wanted to assign the system with
-            the <b>hostname</b> '<code>foobaz.mozilla.com</code>' the rack
+            the <b>hostname</b> '<code>foo.mozilla.com</code>' the rack
             whose <code>id</code> was equal to the value '8', you would do:
         </p>
         <p>
-            <code class='example-csv'>hostname, systemrack % id</code>
-            <code class='example-csv'>foobaz.mozilla.com, 8</code>
+            <code class='example-csv'>hostname, system_rack % id</code>
+            <code class='example-csv'>foo.mozilla.com, 8</code>
         </p>
         <p>
             <b><a href='#MA'name='Meta-Attributes'>Meta Attribute</a></b>
@@ -221,7 +221,7 @@
                 hostname, system_rack % name, oob_ip, OOB_switch_&_port, nic.0.mac_address.0, system_status % status, nic.0.name.0, server_model % model
             </code>
             <code class='example-csv'>
-                foo.scl2.mozilla.com, 102-19, 10.22.4.208, oob1.r102-19:ge-0/0/0, ac:16:2d:87:c2:0c, production, nic0, DL385G8
+                foo.scl2.mozilla.com, 102-19, 10.22.4.208, oob1.r102-19:ge-0/0/0, ac:16:2d:87:c2:0c, production, nic0, 2510G-25
             </code>
         </p>
         <p>

@@ -1,8 +1,10 @@
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, Client
 
 from mcsv.importer import csv_import
-from systems.models import OperatingSystem, System
+from systems.models import (
+    OperatingSystem, System, SystemRack, Allocation, Location, SystemStatus
+)
 
 import datetime
 
@@ -12,6 +14,11 @@ class CSVTests(TestCase):
         OperatingSystem.objects.create(name='foo', version='1.1')
         OperatingSystem.objects.create(name='foo', version='2.1')
         OperatingSystem.objects.create(name='bar', version='2.1')
+        SystemStatus.objects.create(
+            status='production', color='burgandy', color_code='wtf?'
+        )
+        Allocation.objects.create(name='something')
+        self.cleint = Client()
 
     def test_get_related(self):
         test_csv = """
@@ -305,8 +312,8 @@ class CSVTests(TestCase):
         # The primary_attr kwarg shouldn't affect anything
         s1 = System.objects.get(serial='SC07HT03WDKDJ')
         self.assertEqual(
-            datetime.datetime(2012, 6, 6, 0, 0), s1.warranty_start)
-        self.assertEqual(datetime.datetime(2013, 6, 6, 0, 0), s1.warranty_end)
+            datetime.datetime(2012, 6, 6, 0, 0).date(), s1.warranty_start)
+        self.assertEqual(datetime.datetime(2013, 6, 6, 0, 0).date(), s1.warranty_end)
 
     def test_two_switches(self):
         System.objects.create(
@@ -336,3 +343,29 @@ class CSVTests(TestCase):
         # The primary_attr kwarg shouldn't affect anything
         s1 = System.objects.get(hostname='foobob.mozilla.com')
         self.assertEqual(s1.switch_ports, 'sdf,asfd,asfd')
+
+    def test_allocation(self):
+        l1 = Location.objects.create(
+            name='loc1'
+        )
+        l2 = Location.objects.create(
+            name='loc2'
+        )
+        SystemRack.objects.create(
+            name='rack1', location=l1
+        )
+        SystemRack.objects.create(
+            name='rack1', location=l2
+        )
+        test_csv = """
+hostname,system_status %status,system_rack %name,operating_system % name % version,allocation
+foobob.use1.mozilla.com,production, rack1 ,foo % 1.1,somthing
+        """
+        self.assertRaises(Exception, csv_import, test_csv)  # rack1 needs a location too
+        self.assertFalse(System.objects.filter(hostname='foobob.use1.mozilla.com'))
+
+        test_csv = """
+hostname,system_status %status,system_rack %name % location__name,operating_system % name % version,allocation %name
+foobob.use1.mozilla.com,production, rack1 % loc1,foo % 1.1,something
+        """
+        csv_import(test_csv, save=True)

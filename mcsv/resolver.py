@@ -2,7 +2,7 @@
 # http://people.mozilla.com/~juber/public/inventory.png
 
 from django.core.exceptions import (
-    MultipleObjectsReturned, ObjectDoesNotExist, ValidationError
+    MultipleObjectsReturned, ObjectDoesNotExist, ValidationError, FieldError
 )
 from systems import models as sys_models
 
@@ -240,10 +240,10 @@ class Resolver(Generics):
 
     def get_related_simple(self, field, value, Klass):
         search = {field: value}
-        obj = self._get_dict_related(search, Klass)
+        obj = self.get_realted_from_dict(search, Klass)
         if obj:
             return obj
-        obj = self._get_pk_related(value, Klass)
+        obj = self.get_related_from_pk(value, Klass)
         if obj:
             return obj
         self.cannot_find(field, value)
@@ -263,22 +263,28 @@ class Resolver(Generics):
                     field, ' | '.join(self.get_field_names(Klass))
                 )
             )
-        fields = field.split('%')[1:]
+        fields = fields[1:]
         values = map(lambda s: s.strip(), value.split('%'))
         search = dict(zip(fields, values))
 
-        obj = self._get_dict_related(search, Klass)
+        try:
+            obj = self.get_realted_from_dict(search, Klass)
+        except FieldError, e:
+            raise Exception(
+                "When trying to use resolve a(n) {0}, got the error "
+                "{1}".format(Klass.__name__, str(e))
+            )
         if obj:
             return obj
         self.cannot_find(field, value)
 
-    def _get_dict_related(self, search, Klass):
+    def get_realted_from_dict(self, search, Klass):
         try:
             return Klass.objects.get(**search)
         except (MultipleObjectsReturned, Klass.DoesNotExist):
             pass
 
-    def _get_pk_related(self, value, Klass):
+    def get_related_from_pk(self, value, Klass):
         try:
             return Klass.objects.get(pk=value)
         except ObjectDoesNotExist:
@@ -295,9 +301,12 @@ class Resolver(Generics):
                 header, value, sys_models.SystemRack
             )
             return s
+        filter_fields = self.get_field_names(sys_models.SystemRack)
+        filter_fields.remove('location')
+        filter_fields.append('location__name')  # cute ORM hack
         bundle = {
             'name': 'systemrack',
-            'filter_fields': self.get_field_names(sys_models.SystemRack),
+            'filter_fields': filter_fields,
             'values': ['system_rack'],
             'handler': _systemrack
         }
@@ -321,7 +330,7 @@ class Resolver(Generics):
     @system_related
     def server_model(self, **kwargs):
         def _server_model(s, header, value):
-            s.system_model = self.get_related(
+            s.server_model = self.get_related(
                 header, value, sys_models.ServerModel
             )
             return s
@@ -351,12 +360,12 @@ class Resolver(Generics):
     def allocation(self, **kwargs):
         def _allocation(s, header, value):
             s.allocation = self.get_related(
-                header, value, sys_models.ServerModel
+                header, value, sys_models.Allocation
             )
             return s
         bundle = {
             'name': 'allocation',
-            'filter_fields': self.get_field_names(sys_models.ServerModel),
+            'filter_fields': self.get_field_names(sys_models.Allocation),
             'values': ['allocation'],
             'handler': _allocation
         }

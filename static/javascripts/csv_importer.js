@@ -6,13 +6,14 @@ $(document).ready(function () {
     });
 
     $("#csv-form").submit(function( event ) {
+        $('#id_waiting').css('display', 'block');
         $('#csv-results').empty();
         $.ajax({
             type: "POST",
             url: "/en-US/csv/ajax_csv_importer/",
             data: $('#csv-form').serialize(),
             success: function (data) {
-                console.log('data')
+                $('#id_waiting').css('display', 'none');
                 $('#csv-results').append(data);
             },
             error: function (e) {

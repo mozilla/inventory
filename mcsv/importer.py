@@ -19,7 +19,6 @@ class MockSystem(object):
 
 class Generator(object):
     def __init__(self, resolver, headers, delimiter=','):
-        # TODO, use stdlib module csv
         self.r = resolver
         self.headers = headers
         self.delimiter = ','
@@ -116,30 +115,31 @@ class Generator(object):
         phase_1 = []
         phase_2 = []
         phase_3 = []
-        for (phase, header, action), item in zip(self.action_list, data):
+        # Warning: raw_headers need to be strip of white space still
+        for (phase, raw_header, action), item in zip(self.action_list, data):
             if phase == 0:
-                phase_0.append((action, header, item))
+                phase_0.append((action, raw_header, item))
             elif phase == 1:
                 phase_1.append((action, item))
             elif phase == 2:
-                phase_2.append((action, header, item))
+                phase_2.append((action, raw_header, item))
             elif phase == 3:
-                phase_3.append((action, header, item))
+                phase_3.append((action, raw_header, item))
             else:
                 raise ValidationError("wut?")
 
         s = MockSystem()
-        # Phase 0 meta headers
-        for action, header, item in phase_0:
-            s = action(s, header, item)
+        # Phase 0 meta raw_headers
+        for action, raw_header, item in phase_0:
+            s = action(s, raw_header, item)
 
         # Phase 1 System attributes
         for action, item in phase_1:
             s = action(s, item)
 
         # Phase 2 Related fields
-        for action, header, item in phase_2:
-            s = action(s, header, item)
+        for action, raw_header, item in phase_2:
+            s = action(s, raw_header, item)
 
         # Phase 3 key value paires
         kv_cbs = []  # keyvalue call backs
