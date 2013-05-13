@@ -249,6 +249,7 @@ class DNSBuilder(SVNBuilderMixin):
             'LOG_SYSLOG': True,
             'DEBUG': False,
             'FORCE': False,
+            'FORCE_BUILD': False,
             'bs': DNSBuildRun()  # Build statistic
         }
         for k, default in defaults.iteritems():
@@ -858,13 +859,13 @@ class DNSBuilder(SVNBuilderMixin):
 
         dns_tasks = self.get_scheduled()
 
-        if not dns_tasks and not self.FORCE:
+        if not dns_tasks and not self.FORCE_BUILD:
             self.log("Nothing to do!")
             self.goto_out()
             return
 
         try:
-            if self.CLOBBER_STAGE or self.FORCE:
+            if self.CLOBBER_STAGE or self.FORCE_BUILD:
                 self.clear_staging(force=True)
             self.build_staging()
 

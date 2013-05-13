@@ -38,10 +38,13 @@ def main():
     parser.add_argument('--debug', dest='DEBUG',
                         action='store_true', default=False, help="Print "
                         "copious amounts of text.")
-    parser.add_argument('--force', dest='FORCE',
+    parser.add_argument('--force-checkin', dest='FORCE',
                         action='store_true', default=False, help="Ignore "
                         "all change delta thresholds, clobber stagig area, "
                         "and build even when no tasks are scheduled.")
+    parser.add_argument('--force-build', dest='FORCE_BUILD',
+                        action='store_true', default=False, help="Do a buil "
+                        "even if no zones are requesting to be rebuilt.")
     parser.add_argument('--status', dest='STATUS',
                         action='store_true', default=False, help="Display "
                         "info about the build configuration and exit.")
