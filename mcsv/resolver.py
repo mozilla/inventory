@@ -301,9 +301,10 @@ class Resolver(Generics):
                 header, value, sys_models.SystemRack
             )
             return s
+
         filter_fields = self.get_field_names(sys_models.SystemRack)
-        filter_fields.remove('location')
-        filter_fields.append('location__name')  # cute ORM hack
+        filter_fields[filter_fields.index('location')] = 'location__name'
+
         bundle = {
             'name': 'systemrack',
             'filter_fields': filter_fields,

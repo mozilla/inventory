@@ -115,7 +115,7 @@ class Generator(object):
         phase_1 = []
         phase_2 = []
         phase_3 = []
-        # Warning: raw_headers need to be strip of white space still
+        # Warning: raw_headers still need to be striped of white space
         for (phase, raw_header, action), item in zip(self.action_list, data):
             if phase == 0:
                 phase_0.append((action, raw_header, item))

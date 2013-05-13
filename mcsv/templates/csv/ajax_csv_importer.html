@@ -2,14 +2,8 @@
     .results code {
         border:5px solid white;
     }
-    div.hidden {
-        display: none;
-    }
 </style>
 {% if 'error' in result %}
-    <div class='hidden'>
-        XXX-Failure-XXX
-    </div>
     <code>
         {% for error in result['error'] %}
             {{ error }}
@@ -37,13 +31,17 @@
                     <td>{{ attr }}</td>
                     {% if bundle['orig_system'] and
                         not getattr(bundle['orig_system'], attr) == getattr(bundle['system'], attr) %}
-                    <td class='new'>
-                        {{ getattr(bundle['orig_system'], attr) }} <b>&rarr;</b> {{ getattr(bundle['system'], attr) }}
-                    </td>
+                        <td class='new'>
+                            {{ getattr(bundle['orig_system'], attr) }} <b>&rarr;</b> {{ getattr(bundle['system'], attr) }}
+                        </td>
+                    {% elif not bundle['orig_system'] %}
+                        <td class='new'>
+                            {{ getattr(bundle['system'], attr) }}
+                        </td>
                     {% else %}
-                    <td>
-                        {{ getattr(bundle['system'], attr) }}
-                    </td>
+                        <td>
+                            {{ getattr(bundle['system'], attr) }}
+                        </td>
                     {% endif %}
                 </tr>
             {% endif %}
@@ -59,11 +57,11 @@
         {% for kv, orig_kv in bundle['kvs'] %}
             <tr>
                 {% if orig_kv and orig_kv.value != kv.value %}
-                        <td class='new'>{{ kv.key }}</td><td class='new'>{{ orig_kv.value }} <b>&rarr;</b> {{ kv.value }}</td>
+                    <td class='new'>{{ kv.key }}</td><td class='new'>{{ orig_kv.value }} <b>&rarr;</b> {{ kv.value }}</td>
                 {% elif not orig_kv and orig_kv.value != kv.value %}
-                        <td class='new'>{{ kv.key }}</td><td class='new'>{{ kv.value }}</td>
+                    <td class='new'>{{ kv.key }}</td><td class='new'>{{ kv.value }}</td>
                 {% else %}
-                        <td>{{ kv.key }}</td><td>{{ kv.value }}</td>
+                    <td>{{ kv.key }}</td><td>{{ kv.value }}</td>
                 {% endif %}
             </tr>
         {% endfor %}

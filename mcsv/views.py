@@ -43,7 +43,7 @@ def ajax_csv_importer(request):
         'getattr': getattr,
         'save': save,
         'len': len
-    })
+    }, status=200 if 'error' not in result else 400)
 
 
 def csv_format(request):
