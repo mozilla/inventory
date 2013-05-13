@@ -2,7 +2,7 @@
 # http://people.mozilla.com/~juber/public/inventory.png
 
 from django.core.exceptions import (
-    MultipleObjectsReturned, ObjectDoesNotExist, ValidationError, FieldError
+    MultipleObjectsReturned, ValidationError, FieldError
 )
 from systems import models as sys_models
 
@@ -287,7 +287,7 @@ class Resolver(Generics):
     def get_related_from_pk(self, value, Klass):
         try:
             return Klass.objects.get(pk=value)
-        except ObjectDoesNotExist:
+        except Klass.DoesNotExist:
             pass
 
     # XXX this should really be in the classes themselves
