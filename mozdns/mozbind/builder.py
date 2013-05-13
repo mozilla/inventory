@@ -677,7 +677,12 @@ class DNSBuilder(SVNBuilderMixin):
             try:
                 root_domain = soa.root_domain  # This is an expensive lookup
                 if not root_domain:
+                    # TODO, figure out how to send a nagios alert on this case.
                     self.log("No root domain found in zone {0}".format(soa))
+                    fail_mail(
+                        "{0} is an orphan. It's being skipped in "
+                        "the builds".format(soa), subject="{0} is "
+                        "orphaned".format(soa))
                     continue
                 """
                 General order of things:

@@ -268,3 +268,13 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         post_task_count = Task.objects.all().count()
         self.assertTrue(pre_task_count != 0)
         self.assertEqual(0, post_task_count)
+
+    def test_orphan_soa(self):
+        SOA.objects.create(
+            primary='foo.foo', contact='foo.foo', description='SOA for testing'
+        )
+        b1 = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
+                        FIRST_RUN=True, PUSH_TO_PROD=True,
+                        STOP_UPDATE_FILE=self.stop_update_file)
+        b1.build_dns()
