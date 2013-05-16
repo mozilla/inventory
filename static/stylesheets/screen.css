@@ -44,6 +44,7 @@ html, body {
     margin-top: 9px;
     margin-right: 10px;
 }
+
 #search-box input {
 }
 
@@ -68,11 +69,11 @@ html, body {
   color: black;
 }
 
-.ui-autocomplete {
+.search-box .ui-autocomplete {
     position: absolute;
 }
 
-ul.ui-autocomplete li.ui-menu-item{
+.search-box ul.ui-autocomplete li.ui-menu-item{
   text-align:right;
 }
 
