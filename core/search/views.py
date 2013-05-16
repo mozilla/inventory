@@ -149,7 +149,7 @@ def ajax_type_search(request):
             else:
                 raise
     return HttpResponse(json.dumps({
-        record_type: [{'label': str(r), 'value': r.pk} for r in records]
+        record_type: [{'label': str(r), 'pk': r.pk} for r in records]
     }))
 
 

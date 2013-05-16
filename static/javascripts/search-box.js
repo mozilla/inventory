@@ -16,18 +16,19 @@ $(document).ready(function () {
           response(search_cache[term]);
           return;
         }
-        $.getJSON('/en-US/core/search/ajax_type_search/', {'query': term, 'record_type': 'SYSTEM'}, function( data, status, xhr ) {
-          search_cache[term] = data.SYSTEM;
-          response(data.SYSTEM);
-        });
+        $.getJSON('/en-US/core/search/ajax_type_search/',
+          {'query': term, 'record_type': 'SYSTEM'},
+          function( data, status, xhr ) {
+            search_cache[term] = data.SYSTEM;
+            response(data.SYSTEM);
+          });
       },
     select: function( event, ui ) {
-      window.location = '/en-US/systems/show/' + ui.item.value + '/';
+      window.location = '/en-US/systems/show/' + ui.item.pk + '/';
+      return false;
+    },
+    focus: function( event, ui ) {
       return false;
     }
-  });
-
-  $('#search-box input').submit(function () {
-    return false;
   });
 });
