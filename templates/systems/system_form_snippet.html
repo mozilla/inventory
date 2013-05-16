@@ -83,18 +83,16 @@
             {{ form.allocation }} <span class="create_new"> or <a href="" id="new_allocation"> or (Create New)</a></span>
         </div>
         <br />
-<ul class="tabs">
-	<li><a href="#">Server Options</a></li>
-    <!--<li><a href="#">Network Adapters</a></li>-->
-	<li><a href="#">Notes</a></li>
-	<li><a href="#">Licenses</a></li>
-	<li id='network_adapter_link'><a href="#">Key/Value Store</a></li>
-	<li><a href="#">Revision History</a></li>
-</ul>
+<div id='system-tabs'>
+    <ul>
+        <li><a href="#tabs-1">Server Options</a></li>
+        <li><a href="#tabs-2">Notes</a></li>
+        <li><a href="#tabs-3">Licenses</a></li>
+        <li id='network_adapter_link'><a href="#tabs-4">Key/Value Store</a></li>
+        <li><a href="#tabs-5">Revision History</a></li>
+    </ul>
 
-<!-- tab "panes" -->
-<div class="panes">
-	<div style='min-height: 200px;'>
+	<div id="tabs-1" style='min-height: 200px;'>
 	<ul style="list-style-type:none;">
         <li class="formline">
             <label for="id_is_dns_server">Is DNS Server?</label>
@@ -123,19 +121,19 @@
 			</span>
 		
     </div>-->
-	<div style="height: 300px;">
+	<div style="height: 300px;" id="tabs-2">
 		    {{ form.notes }}
 	</div>
-	<div style="height: 300px;">
+	<div style="height: 300px;" id="tabs-3">
 		    {{ form.licenses }}
 	</div>
-	<div>
-        <span id="key_value_store_expansion_span"><a id="key_value_store_expansion" href="#"  rel="#expanded_keystore"/ style='padding-left: 5px;'>View Expanded Key/Value Store</a></span>
-        <span id="key_value_store_expansion_help_span"><a id="key_value_store_expansion_help" href="#"  rel="#key_value_store_help_div" style='padding-left: 5px;'>Usage Help</a></span>
-        <span id="key_value_store_quick_add_span"><a id="key_value_store_quick_add_adapter" href="#"  rel="#key_value_store_quick_add_adapter_div" style='padding-left: 5px;'>Add Adapter</a></span>
+	<div id="tabs-4">
+        <span id="key_value_store_expansion_span"><a id="key_value_store_expansion"  rel="#expanded_keystore"/ style='padding-left: 5px;'>View Expanded Key/Value Store</a></span>
+        <span id="key_value_store_expansion_help_span"><a id="key_value_store_expansion_help"  rel="#key_value_store_help_div" style='padding-left: 5px;'>Usage Help</a></span>
+        <span id="key_value_store_quick_add_span"><a id="key_value_store_quick_add_adapter"  rel="#key_value_store_quick_add_adapter_div" style='padding-left: 5px;'>Add Adapter</a></span>
 		<span id="key_value_store_span"></span>
 	</div>
-	<div style="height: 300px;  width: 900px; overflow-y: scroll; overflow-x: hidden;">
+	<div id="tabs-5" style="height: 300px;  width: 900px; overflow-y: scroll; overflow-x: hidden;">
 		<span id="revision_history_span" style='width: 650px;'>
 			<table style='width: 900px;' cellpadding='2' border='1' cellspacing='0'>
 			{% for r in revision_history %}

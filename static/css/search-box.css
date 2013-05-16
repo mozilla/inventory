@@ -1,0 +1,36 @@
+.search-box {
+    display: inline;
+    float: right;
+    margin-top: 0.6em;
+    width: auto;
+    resize: horizontal;
+}
+
+#search-box-result {
+    display: block;
+    z-index: 200;
+    position:absolute;
+    width: 0px;
+}
+
+#search-box-result > ul {
+    background-color: white;
+    background-image:none;
+}
+
+#search-box-result > ul a {
+  color: black;
+}
+
+#search-box-result > ul a:hover {
+  color: black;
+}
+
+.ui-autocomplete {
+    position: absolute;
+}
+
+ul.ui-autocomplete li.ui-menu-item{
+  text-align:right;
+}
+

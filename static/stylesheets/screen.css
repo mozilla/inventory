@@ -18,11 +18,13 @@ html, body {
     margin: 0 auto;
     height: inherit;
 }
+
 .header h1 {
     display: inline;
     float: left;
     margin-right: 10px;
 }
+
 .header h1 a {
     display: inline;
     text-decoration: none;
@@ -30,9 +32,48 @@ html, body {
     color: white;
     height: inherit;
 }
+
 .nav-header {
     height:3.7em;
     display:inline;
+}
+
+#search-box {
+    display: block;
+    float: right;
+    margin-top: 9px;
+    margin-right: 10px;
+}
+#search-box input {
+}
+
+#search-box-result {
+    display: block;
+    z-index: 200;
+    position:absolute;
+    width: 0px;
+    height: 0px;
+}
+
+#search-box-result > ul {
+    background-color: white;
+    background-image:none;
+}
+
+#search-box-result > ul a {
+  color: black;
+}
+
+#search-box-result > ul a:hover {
+  color: black;
+}
+
+.ui-autocomplete {
+    position: absolute;
+}
+
+ul.ui-autocomplete li.ui-menu-item{
+  text-align:right;
 }
 
 

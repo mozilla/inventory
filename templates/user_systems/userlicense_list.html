@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% block content %}
 
+{% block head %}
 <script>
 	$(document).ready(function(){
         add_tablesorter($('.listtable')[0]);
@@ -26,7 +26,10 @@
 
 	});
 </script>
-    <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
+<script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
+{% endblock %}
+
+{% block content %}
 <div style="margin-top: 1em; float:right;">
     <strong>Quick Search:</strong> <input id="quicksearch-val" type="text" name="quicksearch" autofocus="autofocus"/><input id='quicksearch-button' type='submit' value='Go' />
 </div>

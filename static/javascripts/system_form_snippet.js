@@ -1,16 +1,23 @@
-    <script type="text/javascript">
-        $(function() {
-            $("ul.tabs").tabs("div.panes > div");
-            $("#key_value_store_expansion").overlay();
-            $("#key_value_store_expansion_help").overlay();
-            $("#key_value_store_quick_add_adapter").overlay({
-               onBeforeLoad: function(){
-                    $("#quick_add_host_name").val($("#id_hostname").val());
-               }
+$(document).ready(function () {
+            $("#system-tabs").tabs();
+            $("#key_value_store_expansion_help").click(function () {
+                $('#key_value_store_help_div').dialog(
+                    {minWidth: 800}
+                );
+                return false;
             });
-                
+            $("#key_value_store_quick_add_adapter").click(function () {
+                $('#key_value_store_quick_add_adapter_div').dialog(
+                    {minWidth: 800}
+                );
+                return false;
+            });
             $("#key_value_store_expansion").click(function(){
                 $('#expanded_keystore_inner').html('&nbsp;').load('/en-US/systems/get_expanded_key_value_store/' + system_id + '/');
+                $('#expanded_keystore').dialog(
+                    {minWidth: 800}
+                );
+                return false;
             });
 
 
@@ -58,7 +65,7 @@
                 var form = $('<div id="server_model_sub_form" class="sub_form">' +
                                         '<label>Vendor:</label> <input type="text" name="js_server_model_vendor" id="js_server_model_vendor" /> <br />' + 
                                         '<label>Model:</label> <input type="text" name="js_server_model_model" id="js_server_model_model" /> <br />' + 
-                                        '<a id="server_model_create_button" class="create" href="#">Create</a>&nbsp;<a class="cancel" href="">Cancel</a>' + 
+                                        '<a id="server_model_create_button" class="create" >Create</a>&nbsp;<a class="cancel" href="">Cancel</a>' + 
                                         '</div>');
 
                 form.find('a.cancel').click(function() {
@@ -113,7 +120,6 @@
 				} else {
 					$('#releng_div_label').hide();
 					$('#releng_div').hide();
-					
 				}
 
 			});
@@ -124,7 +130,7 @@
                 var form = $('<div id="operating_system_model_sub_form" class="sub_form">' +
                                         '<label>Name:</label> <input type="text" name="js_os_name" id="js_os_name" /> <br />' + 
                                         '<label>Version:</label> <input type="text" name="js_os_version" id="js_os_version" /> <br />' + 
-                                        '<a id="operating_system_create_button" class="create" href="#">Create</a>&nbsp; <a class="cancel" href="">Cancel</a>' + 
+                                        '<a id="operating_system_create_button" class="create" >Create</a>&nbsp; <a class="cancel" href="">Cancel</a>' + 
                                         '</div>');
 
                 $('#id_operating_system').replaceWith(form);
@@ -194,8 +200,6 @@
                 $('#id_system_status').replaceWith(form);
                 return false;
             });
-	});
 
 	$(".container").css("width","1100px");
-
-    </script>
+});

@@ -99,6 +99,40 @@ class SystemForm(forms.ModelForm):
         widget=SelectDateWidget(years=range(1999,datetime.today().year + 50)),
     )
 
+    class Meta:
+        model = models.System
+        fields = ('hostname',
+                  'serial',
+                  'switch_ports',
+                  'patch_panel_port',
+                  'oob_ip',
+                  'oob_switch_port',
+                  'system_status',
+                  'system_rack',
+                  'system_type',
+                  'rack_order',
+                  'is_dhcp_server',
+                  'is_dns_server',
+                  'is_nagios_server',
+                  'is_puppet_server',
+                  'is_switch',
+                  'change_password',
+                  'operating_system',
+                  'server_model',
+                  'allocation',
+                  'asset_tag',
+                  'purchase_date',
+                  'purchase_price',
+                  'warranty_start',
+                  'warranty_end',
+                  'licenses',
+                  'notes',
+                  )
+
+    def __init__(self, *args, **kwargs):
+        super(SystemForm, self).__init__(*args, **kwargs)
+        self.fields['hostname'].widget.attrs['style'] = 'width: 400px;'
+
     def clean_hostname(self):
         """
             We're now starting to enforce fqdn for inventory hostnames. The following
@@ -165,37 +199,6 @@ class SystemForm(forms.ModelForm):
             )
             return status_model
         return None
-
-
-    class Meta:
-        model = models.System
-        fields = ('hostname',
-                  'serial',
-                  'switch_ports',
-                  'patch_panel_port',
-                  'oob_ip',
-                  'oob_switch_port',
-                  'system_status',
-                  'system_rack',
-                  'system_type',
-                  'rack_order',
-                  'is_dhcp_server',
-                  'is_dns_server',
-                  'is_nagios_server',
-                  'is_puppet_server',
-                  'is_switch',
-                  'change_password',
-                  'operating_system',
-                  'server_model',
-                  'allocation',
-                  'asset_tag',
-                  'purchase_date',
-                  'purchase_price',
-                  'warranty_start',
-                  'warranty_end',
-                  'licenses',
-                  'notes',
-                  )
 
 
 class RackSystemForm(forms.ModelForm):

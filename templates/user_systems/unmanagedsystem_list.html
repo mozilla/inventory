@@ -1,7 +1,9 @@
 {% extends "base.html" %}
+{% block head %}
+    <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
+{% endblock%}
 {% block content %}
 
-    <script src="{{MEDIA_URL }}javascripts/tablesorter.js"></script>
 <div style="margin-top: 1em; float:right;">
     <form action="/en-US/user_systems/quicksearch/" onSubmit="return false;">
         <strong>Quick Search:</strong> <input id="quicksearch" type="text" name="quicksearch" /><input type='submit' name='submit' value='Go' />

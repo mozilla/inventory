@@ -1,14 +1,19 @@
+import MySQLdb
+
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 
 from mozdns.utils import get_zones
 
 from core.search.compiler.django_compile import compile_to_django
+from core.search.compiler.django_compile import search_type
+
 import simplejson as json
 from gettext import gettext as _
 
 from MySQLdb import OperationalError
 from jinja2 import Environment, PackageLoader, ChoiceLoader
+
 env = Environment(loader=ChoiceLoader(
     [PackageLoader('mozdns.record', 'templates'),
      PackageLoader('core.search', 'templates')]
@@ -121,6 +126,31 @@ def search(request):
         "search": search,
         "zones": sorted([z.name for z in get_zones()], reverse=True)
     })
+
+
+def ajax_type_search(request):
+    query = request.GET.get('query', '')
+    record_type = request.GET.get('record_type', '')
+    if not record_type:
+        raise Http404
+    records, error = search_type(query, record_type)
+    if not query:
+        return HttpResponse(json.dumps({record_type: []}))
+    if error:
+        records = []
+    else:
+        try:
+            records = records[:50]
+        except MySQLdb.OperationalError, e:
+            if "Got error " in str(e) and " from regexp" in str(e):
+                # This is nasty. If the user is using an invalid regex patter,
+                # the db might shit a brick
+                records = []
+            else:
+                raise
+    return HttpResponse(json.dumps({
+        record_type: [{'label': str(r), 'value': r.pk} for r in records]
+    }))
 
 
 def get_zones_json(request):

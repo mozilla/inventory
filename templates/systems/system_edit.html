@@ -148,7 +148,10 @@ ul.css-tabs a.current {
 
 </style>
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/tabs.css" />
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.js"></script>
+<script src="{{ MEDIA_URL }}javascripts/system_form_snippet.js"></script>
 <script type="text/javascript">
+    $(document).ready(function(){
         var system_id = getURISegment(5);
     $.validator.addMethod("checkForDupeNicName", function(value, element, param){
 
@@ -221,7 +224,6 @@ ul.css-tabs a.current {
             },
             "Please Enter a Valid MAC Address."
         );
-    $(document).ready(function(){
 
 		function getURISegment(segment){
 			var query = document.location.href;
@@ -307,13 +309,12 @@ ul.css-tabs a.current {
                                             }
                                         );
                                     }
-                                    $("#key_value_store_quick_add_adapter").data("overlay").close()
+                                    //$("#key_value_store_quick_add_adapter").data("overlay").close()
                                     $('#key_value_store_span').html('&nbsp;').load('/en-US/systems/get_key_value_store/' + system_id + '/');
                                 return false;
                             }
 
             });
-        });
 		//load_network_adapters(system_id);
 
 		function getURISegment(segment){
@@ -328,23 +329,8 @@ ul.css-tabs a.current {
 			$('#network_adapters_div').html('&nbsp;').load('/systems/get_network_adapters/' + system_id + '/');
 
 		}
-/*$.ajaxSetup({
-  beforeSend: function() {
-     $('#image-loading').attr({"left":"50%"});
-     $('#image-loading').attr({"top":"50%"});
-     $('#image-loading').attr({"z-index":"9999999"});
-     $('#image-loading').show()
-  },
-  complete: function(){
-     $('#image-loading').hide()
-  },
-  success: function() {}
-});*/
-
-
-
-        </script>
-
+        });
+</script>
 {% endblock %}
 {% block content %}
     <h2>Edit system - {{system}}</h2>
@@ -359,7 +345,6 @@ ul.css-tabs a.current {
         <input type="submit" name="Submit" value="Save" />
     </form>
 
-    {% include "systems/system_form_snippet.js" %}
 
 <div class='simple_overlay' id="key_value_store_help_div">
     <div class='details'>
@@ -430,9 +415,5 @@ ul.css-tabs a.current {
             <input id='batch_create_network_adapter' type='submit' name='submit' value='Create' />
         </p>
     </form>
-
-
-
-
 </div>
 {% endblock %}
