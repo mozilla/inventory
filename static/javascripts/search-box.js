@@ -1,7 +1,7 @@
 $(document).ready(function () {
   $('#search-box input').keydown(function(event) {
     if (event.keyCode == 13) {
-      window.location = '/en-US/core/search/#q=' + $('#search-box input').val();
+      window.location = '/en-US/core/search/?search=' + $('#search-box input').val();
       return false;
     }
   });
