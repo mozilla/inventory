@@ -3,6 +3,7 @@
 <script type='text/javascript' src='/static/js/jquery.validate.min.js'></script>
 <!-- standalone page styling (can be removed) -->
 <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/standalone.css"/>	
+<script src="{{ MEDIA_URL }}javascripts/system_form_snippet.js"></script>
 
 
 	
@@ -155,9 +156,6 @@ ul.css-tabs a.current {
         {% include "systems/system_form_snippet.html" %}
         <input type="submit" name="Submit" value="Create" />
     </form>
-
-    {% include "systems/system_form_snippet.js" %}
-
 
 <div class='simple_overlay' id="key_value_store_help_div">
     <div class='details'>
