@@ -317,6 +317,7 @@ function setup_delete(){
             function (data) {
                 data = $.parseJSON(data)
                 if (data['success']) {
+                    console.log('Error: ' + data['error']);
                     alert("Delete successful");
                     window.location = "/";
                 } else {
@@ -330,39 +331,39 @@ function setup_delete(){
             $('#form-message').html("<p>Error</p>");
         });
     }
+    $("#delete-dialog").dialog({
+        title: 'Why this record is being deleted? (A bug number would be nice)',
+        // Click the selected record
+        autoOpen: false,
+        minWidth: 520,
+        minHeight: 20,
+        buttons: {
+            "Confirm Delete": function() {
+                if (/^\s*$/.test($('#delete-message').val())) {
+                    alert("Aborting commit due to empty commit message.");
+                } else {
+                    $('#id_comment').val($('#delete-message').val());
+                    delete_handler();
+                }
+                $(this).dialog("close");
+            },
+            Cancel: function() {
+                $(this).dialog("close");
+            }
+        }
+    });
     $('#delete-button').click(function(){
         var data = $('#dns-data');
         var record_type = data.attr('record_type');
         var record_pk = data.attr('record_pk');
-        $("#delete-dialog").dialog({
-            title: 'Why this record is being deleted? (A bug number would be nice)',
-            // Click the selected record
-            autoOpen: false,
-            modal: true,
-            minWidth: 520,
-            minHeight: 20,
-            buttons: {
-                "Confirm Delete": function() {
-                    if(/^\s*$/.test($('#delete-message').val())){
-                        alert("Aborting commit due to empty commit message.");
-                    } else {
-                        $('#id_comment').val($('#delete-message').val());
-                        delete_handler();
-                    }
-                    $(this).dialog("close");
-                },
-                Cancel: function() {
-                    $(this).dialog("close");
-                }
-            }
-        });
         $('#commit-message').val('')
         $('#delete-message').val('')
         if ($('#add-comment').is(':checked')) {
-            $("#delete-dialog").dialog("open");
+            $("#delete-dialog").dialog('open');
         } else {
             delete_handler();
         }
+        return false;
     });
 }
 
