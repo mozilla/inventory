@@ -1,7 +1,13 @@
 {% extends "base.html" %}
 {% block head %}
-    <script src="{{ MEDIA_URL }}javascripts/jquery.autocomplete.min.js" type="text/javascript"></script>
-    <link href="{{ MEDIA_URL }}stylesheets/jquery.autocomplete.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="{{ MEDIA_URL }}javascripts/tablesorter.js" type="text/javascript"> </script>
+    <script src="{{ MEDIA_URL }}javascripts/unmanagedsystem_form_snippet.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            var owner_list = {{ owner_json | safe}};
+            setup_unmanaged(owner_list);
+        });
+    </script>
 {% endblock %}
 {% block content %}
     <h2>Edit User System</h2>
@@ -10,6 +16,4 @@
         {% include "user_systems/unmanagedsystem_form_snippet.html" %}
         <input type="submit" name="Submit" value="Save" />
     </form>
-
-    {% include "user_systems/unmanagedsystem_form_snippet.js" %}
 {% endblock %}
