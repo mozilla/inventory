@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+    <style>
+        .changes {
+            margin-bottom: 10px;
+        }
+        .new {
+            color: green;
+        }
+        .old {
+            color: #0000A0; /* dark blue */
+        }
+    </style>
+    <div class="editform">
+        {% for onc_type, old_oncall, new_oncall in changes %}
+        <div class='changes'>
+            <span>Changed {{ onc_type }} oncall from <span class='old'>{{ old_oncall }}</span> to <span class='new'>{{ new_oncall }}</span></span>
+        </div>
+        {% endfor %}
+        <form method="post">
+            <table>
+                {{ form }}
+            </table>
+            <input type="submit" name="submit" value="Save" />
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,14 @@
+Adding a new oncall type
+------------------------
+* Add the new oncall type to `oncall/constants.py` (no plurals!)
+* Add new `is_<oncall-type>` and `current_<oncall-type>_oncall` fields to UserProfile in `systems/models.py`
+* Make a new migration: `python manage.py migrate --auto systems`
+* Apply new migration: `python manage.py migrate`
+* Set an initial oncall user:
+    ```
+    >>> from systems.models import UserProfile
+    >>> new_oncall = UserProfile.objects.get(user__username='juber@mozilla.com')
+    >>> new_oncall.is_netop_oncall = True
+    >>> new_oncall.save()
+    ```
+* Test -> Commit -> Deploy -> Test -> Deploy
