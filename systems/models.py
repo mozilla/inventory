@@ -429,15 +429,15 @@ class System(DirtyFieldsMixin, models.Model):
     def notes_with_link(self):
         if not self.notes:
             return ''
-        patterns = ['[bB]ug#?\D#?(\d+)']
-        for pattern in patterns:
-            m = re.search(pattern, self.notes)
-            if m:
-                bug_link = '<a href="{0}{1}">Bug {2}</a>'.format(
-                    BUG_URL, m.group(1), m.group(1)
-                )
-                self.notes = re.sub(pattern, bug_link, self.notes)
-        return self.notes
+        notes = self.notes
+        pattern = '([bB]ug#?\D#?(\d+))'
+        matches = re.findall(pattern, notes)
+        for raw_text, bug_number in matches:
+            bug_url = '<a href="{0}{1}">{2}</a>'.format(
+                BUG_URL, bug_number, raw_text
+            )
+            notes = notes.replace(raw_text, bug_url, 1)
+        return notes
 
     @classmethod
     def field_names(cls):
