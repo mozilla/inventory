@@ -4,4 +4,5 @@ ONCALL_TYPES = (
     'mysqldba',
     'pgsqldba',
     'desktop',
+    'netop',
 )

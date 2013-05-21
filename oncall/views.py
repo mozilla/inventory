@@ -64,15 +64,16 @@ def getoncall(request, oncall_type):
 
 
 def oncall(request):
+    changes = []
     if request.method == 'POST':
         form = OncallForm(request.POST)
         if form.is_valid():
-            form.save()
+            changes = form.save()
         else:
             return render(
                 request,
-                'systems/generic_form.html',
-                {'form': form}
+                'oncall/oncall_form.html',
+                {'form': form, 'changes': changes}
             )
 
     initial = {}
@@ -86,6 +87,6 @@ def oncall(request):
     form = OncallForm(initial=initial)
     return render(
         request,
-        'systems/generic_form.html',
-        {'form': form}
+        'oncall/oncall_form.html',
+        {'form': form, 'changes': changes}
     )

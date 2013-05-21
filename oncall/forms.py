@@ -42,11 +42,15 @@ class OncallForm(forms.Form):
     def save(self, *args, **kwargs):
         # Loop though oncall types and save the selected use as the new oncall
         # user.
-
+        changes = []
         for onc_type in ONCALL_TYPES:
             new_oncall = User.objects.get(username=self.cleaned_data[onc_type])
             try:
                 onc = OncallAssignment.objects.get(oncall_type=onc_type)
+                if new_oncall != onc.user:
+                    changes.append(
+                        (onc_type, onc.user.username, new_oncall.username)
+                    )
                 onc.user = new_oncall
                 onc.save()
             except OncallAssignment.DoesNotExist:
@@ -54,6 +58,7 @@ class OncallForm(forms.Form):
                     oncall_type=onc_type,
                     user=new_oncall
                 )
+        return changes
 
     def clean(self):
         cleaned_data = super(OncallForm, self).clean()

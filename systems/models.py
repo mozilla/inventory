@@ -758,12 +758,14 @@ class UserProfile(models.Model):
     is_services_oncall = models.BooleanField()
     is_mysqldba_oncall = models.BooleanField()
     is_pgsqldba_oncall = models.BooleanField()
+    is_netop_oncall = models.BooleanField()
 
     current_desktop_oncall = models.BooleanField()
     current_sysadmin_oncall = models.BooleanField()
     current_services_oncall = models.BooleanField()
     current_mysqldba_oncall = models.BooleanField()
     current_pgsqldba_oncall = models.BooleanField()
+    current_netop_oncall = models.BooleanField()
 
     irc_nick = models.CharField(max_length=128, null=True, blank=True)
     api_key = models.CharField(max_length=255, null=True, blank=True)
