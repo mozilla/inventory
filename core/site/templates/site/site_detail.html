@@ -2,10 +2,10 @@
 
 
 {% block content %}
-    <div class='dns-title'><h3>{{ site.get_full_name() }}</h3></div>
+    <div class='dns-title'><h3>{{ site.full_name }}</h3></div>
     <div>
     {% if site.parent %}
-        Parent site: <a href='{{ site.parent.get_absolute_url() }}'>{{ site.parent.get_full_name() }}</a>
+        Parent site: <a href='{{ site.parent.get_absolute_url() }}'>{{ site.parent.full_name }}</a>
         </br>
     {% endif %}
     </div>
@@ -46,7 +46,7 @@
                     {% for child_site in child_sites %}
                         <tr>
                             <td>
-                                <a href='{{ child_site.get_absolute_url() }}'>{{ child_site.get_full_name() }}</a>
+                                <a href='{{ child_site.get_absolute_url() }}'>{{ child_site.full_name }}</a>
                         </td>
                         </tr>
                     {% endfor %}
@@ -58,6 +58,6 @@
 
         <div style='display:table;'>
             {% from 'core/core_macros.html' import display_networks %}
-            {{ display_networks(site.network_set.all(), first_header="Networks homed in "+site.get_full_name()+".", extra_style="width: 100%; margin-left:3em;") }}
+            {{ display_networks(site.network_set.all(), first_header="Networks homed in "+site.full_name+".", extra_style="width: 100%; margin-left:3em;") }}
         </div>
 {% endblock %}

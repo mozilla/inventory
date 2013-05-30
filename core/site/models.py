@@ -4,11 +4,12 @@ from django.core.exceptions import ValidationError
 from core.mixins import ObjectUrlMixin
 from core.keyvalue.models import KeyValue
 from core.utils import networks_to_Q, to_a
+from core.validation import validate_site_name
 
 
 class Site(models.Model, ObjectUrlMixin):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, validators=[validate_site_name])
     parent = models.ForeignKey("self", null=True, blank=True)
 
     def details(self):
@@ -23,29 +24,18 @@ class Site(models.Model, ObjectUrlMixin):
 
     @property
     def full_name(self):
-        return self.get_full_name()
-
-    def get_full_name(self):
-        full_name = self.name
-        target = self
-        while True:
-            if target.parent is None:
-                break
-            else:
-                full_name = target.parent.name + " " + target.name
-                target = target.parent
-        return full_name.title()
+        return self.get_site_path()
 
     def get_site_path(self):
-        full_name = self.name
         target = self
+        npath = [self.name]
         while True:
             if target.parent is None:
                 break
             else:
-                full_name = target.name + '.' + target.parent.name
+                npath.append(target.parent.name)
                 target = target.parent
-        return full_name
+        return '.'.join(npath)
 
     def compile_Q(self):
         """Compile a Django Q that will match any IP inside this site."""
@@ -70,17 +60,22 @@ class SiteKeyValue(KeyValue):
         unique_together = ('key', 'value')
 
     def _aa_address(self):
-        # Everything is valid
+        """
+        The address of this site.
+        """
         return
 
     def _aa_description(self):
+        """
+        A description of this site.
+        """
         return
 
     def _aa_type(self):
         """
-        The type of this site. Valid types include: DC, BU and Office.
+        The type of this site. Valid types include: DC, BU, AWS, and Office.
         """
-        valid_site_types = ['dc', 'bu', 'office']
+        valid_site_types = ['dc', 'bu', 'office', 'aws']
         if self.value.lower() not in valid_site_types:
             raise ValidationError(
                 "{0} not a valid site type".format(self.value)
