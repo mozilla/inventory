@@ -29,3 +29,4 @@ tastytools/*.pyc
 mdns/migrate/zone_configs/
 docs/images/
 docs/man/
+core/populate.py
