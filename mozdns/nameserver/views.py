@@ -12,7 +12,7 @@ from mozdns.views import (MozdnsDeleteView, MozdnsDetailView, MozdnsListView,
 
 from mozdns.address_record.models import AddressRecord
 from mozdns.domain.models import Domain
-from core.interface.static_intr.models import StaticInterface
+from core.registration.static.models import StaticReg
 
 
 class NSView(object):
@@ -53,8 +53,8 @@ def update_ns(request, nameserver_pk):
                     try:
                         if glue_type == 'addr':
                             glue = AddressRecord.objects.get(pk=glue_pk)
-                        elif glue_type == 'intr':
-                            glue = StaticInterface.objects.get(pk=glue_pk)
+                        elif glue_type == 'sreg':
+                            glue = StaticReg.objects.get(pk=glue_pk)
                     except ObjectDoesNotExist, e:
                         raise ValidationError("Couldn't find glue: " + str(e))
                     nameserver.glue = glue

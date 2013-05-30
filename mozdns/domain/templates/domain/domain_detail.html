@@ -48,9 +48,9 @@
         views=cname_views) }}
     {% endif %}
 
-    {% if intr_matrix %}
+    {% if sreg_matrix %}
         <h3> Interface Records </h3>
-        {{ render_table(intr_headers, intr_matrix, intr_urls) }}
+        {{ render_table(sreg_headers, sreg_matrix, sreg_urls) }}
     {% endif %}
 
     {% if address_matrix %}

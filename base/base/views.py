@@ -115,8 +115,9 @@ class BaseDeleteView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         # Get the object to delete
-        obj = get_object_or_404(self.form_class.Meta.model,
-                                pk= kwargs.get('pk', 0))
+        obj = get_object_or_404(
+            self.form_class.Meta.model, pk=kwargs.get('pk', 0)
+        )
 
         try:
             view = super(BaseDeleteView, self).delete(request, *args, **kwargs)

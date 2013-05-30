@@ -117,7 +117,7 @@ class Domain(models.Model, DBTableURLMixin):
     def delete(self, *args, **kwargs):
         self.check_for_children()
         if self.is_reverse:
-            self.reassign_ptr_delete()
+            self.reassign_reverse_delete()
         if self.has_record_set():
             raise ValidationError("There are records associated with this "
                                   "domain. Delete them before deleting this "
@@ -138,7 +138,6 @@ class Domain(models.Model, DBTableURLMixin):
             #   OR
             #       it has no root domain, which means we are going to
             #       be the root domain, and we have no nameserver records.
-            # TODO: fix the view bug
             if (db_self.soa != self.soa and
                 self.soa and self.has_record_set() and
                 (self.soa.root_domain and
@@ -151,7 +150,7 @@ class Domain(models.Model, DBTableURLMixin):
         super(Domain, self).save(*args, **kwargs)
         if self.is_reverse and new_domain:
             # Collect any ptr's that belong to this new domain.
-            reassign_reverse_ptrs(self, self.master_domain, self.ip_type())
+            reassign_reverse_update(self, self.master_domain, self.ip_type())
 
     def ip_type(self):
         if self.name.endswith('in-addr.arpa'):
@@ -207,7 +206,8 @@ class Domain(models.Model, DBTableURLMixin):
             self.mx_set,
             self.srv_set,
             self.sshfp_set,
-            self.staticinterface_set,
+            self.staticreg_set,
+            self.reverse_staticreg_set,
             self.txt_set,
             self.ptr_set
         ]
@@ -228,8 +228,9 @@ class Domain(models.Model, DBTableURLMixin):
         return False
 
     ### Reverse Domain Functions
-    def reassign_ptr_delete(self):
-        """This function serves as a pretty subtle workaround.
+    def reassign_reverse_delete(self):
+        """
+        This function serves as a pretty subtle workaround.
 
             *   An Ip is not allowed to have a reverse_domain of None.
 
@@ -241,11 +242,13 @@ class Domain(models.Model, DBTableURLMixin):
         you can reassign the reverse_domain of an Ip, save it, and then
         delete the old reverse_domain.
         """
-        # TODO is there a better way of doing this?
-        ptrs = self.ptr_set.iterator()
-        for ptr in ptrs:
-            ptr.reverse_domain = self.master_domain
-            ptr.save(update_reverse_domain=False)
+        def reassign(objs):
+            for obj in objs:
+                obj.reverse_domain = self.master_domain
+                obj.save(update_reverse_domain=False)
+
+        reassign(self.ptr_set.iterator())
+        reassign(self.reverse_staticreg_set.iterator())
 
 
 def boot_strap_ipv6_reverse_domain(ip, soa=None):
@@ -272,9 +275,10 @@ def boot_strap_ipv6_reverse_domain(ip, soa=None):
     return reverse_domain
 
 
-def reassign_reverse_ptrs(reverse_domain_1, reverse_domain_2, ip_type):
-    """There are some formalities that need to happen when a reverse
-    domain is added and deleted. For example, when adding say we had the
+def reassign_reverse_update(reverse_domain_1, reverse_domain_2, ip_type):
+    """
+    There are some formalities that need to happen when a reverse
+    domain is added or deleted. For example, when adding say we had the
     ip address 128.193.4.0 and it had the reverse_domain 128.193. If we
     add the reverse_domain 128.193.4, our 128.193.4.0 no longer belongs
     to the 128.193 domain. We need to re-asign the ip to it's correct
@@ -293,27 +297,33 @@ def reassign_reverse_ptrs(reverse_domain_1, reverse_domain_2, ip_type):
 
     if reverse_domain_2 is None or ip_type is None:
         return
+
+    def reassign(objs):
+        for obj in objs:
+            if ip_type == '6':
+                nibz = nibbilize(obj.ip_str)
+                revname = ip_to_domain_name(nibz, ip_type='6')
+            else:
+                revname = ip_to_domain_name(obj.ip_str, ip_type='4')
+            correct_reverse_domain = name_to_domain(revname)
+            if correct_reverse_domain != obj.reverse_domain:
+                # TODO, is this needed? The save() function (actually the
+                # clean_ip function) will assign the correct reverse domain.
+                obj.reverse_domain = correct_reverse_domain
+                obj.save()
+
     ptrs = reverse_domain_2.ptr_set.iterator()
-    # intrs = reverse_domain_2.staticinterface_set.iterator()
-    # TODO do the intr case
-    for ptr in ptrs:
-        if ip_type == '6':
-            nibz = nibbilize(ptr.ip_str)
-            revname = ip_to_domain_name(nibz, ip_type='6')
-        else:
-            revname = ip_to_domain_name(ptr.ip_str, ip_type='4')
-        correct_reverse_domain = name_to_domain(revname)
-        if correct_reverse_domain != ptr.reverse_domain:
-            # TODO, is this needed? The save() function (actually the
-            # clean_ip function) will assign the correct reverse domain.
-            ptr.reverse_domain = correct_reverse_domain
-            ptr.save()
+    sregs = reverse_domain_2.reverse_staticreg_set.iterator()
+
+    reassign(ptrs)
+    reassign(sregs)
 
 
 # A bunch of handy functions that would cause circular dependencies if
 # they were in another file.
 def name_to_master_domain(name):
-    """Given an domain name, this function returns the appropriate
+    """
+    Given an domain name, this function returns the appropriate
     master domain.
 
     :param name: The domain for which we are using to search for a

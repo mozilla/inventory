@@ -6,7 +6,8 @@ import core
 
 
 def fqdn_search(fqdn, *args, **kwargs):
-    """Find any records that have a name that is the provided fqdn. This
+    """
+    Find any records that have a name that is the provided fqdn. This
     name would show up on the left hand side of a zone file and in a PTR's
     case the right side.
 
@@ -20,7 +21,8 @@ def fqdn_search(fqdn, *args, **kwargs):
 
 
 def smart_fqdn_exists(fqdn, *args, **kwargs):
-    """Searching for a fqdn by actually looking at a fqdn is very inefficient.
+    """
+    Searching for a fqdn by actually looking at a fqdn is very inefficient.
     Instead we should:
         1) Look for a domain with the name of fqdn.
         2) Look for a label = fqdn.split('.')[0]
@@ -57,7 +59,7 @@ def smart_fqdn_exists(fqdn, *args, **kwargs):
 
 
 def _build_label_domain_queries(label, domain, mx=True, sr=True, tx=True,
-                                cn=True, ar=True, intr=True, ns=True, ss=True):
+                                cn=True, ar=True, sreg=True, ns=True, ss=True):
     # We import this way to make it easier to import this file without
     # getting cyclic imports.
     qsets = []
@@ -85,11 +87,11 @@ def _build_label_domain_queries(label, domain, mx=True, sr=True, tx=True,
         ars = AddressRecord.objects.filter(
             **{'label': label, 'domain': domain})
         qsets.append(('AddressRecord', ars))
-    if intr:
-        StaticInterface = core.interface.static_intr.models.StaticInterface
-        intrs = StaticInterface.objects.filter(
+    if sreg:
+        StaticReg = core.registration.static.models.StaticReg
+        sregs = StaticReg.objects.filter(
             **{'label': label, 'domain': domain})
-        qsets.append(('AddressRecord', intrs))
+        qsets.append(('AddressRecord', sregs))
 
     return qsets
 
@@ -109,7 +111,7 @@ def fqdn_exists(fqdn, **kwargs):
 
 
 def _build_queries(fqdn, dn=True, mx=True, sr=True, tx=True,
-                   cn=True, ar=True, pt=True, ip=False, intr=True,
+                   cn=True, ar=True, pt=True, ip=False, sreg=True,
                    search_operator=''):
     # We import this way to make it easier to import this file without
     # getting cyclic imports.
@@ -137,9 +139,9 @@ def _build_queries(fqdn, dn=True, mx=True, sr=True, tx=True,
         qsets.append(('PTR', mozdns.ptr.models.PTR.objects.
                       Q(**{'name{0}'.format(search_operator): fqdn}) |
                       Q(**{'ip_str{0}'.format(search_operator): ip})))
-    if intr:
-        StaticInterface = core.interface.static_intr.models.StaticInterface
-        qsets.append(('StaticInterface', StaticInterface.objects.filter(
+    if sreg:
+        StaticReg = core.registration.static.models.StaticReg
+        qsets.append(('StaticReg', StaticReg.objects.filter(
             Q(**{'fqdn{0}'.format(search_operator): fqdn}) |
             Q(**{'ip_str{0}'.format(search_operator): ip}))))
 

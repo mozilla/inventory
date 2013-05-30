@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from dhcp.models import DHCP
 from settings import BUG_URL
 
+from core.validation import validate_mac
 
 import datetime
 import re
@@ -207,30 +208,11 @@ class KeyValue(models.Model):
 
     def save(self, *args, **kwargs):
         if re.match('^nic\.\d+\.mac_address\.\d+$', self.key):
+            self.value = self.value.replace('-', ':')
             self.value = validate_mac(self.value)
 
         super(KeyValue, self).save(*args, **kwargs)
 
-
-# Eventually, should this go in the KV class? Depends on whether other code
-# calls this.
-def validate_mac(mac):
-    """
-    Validates a mac address. If the mac is in the form XX-XX-XX-XX-XX-XX this
-    function will replace all '-' with ':'.
-
-    :param mac: The mac address
-    :type mac: str
-    :returns: The valid mac address.
-    :raises: ValidationError
-    """
-    mac = mac.replace('-', ':')
-    if not re.match('^([0-9a-fA-F]{2}(:|$)){6}$', mac):
-        raise ValidationError(
-            "Please enter a valid Mac Address in the form "
-            "XX:XX:XX:XX:XX:XX"
-        )
-    return mac
 
 
 class NetworkAdapter(models.Model):
@@ -508,100 +490,11 @@ class System(DirtyFieldsMixin, models.Model):
     def get_absolute_url(self):
         return "/systems/show/{0}/".format(self.pk)
 
-    def update_adapter(self, **kwargs):
-        """
-            method to update a netwrok adapter
-
-            :param **kwargs: keyword arguments of what to update
-            :type **kwargs: dict
-            :return: True on deletion, exception on failure
-        """
-        interface = kwargs.pop('interface', None)
-        ip_address = kwargs.pop('ip_address', None)
-        mac_address = kwargs.pop('mac_address', None)
-
-        if not interface:
-            raise ValidationError("Interface required to update")
-
-        for intr in self.staticinterface_set.all():
-            if intr.interface_name() == interface:
-                if ip_address:
-                    intr.ip_str = ip_address
-                if mac_address:
-                    intr.mac = mac_address
-                intr.save()
-        return True
-
-    def delete_adapter(self, adapter_name):
-        from api_v3.system_api import SystemResource
-        """
-            method to get the next adapter
-            we'll want to always return an adapter with a 0 alias
-            take the highest primary if exists, increment by 1 and return
-
-            :param adapter_name: The name of the adapter to delete
-            :type adapter_name: str
-            :return: True on deletion, exception raid if not exists
-        """
-        adapter_type, primary, alias = SystemResource.extract_nic_attrs(
-            adapter_name
-        )
-        for i in self.staticinterface_set.all():
-            i.update_attrs()
-            if (i.attrs.interface_type == adapter_type and
-                    i.attrs.primary == primary and i.attrs.alias == alias):
-                i.delete()
-        return True
-
-    def get_adapters(self):
-        """
-            method to get all adapters
-            :return: list of objects and attributes if exist, None if empty
-        """
-        adapters = None
-        if self.staticinterface_set.count() > 0:
-            adapters = []
-            for i in self.staticinterface_set.all():
-                i.update_attrs()
-                adapters.append(i)
-        return adapters
-
-    def get_next_adapter(self, intr_type='eth'):
-        """
-            method to get the next adapter
-            we'll want to always return an adapter with a 0 alias
-            take the highest primary if exists, increment by 1 and return
-
-            :param type: The type of network adapter
-            :type type: str
-            :return: 3 strings 'adapter_name', 'primary_number', 'alias_number'
-        """
-        if self.staticinterface_set.count() == 0:
-            return intr_type, '0', '0'
-        else:
-            primary_list = []
-            for i in self.staticinterface_set.all():
-                i.update_attrs()
-                try:
-                    primary_list.append(int(i.attrs.primary))
-                except AttributeError:
-                    continue
-
-            ## sort and reverse the list to get the highest
-            ## perhaps someday come up with the lowest available
-            ## this should work for now
-            primary_list.sort()
-            primary_list.reverse()
-            if not primary_list:
-                return intr_type, '0', '0'
-            else:
-                return intr_type, str(primary_list[0] + 1), '0'
-
     def get_next_key_value_adapter(self):
         """
             Return the first found adapter from the
             key value store. This will go away,
-            once we are on the StaticInterface
+            once we are on the StaticReg
             based system
         """
         ret = {}
@@ -718,19 +611,6 @@ class System(DirtyFieldsMixin, models.Model):
                 if match not in nic_numbers:
                     nic_numbers.append(match)
         return nic_numbers
-
-    def get_next_adapter_number(self):
-        nic_numbers = self.get_adapter_numbers()
-        if len(nic_numbers) > 0:
-            nic_numbers.sort()
-            # The last item in the array should be an int, but just in case
-            # we'll catch the exception and return a 1
-            try:
-                return nic_numbers[-1] + 1
-            except:
-                return 1
-        else:
-            return 1
 
     def get_adapter_count(self):
         return len(self.get_adapter_numbers())

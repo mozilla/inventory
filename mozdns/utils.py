@@ -11,7 +11,7 @@ from mozdns.srv.models import SRV
 from mozdns.address_record.models import AddressRecord
 from mozdns.cname.models import CNAME
 from mozdns.view.models import View
-from core.interface.static_intr.models import StaticInterface
+from core.registration.static.models import StaticReg
 
 from copy import deepcopy
 import pdb
@@ -81,7 +81,7 @@ def slim_form(domain_pk=None, form=None):
 
 
 def get_clobbered(domain_name):
-    classes = [MX, AddressRecord, CNAME, TXT, SRV, StaticInterface, SSHFP]
+    classes = [MX, AddressRecord, CNAME, TXT, SRV, StaticReg, SSHFP]
     clobber_objects = []  # Objects that have the same name as a domain
     for Klass in classes:
         objs = Klass.objects.filter(fqdn=domain_name)

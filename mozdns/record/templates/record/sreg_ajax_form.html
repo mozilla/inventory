@@ -1,0 +1,66 @@
+{% extends "record/ajax_form.html" %}
+{% block object_meta %}
+<div class='object_meta' >
+    <!--- lolol, I suck at the web!
+    seriously, this all needs to be rewritten
+    The object_redirect_url is detected after the form is inserted into the web page, and if it's detected during a create it's used as a redirect target.
+    -->
+    {% if object_.pk %}
+    <div id='object_redirect_url' record-url='{{object_.get_fancy_edit_url()}}' style='display:none'>
+    </div>
+    {% endif %}
+
+    <table class='tablesorter'>
+        <tr>
+            <td>System: <a href='{{object_.system.get_absolute_url()}}'>{{object_.system}}</a></td>
+        </tr>
+        <tr>
+            <td>
+                Interface History: <a href='{{ object_.get_history_url() }}'> click</a>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Edit Key Value: <a href='/core/keyvalue/staticintrkeyvalue/{{object_.pk}}/'> click </a>
+            </td>
+        </tr>
+    </table>
+    <table class='tablesorter'>
+        <caption>{{object_.bind_render_record()}}</caption>
+        {% if object_.domain.soa %}
+        <tr>
+            <td>
+                <a href='{{ object_.domain.soa.get_absolute_url() }}'>{{ d.soa }}</a>
+            </td>
+            <td>
+                {% if object_.domain.soa.dirty %}
+                <div class='soa_status_dirty'>REBUILD NEEDED</div>
+                {% else %}
+                <div class='soa_status_clean'>UP TO DATE</div>
+                {% endif %}
+            </td>
+            <td>
+                <a href='{{ object_.domain.soa.get_debug_build_url() }}'>Debug</a>
+            </td>
+        </tr>
+        {% endif %}
+        {% if object_.reverse_domain.soa %}
+        </tr>
+            <td>
+                <a href='{{ object_.reverse_domain.soa.get_absolute_url() }}'>{{ d.soa }}</a>
+            </td>
+            <td>
+                    {% if object_.reverse_domain.soa.dirty %}
+                    <div class='soa_status_dirty'>REBUILD NEEDED</div>
+                    {% else %}
+                    <div class='soa_status_clean'>UP TO DATE</div>
+                    {% endif %}
+            </td>
+            <td>
+                <a href='{{ object_.reverse_domain.soa.get_debug_build_url() }}'>Debug</a>
+            </td>
+        </tr>
+        {% endif %}
+    </table>
+</div>
+{% endblock %}

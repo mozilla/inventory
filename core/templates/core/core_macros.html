@@ -9,19 +9,18 @@
                     {% endif %}
                     <th>Site</th>
             </tr>
-
             {% for network in networks %}
             <tr>
-                <td><a href='{{ network.absolute_url() }}'>{{ network }}</a></td>
+                <td><a href='{{ network.get_absolute_url() }}'>{{ network }}</a></td>
                 {% if vlan %}
                     {% if network.vlan %}
-                        <td><a href='{{ network.vlan.absolute_url() }}'>{{ network.vlan }}</a></td>
+                        <td><a href='{{ network.vlan.get_absolute_url() }}'>{{ network.vlan }}</a></td>
                     {% else %}
                         <td>None</td>
                     {% endif %}
                 {% endif %}
                 {% if network.site %}
-                    <td><a href='{{ network.site.absolute_url() }}'>{{ network.site }}</a></td>
+                    <td><a href='{{ network.site.get_absolute_url() }}'>{{ network.site }}</a></td>
                 {% else %}
                     <td>None</td>
                 {% endif %}
@@ -48,10 +47,10 @@
         <tbody>
             {% for r in ranges %}
             <tr>
-                <td><a href='{{r.network.absolute_url()}}'}}>{{ r.network }}</a></td>
+                <td><a href='{{r.network.get_absolute_url()}}'}}>{{ r.network }}</a></td>
                 <td>{{ r.get_rtype_display() }}</td>
-                <td><a href='{{ r.absolute_url() }}'>{{ r.start_str }}</a></td>
-                <td><a href='{{ r.absolute_url() }}'>{{ r.end_str }}</a></td>
+                <td><a href='{{ r.get_absolute_url() }}'>{{ r.start_str }}</a></td>
+                <td><a href='{{ r.get_absolute_url() }}'>{{ r.end_str }}</a></td>
                 <td>{{ r.range_usage()['precent_used'] }}</td>
             {% endfor %}
             </tr>
@@ -83,14 +82,14 @@
     </table>
         {% if kv_type and obj %}
             <div style='margin-bottom:2em;'>
-                <span><a href='/core/keyvalue/{{kv_type}}/{{obj.pk}}/'>Edit</a> Key Value Store</span>
+                <span><a href='/core/keyvalue/{{obj.__class__.keyvalue_set.related.model.__name__.lower()}}/{{obj.pk}}/'>Edit</a> Key Value Store</span>
             </div>
         {% endif %}
     {% else %}
         {% if kv_type and obj %}
             <br />
             <div style='margin-bottom:2em;'>
-                <span><a href='/core/keyvalue/{{kv_type}}/{{obj.pk}}/'>Add</a> to Key Value Store</span>
+                <span><a href='/core/keyvalue/{{obj.__class__.keyvalue_set.related.model.__name__.lower()}}/{{obj.pk}}/'>Add</a> to Key Value Store</span>
             </div>
         {% endif %}
     {% endif %}
@@ -113,4 +112,91 @@
             <span><a href='{{obj.edit_url()}}'>Edit</a> {{obj}}</span>
         </div>
     {% endif %}
+{%- endmacro %}
+
+{% macro display_obj_field(obj, field_name, value, draw_row=True, top_row=False, class='field-blank') %}
+    {% if draw_row %}
+        <tr>
+    {% endif %}
+    <td class='field-name' align='right'>
+        {% if obj %}
+            <a class='field-link' href='{{ obj.get_absolute_url() }}'>{{ field_name }}</a>
+        {% else %}
+            {{ field_name }}
+        {% endif %}
+    </td>
+    <td class='field-value' align='left'>
+        {{ value }}
+    </td>
+    {% if draw_row %}
+        </tr>
+    {% endif %}
+{%- endmacro %}
+
+{% macro display_sreg(sreg) -%}
+    {{ display_obj_field(sreg, 'fqdn', sreg.fqdn, top_row=True) }}
+    {{ display_obj_field(sreg, 'inet4 addr' if sreg.ip_type == '4' else 'inet6 addr', sreg.ip_str) }}
+    {{ display_obj_field(sreg.range, 'range', sreg.range or 'N/A') }}
+    {{ display_obj_field(sreg.range.network, 'network', sreg.range.network or 'N/A') }}
+    {{ display_obj_kv(sreg) }}
+    {{ display_hwadapters(sreg.hwadapter_set.all()) }}
+{%- endmacro %}
+
+{% macro display_obj_kv(obj) -%}
+    {% for kv in obj.keyvalue_set.all().order_by('key') %}
+        <tr>
+            <td class='field-name'>
+                <a class='field-link' href='{{obj.get_kv_url()}}'>{{kv.key}}</a>(kv)
+            </td>
+            <td class='field-value'>
+                {{kv.value}}
+            </td>
+        </tr>
+    {% endfor %}
+{%- endmacro %}
+
+{% macro display_hwadapters(hwadapters) -%}
+    {% for hw in hwadapters %}
+        <table class="hwadapter tablesorter">
+            <caption>
+                {% if hw.name %}
+                    Hardware Adapter {{hw.name}}
+                {% else %}
+                    Hardware Adapter {{loop.index}}
+                {% endif %}
+                <span class='hwadapter-action'>
+                    <a class='delete-hwadapter' data-hwadapter-pk='{{hw.pk}}' style='cursor:pointer'>Delete</a> |
+                    <a class='edit-hwadapter' data-hwadapter-pk='{{hw.pk}}' href='{{hw.get_edit_url()}}'>Edit</a> |
+                    <a href='/core/keyvalue/{{hw.__class__.keyvalue_set.related.model.__name__.lower()}}/{{hw.pk}}/'>Key Value</a>
+                </span>
+            </caption>
+            {{ display_obj_field(hw, 'mac', hw.mac, top_row=True) }}
+            {{ display_obj_field(hw, 'name', hw.name) }}
+            {{ display_obj_field(hw, 'group', hw.group or 'None') }}
+        </table>
+    {% endfor %}
+{%- endmacro %}
+
+{% macro display_sregs(sregs) -%}
+    <link href="/static/stylesheets/registration_display.css" rel="stylesheet" type="text/css">
+    <br />
+    <div class='registration-display'>
+    {% for sreg in sregs %}
+        <table class="registration-table tablesorter">
+            <caption>
+                {% if sreg.name %}
+                    StaticRegistration {{ sreg.name }}
+                {% else %}
+                    StaticRegistration {{ loop.index }}
+                {% endif %}
+                <span class='sreg-action'>
+                    <a class='add-hwadapter' data-sreg-pk='{{sreg.pk}}'>Add Hardware Adapter</a> |
+                    <a href='{{sreg.get_edit_url()}}'>Edit</a> |
+                    <a href='/core/keyvalue/{{sreg.__class__.keyvalue_set.related.model.__name__.lower()}}/{{sreg.pk}}/'>Key Value</a>
+                </span>
+            </caption>
+            {{ display_sreg(sreg) }}
+        </table>
+    {% endfor %}
+    </div>
 {%- endmacro %}

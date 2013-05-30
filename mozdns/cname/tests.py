@@ -10,7 +10,7 @@ from mozdns.ptr.models import PTR
 from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
 
-from core.interface.static_intr.models import StaticInterface
+from core.registration.static.models import StaticReg
 from mozdns.ip.utils import ip_to_domain_name
 
 from systems.models import System
@@ -294,22 +294,20 @@ class CNAMETests(TestCase):
         rec = Nameserver(domain=dom, server="asdf1")
         self.assertRaises(ValidationError, rec.save)
 
-    def test_intr_exists(self):
+    def test_sreg_exists(self):
         label = "tdfestyfoo"
         data = "waasdft"
         dom, _ = Domain.objects.get_or_create(name="cd")
         dom, _ = Domain.objects.get_or_create(name="what.cd")
 
-        intr = StaticInterface(label=label, domain=dom, ip_str="10.0.0.1",
-                               ip_type='4', system=self.s,
-                               mac="11:22:33:44:55:66")
-        intr.clean()
-        intr.save()
+        StaticReg.objects.create(
+            label=label, domain=dom, ip_str="10.0.0.1", ip_type='4',
+            system=self.s)
 
         cn = CNAME(label=label, domain=dom, target=data)
         self.assertRaises(ValidationError, cn.full_clean)
 
-    def test_intr_cname_exists(self):
+    def test_sreg_cname_exists(self):
         # Duplicate test?
         label = "tesafstyfoo"
         data = "wadfakt"
@@ -321,15 +319,15 @@ class CNAMETests(TestCase):
         cn.full_clean()
         cn.save()
 
-        intr = StaticInterface(label=label, domain=dom, ip_str="10.0.0.2",
-                               ip_type='4', system=self.s,
-                               mac="00:11:22:33:44:55")
+        sreg = StaticReg(
+            label=label, domain=dom, ip_str="10.0.0.2", ip_type='4',
+            system=self.s)
 
-        self.assertRaises(ValidationError, intr.clean)
+        self.assertRaises(ValidationError, sreg.clean)
         cn.label = "differentlabel"
         cn.save()
-        intr.clean()
-        intr.save()
+        sreg.clean()
+        sreg.save()
 
     def test_ptr_exists(self):
         """

@@ -160,7 +160,7 @@ def get_next_available_ip_by_range(request, range_id):
     ret_ip = range.get_next_ip()
     display_ip = ret_ip.exploded
     ret['success'] = True
-    ret['ip_address'] = display_ip
+    ret['ip_str'] = display_ip
     return HttpResponse(json.dumps(ret))
 
 

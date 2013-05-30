@@ -7,11 +7,11 @@ from mozdns.ip.models import Ip
 from mozdns.models import MozdnsRecord, LabelDomainMixin
 
 import reversion
-from gettext import gettext as _
 
 
 class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
-    """AddressRecord is the class that generates A and AAAA records
+    """
+    AddressRecord is the class that generates A and AAAA records
 
         >>> AddressRecord(label=label, domain=domain_object, ip_str=ip_str,
         ... ip_type=ip_type)
@@ -37,48 +37,56 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
 
     @classmethod
     def get_api_fields(cls):
-        return super(BaseAddressRecord, cls).get_api_fields() + ['ip_str',
-                                                                 'ip_type']
+        return super(BaseAddressRecord, cls).get_api_fields() + [
+            'ip_str', 'ip_type'
+        ]
 
     def clean(self, *args, **kwargs):
+        self.clean_ip()
+        ignore_sreg = kwargs.pop("ignore_sreg", False)
         validate_glue = kwargs.pop("validate_glue", True)
+
+        super(BaseAddressRecord, self).clean(*args, **kwargs)
+
         if validate_glue:
             self.check_glue_status()
-        self.clean_ip()
-        self.set_fqdn()
-        self.check_TLD_condition()
-        self.validate_delegation_conditions()
-        self.check_no_ns_soa_condition(self.domain)
-        self.check_for_cname()
+        if not ignore_sreg:
+            self.check_sreg_collision()
 
-        if not kwargs.pop("ignore_interface", False):
-            from core.interface.static_intr.models import StaticInterface
-            if StaticInterface.objects.filter(
-                    fqdn=self.fqdn, ip_upper=self.ip_upper,
-                    ip_lower=self.ip_lower).exists():
-                raise ValidationError("A Static Interface has already "
-                                      "reserved this A record.")
+    def check_sreg_collision(self):
+        from core.registration.static.models import StaticReg
+        if StaticReg.objects.filter(
+                fqdn=self.fqdn, ip_upper=self.ip_upper,
+                ip_lower=self.ip_lower).exists():
+            raise ValidationError(
+                "A Static Registration has already reserved this A record."
+            )
 
     def delete(self, *args, **kwargs):
-        """Address Records that are glue records or that are pointed to
+        """
+        Address Records that are glue records or that are pointed to
         by a CNAME should not be removed from the database.
         """
         if kwargs.pop("validate_glue", True):
             if self.nameserver_set.exists():
                 raise ValidationError(
                     "Cannot delete the record {0}. It is a glue "
-                    "record.".format(self.record_type()))
+                    "record.".format(self.record_type())
+                )
         if kwargs.pop("check_cname", True):
             if CNAME.objects.filter(target=self.fqdn):
                 raise ValidationError(
                     "A CNAME points to this {0} record. Change the CNAME "
-                    "before deleting this record.".format(self.record_type()))
+                    "before deleting this record.".format(self.record_type())
+                )
 
         super(BaseAddressRecord, self).delete(*args, **kwargs)
 
     def validate_delegation_conditions(self):
-        """If our domain is delegated then an A record can only have a
-        name that is the same as a nameserver in that domain (glue)."""
+        """
+        If our domain is delegated then an A record can only have a
+        name that is the same as a nameserver in that domain (glue).
+        """
         if not (self.domain and self.domain.delegated):
             return
         if self.domain.nameserver_set.filter(server=self.fqdn).exists():
@@ -86,11 +94,13 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
         else:
             # Confusing error messege?
             raise ValidationError(
-                "You can only create A records in a "
-                "delegated domain that have an NS record pointing to them.")
+                "You can only create an A records in a delegated domain that "
+                "has an NS record pointing at it."
+            )
 
     def check_glue_status(self):
-        """If this record is a "glue" record for a Nameserver instance,
+        """
+        If this record is a "glue" record for a Nameserver instance,
         do not allow modifications to this record. The Nameserver will
         need to point to a different record before this record can
         be updated.
@@ -106,8 +116,9 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
         Nameserver = mozdns.nameserver.models.Nameserver
         if Nameserver.objects.filter(addr_glue=self).exists():
             raise ValidationError(
-                "This record is a glue record for a"
-                "Nameserver. Change the Nameserver to edit this record.")
+                "This record is a glue record for a Nameserver. Change the "
+                "Nameserver to edit this record."
+            )
 
     def record_type(self):
         # If PTR didn't share this field, we would use 'A' and 'AAAA'
@@ -126,7 +137,8 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
 
 
 class AddressRecord(BaseAddressRecord):
-    """AddressRecord is the class that generates A and AAAA records
+    """
+    AddressRecord is the class that generates A and AAAA records
 
         >>> AddressRecord(label=label, domain=domain_object, ip_str=ip_str,
         ... ip_type=ip_type)
@@ -137,13 +149,14 @@ class AddressRecord(BaseAddressRecord):
     ############################
     id = models.AutoField(primary_key=True)
 
-    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
-                 "{rdtype:$rdtype_just} {ip_str:$rhs_just}")
+    template = ("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+                "{rdtype:$rdtype_just} {ip_str:$rhs_just}")
 
     class Meta:
         db_table = "address_record"
-        unique_together = ("label", "domain", "fqdn", "ip_upper", "ip_lower",
-                           "ip_type")
+        unique_together = (
+            "label", "domain", "fqdn", "ip_upper", "ip_lower", "ip_type"
+        )
 
 
 reversion.register(AddressRecord)

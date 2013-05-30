@@ -2,28 +2,38 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 
 from mozdns.ptr.models import PTR
+from mozdns.tests.utils import create_fake_zone
 from mozdns.tests.view_tests import random_label
 from mozdns.ip.models import ipv6_to_longs
 from mozdns.ip.utils import ip_to_domain_name, nibbilize
 from mozdns.domain.models import Domain, boot_strap_ipv6_reverse_domain
 from mozdns.soa.models import SOA
 
+from core.registration.static.models import StaticReg
+
+from systems.models import System
+
 import ipaddr
 
 
 class ReverseDomainTests(TestCase):
-
-    # This function speeds things up due to legamoz code
     def add_ptr_ipv4(self, ip):
-        ptr = PTR(name=random_label(), ip_str=ip, ip_type='4')
-        ptr.full_clean()
-        ptr.save()
+        ptr = PTR.objects.create(name=random_label(), ip_str=ip, ip_type='4')
         return ptr
 
+    def add_sreg_ipv4(self, ip):
+        sreg = StaticReg(
+            label=random_label(), domain=self.domain, ip_str=ip, ip_type='4',
+            system=self.s
+        )
+        sreg.clean()
+        sreg.save()
+        return sreg
+
     def add_ptr_ipv6(self, ip):
-        ptr = PTR(name=random_label(), ip_str=ip, ip_type='6')
-        ptr.full_clean()
-        ptr.save()
+        ptr = PTR.objects.create(
+            name=random_label(), ip_str=ip, ip_type='6'
+        )
         return ptr
 
     def create_domain(self, name, ip_type=None, delegated=False):
@@ -46,6 +56,9 @@ class ReverseDomainTests(TestCase):
 
         self.i6_arpa = self.create_domain(name='ip6.arpa')
         self.i6_arpa.save()
+
+        self.domain = create_fake_zone('foo.mozilla.com', suffix='')
+        self.s = System.objects.create(hostname='mozilla.com')
 
     # Reverse Domain test functions
     def test_soa_validators(self):
@@ -133,17 +146,65 @@ class ReverseDomainTests(TestCase):
         ip4 = self.add_ptr_ipv4('127.193.8.4')
         self.assertEqual(ip4.reverse_domain, rd2)
         rd2.delete()
-        ptr1 = PTR.objects.filter(ip_lower=ipaddr.IPv4Address(
-            '127.193.8.1').__int__(), ip_type='4')[0]
+        ptr1 = PTR.objects.filter(
+            ip_lower=int(ipaddr.IPv4Address('127.193.8.1')),
+            ip_type='4'
+        )[0]
         self.assertEqual(ptr1.reverse_domain, rd1)
-        ptr2 = PTR.objects.filter(ip_lower=ipaddr.IPv4Address(
-            '127.193.8.2').__int__(), ip_type='4')[0]
+        ptr2 = PTR.objects.filter(
+            ip_lower=int(ipaddr.IPv4Address('127.193.8.2')),
+            ip_type='4'
+        )[0]
         self.assertEqual(ptr2.reverse_domain, rd1)
-        ptr3 = PTR.objects.filter(ip_lower=ipaddr.IPv4Address(
-            '127.193.8.2').__int__(), ip_type='4')[0]
+        ptr3 = PTR.objects.filter(
+            ip_lower=int(ipaddr.IPv4Address('127.193.8.2')),
+            ip_type='4'
+        )[0]
         self.assertEqual(ptr3.reverse_domain, rd1)
-        ptr4 = PTR.objects.filter(ip_lower=ipaddr.IPv4Address(
-            '127.193.8.3').__int__(), ip_type='4')[0]
+        ptr4 = PTR.objects.filter(
+            ip_lower=int(ipaddr.IPv4Address('127.193.8.3')),
+            ip_type='4'
+        )[0]
+        self.assertEqual(ptr4.reverse_domain, rd1)
+
+    def test_remove_reverse_domain_sreg(self):
+        self.create_domain(name='127', ip_type='4').save()
+        rd1 = self.create_domain(name='127.193', ip_type='4')
+        rd1.save()
+        rd1.__repr__()
+        rd1.__str__()
+        rd2 = self.create_domain(name='127.193.8', ip_type='4')
+        rd2.save()
+        rd2.__repr__()
+        rd2.__str__()
+        ip1 = self.add_sreg_ipv4('127.193.8.1')
+        self.assertEqual(ip1.reverse_domain, rd2)
+        ip2 = self.add_sreg_ipv4('127.193.8.2')
+        self.assertEqual(ip2.reverse_domain, rd2)
+        ip3 = self.add_sreg_ipv4('127.193.8.3')
+        self.assertEqual(ip3.reverse_domain, rd2)
+        ip4 = self.add_sreg_ipv4('127.193.8.4')
+        self.assertEqual(ip4.reverse_domain, rd2)
+        rd2.delete()
+        ptr1 = StaticReg.objects.filter(
+            ip_lower=int(ipaddr.IPv4Address('127.193.8.1')),
+            ip_type='4'
+        )[0]
+        self.assertEqual(ptr1.reverse_domain, rd1)
+        ptr2 = StaticReg.objects.filter(
+            ip_lower=int(ipaddr.IPv4Address('127.193.8.2')),
+            ip_type='4'
+        )[0]
+        self.assertEqual(ptr2.reverse_domain, rd1)
+        ptr3 = StaticReg.objects.filter(
+            ip_lower=int(ipaddr.IPv4Address('127.193.8.2')),
+            ip_type='4'
+        )[0]
+        self.assertEqual(ptr3.reverse_domain, rd1)
+        ptr4 = StaticReg.objects.filter(
+            ip_lower=int(ipaddr.IPv4Address('127.193.8.3')),
+            ip_type='4'
+        )[0]
         self.assertEqual(ptr4.reverse_domain, rd1)
 
     def do_generic_invalid_operation(self, data, exception, function):

@@ -1,17 +1,16 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from mozdns.domain.models import name_to_domain
-from mozdns.ip.utils import ip_to_domain_name, nibbilize
-
 import ipaddr
 
+from core.mixins import RangeProperty
 
-class Ip(models.Model):
+
+class Ip(models.Model, RangeProperty):
     """An :class:`Ip` instance represents either an IPv4 or IPv6 address.
 
     :class:`Ip` instances are used in the :ref:`address_record` (A and AAAA
-    records), :ref:`ptr`, and the :ref:`staticinterface` classes.
+    records), :ref:`ptr`, and the :ref:`staticreg` classes.
 
     :class:`Ip` instances in a :ref:`ptr` record must be mapped back to a
     Reverse :ref:`domain` object. A :class:`ValidationError` is raised if an
@@ -42,7 +41,7 @@ class Ip(models.Model):
     class but do not need their :class:`Ip`'s to be tied back to a reverse
     domain.
 
-    :ref:`staticinterface` objects need to have their ip tied back to reverse
+    :ref:`staticreg` objects need to have their ip tied back to reverse
     domain because they represent a :ref:`PTR` record as well as an
     :ref:`address_record`.
 
@@ -81,13 +80,15 @@ class Ip(models.Model):
     class Meta:
         abstract = True
 
-    def clean_ip(self, update_reverse_domain=True):
-        """The clean method in Ip is different from the rest. It needs
-        to be called with the update_reverse_domain flag. Sometimes we
-        need to not update the reverse domain of an IP (i.e. when we are
-        deleting a reverse_domain).
+    def __int__(self):
+        if self.ip_type == '4':
+            return self.ip_lower
+        return (self.ip_upper * (2 ** 64)) + self.ip_lower
+
+    def clean_ip(self):
         """
-        # TODO, it's a fucking hack. Car babies.
+        Set IP info
+        """
         self.validate_ip_str()
         if self.ip_type == '4':
             Klass = ipaddr.IPv4Address
@@ -105,21 +106,6 @@ class Ip(models.Model):
             self.ip_upper, self.ip_lower = 0, int(ip)
         else:  # We already gaurded again't a non '6' ip_type
             self.ip_upper, self.ip_lower = ipv6_to_longs(int(ip))
-
-    def update_reverse_domain(self):
-        # We are assuming that self.clean_ip has been called already
-        rvname = nibbilize(self.ip_str) if self.ip_type == '6' else self.ip_str
-        rvname = ip_to_domain_name(rvname, ip_type=self.ip_type)
-        self.reverse_domain = name_to_domain(rvname)
-        if (self.reverse_domain is None or self.reverse_domain.name in
-                ('arpa', 'in-addr.arpa', 'ip6.arpa')):
-            raise ValidationError("No reverse Domain found for {0} "
-                                  .format(self.ip_str))
-
-    def __int__(self):
-        if self.ip_type == '4':
-            return self.ip_lower
-        return (self.ip_upper * (2 ** 64)) + self.ip_lower
 
     def validate_ip_str(self):
         if not isinstance(self.ip_str, basestring):

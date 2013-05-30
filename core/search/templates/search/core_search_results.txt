@@ -12,8 +12,8 @@
 {{ display_objs(txts) -}}
 {{ display_objs(cnames) -}}
 {{ display_objs(addrs) -}}
-{{ display_objs(intrs) -}}
+{{ display_objs(sregs) -}}
 {{ display_objs(ptrs) -}}
-{% for intr in intrs -%}
-{{ intr.bind_render_record(reverse=True) }}
+{% for sreg in sregs -%}
+{{ sreg.bind_render_record(reverse=True) }}
 {% endfor %}

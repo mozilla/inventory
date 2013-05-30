@@ -66,6 +66,7 @@
 {% if object_ %}
     {% set d = object_.reverse_domain if record_type == 'PTR' else object_.domain %}
 <div class='container'>
+    {% block object_meta %}
     <div class='object_meta' >
         <!--- lolol, I suck at the web!
         seriously, this all needs to be rewritten
@@ -76,27 +77,30 @@
         </div>
         {% endif %}
 
-        <table>
+        <table class='tablesorter'>
+            <tr>
+                <td>
+                    Record History: <a href='{{ object_.get_history_url() }}'> click </a>
+                </td>
+            </tr>
+        </table>
+
+        <table class='tablesorter'>
             <caption>{{object_.bind_render_record()}}</caption>
             {% if d.soa  %}
             <tr>
                 <td>
-                    ZONE: <a href='{{ d.soa.get_absolute_url() }}'>{{ d.soa }}</a>
+                    <a href='{{ d.soa.get_absolute_url() }}'>{{ d.soa }}</a>
                 </td>
-            </tr>
-            <tr>
                 <td>
-                    Zone Status:
                         {% if d.soa.dirty %}
                         <div class='soa_status_dirty'>REBUILD NEEDED</div>
                         {% else %}
                         <div class='soa_status_clean'>UP TO DATE</div>
                         {% endif %}
                 </td>
-            </tr>
-            <tr>
                 <td>
-                    Debug BIND File: <a href='{{ d.soa.get_debug_build_url() }}'> click </a>
+                    <a href='{{ d.soa.get_debug_build_url() }}'>Debug</a>
                 </td>
             </tr>
             {% else %}
@@ -106,13 +110,9 @@
                 </td>
             </tr>
             {% endif %}
-            <tr>
-                <td>
-                    Record History: <a href='{{ object_.get_history_url() }}'> click </a>
-                </td>
-            </tr>
         </table>
     </div>
+    {% endblock %}
 {% endif %}
     <div class="form-container">
         <form id='current-form'>

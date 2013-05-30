@@ -141,7 +141,7 @@
         </tr>
         {% endfor %}
         </tbody>
-{% elif record_type == "INTR" %}
+{% elif record_type == "SREG" %}
         <thead>
         <tr>
             <th>FQDN</th>
@@ -156,7 +156,7 @@
             <td>{{ obj.fqdn }}</td>
             <td><b>{{ obj.record_type() }}</b></td>
             <td>{{ obj.ip_str }}</td>
-            <td><a href="{{ obj.get_absolute_url() }}">Edit</a></td>
+            <td><a href="{{ obj.get_fancy_edit_url() }}">Edit</a></td>
         </tr>
         {% endfor %}
         </tbody>

@@ -10,15 +10,15 @@
 
 {% block content %}
         {% if found_exact %}
-            <div class='dns-title'>Results for <a href='{{ search_ip.absolute_url() }}'>{{ search_ip }}</a></div>
+            <div class='dns-title'>Results for <a href='{{ search_ip.get_absolute_url() }}'>{{ search_ip }}</a></div>
         {% else %}
             <div class='dns-title'>Results for {{ search_ip }}</div>
         {% endif %}
 
         {% if parent %}
-                <p>Parent Network: <a href='{{ parent.absolute_url() }}'>{{ parent }}</a></td><p>
+                <p>Parent Network: <a href='{{ parent.get_absolute_url() }}'>{{ parent }}</a></td><p>
             {% if parent.vlan %}
-                <p>Vlan: <a href='{{ parent.vlan.absolute_url() }}'>{{ parent.vlan }}</a></td><p>
+                <p>Vlan: <a href='{{ parent.vlan.get_absolute_url() }}'>{{ parent.vlan }}</a></td><p>
             {% else %}
                 <p>Vlan: None<p>
             {% endif %}
@@ -33,9 +33,9 @@
             <tbody>
                 {% for eldar in eldars %}
                 <tr>
-                    <td><a href='{{ eldar.absolute_url() }}'>{{ eldar }}</a></td>
+                    <td><a href='{{ eldar.get_absolute_url() }}'>{{ eldar }}</a></td>
                 {% if eldar.vlan %}
-                    <td><a href='{{ eldar.vlan.absolute_url() }}'>{{ eldar.vlan }}</a></td>
+                    <td><a href='{{ eldar.vlan.get_absolute_url() }}'>{{ eldar.vlan }}</a></td>
                 {% else %}
                     <td>None</td>
                 {% endif %}
@@ -53,7 +53,7 @@
             <tbody>
                 {% for sub in sub_networks %}
                 <tr>
-                    <td><a href='{{ sub.absolute_url() }}'>{{ sub }}</a></td>
+                    <td><a href='{{ sub.get_absolute_url() }}'>{{ sub }}</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -77,7 +77,7 @@
                 <tbody>
                     {% for addr in addrs %}
                     <tr>
-                        <td><a href='{{ addr.absolute_url() }}'>{{ addr.fqdn }}</a></td>
+                        <td><a href='{{ addr.get_absolute_url() }}'>{{ addr.fqdn }}</a></td>
                         <td>{{ addr.record_type() }}</td>
                         <td>{{ addr.ip_str }}</td>
                     </tr>
@@ -104,7 +104,7 @@
                 <tbody>
                     {% for ptr in ptrs %}
                     <tr>
-                        <td><a href='{{ ptr.absolute_url() }}'>{{ ptr.ip_str }}</a></td>
+                        <td><a href='{{ ptr.get_absolute_url() }}'>{{ ptr.ip_str }}</a></td>
                         <td>PTR</td>
                         <td>{{ ptr.name }}</td>
                     </tr>

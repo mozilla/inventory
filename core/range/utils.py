@@ -1,5 +1,9 @@
-from core.utils import start_end_filter, two_to_one
-from core.interface.static_intr.models import StaticInterface
+from django.db.models import Q, F
+from core.utils import (
+    start_end_filter, two_to_one, resolve_ip_type, one_to_two, ip_to_int
+)
+from core.range.models import Range
+from core.registration.static.models import StaticReg
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
 
@@ -39,7 +43,7 @@ def range_usage(ip_start, ip_end, ip_type, get_objects=False):
     ranges, we should not use recursion.
 
     There are three types of objects (that we care about) that have IP's
-    associated with them: AddressRecord, PTR, StaticInterface. Because we get
+    associated with them: AddressRecord, PTR, StaticReg. Because we get
     objects back as Queryset's that are hard to merge, we have to do this
     algorithm while retaining all three lists. The gist of the algoritm is as
     follows::
@@ -47,12 +51,12 @@ def range_usage(ip_start, ip_end, ip_type, get_objects=False):
         # Assume the lists are sorted
         while lists:
             note the start number (ip)
-            lowest =: of the things in list (PTR, A, INTR), find the lowest
+            lowest =: of the things in list (PTR, A, SREG), find the lowest
             difference =: start - lowest.ip
             total_free +=: difference
             start =: lowest.ip + 1
 
-            if any PTR, A, or INTR has the same IP as lowest:
+            if any PTR, A, or SREG has the same IP as lowest:
                 remove those items from their lists
     """
 
@@ -64,7 +68,7 @@ def range_usage(ip_start, ip_end, ip_type, get_objects=False):
     # This should be done in the db
     lists = [sorted(AddressRecord.objects.filter(ipf_q), key=get_ip),
              sorted(PTR.objects.filter(ipf_q), key=get_ip),
-             sorted(StaticInterface.objects.filter(ipf_q), key=get_ip)]
+             sorted(StaticReg.objects.filter(ipf_q), key=get_ip)]
     # This should be done in the db
     free_ranges = []
 
@@ -124,3 +128,25 @@ def range_usage(ip_start, ip_end, ip_type, get_objects=False):
     }
 
     return range_usage
+
+
+def ip_to_range(ip):
+    """Attempt to map an IP into a range"""
+    ip_type = resolve_ip_type(ip)
+
+    ip_upper, ip_lower = one_to_two(ip_to_int(ip, ip_type[0]))
+    # If it's within the uppers, it's definitely within the lowers
+    upper_q = Q(
+        ~Q(start_upper=F('end_upper')),
+        start_upper__lte=ip_upper, end_upper__gte=ip_upper
+    )
+
+    # If the uppers match, look in the lowers
+    lower_q = Q(
+        Q(start_upper=F('end_upper')),
+        start_lower__lte=ip_lower, end_lower__gte=ip_lower
+    )
+    try:
+        return Range.objects.get(upper_q | lower_q)
+    except Range.DoesNotExist:
+        pass

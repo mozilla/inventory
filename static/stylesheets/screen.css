@@ -444,3 +444,7 @@ span.helptext {
 .plane-link {
     color: rgb(0, 0, 0);
 }
+
+ul.errorlist {
+    color: red;
+}

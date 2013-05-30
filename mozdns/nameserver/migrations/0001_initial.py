@@ -16,7 +16,7 @@ class Migration(SchemaMigration):
             ('domain', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['domain.Domain'])),
             ('server', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('addr_glue', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='nameserver_set', null=True, to=orm['address_record.AddressRecord'])),
-            ('intr_glue', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='intrnameserver_set', null=True, to=orm['static_intr.StaticInterface'])),
+            ('intr_glue', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='intrnameserver_set', null=True, to=orm['static_intr.StaticReg'])),
         ))
         db.send_create_signal('nameserver', ['Nameserver'])
 
@@ -75,7 +75,7 @@ class Migration(SchemaMigration):
             'description': ('django.db.models.fields.CharField', [], {'max_length': '1000', 'null': 'True', 'blank': 'True'}),
             'domain': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['domain.Domain']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'intr_glue': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'intrnameserver_set'", 'null': 'True', 'to': "orm['static_intr.StaticInterface']"}),
+            'intr_glue': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'intrnameserver_set'", 'null': 'True', 'to': "orm['static_intr.StaticReg']"}),
             'server': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'ttl': ('django.db.models.fields.PositiveIntegerField', [], {'default': '3600', 'null': 'True', 'blank': 'True'}),
             'views': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['view.View']", 'symmetrical': 'False', 'blank': 'True'})
@@ -95,7 +95,7 @@ class Migration(SchemaMigration):
             'ttl': ('django.db.models.fields.PositiveIntegerField', [], {'default': '3600', 'null': 'True', 'blank': 'True'})
         },
         'static_intr.staticinterface': {
-            'Meta': {'unique_together': "(('ip_upper', 'ip_lower', 'label', 'domain', 'mac'),)", 'object_name': 'StaticInterface', 'db_table': "'static_interface'"},
+            'Meta': {'unique_together': "(('ip_upper', 'ip_lower', 'label', 'domain', 'mac'),)", 'object_name': 'StaticReg', 'db_table': "'static_interface'"},
             'description': ('django.db.models.fields.CharField', [], {'max_length': '1000', 'null': 'True', 'blank': 'True'}),
             'dhcp_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'dns_enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),

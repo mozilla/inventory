@@ -19,9 +19,6 @@ class ObjectUrlMixin(object):
             self._meta.db_table, self.pk
         )
 
-    def absolute_url(self):
-        return self.get_absolute_url()
-
     # TODO, depricate this
     def get_edit_url(self):
         """
@@ -52,3 +49,15 @@ class ObjectUrlMixin(object):
         Return the create url of the type of object.
         """
         return CORE_BASE_URL + "/{0}/create/".format(self._meta.db_table)
+
+
+class RangeProperty(object):
+    @property
+    def range(self):
+        if hasattr(self, '_memoize_ip_str'):
+            if self._memoize_ip_str == self.ip_str:
+                return self._memoize_range
+        from core.range.utils import ip_to_range
+        self._memoize_ip_str = self.ip_str
+        self._memoize_range = ip_to_range(self.ip_str)
+        return self._memoize_range

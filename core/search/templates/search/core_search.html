@@ -36,8 +36,8 @@ div advanced-search-knobs input{
             if ($('#Domain_f').attr('checked')) {
                 select_types.push("type=:Domain");
             }
-            if ($('#INTR_f').attr('checked')) {
-                select_types.push("type=:INTR");
+            if ($('#SREG_f').attr('checked')) {
+                select_types.push("type=:SREG");
             }
             if ($('#System_f').attr('checked')) {
                 select_types.push("type=:System");
@@ -118,7 +118,7 @@ div advanced-search-knobs input{
                                 2: { sorter:'hostname' },
                             }
                         });
-                        $(".intr-table").tablesorter({
+                        $(".sreg-table").tablesorter({
                             sortList: [[0,1],[2,1]],
                             headers: {
                                 0: { sorter:'hostname' },
@@ -211,7 +211,7 @@ div advanced-search-knobs input{
             <label for='A_f'>A/AAAA: <input type='checkbox' id='A_f'/></label>
             <label for='CNAME_f'>CNAME: <input type='checkbox' id='CNAME_f'/></label>
             <label for='Domain_f'>Domain: <input type='checkbox' id='Domain_f'/></label>
-            <label for='INTR_f'>INTR: <input type='checkbox' id='INTR_f'/></label>
+            <label for='SREG_f'>SREG: <input type='checkbox' id='SREG_f'/></label>
             <label for='System_f'>System: <input type='checkbox' id='System_f'/></label>
             <label for='MX_f'>MX: <input type='checkbox' id='MX_f'/></label>
             <label for='NS_f'>NS: <input type='checkbox' id='NS_f'/></label>

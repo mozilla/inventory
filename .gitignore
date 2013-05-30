@@ -27,3 +27,5 @@ private_tests.py
 tastytools/*.pyc
 *.pyc
 mdns/migrate/zone_configs/
+docs/images/
+docs/man/

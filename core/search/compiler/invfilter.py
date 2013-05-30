@@ -18,7 +18,7 @@ from mozdns.sshfp.models import SSHFP
 from mozdns.txt.models import TXT
 from mozdns.view.models import View
 
-from core.interface.static_intr.models import StaticInterface
+from core.registration.static.models import StaticReg
 from core.site.models import Site
 from core.utils import IPFilter, one_to_two
 from core.vlan.models import Vlan
@@ -40,7 +40,7 @@ searchables = (
     ('SOA', SOA),
     ('SRV', SRV),
     ('SSHFP', SSHFP),
-    ('INTR', StaticInterface),
+    ('SREG', StaticReg),
     ('SYSTEM', System),
     ('RACK', SystemRack),
     ('TXT', TXT),
@@ -186,7 +186,7 @@ def build_ipf_qsets(q):
     """
     q_sets = []
     for name, Klass in searchables:
-        if name == 'A' or name == 'INTR' or name == 'PTR':
+        if name == 'A' or name == 'SREG' or name == 'PTR':
             q_sets.append(q)
         else:
             q_sets.append(None)

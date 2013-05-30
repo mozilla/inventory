@@ -111,15 +111,15 @@ class AuxAttr(object):
     This class is a quick hack and is quite magical. This class abstracts the
     retreval and creation of Key Value pairs. Example usage:
 
-        >>> aa = AuxAttr(StaticIntrKeyValue, intr, 'intr')
+        >>> aa = AuxAttr(StaticRegKeyValue, sreg, 'sreg')
 
-    This initializes an :class:`AuxAttr` instance with StaticIntrKeyValue,
+    This initializes an :class:`AuxAttr` instance with StaticRegKeyValue,
     (a class that inheirits from :class:`KeyValue`), an object that has
     a KeyValue store (in this case the 'intr' object of type
-    :class:`StaticInterface`), and the :class:`str` 'intr' (the name of the
-    object in the 'StaticIntrKeyValue' class).
+    :class:`StaticReg`), and the :class:`str` 'intr' (the name of the
+    object in the 'StaticRegKeyValue' class).
 
-    See the StaticInterface class for example usage for this class. Also see
+    See the StaticReg class for example usage for this class. Also see
     the unit tests.
     """
 
