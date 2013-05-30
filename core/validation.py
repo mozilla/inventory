@@ -38,3 +38,10 @@ def validate_intrerface_name(name):
     raise ValidationError(
         "Not in valid format. Try something like eth0 or eth1."
     )
+
+
+def validate_site_name(name):
+    if name.find(' ') > 0:
+        raise ValidationError("A site name must not contain spaces.")
+    if name.find('.') > 0:
+        raise ValidationError("A site name must not contain a period.")
