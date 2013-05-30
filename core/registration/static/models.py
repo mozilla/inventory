@@ -81,7 +81,7 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     search_fields = ('ip_str', 'fqdn')
 
     class Meta:
-        db_table = 'static'
+        db_table = 'static_reg'
         unique_together = ('ip_upper', 'ip_lower', 'label', 'domain')
 
     def __repr__(self):
