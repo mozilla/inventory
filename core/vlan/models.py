@@ -28,6 +28,10 @@ class Vlan(models.Model, ObjectUrlMixin):
     def __repr__(self):
         return "<Vlan {0}>".format(str(self))
 
+    @classmethod
+    def get_api_fields(cls):
+        return ['name', 'number']
+
     def compile_Q(self):
         """Compile a Django Q that will match any IP inside this vlan."""
         return networks_to_Q(self.network_set.all())

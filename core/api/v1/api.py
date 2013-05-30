@@ -5,6 +5,9 @@ from tastypie.api import Api
 from tastypie import fields
 import reversion
 
+from core.network.models import Network
+from core.site.models import Site
+from core.vlan.models import Vlan
 from core.group.models import Group
 from core.hwadapter.models import HWAdapter
 from core.registration.static.models import StaticReg
@@ -15,6 +18,45 @@ import simplejson as json
 
 allowed_methods = ['get', 'post', 'patch', 'delete']
 v1_core_api = Api(api_name="v1_core")
+
+
+class NetworkResource(ModelResource):
+    class Meta:
+        always_return_data = True
+        queryset = Network.objects.all()
+        fields = Network.get_api_fields()
+        authorization = Authorization()
+        allowed_methods = ['get']
+        # This model should be RO, update it in the UI
+
+
+v1_core_api.register(NetworkResource())
+
+
+class SiteResource(ModelResource):
+    class Meta:
+        always_return_data = True
+        queryset = Site.objects.all()
+        fields = Site.get_api_fields()
+        authorization = Authorization()
+        allowed_methods = ['get']
+        # This model should be RO, update it in the UI
+
+
+v1_core_api.register(SiteResource())
+
+
+class VlanResource(ModelResource):
+    class Meta:
+        always_return_data = True
+        queryset = Vlan.objects.all()
+        fields = Vlan.get_api_fields()
+        authorization = Authorization()
+        allowed_methods = ['get']
+        # This model should be RO, update it in the UI
+
+
+v1_core_api.register(VlanResource())
 
 
 class GroupResource(ModelResource):

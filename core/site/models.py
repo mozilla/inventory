@@ -12,6 +12,29 @@ class Site(models.Model, ObjectUrlMixin):
     name = models.CharField(max_length=255, validators=[validate_site_name])
     parent = models.ForeignKey("self", null=True, blank=True)
 
+    class Meta:
+        db_table = 'site'
+        unique_together = ('name', 'parent')
+
+    def __str__(self):
+        return "{0}".format(self.full_name)
+
+    def __repr__(self):
+        return "<Site {0}>".format(str(self))
+
+    @classmethod
+    def get_api_fields(cls):
+        return ['name', 'parent', 'full_name']
+
+    def clean(self):
+        if self.pk:
+            db_self = self.__class__.objects.get(pk=self.pk)
+            if self.site_set.exists() and self.name != db_self.name:
+                raise ValidationError(
+                    "This site has child sites. You cannot change it's name "
+                    "without affecting all child sites."
+                )
+
     def details(self):
         details = [
             ('Name', self.full_name),
@@ -40,16 +63,6 @@ class Site(models.Model, ObjectUrlMixin):
     def compile_Q(self):
         """Compile a Django Q that will match any IP inside this site."""
         return networks_to_Q(self.network_set.all())
-
-    class Meta:
-        db_table = 'site'
-        unique_together = ('name', 'parent')
-
-    def __str__(self):
-        return "{0}".format(self.get_full_name())
-
-    def __repr__(self):
-        return "<Site {0}>".format(str(self))
 
 
 class SiteKeyValue(KeyValue):
