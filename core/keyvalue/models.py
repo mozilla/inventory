@@ -49,7 +49,19 @@ class KeyValue(models.Model):
     def __str__(self):
         return "Key: {0} Value {1}".format(self.key, self.value)
 
-    def clean(self, require_validation=True):
+    @property
+    def uri(self):
+        return '/en-US/core/keyvalue/api/{0}/{1}/update/'.format(
+            self.__class__.__name__.lower(), self.pk
+        )
+
+    def get_bundle(self):
+        return {
+            'key': self.key, 'value': self.value, 'uri': self.uri,
+            'kv_pk': self.pk, 'obj_pk': self.obj.pk
+        }
+
+    def clean(self, require_validation=True, check_unique=True):
         key_attr = self.key.replace('-', '_')
         # aa stands for auxilarary attribute.
         if (not hasattr(self, key_attr) and
@@ -58,6 +70,8 @@ class KeyValue(models.Model):
             if self.force_validation and require_validation:
                 raise ValidationError("No validator for key %s" % self.key)
             else:
+                if check_unique:  # Since we aren't call this later
+                    self.validate_unique()
                 return
         if hasattr(self, key_attr):
             validate = getattr(self, key_attr)
@@ -73,7 +87,8 @@ class KeyValue(models.Model):
             # We want to catch when the validator didn't accept the correct
             # number of arguements.
             raise ValidationError("%s" % str(e))
-        self.validate_unique()
+        if check_unique:
+            self.validate_unique()
 
     def validate_unique(self):
         if (self.__class__.objects.filter(

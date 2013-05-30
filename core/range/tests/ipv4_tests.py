@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from mozdns.domain.models import Domain
 from core.network.models import Network
 from core.range.models import Range
-from core.interface.static_intr.models import StaticInterface
+from core.registration.static.models import StaticReg
 from systems.models import System
 
 
@@ -405,21 +405,18 @@ class V4RangeTests(TestCase):
         r = self.do_add(**kwargs)
         self.assertEqual(str(r.get_next_ip()), "10.0.33.1")
         self.assertEqual(str(r.get_next_ip()), "10.0.33.1")
-        s = StaticInterface(label="foo", domain=self.d, ip_type='4',
-                            ip_str=str(r.get_next_ip()), system=system,
-                            mac="00:00:00:00:00:00")
-        s.clean()
-        s.save()
+        StaticReg.objects.create(
+            label="foo", domain=self.d, ip_type='4',
+            ip_str=str(r.get_next_ip()), system=system
+        )
         self.assertEqual(str(r.get_next_ip()), "10.0.33.2")
-        s = StaticInterface(label="foo", domain=self.d, ip_type='4',
-                            ip_str=str(r.get_next_ip()), system=system,
-                            mac="00:00:00:00:00:00")
-        s.clean()
-        s.save()
+        StaticReg.objects.create(
+            label="foo", domain=self.d, ip_type='4',
+            ip_str=str(r.get_next_ip()), system=system
+        )
         self.assertEqual(str(r.get_next_ip()), "10.0.33.3")
-        s = StaticInterface(label="foo", domain=self.d, ip_type='4',
-                            ip_str=str(r.get_next_ip()), system=system,
-                            mac="00:00:00:00:00:00")
-        s.clean()
-        s.save()
+        StaticReg.objects.create(
+            label="foo", domain=self.d, ip_type='4',
+            ip_str=str(r.get_next_ip()), system=system
+        )
         self.assertEqual(r.get_next_ip(), None)

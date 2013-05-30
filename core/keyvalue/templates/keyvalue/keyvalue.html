@@ -142,10 +142,14 @@
                     <td><input disabled='true' class="attr-kv-k" name='exising_k_{{kv.id}}'
                         type='text' value="{{kv.key | e}}"></td>
                     <th><label>Value:</label></th>
-                    <td><input class="attr-kv-v" name='existing_v_{{kv.id}}'
-                        type='text' value="{{kv.value | e}}"> </td>
-                    <th><label>Mark for deletion</label>
+                    <td>
+                        <input class="attr-kv-v" name='existing_v_{{kv.id}}'
+                        type='text' value="{{kv.value | e}}">
+                    </td>
+                    <th>
+                        <label>Mark for deletion
                         <input class='delete-key' name='existing_delete_{{kv.id}}' type='checkbox' style=''>
+                        </label>
                     </th>
                 </tr>
                 <tr id='errors_existing_{{kv.id}}' style='display:none;'>

@@ -250,7 +250,7 @@ class DomainTests(TestCase):
         arec.save()
 
         # Adding new A records that have the same name as an NS should
-        # be allows.
+        # be allowed.
         arec1 = AddressRecord(label="ns1", domain=dom, ip_str="128.193.100.10",
                               ip_type='4')
         arec1.save()

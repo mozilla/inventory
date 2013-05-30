@@ -59,11 +59,13 @@ class BaseForm(ModelForm):
                         validator(instance, cleaned_data[f.name])
                     f.save_form_data(instance, cleaned_data[f.name])
         if commit:
+            # TODO XXX, why are we not using transactions?
             # if we are committing, save the instance and the m2m data
             # immediately.
-            rollback = False
             if not instance.pk:
                 rollback = True
+            else:
+                rollback = False
             instance.save()
             try:
                 save_m2m(instance)

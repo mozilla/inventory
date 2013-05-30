@@ -32,10 +32,10 @@
     {% else -%}
         zero Domains |
     {% endif -%}
-    {% if meta['counts']['INTR'] -%}
-        {{ meta['counts']['INTR'] }} <a href="#q={{meta['search']}}&Interface">INTR</a> records |
+    {% if meta['counts']['SREG'] -%}
+        {{ meta['counts']['SREG'] }} <a href="#q={{meta['search']}}&Interface">SREG</a> records |
     {% else -%}
-        zero INTR records |
+        zero SREG records |
     {% endif -%}
     {% if meta['counts']['MX'] -%}
         {{ meta['counts']['MX'] }} <a href="#q={{meta['search']}}&MX">MX</a> records |
@@ -170,9 +170,9 @@
     {{ drawer.draw_record_table('CNAME', objects['CNAME'], table_class='tablesorter record-table', table_id='cname-table') }}
 {% endif -%}
 
-{% if objects['INTR'] -%}
+{% if objects['SREG'] -%}
     <h4><a class='plane-link' name="q={{meta['search']}}&Interface">Interface</a> Records</h4>
-    {{ drawer.draw_record_table('INTR', objects['INTR'], table_class='tablesorter intr-table', table_id='intr-table') }}
+    {{ drawer.draw_record_table('SREG', objects['SREG'], table_class='tablesorter sreg-table', table_id='sreg-table') }}
 {% endif -%}
 
 {% if objects['A'] -%}

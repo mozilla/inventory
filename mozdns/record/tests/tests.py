@@ -14,6 +14,8 @@ from mozdns.srv.models import SRV
 from mozdns.txt.models import TXT
 from mozdns.sshfp.models import SSHFP
 from mozdns.view.models import View
+from core.registration.static.models import StaticReg
+from systems.models import System
 
 from mozdns.tests.utils import create_fake_zone
 
@@ -36,6 +38,8 @@ class BaseRecordTestCase(object):
         )
         self.public_view = View.objects.get_or_create(name='public')[0]
         self.private_view = View.objects.get_or_create(name='private')[0]
+        self.system = System(hostname="foo.bar.com")
+        self.system.save()
 
     # Add an rdtype to the dict
     def update_rdtype(self, data):
@@ -124,8 +128,10 @@ class BaseRecordTestCase(object):
         post_data['fqdn'] = post_data['fqdn'][0] + "asdf.asdf." + domain_name
         return root_domain, post_data
 
-    def test_no_ns_in_view(self):
-        root_domain, post_data = self.get_domain_and_post_data()
+    def test_no_ns_in_view(self, gdpd=None):
+        if gdpd is None:
+            gdpd = self.get_domain_and_post_data
+        root_domain, post_data = gdpd()
         ns = root_domain.nameserver_set.all()[0]
         ns.views.remove(self.public_view)
         ns.views.remove(self.private_view)
@@ -445,6 +451,79 @@ class PTRV4RecordTests(BasePTRTests, TestCase):
                 random_byte(), random_byte(), random_byte()),
             'ip_type': '4',
             'name': random_label()
+        }
+
+
+class SREGV4RecordTests(BaseRecordTestCase, TestCase):
+    test_type = StaticReg
+
+    def get_reverse_domain_and_post_data(self):
+        # This is different for classes that have ips instead of fqdns
+        domain_name = "123.in-addr.arpa"
+        root_domain = create_fake_zone(domain_name, suffix="")
+        post_data = self.post_data()
+        post_data = self.update_rdtype(post_data)
+        # Get the '_' in SRV records
+        post_data['ip_str'] = '123.10.1.1'
+        return root_domain, post_data
+
+    def test_no_ns_in_view_reverse(self):
+        self.test_no_ns_in_view(gdpd=self.get_reverse_domain_and_post_data)
+
+    def setUp(self):
+        Domain.objects.get_or_create(name='arpa')
+        Domain.objects.get_or_create(name='in-addr.arpa')
+        Domain.objects.get_or_create(name='4.in-addr.arpa')
+        super(SREGV4RecordTests, self).setUp()
+
+    def post_data(self):
+        return {
+            'description': random_label(),
+            'ttl': random_byte(),
+            'interface_name': 'eth0',
+            'fqdn': 'sreg' + random_label() + "." + self.domain.name,
+            'ip_str': "4.{0}.{1}.{2}".format(
+                random_byte(), random_byte(), random_byte()),
+            'ip_type': '4',
+            'system': self.system.pk,
+            'mac': '00:11:22:33:44:55'
+        }
+
+
+class SREGV6RecordTests(BaseRecordTestCase, TestCase):
+    test_type = StaticReg
+
+    def get_reverse_domain_and_post_data(self):
+        # This is different for classes that have ips instead of fqdns
+        domain_name = "3.ip6.arpa"
+        root_domain = create_fake_zone(domain_name, suffix="")
+        post_data = self.post_data()
+        post_data = self.update_rdtype(post_data)
+        # Get the '_' in SRV records
+        post_data['ip_str'] = '3000::df12'
+        return root_domain, post_data
+
+    def test_no_ns_in_view_reverse(self):
+        self.test_no_ns_in_view(gdpd=self.get_reverse_domain_and_post_data)
+
+    def setUp(self):
+        Domain.objects.get_or_create(name='arpa')
+        Domain.objects.get_or_create(name='ip6.arpa')
+        Domain.objects.get_or_create(name='8.ip6.arpa')
+        super(SREGV6RecordTests, self).setUp()
+
+    def post_data(self):
+        return {
+            'description': 'k' + random_label(),
+            'ttl': random_byte(),
+            'interface_name': 'eth0',
+            'fqdn': 'sreg' + random_label() + "." + self.domain.name,
+            'ip_str': "8000:{0}:{1}:{2}:{3}:{4}::".format(
+                random_byte(), random_byte(), random_byte(), random_byte(),
+                random_byte()),
+            'system': self.system.pk,
+            'ip_type': '6',
+            'mac': '00:11:22:33:44:55'
         }
 
 """

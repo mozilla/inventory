@@ -1,14 +1,17 @@
 from django.views.decorators.csrf import csrf_exempt
 import csv
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import  redirect, get_object_or_404
+from django.shortcuts import  redirect, get_object_or_404, render
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils import translation
+from django.forms.formsets import formset_factory
+
 
 import _mysql_exceptions
 
@@ -24,15 +27,24 @@ from libs.jinja import render_to_response as render_to_response
 from middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 from Rack import Rack
 from MozInvAuthorization.KeyValueACL import KeyValueACL
-from core.interface.static_intr.models import StaticInterface
 import simplejson as json
 from mozdns.utils import ensure_label_domain, prune_tree
+from mozdns.view.models import View
 from forms import SystemForm
+
+from core.group.models import Group
+from core.registration.static.models import StaticReg
+from core.registration.static.forms import StaticRegAutoForm
+from core.hwadapter.forms import HWAdapterForm
+from core.range.utils import ip_to_range
 
 
 # Import resources
 from api_v2.dhcp_handler import DHCPHandler
 from api_v2.keyvalue_handler import KeyValueHandler
+
+
+
 
 
 # Use this object to generate request objects for calling tastypie views
@@ -95,108 +107,6 @@ def system_rack_elevation(request, rack_id):
         'data':data,
         },
         RequestContext(request))
-
-
-def get_next_intr_name(request, system_pk):
-    system = get_object_or_404(models.System, pk=system_pk)
-    interface_type, primary, alias = system.get_next_adapter()
-    return HttpResponse(json.dumps({'success': True,
-        'intr_name': "{0}{1}.{2}".format(interface_type, primary, alias)}))
-
-@csrf_exempt
-def create_adapter(request, system_id):
-    if not request.POST.get('is_ajax', False):
-        return HttpResponse("Ajax only homie.")
-
-    from api_v3.system_api import SystemResource
-    from mozdns.view.models import View
-    system = get_object_or_404(models.System, id=system_id)
-    ip_address = request.POST.get('ip_address', '')
-    mac_address = request.POST.get('mac_address', '')
-    intr_name = request.POST.get('interface', '')
-
-    # Determine whether to enable or disable DNS and DHCP
-    if request.POST.get('enable_dhcp', '') == 'false':
-        enable_dhcp = False
-    else:
-        enable_dhcp = True
-    if request.POST.get('enable_dns', '') == 'false':
-        enable_dns = False
-    else:
-        enable_dns = True
-
-    # Determine which DNS views to to enable. (Won't matter if DNS is not
-    # enabled)
-    if request.POST.get('enable_public', '') == 'false':
-        enable_public = False
-    else:
-        enable_public = True
-
-    if request.POST.get('enable_private', '') == 'false':
-        enable_private = False
-    else:
-        enable_private = True
-
-    if not intr_name:
-        return HttpResponse(json.dumps({'success': False, 'error_message':
-            "Please specify a interface name or select to have the name "
-            "automatically generated."}))
-
-    # Figure out label and domain
-    fqdn = request.POST.get('fqdn', '')
-    try:
-        label, domain = ensure_label_domain(fqdn)
-        # If we hit we need to back out of creating this interface,
-        # make sure to call prune_tree on this domain.
-    except ValidationError, e:
-        return HttpResponse(json.dumps({'success': False,
-            'error_message': "Error creating label and domain: "
-            "{0}".format(" ".join(e.messages))}))
-
-    # Determine the keys to store later when nameing the interface.
-    try:
-        x = SystemResource.extract_nic_attrs(intr_name)
-        interface_type, primary, alias = x
-    except ValidationError, e:
-        prune_tree(domain)
-        return HttpResponse(json.dumps({'success': False, 'error_message':
-            " ".join(e.messages)}))
-
-    # Create the Interface
-    s = StaticInterface(label=label, mac=mac_address, domain=domain,
-        ip_str=ip_address, ip_type='4', system=system,
-        dhcp_enabled=enable_dhcp, dns_enabled=enable_dns)
-    try:
-        s.clean()
-        s.save()
-    except ValidationError, e:
-        prune_tree(domain)
-        return HttpResponse(json.dumps({'success': False, 'error_message':
-            "Failed to create an interface: {0}".format(" ".join(e.messages))}))
-
-    # Configure views
-    if enable_dns:
-        if enable_public:
-            public = View.objects.get(name='public')
-            s.views.add(public)
-        if enable_private:
-            private = View.objects.get(name='private')
-            s.views.add(private)
-        s.save()
-
-
-    # Add key value pairs
-    s.update_attrs()
-    try:
-        s.attrs.primary = primary
-        s.attrs.interface_type = interface_type
-        s.attrs.alias = alias
-    except AttributeError, e:
-        return HttpResponse(json.dumps({'success': True, 'error_message':
-            "The Interface was created but there were other errors: ".join(
-                e.messages)}))
-
-    return HttpResponse(json.dumps({'success': True}))
 
 
 @allow_anyone
@@ -436,7 +346,6 @@ def save_key_value(request, id):
                 Check to see if it's an ipv4_address key
                 run KeyValueACL.check_ip_not_exist_other_system
             """
-            #import pdb; pdb.set_trace()
             if re.search('^nic\.(\d+)\.ipv4_address', str(post_key).strip() ):
                 try:
                     acl.check_ip_not_exist_other_system(system, post_value)
@@ -608,17 +517,26 @@ def system_show(request, id):
     else:
         key_values = system.keyvalue_set.exclude(key__istartswith='nic.')
 
-    intrs = StaticInterface.objects.filter(system = system)
+    sregs = StaticReg.objects.filter(system = system)
+    groups = Group.objects.all()
+    sreg_form = StaticRegAutoForm(prefix='sreg', initial={'system':system})
+    blank_hw_form = HWAdapterForm(prefix='add-hw')  # Used for ui dialog for creation
+    HWAdapterFormset = formset_factory(HWAdapterForm)
+    hw_formset = HWAdapterFormset(prefix='hwadapters')
 
-    return render_to_response('systems/system_show.html', {
+    return render(request, 'systems/system_show.html', {
         'system': system,
-        'interfaces': intrs,
+        'sregs': sregs,
+        'sreg_form': sreg_form,
+        'hw_formset': hw_formset,
+        'blank_hw_form': blank_hw_form,
+        'groups': groups,
+        'ip_to_range': ip_to_range,
         'adapters': adapters,
         'key_values': key_values,
         'is_release': is_release,
         'read_only': getattr(request, 'read_only', False),
-        },
-        RequestContext(request))
+    })
 
 @allow_anyone
 def system_show_by_asset_tag(request, id):

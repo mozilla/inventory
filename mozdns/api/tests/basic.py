@@ -2,7 +2,7 @@ from gettext import gettext as gt
 from tastypie.test import ResourceTestCase
 
 from systems.models import System
-from core.interface.static_intr.models import StaticInterface
+from core.registration.static.models import StaticReg
 from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
 from mozdns.domain.models import Domain
@@ -662,12 +662,12 @@ class PTRV4APITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class StaticIntrV4APITests(MozdnsAPITests, ResourceTestCase):
-    test_type = StaticInterface
+class StaticSregV4APITests(MozdnsAPITests, ResourceTestCase):
+    test_type = StaticReg
 
     def setUp(self):
         create_fake_zone('11.in-addr.arpa', suffix="")
-        super(StaticIntrV4APITests, self).setUp()
+        super(StaticSregV4APITests, self).setUp()
         self.s = System(hostname="foobar")
         self.s.save()
 
@@ -678,7 +678,7 @@ class StaticIntrV4APITests(MozdnsAPITests, ResourceTestCase):
                     old_data[key], new_obj_data['system']['hostname'])
                 continue
             if key in ('iname', 'system'):
-                continue  # StaticInterface needs this done. Too lazy to factor
+                continue  # StaticReg needs this done. Too lazy to factor
                           # a comparison function out
             self.assertEqual(old_data[key], new_obj_data[key])
 
@@ -699,30 +699,27 @@ class StaticIntrV4APITests(MozdnsAPITests, ResourceTestCase):
         return {
             'description': 'm' + random_label(),
             'ttl': random_byte(),
-            'mac': '11:22:33:44:55:00',
             'system': '/tasty/v3/system/{0}/'.format(self.s.pk),
             'fqdn': 'a' + random_label() + "." + self.domain.name,
             'iname': 'eth2.4',
-            'dhcp_enabled': False,
-            'dns_enabled': True,
             'ip_str': "11.255.{0}.{1}".format(random_byte(), random_byte()),
             'ip_type': '4'
         }
 
 
-class StaticIntrV6APITests(MozdnsAPITests, ResourceTestCase):
-    test_type = StaticInterface
+class StaticSregV6APITests(MozdnsAPITests, ResourceTestCase):
+    test_type = StaticReg
 
     def setUp(self):
         create_fake_zone('2.ip6.arpa', suffix="")
-        super(StaticIntrV6APITests, self).setUp()
+        super(StaticSregV6APITests, self).setUp()
         self.s = System(hostname="foobar")
         self.s.save()
 
     def compare_data(self, old_data, new_obj_data):
         for key in old_data.keys():
             if key == 'iname' or key == 'system':
-                continue  # StaticInterface needs this done. Too lazy to factor
+                continue  # StaticReg needs this done. Too lazy to factor
                           # a comparison function out
             self.assertEqual(old_data[key], new_obj_data[key])
 
@@ -731,10 +728,6 @@ class StaticIntrV6APITests(MozdnsAPITests, ResourceTestCase):
             'description': random_label(),
             'ttl': random_byte(),
             'fqdn': 'p' + random_label() + "." + self.domain.name,
-            'iname': 'mgmt4',
-            'dhcp_enabled': True,
-            'dns_enabled': True,
-            'mac': '11:22:33:44:55:00',
             'system': '/tasty/v3/system/{0}/'.format(self.s.pk),
             'ip_str': "2000:a{0}:a{1}:a{2}::".format(
                 random_byte(), random_byte(), random_byte()),

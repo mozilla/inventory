@@ -7,8 +7,9 @@ from tastypie.api import Api
 
 from systems.models import System
 from api_v3.system_api import SystemResource
+import core
 from core.utils import locked_function
-from core.interface.static_intr.models import StaticInterface
+from core.registration.static.models import StaticReg
 from mozdns.utils import ensure_label_domain, prune_tree
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
@@ -24,9 +25,7 @@ from mozdns.view.models import View
 
 import reversion
 
-import re
 import simplejson as json
-from gettext import gettext as _
 
 
 class CommonDNSResource(ModelResource):
@@ -70,14 +69,15 @@ class CommonDNSResource(ModelResource):
                 # with the errors that are thrown by full_clean.
         else:
             errors = {}
-            errors['fqdn'] = _("Couldn't determine a label and "
-                               "domain for this record.")
+            errors['fqdn'] = ("Couldn't determine a label and "
+                              "domain for this record.")
             bundle.errors['error_messages'] = json.dumps(errors)
 
         return bundle
 
     def obj_update(self, bundle, request=None, skip_errors=False, **kwargs):
-        """When an object is being updated it is possible to update the label
+        """
+        When an object is being updated it is possible to update the label
         and domain of a resource with the 'fqdn' keyword.  During hydrate, the
         correct label and domain will be chosen so the object ends up with a
         matching fqdn. By default, tastypie will populate bundle.data with an
@@ -147,8 +147,6 @@ class CommonDNSResource(ModelResource):
         creates an object. We then clean it and then save it. Finally we save
         any views that were in bundle.
         """
-        self._meta.object_class
-
         kv = self.extract_kv(bundle)
         # KV pairs should be saved after the object has been created
         if bundle.errors:
@@ -396,24 +394,27 @@ class PTRResource(CommonDNSResource, ObjectListMixin, ModelResource):
 v1_dns_api.register(PTRResource())
 
 
-class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
-                              ModelResource):
+class StaticRegResource(CommonDNSResource, ObjectListMixin,
+                        ModelResource):
     system = fields.ToOneField(SystemResource, 'system', null=False, full=True)
+    # Injecting here because of cyclical imports :(
+    hwadapter_set = fields.ToManyField('core.api.v1.api.HWAdapterResource',
+                                       'hwadapter_set', full=True, readonly=True)
 
     def hydrate(self, bundle):
         if 'system_hostname' in bundle.data and 'system' in bundle.data:
-            bundle.errors = _("Please only specify a system via the 'system' "
-                              "xor the 'system_hostname' parameter")
+            bundle.errors = ("Please only specify a system via the 'system' "
+                             "xor the 'system_hostname' parameter")
         if 'system_hostname' in bundle.data:
             system_hostname = bundle.data.get('system_hostname')
             try:
                 system = System.objects.get(hostname=system_hostname)
                 bundle.data['system'] = system
             except ObjectDoesNotExist:
-                bundle.errors['system'] = _(
+                bundle.errors['system'] = (
                     "Couldn't find system with  hostname {0}"
                     .format(system_hostname))
-        super(StaticInterfaceResource, self).hydrate(bundle)
+        super(StaticRegResource, self).hydrate(bundle)
         return bundle
 
     def extract_kv(self, bundle):
@@ -421,57 +422,39 @@ class StaticInterfaceResource(CommonDNSResource, ObjectListMixin,
         This function decides if the POST/PATCH is a trying to add a KV pair to
         the interface. If it is, it makes sure key and value keys are the only
         keys that exist in bundle.data.
-
-        If there is no key or value in bundle.data this function will attempt
-        to decompose KV-ish values (interface_name) into the correct key value
-        pairs.
         """
+        # TODO, rip this out
         kv = []
         if 'key' in bundle.data and 'value' in bundle.data:
             # It's key and value. Nothing else is allowed in the bundle.
             if set('key', 'value') != set(bundle.data):
-                error = _("key and value must be the only keys in your "
-                          "request when you are updating KV pairs.")
+                error = ("key and value must be the only keys in your "
+                         "request when you are updating KV pairs.")
                 bundle.errors['keyvalue'] = error
                 return []
             else:
                 kv.append((bundle.data['key'], bundle.data['value']))
         elif 'key' in bundle.data and 'value' not in bundle.data:
-            error = _("When specifying a key you must also specify a value "
-                      "for that key")
+            error = ("When specifying a key you must also specify a value "
+                     "for that key")
             bundle.errors['keyvalue'] = error
             return []
         elif 'value' in bundle.data and 'key' not in bundle.data:
-            error = _("When specifying a value you must also specify a key "
-                      "for that value")
+            error = ("When specifying a value you must also specify a key "
+                     "for that value")
             bundle.errors['keyvalue'] = error
             return []
-        elif 'iname' in bundle.data:
-            iname = re.match("(eth|mgmt)(\d+)\.?(\d+)?", bundle.data['iname'])
-            del bundle.data['iname']
-            if not iname:
-                error = _("Could not parse iname {0} into interface_type and "
-                          "primary (or possible not an "
-                          "alias).".format(bundle.data['iname']))
-                bundle.errors['iname'] = error
-                return []
-            kv.append(('interface_type', iname.group(1)))
-            kv.append(('primary', iname.group(2)))
-            if iname.group(3):
-                kv.append(('alias', iname.group(3)))
-            else:
-                kv.append(('alias', '0'))
         return kv
 
     class Meta:
         always_return_data = True
-        queryset = StaticInterface.objects.all()
-        fields = StaticInterface.get_api_fields() + ['views', 'system']
+        queryset = StaticReg.objects.all()
+        fields = StaticReg.get_api_fields() + ['views', 'system']
         authorization = Authorization()
         allowed_methods = allowed_methods
-        resource_name = 'staticinterface'
+        resource_name = 'staticreg'
 
-v1_dns_api.register(StaticInterfaceResource())
+v1_dns_api.register(StaticRegResource())
 
 """
 class XXXResource(CommonDNSResource, ObjectListMixin, ModelResource):

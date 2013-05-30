@@ -7,8 +7,7 @@ except:
     import simplejson as json
 
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
 
 from models import System
@@ -19,6 +18,7 @@ from core.range.models import Range
 from core.network.models import Network
 from core.vlan.models import Vlan
 from core.site.models import Site
+from core.group.models import Group
 
 from systems import models
 from test_utils import setup_test_environment
@@ -143,17 +143,12 @@ class BlankTest(TestCase):
         self.assertEqual(system.check_for_adapter_name('nic0'), True)
         self.assertEqual(system.check_for_adapter_name('nic2'), False)
 
-    def test_next_adapter_number(self):
-        system = System.objects.get(id=1)
-        self.assertEqual(system.get_next_adapter_number(), 2)
-
     def test_adapter_count(self):
         system = System.objects.get(id=1)
         adapter_count = system.get_adapter_count()
         self.assertEqual(adapter_count, 2)
 
     def test_adapter_exists(self):
-        adapter_id = 1
         system = System.objects.get(id=1)
         self.assertEqual(True, system.check_for_adapter(1))
         self.assertEqual(False, system.check_for_adapter(3))
@@ -291,349 +286,8 @@ class ServerModelTest(TestCase):
         self.assertEqual(models.ServerModel.objects.all()[1].model, 'test')
         self.assertEqual(models.ServerModel.objects.all()[1].vendor, 'vendor')
 
-
 class SystemAdapterTest(TestCase):
-
     fixtures = ['testdata.json']
-
-    def setUp(self):
-        self.create_domains()
-        self.client = Client()
-
-    def test1_system_adapter_ajax_get(self):
-        sys_tmp = System.objects.get(id=1)
-        sys_tmp.hostname = sys_tmp.hostname + '.vlan.dc'
-        sys_tmp.save()
-        resp = self.client.get(
-            reverse(
-                "system-network-adapter-create",
-                kwargs={'system_id': '1'}),
-            follow=True)
-        self.assertEqual(resp.status_code, 200)
-
-    def test2_system_adapters_empty(self):
-        system = System.objects.get(id=1)
-        eth0 = system.staticinterface_set.all()
-        self.assertEqual(len(eth0), 0)
-
-    def test3_system_adapter_ajax_post(self):
-        post_dict = {
-            'interface': 'eth0.0',
-            'system_id': '1',
-            'is_ajax': '1',
-            'fqdn': 'fake-hostname.dc.mozilla.com',
-            'range': Range.objects.all()[0].id,
-            'mac_address': '00:00:00:00:00:00',
-            'ip_address': '10.99.99.99',
-            'enable_dhcp': 'true',
-            'enable_dns': 'true',
-            'enable_public': 'false',
-            'enable_private': 'true', }
-        sys_tmp = System.objects.get(id=1)
-        sys_tmp.hostname = sys_tmp.hostname + '.vlan.dc'
-        sys_tmp.save()
-        resp = self.client.post(
-            reverse(
-                "system-network-adapter-create",
-                kwargs={'system_id': '1'}),
-            data=post_dict, follow=True)
-        self.assertEqual(resp.status_code, 200)
-        system = System.objects.get(id=1)
-        eth0 = system.staticinterface_set.all()[0]
-        eth0.update_attrs()
-        self.assertEqual(eth0.ip_str, '10.99.99.99')
-        self.assertEqual(eth0.mac, '00:00:00:00:00:00')
-        self.assertEqual(eth0.ip_type, '4')
-        self.assertEqual(eth0.attrs.primary, '0')
-        self.assertEqual(eth0.attrs.interface_type, 'eth')
-        self.assertEqual(eth0.attrs.alias, '0')
-
-    def test4_system_adapter_ajax_post(self):
-        resp = self.client.get(reverse("get-all-ranges-ajax"), follow=True)
-        self.assertEqual(resp.status_code, 200)
-        obj = json.loads(resp.content)
-        self.assertEqual(obj[0]['display'], 'No Site - No Vlan - (66.66.66.0/24) '
-                '66.66.66.1 to 66.66.66.254')
-
-    def test5_system_adapter_next_available_ip(self):
-        range_id = Range.objects.get(start_str='10.99.99.1').id
-        resp = self.client.get(
-            reverse(
-                "system-adapter-next-ip",
-                kwargs={'range_id': range_id,
-                        }),
-            follow=True)
-        self.assertEqual(resp.status_code, 200)
-        obj = json.loads(resp.content)
-        self.assertEqual(obj['ip_address'], '10.99.99.1')
-        self.assertEqual(obj['success'], True)
-
-    def test7_system_adapter_add_adapter_test_ajax_all_enabled(self):
-        post_dict = {
-            'system_id': '1',
-            'interface': 'eth2.4',
-            'fqdn': 'fake-hostname.dc.mozilla.com',
-            'is_ajax': '1',
-            'range': Range.objects.all()[0].id,
-            'ip_address': '66.66.66.66',
-            'mac_address': '00:00:00:00:00:00',
-            'enable_dhcp': 'true',
-            'enable_dns': 'true',
-            'enable_public': 'true',
-            'enable_private': 'true', }
-        sys = System.objects.get(id=1)
-        sys.hostname = sys.hostname + '.vlan.dc'
-        sys.save()
-        resp = self.client.post(
-            reverse(
-                "system-network-adapter-create",
-                kwargs={'system_id': '1'}),
-            data=post_dict, follow=True)
-        self.assertEqual(resp.status_code, 200)
-        obj = json.loads(resp.content)
-        self.assertEqual(obj['success'], True)
-        sys = System.objects.get(id=1)
-        eth0 = sys.staticinterface_set.all()[0]
-        private = View.objects.get(name='private')
-        public = View.objects.get(name='public')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.dc.mozilla.com')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].mac, u'00:00:00:00:00:00')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].ip_str, u'66.66.66.66')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].dns_enabled, True)
-        self.assertEqual(
-            private.staticinterface_set.all()[0].dhcp_enabled, True)
-
-    def test8_system_adapter_add_adapter_test_ajax_dhcp_disabled(self):
-        post_dict = {
-            'system_id': '1',
-            'interface': "eth1.2",
-            'fqdn': 'fake-hostname.dc.mozilla.com',
-            'range': Range.objects.all()[0].id,
-            'is_ajax': '1',
-            'ip_address': '66.66.66.66',
-            'mac_address': '00:00:00:00:00:00',
-            'enable_dhcp': 'false',
-            'enable_dns': 'true',
-            'enable_public': 'true',
-            'enable_private': 'true', }
-        sys = System.objects.get(id=1)
-        sys.hostname = sys.hostname + '.vlan.dc'
-        sys.save()
-        resp = self.client.post(
-            reverse(
-                "system-network-adapter-create",
-                kwargs={'system_id': '1'}),
-            data=post_dict, follow=True)
-        self.assertEqual(resp.status_code, 200)
-        obj = json.loads(resp.content)
-        self.assertEqual(obj['success'], True)
-        sys = System.objects.get(id=1)
-        eth0 = sys.staticinterface_set.all()[0]
-        private = View.objects.get(name='private')
-        public = View.objects.get(name='public')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.dc.mozilla.com')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].mac,
-            u'00:00:00:00:00:00')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].ip_str,
-            u'66.66.66.66')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].dns_enabled, True)
-        self.assertEqual(
-            private.staticinterface_set.all()[0].dhcp_enabled, False)
-        self.assertEqual(
-            public.staticinterface_set.all()[0].dns_enabled, True)
-        self.assertEqual(
-            public.staticinterface_set.all()[0].dhcp_enabled, False)
-
-    def test9_ajax_dhcp_enabled_public_enabled_private_disabled(self):
-        post_dict = {
-            'system_id': '1',
-            'range': Range.objects.all()[0].id,
-            'fqdn': 'fake-hostname.dc.mozilla.com',
-            'is_ajax': '1',
-            'interface': 'eth0.0',
-            'ip_address': '66.66.66.66',
-            'mac_address': '00:00:00:00:00:00',
-            'enable_dhcp': 'true',
-            'enable_dns': 'true',
-            'enable_public': 'false',
-            'enable_private': 'true', }
-        sys = System.objects.get(id=1)
-        sys.hostname = sys.hostname + '.vlan.dc'
-        sys.save()
-        resp = self.client.post(
-            reverse(
-                "system-network-adapter-create",
-                kwargs={'system_id': '1'}),
-            data=post_dict, follow=True)
-        self.assertEqual(resp.status_code, 200)
-        obj = json.loads(resp.content)
-        self.assertEqual(obj['success'], True)
-        sys = System.objects.get(id=1)
-        eth0 = sys.staticinterface_set.all()[0]
-        private = View.objects.get(name='private')
-        public = View.objects.get(name='public')
-        self.assertEqual(private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.dc.mozilla.com')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].mac, u'00:00:00:00:00:00')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].ip_str, u'66.66.66.66')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].dns_enabled, True)
-        self.assertEqual(
-            private.staticinterface_set.all()[0].dhcp_enabled, True)
-        self.assertEqual(private.staticinterface_set.all()[0].dns_enabled, True)
-
-    def test10_test_ajax_dhcp_enabled_priv_enabled_pub_disabled(self):
-        post_dict = {
-            'interface': 'eth0.0',
-            'system_id': '1',
-            'range': Range.objects.all()[0].id,
-            'fqdn': 'fake-hostname.dc.mozilla.com',
-            'is_ajax': '1',
-            'ip_address': '10.99.99.10',
-            'mac_address': '00:00:00:00:00:00',
-            'enable_dhcp': 'True',
-            'enable_dns': 'true',
-            'enable_public': 'false',
-            'enable_private': 'true', }
-        sys = System.objects.get(id=1)
-        sys.hostname = sys.hostname + '.vlan.dc'
-        sys.save()
-        resp = self.client.post(
-            reverse(
-                "system-network-adapter-create",
-                kwargs={'system_id': '1'}),
-            data=post_dict, follow=True)
-        self.assertEqual(resp.status_code, 200)
-        obj = json.loads(resp.content)
-        self.assertEqual(obj['success'], True)
-        sys = System.objects.get(id=1)
-        eth0 = sys.staticinterface_set.all()[0]
-        private = View.objects.get(name='private')
-        public = View.objects.get(name='public')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].fqdn,
-            u'fake-hostname.dc.mozilla.com')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].mac, u'00:00:00:00:00:00')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].ip_str, u'10.99.99.10')
-        self.assertEqual(
-            private.staticinterface_set.all()[0].dns_enabled, True)
-        self.assertEqual(
-            private.staticinterface_set.all()[0].dhcp_enabled, True)
-        self.assertEqual(len(public.staticinterface_set.all()), 0)
-
-    def test11_adapter_test_ajax_dhcp_enabled_all_dns_disabled(self):
-        post_dict = {
-            'interface': 'eth0.0',
-            'system_id': '1',
-            'range': Range.objects.all()[0].id,
-            'fqdn': 'fake-hostname.dc.mozilla.com',
-            'is_ajax': '1',
-            'ip_address': '10.99.99.10',
-            'mac_address': '00:00:00:00:00:00',
-            'enable_dhcp': 'True',
-            'enable_dns': 'false',
-            'enable_public': 'false',
-            'enable_private': 'false'}
-        sys = System.objects.get(id=1)
-        sys.hostname = sys.hostname + '.vlan.dc'
-        sys.save()
-        resp = self.client.post(
-            reverse(
-                "system-network-adapter-create",
-                kwargs={'system_id': '1'},),
-            data=post_dict,
-            follow=True)
-        self.assertEqual(resp.status_code, 200)
-        obj = json.loads(resp.content)
-        self.assertEqual(obj['success'], True)
-        sys = System.objects.get(id=1)
-        eth0 = sys.staticinterface_set.all()[0]
-        private = View.objects.get(name='private')
-        public = View.objects.get(name='public')
-        self.assertEqual(len(public.staticinterface_set.all()), 0)
-        self.assertEqual(len(private.staticinterface_set.all()), 0)
-
-    def test12_test_proper_interface(self):
-        post_dict = {
-            'interface': 'eth0.0',
-            'system_id': '1',
-            'range': Range.objects.all()[0].id,
-            'fqdn': 'fake-hostname.dc.mozilla.com',
-            'is_ajax': '1',
-            'ip_address': '10.99.99.10',
-            'mac_address': '00:00:00:00:00:00',
-            'interface': 'eth4.1',
-            'enable_dhcp': 'True',
-            'enable_dns': 'false',
-            'enable_public': 'false',
-            'enable_private': 'false'}
-        sys = System.objects.get(id=1)
-        sys.hostname = sys.hostname + '.vlan.dc'
-        sys.save()
-        resp = self.client.post(
-            reverse(
-                "system-network-adapter-create",
-                kwargs={'system_id': '1'},),
-            data=post_dict,
-            follow=True)
-        self.assertEqual(resp.status_code, 200)
-        obj = json.loads(resp.content)
-        self.assertEqual(obj['success'], True)
-        sys = System.objects.get(id=1)
-        eth0 = sys.staticinterface_set.all()[0]
-        eth0.update_attrs()
-        self.assertEqual(eth0.attrs.primary, u'4')
-        self.assertEqual(eth0.attrs.alias, u'1')
-        resp = self.client.post(
-            reverse(
-                "system-network-adapter-create",
-                kwargs={'system_id': '1'},),
-            data=post_dict,
-            follow=True)
-        obj = json.loads(resp.content)
-        self.assertEqual(obj['success'], False)
-        self.assertEqual(len(sys.staticinterface_set.all()), 1)
-
-    def test13_bad_interface_name(self):
-        post_dict = {
-            'interface': 'eth0.0',
-            'system_id': '1',
-            'interface': 'asdfasfdasfdasdfasdf',
-            'range': Range.objects.all()[0].id,
-            'fqdn': 'fake-hostname.dc.mozilla.com',
-            'is_ajax': '1',
-            'ip_address': '10.99.99.10',
-            'mac_address': '00:00:00:00:00:00',
-            'enable_dhcp': 'True',
-            'enable_dns': 'false',
-            'enable_public': 'false',
-            'enable_private': 'false'}
-        sys = System.objects.get(id=1)
-        sys.hostname = sys.hostname + '.vlan.dc'
-        sys.save()
-        resp = self.client.post(
-            reverse(
-                "system-network-adapter-create",
-                kwargs={'system_id': '1'},),
-            data=post_dict,
-            follow=True)
-        self.assertEqual(resp.status_code, 200)
-        obj = json.loads(resp.content)
-        self.assertEqual(obj['success'], False)
 
     def test14_system_get_key_value_adapter(self):
         system = System.objects.get(id=1)
@@ -651,46 +305,41 @@ class SystemAdapterTest(TestCase):
         na = system.get_next_key_value_adapter()
         self.assertEqual(na['num'], 1)
 
-    def create_domains(self):
-        private = View(name="private")
-        private.save()
-        public = View(name="public")
-        public.save()
-        d0 = create_fake_zone("dc.mozilla.com", suffix="")
-        s = d0.soa
-        d = Domain(name='vlan.dc.mozilla.com')
-        d.save()
-        d.soa = s
-        d.save()
+class SystemInterfaceTest(TransactionTestCase):
+    fixtures = ['testdata.json']
+
+    def setUp(self):
+        self.client = Client()
+        self.private = View.objects.create(name="private")
+        self.public = View.objects.create(name="public")
+        self.group = Group.objects.create(name='foobar')
+        self.d0 = create_fake_zone("dc.mozilla.com", suffix="")
+        self.s = self.d0.soa
+        self.d1 = Domain.objects.create(
+            name='vlan.dc.mozilla.com', soa=self.d0.soa
+        )
         Domain(name='arpa').save()
         Domain(name='in-addr.arpa').save()
 
         # Create Reverse Domains
-        d = create_fake_zone("10.in-addr.arpa", suffix="")
+        self.rd0 = create_fake_zone("10.in-addr.arpa", suffix="")
+        self.rd1 = create_fake_zone("66.in-addr.arpa", suffix="")
 
-        d = create_fake_zone("66.in-addr.arpa", suffix="")
-
-        vlan = Vlan(name='vlan', number=99)
-        vlan.save()
-        site = Site(name='dc')
-        site.save()
-        network = Network(network_str="10.0.0.0/8", ip_type='4')
-        network2 = Network(network_str="66.66.66.0/24", ip_type='4')
-        network2.update_network()
-        network2.save()
-        network.vlan = vlan
-        network.site = site
-        network.update_network()
-        network.save()
-        r = Range(
-            start_str='10.99.99.1',
-            end_str='10.99.99.254',
-            network=network,)
-        r.clean()
-        r.save()
-        r = Range(
-            start_str='66.66.66.1',
-            end_str='66.66.66.254',
-            network=network2,)
-        r.clean()
-        r.save()
+        self.vlan = Vlan.objects.create(name='vlan', number=99)
+        self.site = Site.objects.create(name='dc')
+        self.network = Network.objects.create(
+            network_str="10.0.0.0/8", ip_type='4', vlan=self.vlan,
+            site=self.site
+        )
+        self.network2 = Network.objects.create(
+            network_str="66.66.66.0/24", ip_type='4', vlan=self.vlan,
+            site=self.site
+        )
+        self.r1 = Range.objects.create(
+            start_str='10.99.99.1', end_str='10.99.99.254', network=self.network
+        )
+        self.r2 = Range.objects.create(
+            start_str='66.66.66.1', end_str='66.66.66.254',
+            network=self.network2
+        )
+        self.system = System.objects.create(hostname='host1.vlan.dc.mozilla.com')

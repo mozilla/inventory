@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from systems.models import System
 from mozdns.address_record.models import AddressRecord
-from core.interface.static_intr.models import StaticInterface
+from core.registration.static.models import StaticReg
 from mozdns.cname.models import CNAME
 from mozdns.txt.models import TXT
 from mozdns.mx.models import MX
@@ -144,7 +144,7 @@ class AutoDeleteTests(TestCase):
         fqdn = "bar.x.y.z.foo.poo"
         self.assertTrue(Domain.objects.filter(name="foo.foo1"))
 
-    def test_cleanup_intr(self):
+    def test_cleanup_sreg(self):
         self.assertFalse(Domain.objects.filter(name="x.y.z.foo.poo"))
         self.assertFalse(Domain.objects.filter(name="y.z.foo.poo"))
         self.assertFalse(Domain.objects.filter(name="z.foo.poo"))
@@ -157,10 +157,10 @@ class AutoDeleteTests(TestCase):
         fqdn = "bar.x.y.z.foo.poo"
         label, the_domain = ensure_label_domain(fqdn)
         system = System(hostname="foo.mozilla.com")
-        addr = StaticInterface(label=label, domain=the_domain,
-                               ip_type='4', ip_str="10.2.3.4",
-                               mac="00:11:22:33:44:55", system=system)
-        addr.save()
+        addr = StaticReg.objects.create(
+            label=label, domain=the_domain, ip_type='4', ip_str="10.2.3.4",
+            system=system
+        )
         self.assertFalse(prune_tree(the_domain))
         addr.delete()
 

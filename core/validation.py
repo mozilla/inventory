@@ -2,16 +2,39 @@ from django.core.exceptions import ValidationError
 import re
 
 
-mac_match = "^[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:"\
-    "[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]$"
-is_mac = re.compile(mac_match)
+is_mac = re.compile('^([0-9a-fA-F]{2}(:|$)){6}$')
 
 
 def validate_mac(mac):
-    mac = mac.lower()
-    if not isinstance(mac, basestring):
-        raise ValidationError("Mac Address not of valid type.")
+    """
+    Validates a mac address. If the mac is in the form XX-XX-XX-XX-XX-XX this
+    function will replace all '-' with ':'.
 
-    # TODO, I'm drunk. Write a better regex
+    :param mac: The mac address
+    :type mac: str
+    :returns: The valid mac address.
+    :raises: ValidationError
+    """
     if not is_mac.match(mac):
-        raise ValidationError("Mac Address not in valid format.")
+        raise ValidationError(
+            "Mac Address {0} is not in valid format".format(mac)
+        )
+    return mac
+
+
+valid_name_formats = [
+    re.compile("^(nic\d+(\.\d+)?)$"),
+    re.compile("^(eth\d+(\.\d+)?)$"),
+    re.compile("^(bond\d+(\.\d+)?)$"),
+    re.compile("^(mgmt\d+(\.\d+)?)$"),
+]
+
+
+def validate_intrerface_name(name):
+    # TODO ^ fix that regex, he was drunk.
+    for f in valid_name_formats:
+        if f.match(name):
+            return
+    raise ValidationError(
+        "Not in valid format. Try something like eth0 or eth1."
+    )

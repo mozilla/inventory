@@ -5,18 +5,19 @@ from mozdns.domain.models import Domain
 from mozdns.ptr.models import PTR
 from mozdns.address_record.models import AddressRecord
 from systems.models import System
-from core.interface.static_intr.models import StaticInterface
+from core.registration.static.models import StaticReg
 
 
 class ViewTests(TestCase):
-    """Cases we need to cover.
-    1) Give an A/PTR/StaticInterface private IP and the private view.
+    """
+    Cases we need to cover.
+    1) Give an A/PTR/StaticReg private IP and the private view.
         * clean, save, *no* ValidationError raised
 
-    2) Give an A/PTR/StaticInterface private IP and the public view.
+    2) Give an A/PTR/StaticReg private IP and the public view.
         * clean, save, ValidationError raised
 
-    3) Give an A/PTR/StaticInterface private IP and the public and private
+    3) Give an A/PTR/StaticReg private IP and the public and private
     view.
         * clean, save, ValidationError raised
     """
@@ -37,134 +38,113 @@ class ViewTests(TestCase):
         self.private, _ = View.objects.get_or_create(name="private")
 
     def test_private_view_case_1_addr(self):
-        a = AddressRecord(label="asf", domain=self.f_o, ip_str="10.0.0.1",
-                          ip_type="4")
-        a.clean()
-        a.save()
+        a = AddressRecord.objects.create(
+            label="asf", domain=self.f_o, ip_str="10.0.0.1", ip_type="4"
+        )
         # Object has to exist before views can be assigned.
         a.views.add(self.private)
         a.save()
 
     def test_private_view_case_1_ptr(self):
-        ptr = PTR(name="asf", ip_str="10.0.0.1",
-                  ip_type="4")
-        ptr.clean()
-        ptr.save()
+        ptr = PTR.objects.create(name="asf", ip_str="10.0.0.1", ip_type="4")
         # Object has to exist before views can be assigned.
         ptr.views.add(self.private)
         ptr.save()
 
-    def test_private_view_case_1_intr(self):
-        intr = StaticInterface(label="asf", domain=self.f_o, ip_str="10.0.0.1",
-                               ip_type="4", mac="00:11:22:33:44:55",
-                               system=self.s)
-        intr.clean()
-        intr.save()
+    def test_private_view_case_1_sreg(self):
+        sreg = StaticReg.objects.create(
+            label="asf", domain=self.f_o, ip_str="10.0.0.1", ip_type="4",
+            system=self.s
+        )
         # Object has to exist before views can be assigned.
-        intr.views.add(self.private)
-        intr.save()
+        sreg.views.add(self.private)
+        sreg.save()
 
     def test_private_view_case_2_addr(self):
-        a = AddressRecord(label="asf1", domain=self.f_o, ip_str="10.0.0.1",
-                          ip_type="4")
-        a.clean()
-        a.save()
+        a = AddressRecord.objects.create(
+            label="asf1", domain=self.f_o, ip_str="10.0.0.1", ip_type="4"
+        )
         # Object has to exist before views can be assigned.
         a.views.add(self.public)
         self.assertFalse(a.views.filter(name="public"))
 
-        a = AddressRecord(label="asf1", domain=self.f_o, ip_str="172.30.0.1",
-                          ip_type="4")
-        a.clean()
-        a.save()
+        a = AddressRecord.objects.create(
+            label="asf1", domain=self.f_o, ip_str="172.30.0.1", ip_type="4"
+        )
         # Object has to exist before views can be assigned.
         a.views.add(self.public)
         self.assertFalse(a.views.filter(name="public"))
 
-        a = AddressRecord(label="asf1", domain=self.f_o, ip_str="192.168.0.1",
-                          ip_type="4")
-        a.clean()
-        a.save()
+        a = AddressRecord.objects.create(
+            label="asf1", domain=self.f_o, ip_str="192.168.0.1", ip_type="4"
+        )
         # Object has to exist before views can be assigned.
         a.views.add(self.public)
         self.assertFalse(a.views.filter(name="public"))
 
     def test_private_view_case_2_ptr(self):
-        ptr = PTR(name="asf", ip_str="10.0.0.2", ip_type="4")
-        ptr.clean()
-        ptr.save()
+        ptr = PTR.objects.create(name="asf", ip_str="10.0.0.2", ip_type="4")
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
         self.assertFalse(ptr.views.filter(name="public"))
 
-        ptr = PTR(name="asf", ip_str="172.16.0.1", ip_type="4")
-        ptr.clean()
-        ptr.save()
+        ptr = PTR.objects.create(name="asf", ip_str="172.16.0.1", ip_type="4")
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
         self.assertFalse(ptr.views.filter(name="public"))
 
-        ptr = PTR(name="asf", ip_str="192.168.2.3", ip_type="4")
-        ptr.clean()
-        ptr.save()
+        ptr = PTR.objects.create(name="asf", ip_str="192.168.2.3", ip_type="4")
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
         self.assertFalse(ptr.views.filter(name="public"))
 
-    def test_private_view_case_2_intr(self):
-        intr = StaticInterface(label="asf", domain=self.f_o, ip_str="10.0.0.1",
-                               ip_type="4", mac="01:11:22:33:44:55",
-                               system=self.s)
-        intr.clean()
-        intr.save()
+    def test_private_view_case_2_sreg(self):
+        sreg = StaticReg.objects.create(
+            label="asf", domain=self.f_o, ip_str="10.0.0.1", ip_type="4",
+            system=self.s
+        )
         # Object has to exist before views can be assigned.
-        intr.views.add(self.public)
-        self.assertFalse(intr.views.filter(name="public"))
+        sreg.views.add(self.public)
+        self.assertFalse(sreg.views.filter(name="public"))
 
-        intr = StaticInterface(
+        sreg = StaticReg.objects.create(
             label="asf", domain=self.f_o, ip_str="172.31.255.254",
-            ip_type="4", mac="01:11:22:33:44:55", system=self.s)
-        intr.clean()
-        intr.save()
+            ip_type="4", system=self.s
+        )
         # Object has to exist before views can be assigned.
-        intr.views.add(self.public)
-        self.assertFalse(intr.views.filter(name="public"))
+        sreg.views.add(self.public)
+        self.assertFalse(sreg.views.filter(name="public"))
 
-        intr = StaticInterface(label="asf", domain=self.f_o,
-                               ip_str="192.168.255.254",
-                               ip_type="4", mac="01:11:22:33:44:55",
-                               system=self.s)
-        intr.clean()
-        intr.save()
+        sreg = StaticReg.objects.create(
+            label="asf", domain=self.f_o, ip_str="192.168.255.254",
+            ip_type="4", system=self.s
+        )
         # Object has to exist before views can be assigned.
-        intr.views.add(self.public)
-        self.assertFalse(intr.views.filter(name="public"))
+        sreg.views.add(self.public)
+        self.assertFalse(sreg.views.filter(name="public"))
 
     def test_private_view_case_3_addr(self):
-        a = AddressRecord(label="asf3", domain=self.f_o, ip_str="10.0.0.1",
-                          ip_type="4")
-        a.clean()
-        a.save()
+        a = AddressRecord.objects.create(
+            label="asf3", domain=self.f_o, ip_str="10.0.0.1", ip_type="4"
+        )
         a.views.add(self.private)
         a.save()
         # Object has to exist before views can be assigned.
         a.views.add(self.public)
         self.assertFalse(a.views.filter(name="public"))
 
-        a = AddressRecord(label="asf3", domain=self.f_o, ip_str="172.30.0.1",
-                          ip_type="4")
-        a.clean()
-        a.save()
+        a = AddressRecord.objects.create(
+            label="asf3", domain=self.f_o, ip_str="172.30.0.1", ip_type="4"
+        )
         a.views.add(self.private)
         a.save()
         # Object has to exist before views can be assigned.
         a.views.add(self.public)
         self.assertFalse(a.views.filter(name="public"))
 
-        a = AddressRecord(label="asf3", domain=self.f_o, ip_str="192.168.0.1",
-                          ip_type="4")
-        a.clean()
-        a.save()
+        a = AddressRecord.objects.create(
+            label="asf3", domain=self.f_o, ip_str="192.168.0.1", ip_type="4"
+        )
         a.views.add(self.private)
         a.save()
         # Object has to exist before views can be assigned.
@@ -172,64 +152,54 @@ class ViewTests(TestCase):
         self.assertFalse(a.views.filter(name="public"))
 
     def test_private_view_case_3_ptr(self):
-        ptr = PTR(name="asf3", ip_str="10.0.0.2", ip_type="4")
-        ptr.clean()
-        ptr.save()
+        ptr = PTR.objects.create(name="asf3", ip_str="10.0.0.2", ip_type="4")
         ptr.views.add(self.private)
         ptr.save()
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
         self.assertFalse(ptr.views.filter(name="public"))
 
-        ptr = PTR(name="asf3", ip_str="172.16.0.1", ip_type="4")
-        ptr.clean()
-        ptr.save()
+        ptr = PTR.objects.create(name="asf3", ip_str="172.16.0.1", ip_type="4")
         ptr.views.add(self.private)
         ptr.save()
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
         self.assertFalse(ptr.views.filter(name="public"))
 
-        ptr = PTR(name="asf3", ip_str="192.168.2.3", ip_type="4")
-        ptr.clean()
-        ptr.save()
+        ptr = PTR.objects.create(name="asf3", ip_str="192.168.2.3",
+                                 ip_type="4")
         ptr.views.add(self.private)
         ptr.save()
         # Object has to exist before views can be assigned.
         ptr.views.add(self.public)
         self.assertFalse(ptr.views.filter(name="public"))
 
-    def test_private_view_case_3_intr(self):
-        intr = StaticInterface(
+    def test_private_view_case_3_sreg(self):
+        sreg = StaticReg.objects.create(
             label="asf3", domain=self.f_o, ip_str="10.0.0.1",
-            ip_type="4", mac="01:11:22:33:44:55", system=self.s)
-        intr.clean()
-        intr.save()
-        intr.views.add(self.private)
-        intr.save()
+            ip_type="4", system=self.s
+        )
+        sreg.views.add(self.private)
+        sreg.save()
         # Object has to exist before views can be assigned.
-        intr.views.add(self.public)
-        self.assertFalse(intr.views.filter(name="public"))
+        sreg.views.add(self.public)
+        self.assertFalse(sreg.views.filter(name="public"))
 
-        intr = StaticInterface(
+        sreg = StaticReg.objects.create(
             label="asf3", domain=self.f_o, ip_str="172.31.255.254",
-            ip_type="4", mac="01:11:22:33:44:55", system=self.s)
-        intr.clean()
-        intr.save()
-        intr.views.add(self.private)
-        intr.save()
+            ip_type="4", system=self.s)
+        sreg.views.add(self.private)
+        sreg.save()
         # Object has to exist before views can be assigned.
-        intr.views.add(self.public)
-        self.assertFalse(intr.views.filter(name="public"))
+        sreg.views.add(self.public)
+        self.assertFalse(sreg.views.filter(name="public"))
 
-        intr = StaticInterface(label="asf3", domain=self.f_o,
-                               ip_str="192.168.255.254",
-                               ip_type="4", mac="01:11:22:33:44:55",
-                               system=self.s)
-        intr.clean()
-        intr.save()
-        intr.views.add(self.private)
-        intr.save()
+        sreg = StaticReg.objects.create(
+            label="asf3", domain=self.f_o, ip_str="192.168.255.254",
+            ip_type="4", system=self.s
+        )
+        sreg.views.add(self.private)
+        sreg.save()
         # Object has to exist before views can be assigned.
-        intr.views.add(self.public)
-        self.assertFalse(intr.views.filter(name="public"))
+        sreg.views.add(self.public)
+        self.assertFalse(sreg.views.filter(name="public"))

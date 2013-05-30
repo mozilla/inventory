@@ -32,6 +32,10 @@ from mozdns.nameserver.models import Nameserver
 from mozdns.nameserver.forms import NameserverForm
 from mozdns.utils import ensure_label_domain, prune_tree
 
+from core.registration.static.models import StaticReg
+from core.registration.static.forms import StaticRegFQDNForm
+from core.registration.static.forms import StaticRegForm
+
 
 class RecordView(object):
     form_template = 'record/ajax_form.html'
@@ -50,7 +54,12 @@ class RecordView(object):
         return self._display_object(request, object_, record_type, record_pk)
 
     def _display_object(self, request, object_, record_type, record_pk):
-        domains = Domain.objects.filter(is_reverse=False)
+        if object_:
+            domains = []
+        else:
+            domains = [domain.name for
+                       domain in
+                       Domain.objects.filter(is_reverse=False)]
         if not object_:
             form = self.DisplayForm()
         else:
@@ -61,7 +70,7 @@ class RecordView(object):
             'object_': object_,
             'record_type': record_type if record_type else '',
             'record_pk': record_pk if record_pk else '',
-            'domains': json.dumps([domain.name for domain in domains]),
+            'domains': json.dumps(domains),
         })
 
     def post(self, request, record_type, record_pk):
@@ -106,7 +115,7 @@ class RecordView(object):
 
         return render(request, self.form_template, context)
 
-    def modify_qd(self, qd):
+    def modify_qd(self, qd, object_=None):
         fqdn = qd.pop('fqdn', [''])[0]
         domain = None
         # if record_type not in ('PTR', 'NS', 'DOMAIN', 'SOA'):
@@ -131,7 +140,7 @@ class RecordView(object):
         # This little chunk of code could be factored out, but I think it's
         # more clear when you see which objects don't need to call this in one
         # spot.
-        qd, errors = self.modify_qd(qd)
+        qd, errors = self.modify_qd(qd, object_=object_)
         if errors:
             return None, errors
 
@@ -189,6 +198,21 @@ class AAAA_(A_):
 
 
 @tag_rdtype
+class SREG_(RecordView):
+    form_template = 'record/sreg_ajax_form.html'
+    Klass = StaticReg
+    form = StaticRegForm
+    DisplayForm = StaticRegFQDNForm
+
+    def modify_qd(self, qd, object_=None):
+        # We hide the system attribute in the update form so we must
+        # reintroduce it into the qd when saving the object.
+        if object_:
+            qd['system'] = object_.system.pk
+        return super(SREG_, self).modify_qd(qd, object_=object_)
+
+
+@tag_rdtype
 class CNAME_(RecordView):
     Klass = CNAME
     form = CNAMEForm
@@ -218,7 +242,7 @@ class NS_(RecordView):
     form = NameserverForm
     DisplayForm = NameserverForm
 
-    def modify_qd(self, qd):
+    def modify_qd(self, qd, **kwargs):
         domain_pk = qd.pop('domain', '')[0]
         try:
             domain = Domain.objects.get(pk=domain_pk)
@@ -238,7 +262,7 @@ class PTR_(RecordView):
     form = PTRForm
     DisplayForm = PTRForm
 
-    def modify_qd(self, qd):
+    def modify_qd(self, qd, **kwargs):
         return qd, None
 
 
@@ -262,7 +286,7 @@ class SOA_(RecordView):
     form = SOAForm
     DisplayForm = SOAForm
 
-    def modify_qd(self, qd):
+    def modify_qd(self, qd, **kwargs):
         return qd, None
 
 

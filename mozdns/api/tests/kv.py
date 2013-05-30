@@ -1,6 +1,6 @@
 from tastypie.test import ResourceTestCase
 
-from core.interface.static_intr.models import StaticIntrKeyValue
+from core.registration.static.models import StaticRegKeyValue
 
 import simplejson as json
 from mozdns.tests.utils import random_label
@@ -109,8 +109,8 @@ class KVAPITests(object):
         self.assertEqual(good_post_data, new_obj_data)
 
 
-class StaticIntrKVAPITests(KVAPITests, ResourceTestCase):
-    test_type = StaticIntrKeyValue
+class StaticRegKVAPITests(KVAPITests, ResourceTestCase):
+    test_type = StaticRegKeyValue
 
     def post_data(self):
         return {

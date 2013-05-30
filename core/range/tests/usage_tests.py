@@ -6,19 +6,45 @@ from mozdns.address_record.models import AddressRecord
 
 from systems.models import System
 
-from core.interface.static_intr.models import StaticInterface
-from core.range.utils import start_end_filter, range_usage
-from core.utils import two_to_one
 import ipaddr
+from core.registration.static.models import StaticReg
+from core.range.utils import start_end_filter, range_usage, ip_to_range
+from core.range.models import Range
+from core.utils import two_to_one
+from core.network.models import Network
 
 
 class UsageTests(TestCase):
     def setUp(self):
-        Domain.objects.get_or_create(name="com")
-        self.domain, _ = Domain.objects.get_or_create(name="foo.com")
-        Domain.objects.get_or_create(name="arpa")
-        Domain.objects.get_or_create(name="in-addr.arpa")
-        Domain.objects.get_or_create(name="10.in-addr.arpa")
+        Domain.objects.create(name="com")
+        self.domain = Domain.objects.create(name="foo.com")
+        Domain.objects.create(name="arpa")
+        Domain.objects.create(name="in-addr.arpa")
+        Domain.objects.create(name="10.in-addr.arpa")
+
+        Domain.objects.create(name="ip6.arpa")
+        Domain.objects.create(name="1.ip6.arpa")
+
+        self.network_v6 = Network.objects.create(
+            network_str="1234:1234:1234::/16", ip_type='6'
+        )
+        start_str = "1234:1234:1234:1::"
+        end_str = "1234:1234:1234:1234:1234:1234::"
+        self.r_v6 = Range.objects.create(
+            start_str=start_str, end_str=end_str, network=self.network_v6,
+            ip_type='6'
+        )
+
+        self.network_v4 = Network.objects.create(
+            network_str="10.0.0.0/8", ip_type='4'
+        )
+        start_str = "10.0.0.0"
+        end_str = "10.200.0.0"
+        self.r_v4 = Range.objects.create(
+            start_str=start_str, end_str=end_str, network=self.network_v4,
+            ip_type='4'
+        )
+        self.s = System(hostname="foo1.mozilla.com")
 
     def test0(self):
         ip_start = "10.0.0.0"
@@ -31,11 +57,11 @@ class UsageTests(TestCase):
                      order_by('ip_lower').order_by('ip_upper'))
         ptrs = list(PTR.objects.filter(ipf_q).
                     order_by('ip_lower').order_by('ip_upper'))
-        intrs = list(StaticInterface.objects.filter(ipf_q).
+        sregs = list(StaticReg.objects.filter(ipf_q).
                      order_by('ip_lower').order_by('ip_upper'))
         self.assertFalse(addrs)
         self.assertEqual(ptr.pk, ptrs[0].pk)
-        self.assertFalse(intrs)
+        self.assertFalse(sregs)
 
         range_details = range_usage(ip_start, ip_end, '4')
         self.assertEqual(9, range_details['unused'])
@@ -62,11 +88,11 @@ class UsageTests(TestCase):
                      order_by('ip_lower').order_by('ip_upper'))
         ptrs = list(PTR.objects.filter(ipf_q).
                     order_by('ip_lower').order_by('ip_upper'))
-        intrs = list(StaticInterface.objects.filter(ipf_q).
+        sregs = list(StaticReg.objects.filter(ipf_q).
                      order_by('ip_lower').order_by('ip_upper'))
         self.assertEqual(a.pk, addrs[0].pk)
         self.assertEqual(ptr.pk, ptrs[0].pk)
-        self.assertFalse(intrs)
+        self.assertFalse(sregs)
 
         range_details = range_usage(ip_start, ip_end, '4')
         self.assertEqual(8, range_details['unused'])
@@ -89,22 +115,21 @@ class UsageTests(TestCase):
 
         s = System(hostname="foo.mozilla.com")
         s.save()
-        intr = StaticInterface(
+        sreg = StaticReg.objects.create(
             label="foo", domain=self.domain, ip_str="10.0.1.4",
-            ip_type='4', system=s, mac="00:11:22:33:44:55")
-        intr.full_clean()
-        intr.save()
+            ip_type='4', system=s
+        )
 
         istart, iend, ipf_q = start_end_filter(ip_start, ip_end, '4')
         addrs = list(AddressRecord.objects.filter(ipf_q).
                      order_by('ip_lower').order_by('ip_upper'))
         ptrs = list(PTR.objects.filter(ipf_q).
                     order_by('ip_lower').order_by('ip_upper'))
-        intrs = list(StaticInterface.objects.filter(ipf_q).
+        sregs = list(StaticReg.objects.filter(ipf_q).
                      order_by('ip_lower').order_by('ip_upper'))
         self.assertEqual(a.pk, addrs[0].pk)
         self.assertEqual(ptr.pk, ptrs[0].pk)
-        self.assertEqual(intr.pk, intrs[0].pk)
+        self.assertEqual(sreg.pk, sregs[0].pk)
 
         range_details = range_usage(ip_start, ip_end, '4')
         self.assertEqual(98, range_details['unused'])
@@ -144,3 +169,39 @@ class UsageTests(TestCase):
 
         istart, iend, ipf_q = start_end_filter(start_ip, end_ip, '6')
         self.assertEqual(a.pk, AddressRecord.objects.get(ipf_q).pk)
+
+    def test_point_range_query_v4(self):
+        r = ip_to_range("10.3.0.0")
+        self.assertEqual(r, self.r_v4)
+
+        sreg = StaticReg.objects.create(
+            label="foo", domain=self.domain, ip_str="10.3.0.0",
+            ip_type='4', system=self.s
+        )
+
+        self.assertEqual(sreg.range, self.r_v4)
+
+    def test_point_range_query_v6(self):
+        r = ip_to_range("1234:1234:1234:1::1")
+        self.assertEqual(r, self.r_v6)
+
+        sreg = StaticReg.objects.create(
+            label="foo", domain=self.domain, ip_str="1234:1234:1234:1::1",
+            ip_type='6', system=self.s
+        )
+
+        self.assertEqual(sreg.range, self.r_v6)
+        sreg.ip_str = "1234:1234:1234:1::2"
+        sreg.full_clean()
+        sreg.save()
+        self.assertEqual(sreg.range, self.r_v6)
+
+        sreg.ip_str = "1334::"
+        sreg.full_clean()
+        sreg.save()
+        self.assertEqual(sreg.range, None)
+
+        sreg.ip_str = "1234:1234:1234:1::2"
+        sreg.full_clean()
+        sreg.save()
+        self.assertEqual(sreg.range, self.r_v6)

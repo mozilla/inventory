@@ -1,0 +1,34 @@
+{% extends "core/core_base.html" %}
+
+
+{% block content %}
+    <div class='dns-title'><h3>Group: <code>{{ group }}</code><h3></div>
+
+    {% block action_bar %}
+        {% if group.get_edit_url %}
+            <a class="btn btn-primary" href="{{ group.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if group.get_delete_url %}
+            <a class="btn btn-danger" href="{{ group.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+
+        <div>
+            <div style='float:left;'>
+            {% from 'core/core_macros.html' import display_details %}
+            {{ display_details(group.details(), caption="Group Attributes", obj=group) }}
+            </div>
+
+            <div style='float:left; margin-left: 3em;'>
+            {% from 'core/core_macros.html' import display_kv %}
+            {{ display_kv(attrs, obj=group, kv_type='group') }}
+            </div>
+
+            <div style='float:left; margin-left: 3em;'>
+            </div>
+        </div>
+{% endblock %}

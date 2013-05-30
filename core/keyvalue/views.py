@@ -7,21 +7,31 @@ from core.keyvalue.utils import get_aa, get_docstrings
 
 import simplejson as json
 
-from core.network.models import Network
-from core.range.models import Range
-from core.site.models import Site
-from mozdns.soa.models import SOA
-from core.interface.static_intr.models import StaticInterface
-from core.vlan.models import Vlan
+from core.network.models import NetworkKeyValue
+from core.range.models import RangeKeyValue
+from core.site.models import SiteKeyValue
+from mozdns.soa.models import SOAKeyValue
+from core.registration.static.models import StaticRegKeyValue
+from core.vlan.models import VlanKeyValue
+from core.group.models import GroupKeyValue
+from core.hwadapter.models import HWAdapterKeyValue
 
-kv_users = {
-    'network': Network,
-    'range': Range,
-    'site': Site,
-    'soa': SOA,
-    'interface': StaticInterface,
-    'vlan': Vlan,
-}
+#from systems.models import KeyValue as SystemKeyValue
+
+klasses = (
+    NetworkKeyValue,
+    RangeKeyValue,
+    SiteKeyValue,
+    SOAKeyValue,
+    VlanKeyValue,
+    #SystemKeyValue,
+    StaticRegKeyValue,
+    GroupKeyValue,
+    HWAdapterKeyValue
+)
+kv_users = {}
+for klass in klasses:
+    kv_users[klass.__name__.lower()] = klass.obj.field.related.parent_model
 
 
 def process_kv(kv, obj, KVClass):
@@ -124,10 +134,18 @@ def validate_keyvalue_ajax(request):
     return HttpResponse(json.dumps({'success': True}))
 
 
+def resolve_class(obj_class):
+    if obj_class not in kv_users:
+        raise Http404()
+    return kv_users[obj_class]
+
+
 def resolve_obj(obj_class, obj_pk):
     if obj_class not in kv_users:
         raise Http404("Can't find this kv object")
-    Klass = kv_users[obj_class]
+    if obj_class.lower() not in kv_users:
+        raise Http404()
+    Klass = kv_users[obj_class.lower()]
     try:
         obj = Klass.objects.get(pk=obj_pk)
     except Klass.DoesNotExist:

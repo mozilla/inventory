@@ -10,6 +10,7 @@ from settings.local import inventorys_email
 
 # http://dev.mysql.com/doc/refman/5.0/en/miscellaneous-functions.html
 # Prevent this case http://people.mozilla.com/~juber/public/t1_t2_scenario.txt
+# TODO, put this in a try accept and always unlock things
 def locked_function(lock_name, timeout=10):
     def decorator(f):
         def new_function(*args, **kwargs):
@@ -202,6 +203,15 @@ def int_to_ip(ip, ip_type):
     return str(IPKlass(ip))
 
 
+def ip_to_int(ip, ip_type):
+    """A wrapper that converts a string to 32 or 128 bit integer"""
+    if ip_type == '6':
+        IPKlass = ipaddr.IPv6Address
+    elif ip_type == '4':
+        IPKlass = ipaddr.IPv4Address
+    return int(IPKlass(ip))
+
+
 def resolve_ip_type(ip_str):
     if ip_str.find(':') > -1:
         Klass = ipaddr.IPv6Network
@@ -216,4 +226,4 @@ def resolve_ip_type(ip_str):
 
 
 def to_a(text, obj):
-    return "<a href='{0}'>{1}</a>".format(obj.absolute_url(), text)
+    return "<a href='{0}'>{1}</a>".format(obj.get_absolute_url(), text)

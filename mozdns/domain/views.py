@@ -91,14 +91,12 @@ class DomainDetailView(DomainView, DetailView):
         cname_headers, cname_matrix, cname_urls = tablefy(cname_objects,
                                                           cname_views)
 
-        # TODO, include Static Registrations
         ptr_objects = domain.ptr_set.all().order_by('ip_str')
         ptr_headers, ptr_matrix, ptr_urls = tablefy(ptr_objects)
 
-        # TODO, include Static Registrations
-        intr_objects = domain.staticinterface_set.all().order_by(
+        sreg_objects = domain.staticreg_set.all().order_by(
             'name').order_by('ip_str')
-        intr_headers, intr_matrix, intr_urls = tablefy(intr_objects)
+        sreg_headers, sreg_matrix, sreg_urls = tablefy(sreg_objects)
 
         address_objects = domain.addressrecord_set.all().order_by('label')
         # This takes too long to load more than 50.
@@ -147,9 +145,9 @@ class DomainDetailView(DomainView, DetailView):
             "ptr_matrix": ptr_matrix,
             "ptr_urls": ptr_urls,
 
-            "intr_headers": intr_headers,
-            "intr_matrix": intr_matrix,
-            "intr_urls": intr_urls
+            "sreg_headers": sreg_headers,
+            "sreg_matrix": sreg_matrix,
+            "sreg_urls": sreg_urls
         }.items() + context.items())
 
         return context

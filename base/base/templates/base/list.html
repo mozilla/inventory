@@ -18,46 +18,9 @@
 {% endblock %}
 
 
-    <!-- Basic bootstrap pagination -->
-    <div class="pagination">
-        <ul>
-            <li><a href="?page=1">First</a></li>
-            {% if page_obj.has_previous() %}
-                <li>
-                    <a href="?page={{ page_obj.previous_page_number() }}">Prev</a>
-                </li>
-            {% else %}
-                <li class="disabled">
-                    <a href="#">Prev</a></li>
-            {% endif %}
-                </li>
-
-            {% for page in range(page_obj.next_page_number()-1, page_obj.paginator.num_pages) %}
-                {% if loop.index < 8 %}
-                    {% if page == page_obj.number %}
-                        <li class="active">
-                            <a href="#">{{ page_obj.number }}</a>
-                        </li>
-                    {% else %}
-                        <li><a href="?page={{ page }}">{{ page }}</a></li>
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
-
-            {% if page_obj.has_next() %}
-                <li>
-                    <a href="?page={{ page_obj.next_page_number() }}">Next</a></li>
-            {% else %}
-                <li class="disabled">
-                    <a href="#">Next</a></li>
-            {% endif %}
-                </li>
-                <li><a href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
-        </ul>
-    </div>
 
     <!-- Basic bootstrap table -->
-    <table class="table table-bordered table-striped">
+    <table class="tablesorter">
         <thead>
             <tr>
                 <th>{{ object_list[0]|humanized_class_name }}</th>

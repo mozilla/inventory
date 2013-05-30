@@ -17,7 +17,7 @@ class LabelDomainMixin(models.Model):
 
     If you plan on using the ``unique_together`` constraint on a Model
     that inherits from ``LabelDomainMixin``, you must include ``domain`` and
-    ``label`` explicitly if you need them to.
+    ``label`` explicitly.
 
     All common records have a ``fqdn`` field. This field is updated
     every time the object is saved::
@@ -28,7 +28,7 @@ class LabelDomainMixin(models.Model):
 
         fqdn = domain.name
 
-    This field makes searching for records much easier. Instead of
+    ``fqdn`` makes searching for records much easier. Instead of
     looking at ``obj.label`` together with ``obj.domain.name``, you can
     just search the ``obj.fqdn`` field.
 
@@ -122,7 +122,6 @@ class MozdnsRecord(ViewMixin, TTLRRMixin, DisplayMixin, ObjectUrlMixin):
                                       help_text="Time to Live of this record")
     description = models.CharField(max_length=1000, blank=True, null=True,
                                    help_text="A description of this record.")
-    # fqdn = label + domain.name <--- see set_fqdn
 
     def __str__(self):
         self.set_fqdn()
@@ -201,8 +200,7 @@ class MozdnsRecord(ViewMixin, TTLRRMixin, DisplayMixin, ObjectUrlMixin):
             if self.label == '':
                 self.fqdn = self.domain.name
             else:
-                self.fqdn = "{0}.{1}".format(self.label,
-                                             self.domain.name)
+                self.fqdn = "{0}.{1}".format(self.label, self.domain.name)
         except ObjectDoesNotExist:
             return
 
@@ -232,15 +230,15 @@ class MozdnsRecord(ViewMixin, TTLRRMixin, DisplayMixin, ObjectUrlMixin):
         be changed.  Delegated domains cannot have objects created in
         them.
         """
-        try:
-            if not self.domain.delegated:
-                return
-        except ObjectDoesNotExist:
+        if not (self.domain and self.domain.delegated):
             return
-        if not self.pk:  # We don't exist yet.
-            raise ValidationError("No objects can be created in the {0}"
-                                  "domain. It is delegated."
-                                  .format(self.domain.name))
+        if self.domain.nameserver_set.filter(server=self.fqdn).exists():
+            return
+        else:
+            raise ValidationError(
+                "You can only create a record in a delegated domain if "
+                "there is an NS record pointing to the record's fqdn."
+            )
 
     def check_TLD_condition(self):
         domain = Domain.objects.filter(name=self.fqdn)

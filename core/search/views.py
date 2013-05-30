@@ -78,10 +78,10 @@ def search_dns_text(request):
         response_str = ""
         # XXX make this a for loop you noob
         for type_ in ['SOA', 'NS', 'MX', 'SRV', 'CNAME', 'SSHFP', 'TXT',
-                      'A', 'INTR', 'PTR']:
+                      'A', 'SREG', 'PTR']:
             response_str += render_rdtype(kwargs['objects'][type_])
-        response_str += render_rdtype(kwargs['objects']['INTR'])
-        response_str += render_rdtype(kwargs['objects']['INTR'], reverse=True)
+        response_str += render_rdtype(kwargs['objects']['SREG'])
+        response_str += render_rdtype(kwargs['objects']['SREG'], reverse=True)
         return json.dumps({'text_response': response_str})
 
     return _search(request, text_response)

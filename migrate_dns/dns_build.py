@@ -4,7 +4,7 @@ from migrate_dns.build_nics import *
 from migrate_dns.utils import *
 import ipaddr
 from systems.models import ScheduledTask
-from core.interface.static_intr.models import StaticInterface
+from core.registration.static.models import StaticReg
 
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
@@ -79,7 +79,7 @@ def guess(nic):
 
     addrs = AddressRecord.objects.filter(ip_str=nic.ips[0])
     ptrs = PTR.objects.filter(ip_str=nic.ips[0])
-    intrs = StaticInterface.objects.filter(ip_str=nic.ips[0])
+    intrs = StaticReg.objects.filter(ip_str=nic.ips[0])
 
     # This script probably put this info here.
     exintr = None

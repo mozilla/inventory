@@ -4,10 +4,9 @@ from django.http import HttpResponse
 
 from core.network.models import Network
 from core.utils import IPFilter, four_to_two
-from core.range.utils import range_usage
 from core.mixins import ObjectUrlMixin
-from core.keyvalue.base_option import CommonOption
-from core.interface.static_intr.models import StaticInterface
+from core.keyvalue.base_option import CommonOption, DHCPKeyValue
+from core.registration.static.models import StaticReg
 from mozdns.ip.models import ipv6_to_longs
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
@@ -80,6 +79,9 @@ class Range(models.Model, ObjectUrlMixin):
         db_table = 'range'
         unique_together = ('start_upper', 'start_lower', 'end_upper',
                            'end_lower')
+
+    def __str__(self):
+        return self.start_str + " <-> " + self.end_str
 
     def save(self, *args, **kwargs):
         self.clean()
@@ -180,9 +182,6 @@ class Range(models.Model, ObjectUrlMixin):
                 )
             )
 
-    def __str__(self):
-        return self.start_str + " <-> " + self.end_str
-
     def desc(self):
         x = "Site: {0} Vlan: {1} Network: {2} Range: Start - {3} End -  {4}"
         return x.format(self.network.site, self.network.vlan, self.network,
@@ -217,12 +216,14 @@ class Range(models.Model, ObjectUrlMixin):
         return "<Range: {0}>".format(str(self))
 
     def get_next_ip(self):
-        """Find's the most appropriate ip address within a range. If it can't
+        """
+        Find's the most appropriate ip address within a range. If it can't
         find an IP it returns None. If it finds an IP it returns an IPv4Address
         object.
 
             :returns: ipaddr.IPv4Address
         """
+        # TODO, use range_usage
         if self.network.ip_type != '4':
             return None
         start = self.start_lower
@@ -236,6 +237,7 @@ class Range(models.Model, ObjectUrlMixin):
             return None
 
     def range_usage(self):
+        from core.range.utils import range_usage
         ru = range_usage(self.start_str, self.end_str, self.network.ip_type)
         ru_precent = ru['used'] / (ru['used'] + 0.0 + ru['unused'])
         ru['precent_used'] = str(ru_precent * 100)[0:4] + " %"
@@ -252,13 +254,16 @@ def find_free_ip(start, end, ip_type='4'):
     :type ip_type: str either '4' or '6'
     """
     if ip_type == '4':
-        records = AddressRecord.objects.filter(ip_upper=0, ip_lower__gte=start,
-                                               ip_lower__lte=end)
-        ptrs = PTR.objects.filter(ip_upper=0, ip_lower__gte=start,
-                                  ip_lower__lte=end)
-        intrs = StaticInterface.objects.filter(ip_upper=0, ip_lower__gte=start,
-                                               ip_lower__lte=end)
-        if not records and not intrs:
+        records = AddressRecord.objects.filter(
+            ip_upper=0, ip_lower__gte=start, ip_lower__lte=end
+        )
+        ptrs = PTR.objects.filter(
+            ip_upper=0, ip_lower__gte=start, ip_lower__lte=end
+        )
+        sregs = StaticReg.objects.filter(
+            ip_upper=0, ip_lower__gte=start, ip_lower__lte=end
+        )
+        if not records and not sregs:
             ip = ipaddr.IPv4Address(start)
             return ip
         for i in xrange(start, end + 1):
@@ -272,18 +277,18 @@ def find_free_ip(start, end, ip_type='4'):
                     taken = True
                     break
             if not taken:
-                for intr in intrs:
-                    if intr.ip_lower == i:
+                for sreg in sregs:
+                    if sreg.ip_lower == i:
                         taken = True
                         break
             if not taken:
                 ip = ipaddr.IPv4Address(i)
                 return ip
     else:
-        raise NotImplemented
+        raise NotImplemented()
 
 
-class RangeKeyValue(CommonOption):
+class RangeKeyValue(DHCPKeyValue, CommonOption):
     obj = models.ForeignKey(Range, related_name='keyvalue_set', null=False)
 
     class Meta:
