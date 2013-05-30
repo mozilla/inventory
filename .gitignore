@@ -30,3 +30,4 @@ mdns/migrate/zone_configs/
 scripts/fix_scope_records.py
 docs/images/
 docs/man/
+core/populate.py
