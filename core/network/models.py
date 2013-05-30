@@ -44,6 +44,20 @@ class Network(models.Model, ObjectUrlMixin):
 
     network = None
 
+    class Meta:
+        db_table = 'network'
+        unique_together = ('ip_upper', 'ip_lower', 'prefixlen')
+
+    def __str__(self):
+        return "{0}".format(self.network_str)
+
+    def __repr__(self):
+        return "<Network {0}>".format(str(self))
+
+    @classmethod
+    def get_api_fields(cls):
+        return ['network_str', 'prefixlen', 'ip_type', 'ip_upper', 'ip_lower']
+
     def details(self):
         details = [
             ('Network', self.network_str),
@@ -57,10 +71,6 @@ class Network(models.Model, ObjectUrlMixin):
             details.append(('Site', to_a(self.site.full_name, self.site)))
 
         return details
-
-    class Meta:
-        db_table = 'network'
-        unique_together = ('ip_upper', 'ip_lower', 'prefixlen')
 
     def delete(self, *args, **kwargs):
         if self.range_set.all().exists():
@@ -141,12 +151,6 @@ class Network(models.Model, ObjectUrlMixin):
         # Update fields
         self.ip_upper, self.ip_lower = one_to_two(int(self.network))
         self.prefixlen = self.network.prefixlen
-
-    def __str__(self):
-        return "{0}".format(self.network_str)
-
-    def __repr__(self):
-        return "<Network {0}>".format(str(self))
 
 
 class NetworkKeyValue(DHCPKeyValue, CommonOption):
