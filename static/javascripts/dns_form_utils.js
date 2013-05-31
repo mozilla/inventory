@@ -165,7 +165,7 @@ function bind_smart_names(){
     for (var x = 0; x < inputs.length; x++){
         if(inputs[x].id === 'id_name' || inputs[x].id === 'id_fqdn'
                 || inputs[x].id === 'id_target' || inputs[x].id === 'id_server'){
-            make_smart_name_get_domains(inputs[x], true)
+            make_smart_name_get_domains(inputs[x], true);
             $(inputs[x]).css('width', '400px');
         }
     }
@@ -173,7 +173,6 @@ function bind_smart_names(){
 
 function make_smart_name_get_domains(element, append){
     $.get('/mozdns/domain/get_all_domains/', function(domains) {
-        console.log(domains.sort);
         make_smart_name(element, $.parseJSON(domains), append);
     });
 }
@@ -184,15 +183,15 @@ function make_smart_name(element, domains, append){
             // We saved the matching part to ui.item.value
             var name = $(element).val(); // The name the user entered
             if(!append) {
-                $(element).attr('value', ui.item.label);
+                $(element).val(ui.item.label);
             } else if (ui.item.value !== ''){
                 var foo =  name.substring(0,name.lastIndexOf(ui.item.value));
-                $(element).attr('value', foo + ui.item.label);
+                $(element).val(foo + ui.item.label);
             } else {
                 if (name.lastIndexOf('.') == name.length - 1) {
-                    $(element).attr('value',  name + ui.item.label);
+                    $(element).val(name + ui.item.label);
                 } else {
-                    $(element).attr('value',  name + '.' + ui.item.label);
+                    $(element).val(name + '.' + ui.item.label);
                 }
             }
             return false;
