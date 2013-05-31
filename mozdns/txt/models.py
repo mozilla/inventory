@@ -3,6 +3,7 @@ from gettext import gettext as _
 from django.db import models
 
 from mozdns.models import MozdnsRecord, LabelDomainMixin
+from mozdns.validation import validate_txt_data
 
 
 import reversion
@@ -14,7 +15,10 @@ class TXT(MozdnsRecord, LabelDomainMixin):
     """
 
     id = models.AutoField(primary_key=True)
-    txt_data = models.TextField(help_text="The text data for this record.")
+    txt_data = models.TextField(
+        help_text="The text data for this record.",
+        validators=[validate_txt_data]
+    )
 
     search_fields = ("fqdn", "txt_data")
 

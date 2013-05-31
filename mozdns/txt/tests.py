@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 
 from mozdns.txt.models import TXT
 from mozdns.domain.models import Domain
@@ -49,3 +50,9 @@ class TXTTests(TestCase):
         data = "dd"
         data = {'label': label, 'txt_data': data, 'domain': self.o}
         self.do_generic_add(data)
+
+    def test_bad_data(self):
+        label = "asdf"
+        data = '"dfa f'
+        data = {'label': label, 'txt_data': data, 'domain': self.o_e}
+        self.assertRaises(ValidationError, self.do_generic_add, data)
