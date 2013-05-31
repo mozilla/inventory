@@ -68,6 +68,7 @@
         <tr>
             <th>Domain</th>
             <th></th>
+            <th>Priority</th>
             <th>Server</th>
             <th></th>
         </tr>
@@ -77,6 +78,7 @@
         <tr>
             <td>{{ mx.fqdn }}</a></td>
             <td><b>MX</b></td>
+            <td>{{ mx.priority }}</td>
             <td>{{ mx.server }}</td>
             <td><a href="{{ mx.get_fancy_edit_url() }}">Edit</a></td>
         </tr>
