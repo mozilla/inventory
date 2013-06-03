@@ -1,4 +1,4 @@
-from gettext import gettext as _
+from string import Template
 
 from django.db import models
 
@@ -22,15 +22,8 @@ class TXT(MozdnsRecord, LabelDomainMixin):
 
     search_fields = ("fqdn", "txt_data")
 
-    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
-                 "{rdtype:$rdtype_just} \"{txt_data:$rhs_just}\"")
-
-    def details(self):
-        return (
-            ("FQDN", self.fqdn),
-            ("Record Type", "TXT"),
-            ("Text", self.txt_data)
-        )
+    template = ("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+                "{rdtype:$rdtype_just} {txt_data:$rhs_just}")
 
     @classmethod
     def get_api_fields(cls):
@@ -41,6 +34,26 @@ class TXT(MozdnsRecord, LabelDomainMixin):
     def rdtype(self):
         return 'TXT'
 
+    def bind_render_record(self, pk=False):
+        template = Template(self.template).substitute(**self.justs)
+        bind_name = self.fqdn + "."
+        if not self.ttl:
+            self.ttl = 3600
+
+        txt_lines = self.txt_data.split('\n')
+        if len(txt_lines) > 1:
+            txt_data = '('
+            for line in self.txt_data.split('\n'):
+                txt_data += '"{0}"\n'.format(line)
+            txt_data = txt_data.strip('\n') + ')'
+        else:
+            txt_data = '"{0}"'.format(self.txt_data)
+
+        return template.format(
+            bind_name=bind_name, ttl=self.ttl, rdtype=self.rdtype,
+            rdclass='IN', txt_data=txt_data
+        )
+
     class Meta:
         db_table = "txt"
         # unique_together = ("domain", "label", "txt_data")
@@ -48,6 +61,13 @@ class TXT(MozdnsRecord, LabelDomainMixin):
         # _mysql_exceptions.OperationalError: (1170, "BLOB/TEXT column
         # "txt_data" used in key specification without a key length")
         # Fix that ^
+
+    def details(self):
+        return (
+            ("FQDN", self.fqdn),
+            ("Record Type", "TXT"),
+            ("Text", self.txt_data)
+        )
 
 
 reversion.register(TXT)
