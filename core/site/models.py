@@ -1,16 +1,25 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from core.mixins import ObjectUrlMixin
+from core.mixins import ObjectUrlMixin, CoreDisplayMixin
 from core.keyvalue.models import KeyValue
 from core.utils import networks_to_Q, to_a
 from core.validation import validate_site_name
 
 
-class Site(models.Model, ObjectUrlMixin):
+class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
     id = models.AutoField(primary_key=True)
+    full_name = models.CharField(
+        max_length=255, null=True, blank=True
+    )
     name = models.CharField(max_length=255, validators=[validate_site_name])
     parent = models.ForeignKey("self", null=True, blank=True)
+
+    search_fields = ('full_name',)
+
+    template = (
+        "{full_name:$lhs_just} {rdtype:$rdtype_just} name: {name:$rhs_just}"
+    )
 
     class Meta:
         db_table = 'site'
@@ -25,6 +34,15 @@ class Site(models.Model, ObjectUrlMixin):
     @classmethod
     def get_api_fields(cls):
         return ['name', 'parent', 'full_name']
+
+    @property
+    def rdtype(self):
+        return 'SITE'
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        self.full_name = self.get_site_path()
+        super(Site, self).save(*args, **kwargs)
 
     def clean(self):
         if self.pk:
@@ -44,10 +62,6 @@ class Site(models.Model, ObjectUrlMixin):
                 ('Parent Site', to_a(self.parent.full_name, self.parent))
             )
         return details
-
-    @property
-    def full_name(self):
-        return self.get_site_path()
 
     def get_site_path(self):
         target = self

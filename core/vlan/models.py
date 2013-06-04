@@ -1,22 +1,22 @@
 from django.db import models
 
-from core.mixins import ObjectUrlMixin
+from core.mixins import ObjectUrlMixin, CoreDisplayMixin
 from mozdns.domain.models import Domain
 from core.utils import networks_to_Q
 
 from core.keyvalue.models import KeyValue
 
 
-class Vlan(models.Model, ObjectUrlMixin):
+class Vlan(models.Model, ObjectUrlMixin, CoreDisplayMixin):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
     number = models.PositiveIntegerField()
 
-    def details(self):
-        return (
-            ("Name", self.name),
-            ("Number", self.number),
-        )
+    search_fields = ('name', 'number')
+
+    template = (
+        "{name:$lhs_just} {rdtype:$rdtype_just} {number:$rhs_just}"
+    )
 
     class Meta:
         db_table = "vlan"
@@ -31,6 +31,16 @@ class Vlan(models.Model, ObjectUrlMixin):
     @classmethod
     def get_api_fields(cls):
         return ['name', 'number']
+
+    @property
+    def rdtype(self):
+        return 'VLAN'
+
+    def details(self):
+        return (
+            ("Name", self.name),
+            ("Number", self.number),
+        )
 
     def compile_Q(self):
         """Compile a Django Q that will match any IP inside this vlan."""

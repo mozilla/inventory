@@ -12,9 +12,12 @@ class Migration(SchemaMigration):
         # XXX PLEASE uncomment this in production
         from django.contrib.contenttypes.models import ContentType
 
-        db.delete_table('static_interface')
-        db.delete_table('static_inter_key_value')
-        db.delete_table('static_interface_views')
+        try:
+            db.delete_table('static_interface')
+            db.delete_table('static_inter_key_value')
+            db.delete_table('static_interface_views')
+        except:
+            pass
         for content_type in ContentType.objects.filter(app_label='static_intr'):
             content_type.delete()
 

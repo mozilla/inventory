@@ -15,7 +15,7 @@ ws = ' '*
 wss = ' '+
 not_ws = :c ?(c not in (' ', '\t')) -> c
 letter = :c ?('a' <= c <= 'z' or 'A' <= c <= 'Z') -> c
-special = '_' | '.' | '-' | ':' | ','
+special = '_' | '.' | '-' | ':' | ',' | '/'
 
 # Lexical Operators
 NOT = '!'

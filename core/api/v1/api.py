@@ -19,21 +19,15 @@ import simplejson as json
 allowed_methods = ['get', 'post', 'patch', 'delete']
 v1_core_api = Api(api_name="v1_core")
 
-
-class NetworkResource(ModelResource):
-    class Meta:
-        always_return_data = True
-        queryset = Network.objects.all()
-        fields = Network.get_api_fields()
-        authorization = Authorization()
-        allowed_methods = ['get']
-        # This model should be RO, update it in the UI
+class CoreResource(ModelResource):
+    def dehydrate(self, bundle):
+        if bundle.obj.pk:
+            bundle.data['pk'] = bundle.obj.pk
+        return bundle
 
 
-v1_core_api.register(NetworkResource())
-
-
-class SiteResource(ModelResource):
+class SiteResource(CoreResource):
+    parent = fields.ToOneField('self', 'parent', null=True, full=True)
     class Meta:
         always_return_data = True
         queryset = Site.objects.all()
@@ -46,7 +40,7 @@ class SiteResource(ModelResource):
 v1_core_api.register(SiteResource())
 
 
-class VlanResource(ModelResource):
+class VlanResource(CoreResource):
     class Meta:
         always_return_data = True
         queryset = Vlan.objects.all()
@@ -59,7 +53,22 @@ class VlanResource(ModelResource):
 v1_core_api.register(VlanResource())
 
 
-class GroupResource(ModelResource):
+class NetworkResource(CoreResource):
+    vlan = fields.ToOneField(VlanResource, 'vlan', null=True, full=True)
+    site = fields.ToOneField(SiteResource, 'site', null=True, full=True)
+    class Meta:
+        always_return_data = True
+        queryset = Network.objects.all()
+        fields = Network.get_api_fields()
+        authorization = Authorization()
+        allowed_methods = ['get']
+        # This model should be RO, update it in the UI
+
+
+v1_core_api.register(NetworkResource())
+
+
+class GroupResource(CoreResource):
     class Meta:
         always_return_data = True
         queryset = Group.objects.all()
@@ -72,7 +81,7 @@ class GroupResource(ModelResource):
 v1_core_api.register(GroupResource())
 
 
-class HWAdapterResource(ModelResource):
+class HWAdapterResource(CoreResource):
     sreg = fields.ToOneField(StaticRegResource, 'sreg', null=False, full=False)
     group = fields.ToOneField(GroupResource, 'group', null=True, full=False)
 
@@ -109,11 +118,6 @@ class HWAdapterResource(ModelResource):
                 continue
             setattr(obj, k, v)
         return obj
-
-    def dehydrate(self, bundle):
-        if bundle.obj.pk:
-            bundle.data['pk'] = bundle.obj.pk
-        return bundle
 
     def save_commit(self, bundle, request=None, **kwargs):
         comment = bundle.data.pop('comment', '')

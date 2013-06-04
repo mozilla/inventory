@@ -1,4 +1,5 @@
 from settings import CORE_BASE_URL
+from string import Template
 
 
 class ObjectUrlMixin(object):
@@ -61,3 +62,13 @@ class RangeProperty(object):
         self._memoize_ip_str = self.ip_str
         self._memoize_range = ip_to_range(self.ip_str)
         return self._memoize_range
+
+
+from mozdns.mixins import DisplayMixin
+
+# We are using the DisplayMixin here to get the justs. Eventually, these values
+# should be factored out into a base class.
+class CoreDisplayMixin(DisplayMixin):
+    def bind_render_record(self, pk=False):
+        template = Template(self.template).substitute(**self.justs)
+        return template.format(rdtype=self.rdtype, **vars(self))
