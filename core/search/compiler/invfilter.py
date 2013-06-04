@@ -20,6 +20,7 @@ from mozdns.view.models import View
 
 from core.registration.static.models import StaticReg
 from core.site.models import Site
+from core.network.models import Network
 from core.utils import IPFilter, one_to_two
 from core.vlan.models import Vlan
 from core.utils import start_end_filter, resolve_ip_type
@@ -44,6 +45,9 @@ searchables = (
     ('SYSTEM', System),
     ('RACK', SystemRack),
     ('TXT', TXT),
+    ('NET', Network),
+    ('SITE', Site),
+    ('VLAN', Vlan),
 )
 
 

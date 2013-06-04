@@ -7,13 +7,13 @@ from mozdns.ip.models import ipv6_to_longs
 from core.utils import IPFilter, one_to_two, to_a
 from core.vlan.models import Vlan
 from core.site.models import Site
-from core.mixins import ObjectUrlMixin
+from core.mixins import ObjectUrlMixin, CoreDisplayMixin
 from core.keyvalue.base_option import CommonOption, DHCPKeyValue
 
 import ipaddr
 
 
-class Network(models.Model, ObjectUrlMixin):
+class Network(models.Model, ObjectUrlMixin, CoreDisplayMixin):
     id = models.AutoField(primary_key=True)
     vlan = models.ForeignKey(Vlan, null=True,
                              blank=True, on_delete=models.SET_NULL)
@@ -44,6 +44,10 @@ class Network(models.Model, ObjectUrlMixin):
 
     network = None
 
+    template = (
+        "{network_str:$lhs_just} {rdtype:$rdtype_just} IPv{ip_type:$rhs_just}"
+    )
+
     class Meta:
         db_table = 'network'
         unique_together = ('ip_upper', 'ip_lower', 'prefixlen')
@@ -54,9 +58,15 @@ class Network(models.Model, ObjectUrlMixin):
     def __repr__(self):
         return "<Network {0}>".format(str(self))
 
+    search_fields = ('network_str',)
+
     @classmethod
     def get_api_fields(cls):
         return ['network_str', 'prefixlen', 'ip_type', 'ip_upper', 'ip_lower']
+
+    @property
+    def rdtype(self):
+        return 'NET'
 
     def details(self):
         details = [

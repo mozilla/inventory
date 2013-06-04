@@ -72,11 +72,19 @@ def search_dns_text(request):
                               obj.bind_render_record(**kwargs) + "\n")
         return response_str
 
+    def render_in_search_format(type_set, **kwargs):
+        response_str = ""
+        for obj in type_set:
+            response_str += _("{0:<6}".format(obj.pk) +
+                              obj.render_search_result(**kwargs) + "\n")
+        return response_str
+
     def text_response(**kwargs):
         if 'error_messages' in kwargs:
             return json.dumps({'text_response': kwargs['error_messages']})
         response_str = ""
-        # XXX make this a for loop you noob
+        for type_ in ['NET', 'SITE', 'VLAN']:
+            response_str += render_rdtype(kwargs['objects'][type_])
         for type_ in ['SOA', 'NS', 'MX', 'SRV', 'CNAME', 'SSHFP', 'TXT',
                       'A', 'SREG', 'PTR']:
             response_str += render_rdtype(kwargs['objects'][type_])
