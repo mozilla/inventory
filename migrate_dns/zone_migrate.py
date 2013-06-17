@@ -197,7 +197,10 @@ def migrate_PTR(zone, root_domain, soa, views):
         if ptr:
             ptr = ptr[0]
         else:
-            ptr = PTR(name = fqdn, ip_str = ip_str, ip_type=ip_type)
+            ptr = PTR(
+                name=fqdn, ip_str=ip_str, ip_type=ip_type,
+                description=rdata.comment
+            )
             ptr.full_clean()
             ptr.save()
 
@@ -247,7 +250,8 @@ def migrate_A(zone, root_domain, soa, views):
             domain_name = '.'.join(name.split('.')[1:])
             domain = ensure_domain(domain_name, force=True)
         a, _ = AddressRecord.objects.get_or_create(label=label,
-                domain=domain, ip_str=rdata.to_text(), ip_type='4')
+                domain=domain, ip_str=rdata.to_text(), ip_type='4',
+                description=rdata.comment)
         for view in views:
             a.views.add(view)
             a.save()
@@ -271,12 +275,15 @@ def migrate_AAAA(zone, root_domain, soa, views):
         if AddressRecord.objects.filter(label=label,
                 domain=domain, ip_upper=ip_upper, ip_lower=ip_lower,
                 ip_type='6').exists():
-            a = AddressRecord.objects.get(label=label,
-                    domain=domain, ip_type='6', ip_upper=ip_upper,
-                    ip_lower=ip_lower)
+            a = AddressRecord.objects.get(
+                label=label, domain=domain, ip_type='6', ip_upper=ip_upper,
+                ip_lower=ip_lower
+            )
         else:
-            a = AddressRecord(label=label, domain=domain,
-                    ip_str=rdata.to_text(), ip_type='6')
+            a = AddressRecord(
+                label=label, domain=domain, ip_str=rdata.to_text(),
+                ip_type='6', description=rdata.comment
+            )
             a.clean()
             a.save()
         for view in views:
@@ -289,8 +296,10 @@ def migrate_NS(zone, root_domain, soa, views):
         print str(name) + " NS " + str(rdata)
         domain_name = '.'.join(name.split('.')[1:])
         domain = ensure_domain(name, force=True)
-        ns, _ = Nameserver.objects.get_or_create(domain=domain,
-                server=rdata.target.to_text().strip('.'))
+        ns, _ = Nameserver.objects.get_or_create(
+            domain=domain, server=rdata.target.to_text().strip('.'),
+            description=rdata.comment
+        )
         for view in views:
             ns.views.add(view)
             ns.save()
@@ -309,8 +318,10 @@ def migrate_MX(zone, root_domain, soa, views):
             domain = ensure_domain(domain_name, force=True)
         priority = rdata.preference
         server = rdata.exchange.to_text().strip('.')
-        mx, _ = MX.objects.get_or_create(label=label, domain=domain,
-                server= server, priority=priority, ttl="3600")
+        mx, _ = MX.objects.get_or_create(
+            label=label, domain=domain, server= server, priority=priority,
+            ttl="3600", description=rdata.comment
+        )
         for view in views:
             mx.views.add(view)
             mx.save()
@@ -319,6 +330,7 @@ def migrate_MX(zone, root_domain, soa, views):
 def migrate_CNAME(zone, root_domain, soa, views):
     for (name, ttl, rdata) in zone.iterate_rdatas('CNAME'):
         name = name.to_text().strip('.')
+
         print str(name) + " CNAME " + str(rdata)
         exists_domain = Domain.objects.filter(name=name)
         if exists_domain:
@@ -330,14 +342,22 @@ def migrate_CNAME(zone, root_domain, soa, views):
             domain = ensure_domain('.'.join(domain_name), force=True)
         data = rdata.target.to_text().strip('.')
 
-        if not CNAME.objects.filter(label = label, domain = domain,
-                target = data).exists():
-            cn = CNAME(label = label, domain = domain, target = data)
+        if CNAME.objects.filter(label=label, domain=domain,
+                target=data).exists():
+            cn = CNAME.objects.get(
+                label=label, domain=domain, target=data
+            )
+        else:
+            cn = CNAME(
+                label=label, domain=domain, target=data,
+                description=rdata.comment
+            )
             cn.full_clean()
             cn.save()
-            for view in views:
-                cn.views.add(view)
-                cn.save()
+
+        for view in views:
+            cn.views.add(view)
+            cn.save()
 
 
 def migrate_TXT(zone, root_domain, soa, views):
@@ -354,14 +374,22 @@ def migrate_TXT(zone, root_domain, soa, views):
             domain = ensure_domain('.'.join(domain_name), force=True)
         data = rdata.to_text().strip('"')
 
-        if not TXT.objects.filter(label = label, domain = domain,
+        if TXT.objects.filter(label=label, domain=domain,
                 txt_data = data).exists():
-            txt = TXT(label = label, domain = domain, txt_data = data)
+            txt = TXT.objects.get(
+                label=label, domain=domain, txt_data=data
+            )
+        else:
+            txt = TXT(
+                label=label, domain=domain, txt_data=data,
+                description=rdata.comment
+            )
             txt.full_clean()
             txt.save()
-            for view in views:
-                txt.views.add(view)
-                txt.save()
+
+        for view in views:
+            txt.views.add(view)
+            txt.save()
 
 
 def migrate_SRV(zone, root_domain, soa, views):
@@ -381,17 +409,24 @@ def migrate_SRV(zone, root_domain, soa, views):
             domain_name = name.split('.')[1:]
             domain = ensure_domain('.'.join(domain_name), force=True)
 
-        if not SRV.objects.filter(label = label, domain = domain,
+        if SRV.objects.filter(label = label, domain = domain,
                 target=target, port=port, weight=weight,
                 priority=prio).exists():
-            srv = SRV(label = label, domain = domain,
-                target=target, port=port, weight=weight,
-                priority=prio)
+            srv = SRV.objects.get(
+                label=label, domain=domain, target=target, port=port,
+                weight=weight, priority=prio
+            )
+        else:
+            srv = SRV(
+                label=label, domain=domain, target=target, port=port,
+                weight=weight, priority=prio, description=rdata.comment
+            )
             srv.full_clean()
             srv.save()
-            for view in views:
-                srv.views.add(view)
-                srv.save()
+
+        for view in views:
+            srv.views.add(view)
+            srv.save()
 
 def get_clobbered(domain_name):
     classes = [MX, AddressRecord, CNAME, TXT, SRV]
@@ -409,34 +444,3 @@ def get_clobbered(domain_name):
                 kwargs = {}
             obj.delete(**kwargs)
     return clobber_objects
-
-"""
-def ensure_domain(name):
-    try:
-        domain = Domain.objects.get(name=name)
-        return domain
-    except ObjectDoesNotExist, e:
-        pass
-    parts = list(reversed(name.split('.')))
-    domain_name = ''
-    for i in range(len(parts)):
-        domain_name = parts[i] + '.' + domain_name
-        domain_name = domain_name.strip('.')
-        clobber_objects = get_clobbered(domain_name)
-        # need to be deleted and then recreated
-        domain, created = Domain.objects.get_or_create(name=domain_name)
-        for object_, views in clobber_objects:
-            try:
-                object_.domain = domain
-                object_.clean()
-                object_.save()
-                for view_name in views:
-                    view = View.objects.get(name=view_name)
-                    object_.views.add(view)
-                    object_.save()
-            except ValidationError, e:
-                # this is bad
-                pdb.set_trace()
-                pass
-    return domain
-"""
