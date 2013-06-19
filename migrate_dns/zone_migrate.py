@@ -232,11 +232,13 @@ def migrate_soa(zone, root_domain_name):
 def migrate_A(zone, root_domain, soa, views):
     names = []
     for (name, ttl, rdata) in zone.iterate_rdatas('A'):
-        names.append((name.to_text().strip('.'), rdata))
+        names.append((name.to_text().strip('.'), rdata, ttl))
     sorted_names = list(sorted(names, cmp=lambda n1, n2: -1 if
         len(n1[0].split('.'))> len(n2[0].split('.')) else 1))
 
-    for name, rdata in sorted_names:
+    for name, rdata, ttl in sorted_names:
+        if not ttl:
+            ttl = 3600
         print str(name) + " A " + str(rdata)
         if name.startswith("unusedspace"):
             print "Skipping {0} A {1}".format(name, rdata)
@@ -249,9 +251,20 @@ def migrate_A(zone, root_domain, soa, views):
             label = name.split('.')[0]
             domain_name = '.'.join(name.split('.')[1:])
             domain = ensure_domain(domain_name, force=True)
-        a, _ = AddressRecord.objects.get_or_create(label=label,
-                domain=domain, ip_str=rdata.to_text(), ip_type='4',
-                description=rdata.comment)
+
+        if AddressRecord.objects.filter(
+                label=label, domain=domain, ip_str=rdata.to_text(),
+                ip_type='4').exists():
+            a = AddressRecord.objects.get(
+                label=label, domain=domain, ip_str=rdata.to_text(),
+                ip_type='4'
+            )
+        else:
+            a = AddressRecord.objects.create(
+                label=label, domain=domain, ip_str=rdata.to_text(), ip_type='4',
+                description=rdata.comment, ttl=ttl
+            )
+
         for view in views:
             a.views.add(view)
             a.save()
@@ -282,7 +295,7 @@ def migrate_AAAA(zone, root_domain, soa, views):
         else:
             a = AddressRecord(
                 label=label, domain=domain, ip_str=rdata.to_text(),
-                ip_type='6', description=rdata.comment
+                ip_type='6', description=rdata.comment, ttl=ttl
             )
             a.clean()
             a.save()
@@ -296,10 +309,16 @@ def migrate_NS(zone, root_domain, soa, views):
         print str(name) + " NS " + str(rdata)
         domain_name = '.'.join(name.split('.')[1:])
         domain = ensure_domain(name, force=True)
-        ns, _ = Nameserver.objects.get_or_create(
-            domain=domain, server=rdata.target.to_text().strip('.'),
-            description=rdata.comment
-        )
+        if Nameserver.objects.filter(domain=domain,
+                server=rdata.target.to_text().strip('.')):
+            ns = Nameserver.objects.get(
+                domain=domain, server=rdata.target.to_text().strip('.'),
+            )
+        else:
+            ns = Nameserver.objects.create(
+                domain=domain, server=rdata.target.to_text().strip('.'),
+                description=rdata.comment, ttl=ttl
+            )
         for view in views:
             ns.views.add(view)
             ns.save()
@@ -318,10 +337,16 @@ def migrate_MX(zone, root_domain, soa, views):
             domain = ensure_domain(domain_name, force=True)
         priority = rdata.preference
         server = rdata.exchange.to_text().strip('.')
-        mx, _ = MX.objects.get_or_create(
-            label=label, domain=domain, server= server, priority=priority,
-            ttl="3600", description=rdata.comment
-        )
+        if MX.objects.filter(label=label, domain=domain, server=server,
+                priority=priority):
+            mx = MX.objects.get(
+                label=label, domain=domain, server=server, priority=priority,
+            )
+        else:
+            mx = MX.objects.create(
+                label=label, domain=domain, server=server, priority=priority,
+                ttl=ttl, description=rdata.comment
+            )
         for view in views:
             mx.views.add(view)
             mx.save()
@@ -350,7 +375,7 @@ def migrate_CNAME(zone, root_domain, soa, views):
         else:
             cn = CNAME(
                 label=label, domain=domain, target=data,
-                description=rdata.comment
+                description=rdata.comment, ttl=ttl
             )
             cn.full_clean()
             cn.save()
@@ -375,14 +400,14 @@ def migrate_TXT(zone, root_domain, soa, views):
         data = rdata.to_text().strip('"')
 
         if TXT.objects.filter(label=label, domain=domain,
-                txt_data = data).exists():
+                txt_data=data).exists():
             txt = TXT.objects.get(
                 label=label, domain=domain, txt_data=data
             )
         else:
             txt = TXT(
                 label=label, domain=domain, txt_data=data,
-                description=rdata.comment
+                description=rdata.comment, ttl=ttl
             )
             txt.full_clean()
             txt.save()
@@ -419,7 +444,8 @@ def migrate_SRV(zone, root_domain, soa, views):
         else:
             srv = SRV(
                 label=label, domain=domain, target=target, port=port,
-                weight=weight, priority=prio, description=rdata.comment
+                weight=weight, priority=prio, description=rdata.comment,
+                ttl=ttl
             )
             srv.full_clean()
             srv.save()
