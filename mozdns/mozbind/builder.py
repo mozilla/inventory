@@ -17,6 +17,8 @@ from settings.dnsbuilds import (
     NAMED_CHECKZONE, NAMED_CHECKCONF, LAST_RUN_FILE, BIND_PREFIX
 )
 
+from settings.dnsbuilds import ZONES_WITH_NO_CONFIG
+
 from core.task.models import Task
 
 from mozdns.domain.models import SOA
@@ -685,6 +687,7 @@ class DNSBuilder(SVNBuilderMixin):
                         "the builds".format(soa), subject="{0} is "
                         "orphaned".format(soa))
                     continue
+
                 """
                 General order of things:
                 * Find which views should have a zone file built and add them
@@ -766,12 +769,21 @@ class DNSBuilder(SVNBuilderMixin):
                              .format(soa.serial), root_domain=root_domain)
 
                 for view, file_meta, view_data in views_to_build:
-                    view_zone_stmts = zone_stmts.setdefault(view.name, [])
-                    # If we see a view in this loop it's going to end up in the
-                    # config
-                    view_zone_stmts.append(
-                        self.render_zone_stmt(soa, root_domain, file_meta)
-                    )
+                    if (root_domain.name, view.name) in ZONES_WITH_NO_CONFIG:
+                        self.log(
+                            '!!! Not going to emit zone statements for '
+                            '{0}\n'.format(root_domain.name),
+                            root_domain=root_domain
+                        )
+                    else:
+                        view_zone_stmts = zone_stmts.setdefault(view.name, [])
+
+                        # If we see a view in this loop it's going to end up in
+                        # the config
+                        view_zone_stmts.append(
+                            self.render_zone_stmt(soa, root_domain, file_meta)
+                        )
+
                     # If it's dirty or we are rebuilding another view, rebuild
                     # the zone
                     if force_rebuild:
