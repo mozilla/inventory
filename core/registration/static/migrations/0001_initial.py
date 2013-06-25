@@ -20,7 +20,6 @@ class Migration(SchemaMigration):
             pass
         for content_type in ContentType.objects.filter(app_label='static_intr'):
             content_type.delete()
-
         # Adding model 'StaticReg'
         db.create_table('static_reg', (
             ('domain', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['domain.Domain'])),
@@ -107,7 +106,7 @@ class Migration(SchemaMigration):
             'primary': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'refresh': ('django.db.models.fields.PositiveIntegerField', [], {'default': '180'}),
             'retry': ('django.db.models.fields.PositiveIntegerField', [], {'default': '86400'}),
-            'serial': ('django.db.models.fields.PositiveIntegerField', [], {'default': '2013052901'}),
+            'serial': ('django.db.models.fields.PositiveIntegerField', [], {'default': '2013062501'}),
             'ttl': ('django.db.models.fields.PositiveIntegerField', [], {'default': '3600', 'null': 'True', 'blank': 'True'})
         },
         'static.staticreg': {

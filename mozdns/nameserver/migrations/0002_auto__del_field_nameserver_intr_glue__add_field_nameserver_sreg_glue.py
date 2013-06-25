@@ -13,7 +13,7 @@ class Migration(SchemaMigration):
 
         # Adding field 'Nameserver.sreg_glue'
         db.add_column('nameserver', 'sreg_glue',
-                      self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='sregnameserver_set', null=True, to=orm['static.StaticReg']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='nameserver_set', null=True, to=orm['static.StaticReg']),
                       keep_default=False)
 
 
@@ -60,7 +60,7 @@ class Migration(SchemaMigration):
             'domain': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['domain.Domain']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'server': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
-            'sreg_glue': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'sregnameserver_set'", 'null': 'True', 'to': "orm['static.StaticReg']"}),
+            'sreg_glue': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'nameserver_set'", 'null': 'True', 'to': "orm['static.StaticReg']"}),
             'ttl': ('django.db.models.fields.PositiveIntegerField', [], {'default': '3600', 'null': 'True', 'blank': 'True'}),
             'views': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['view.View']", 'symmetrical': 'False', 'blank': 'True'})
         },
@@ -76,11 +76,11 @@ class Migration(SchemaMigration):
             'primary': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'refresh': ('django.db.models.fields.PositiveIntegerField', [], {'default': '180'}),
             'retry': ('django.db.models.fields.PositiveIntegerField', [], {'default': '86400'}),
-            'serial': ('django.db.models.fields.PositiveIntegerField', [], {'default': '1367110550'}),
+            'serial': ('django.db.models.fields.PositiveIntegerField', [], {'default': '2013062501'}),
             'ttl': ('django.db.models.fields.PositiveIntegerField', [], {'default': '3600', 'null': 'True', 'blank': 'True'})
         },
         'static.staticreg': {
-            'Meta': {'unique_together': "(('ip_upper', 'ip_lower', 'label', 'domain'),)", 'object_name': 'StaticReg', 'db_table': "'static'"},
+            'Meta': {'unique_together': "(('ip_upper', 'ip_lower', 'label', 'domain'),)", 'object_name': 'StaticReg', 'db_table': "'static_reg'"},
             'description': ('django.db.models.fields.CharField', [], {'max_length': '1000', 'null': 'True', 'blank': 'True'}),
             'domain': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['domain.Domain']"}),
             'fqdn': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '255', 'null': 'True', 'blank': 'True'}),
@@ -90,7 +90,7 @@ class Migration(SchemaMigration):
             'ip_type': ('django.db.models.fields.CharField', [], {'max_length': '1'}),
             'ip_upper': ('django.db.models.fields.BigIntegerField', [], {'null': 'True', 'blank': 'True'}),
             'label': ('django.db.models.fields.CharField', [], {'max_length': '63', 'null': 'True', 'blank': 'True'}),
-            'reverse_domain': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'staticregdomain_set'", 'null': 'True', 'to': "orm['domain.Domain']"}),
+            'reverse_domain': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'reverse_staticreg_set'", 'null': 'True', 'to': "orm['domain.Domain']"}),
             'system': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['systems.System']", 'null': 'True', 'blank': 'True'}),
             'ttl': ('django.db.models.fields.PositiveIntegerField', [], {'default': '3600', 'null': 'True', 'blank': 'True'}),
             'views': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['view.View']", 'symmetrical': 'False', 'blank': 'True'})
@@ -151,8 +151,8 @@ class Migration(SchemaMigration):
             'system_status': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['systems.SystemStatus']", 'null': 'True', 'blank': 'True'}),
             'system_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['systems.SystemType']", 'null': 'True', 'blank': 'True'}),
             'updated_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'warranty_end': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
-            'warranty_start': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
+            'warranty_end': ('django.db.models.fields.DateField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
+            'warranty_start': ('django.db.models.fields.DateField', [], {'default': 'None', 'null': 'True', 'blank': 'True'})
         },
         'systems.systemrack': {
             'Meta': {'ordering': "['name']", 'object_name': 'SystemRack', 'db_table': "u'system_racks'"},
