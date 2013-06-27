@@ -436,7 +436,7 @@ class DNSBuilder(SVNBuilderMixin):
                 'reverse/in-addr.arpa/'
             If it's ipv6:
 
-                'reverse/in-addr.ipv6/'
+                'reverse/ip6.arpa/'
 
         The build scripts will create this path on the filesystem if it does
         not exist.
@@ -444,8 +444,8 @@ class DNSBuilder(SVNBuilderMixin):
         A relative path is returned by this function.
         """
         if root_domain.is_reverse:
-            if root_domain.name.endswith('ipv6'):
-                zone_path = "reverse/in-addr.arpa/"
+            if root_domain.name.endswith('ip6.arpa'):
+                zone_path = "reverse/ip6.arpa/"
             elif root_domain.name.endswith('arpa'):
                 zone_path = "reverse/in-addr.arpa/"
             else:
