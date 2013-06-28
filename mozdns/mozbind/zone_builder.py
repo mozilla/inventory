@@ -91,9 +91,11 @@ def render_forward_zone(view, mega_filter):
     return data
 
 
-def _render_reverse_zone(default_ttl, nameserver_set, interface_set, ptr_set):
+def _render_reverse_zone(default_ttl, nameserver_set, mx_set, interface_set,
+                         ptr_set):
     BUILD_STR = ''
     BUILD_STR += render_rdtype(nameserver_set)
+    BUILD_STR += render_rdtype(mx_set)
     BUILD_STR += render_rdtype(ptr_set)
     BUILD_STR += render_rdtype(interface_set, reverse=True, rdtype='PTR')
     return BUILD_STR
@@ -104,6 +106,9 @@ def render_reverse_zone(view, domain_mega_filter, rdomain_mega_filter):
         default_ttl=DEFAULT_TTL,
 
         nameserver_set=Nameserver.objects.filter(domain_mega_filter).filter(
+            views__name=view.name).order_by('server'),
+
+        mx_set=MX.objects.filter(domain_mega_filter).filter(
             views__name=view.name).order_by('server'),
 
         interface_set=StaticInterface.objects.filter(
