@@ -29,4 +29,5 @@ tastytools/*.pyc
 mdns/migrate/zone_configs/
 docs/images/
 docs/man/
-core/populate.py
+scripts/populate.py
+scripts/migrate_locations_to_sites.py
