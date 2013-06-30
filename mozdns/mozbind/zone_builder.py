@@ -149,12 +149,12 @@ def build_zone_data(view, root_domain, soa, logf=None):
     if (soa.has_record_set(view=view, exclude_ns=True) and
             not root_domain.nameserver_set.filter(views=view).exists()):
         msg = ("The {0} zone has a records in the {1} view, but there are "
-               "no nameservers in that view. A zone file for {1} won't be "
-               "built. Use the search string 'zone=:{0} view=:{1}' to find "
-               "the troublesome records".format(root_domain, view.name))
+               "no nameservers in that view. Use the search string 'zone=:{0} "
+               "view=:{1}' to find the troublesome records".format(
+                   root_domain, view.name)
+               )
         fail_mail(msg, subject="Shitty edge case detected.")
         logf('LOG_WARNING', msg)
-        return ''
 
     domains = soa.domain_set.all().order_by('name')
 
