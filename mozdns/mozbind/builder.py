@@ -610,10 +610,10 @@ class DNSBuilder(SVNBuilderMixin):
         return zone_stmt
 
     def verify_previous_build(self, file_meta, view, root_domain, soa):
-        force_rebuild, new_serial = False, None
+        force_rebuild, safe_serial = False, None
         serial = get_serial(os.path.join(file_meta['prod_fname']))
         if not serial.isdigit():
-            new_serial = soa.serial or int(
+            safe_serial = soa.serial or int(
                 datetime.datetime.now().strftime("%Y%m%d01")
             )
             force_rebuild = True
@@ -621,7 +621,7 @@ class DNSBuilder(SVNBuilderMixin):
             self.log(
                 'LOG_NOTICE', "{0} appears to be a new zone. Building {1} "
                 "with initial serial {2}".format(soa, file_meta['prod_fname'],
-                                                 new_serial),
+                                                 safe_serial),
                 root_domain=root_domain)
         elif int(serial) != soa.serial:
             # Looks like someone made some changes... let's nuke them.
@@ -635,9 +635,9 @@ class DNSBuilder(SVNBuilderMixin):
             force_rebuild = True
             # Choose the highest serial so any slave nameservers don't get
             # confused.
-            new_serial = max(int(serial), soa.serial)
+            safe_serial = max(int(serial), soa.serial)
 
-        return force_rebuild, new_serial
+        return force_rebuild, safe_serial
 
     def get_file_meta(self, view, root_domain, soa):
         """
@@ -740,12 +740,12 @@ class DNSBuilder(SVNBuilderMixin):
                              'config.'.format(view.name),
                              root_domain=root_domain)
                     file_meta = self.get_file_meta(view, root_domain, soa)
-                    was_bad_prev, new_serial = self.verify_previous_build(
+                    was_bad_prev, safe_serial = self.verify_previous_build(
                         file_meta, view, root_domain, soa
                     )
 
                     if was_bad_prev:
-                        soa.serial = new_serial
+                        soa.serial = safe_serial
                         force_rebuild = True
 
                     views_to_build.append(
@@ -758,12 +758,13 @@ class DNSBuilder(SVNBuilderMixin):
                     ), root_domain=root_domain
                 )
 
+                next_serial = soa.get_incremented_serial()
                 if force_rebuild:
                     # Bypass save so we don't have to save a possible stale
                     # 'dirty' value to the db.
-                    SOA.objects.filter(pk=soa.pk).update(serial=soa.serial + 1)
+                    SOA.objects.filter(pk=soa.pk).update(serial=next_serial)
                     self.log('Zone will be rebuilt at serial {0}'
-                             .format(soa.serial + 1), root_domain=root_domain)
+                             .format(next_serial), root_domain=root_domain)
                 else:
                     self.log('Zone is stable at serial {0}'
                              .format(soa.serial), root_domain=root_domain)
@@ -794,7 +795,7 @@ class DNSBuilder(SVNBuilderMixin):
                         prod_fname = self.build_zone(
                             view, file_meta,
                             # Lazy string evaluation
-                            view_data.format(serial=soa.serial + 1),
+                            view_data.format(serial=next_serial),
                             root_domain
                         )
                         assert prod_fname == file_meta['prod_fname']

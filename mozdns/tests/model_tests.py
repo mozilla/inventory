@@ -4,7 +4,7 @@ from mozdns.ip.tests import *
 from mozdns.nameserver.tests import *
 from mozdns.nameserver.tests import *
 from mozdns.ptr.tests import *
-from mozdns.soa.tests import *
+from mozdns.soa.tests.all import *
 from mozdns.mx.tests import *
 from mozdns.srv.tests import *
 from mozdns.cname.tests import *

@@ -552,3 +552,8 @@ def validate_txt_data(data):
         raise ValidationError(
             "Don't put quotes in TXT data."
         )
+
+
+def validate_soa_serial(serial):
+    if len(str(serial)) != 10:
+        raise ValidationError("Serial values must be 10 digits")

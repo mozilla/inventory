@@ -2,9 +2,8 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db import models
 from django.db.models import Q, F
 
-from mozdns.validation import validate_name
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
-from mozdns.validation import validate_ttl
+from mozdns.validation import validate_ttl, validate_soa_serial, validate_name
 
 from settings import MOZDNS_BASE_URL
 from core.keyvalue.models import KeyValue
@@ -56,12 +55,13 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     id = models.AutoField(primary_key=True)
     ttl = models.PositiveIntegerField(
         default=3600, blank=True, null=True, validators=[validate_ttl],
-        help_text="Time to Live of this record"
+        help_text='Time to Live of this record'
     )
     primary = models.CharField(max_length=100, validators=[validate_name])
     contact = models.CharField(max_length=100, validators=[validate_name])
     serial = models.PositiveIntegerField(
-        null=False, default=int(datetime.datetime.now().strftime("%Y%m%d01"))
+        null=False, default=int(datetime.datetime.now().strftime('%Y%m%d01')),
+        validators=[validate_soa_serial]
     )
     # Indicates when the zone data is no longer authoritative. Used by slave.
     expire = models.PositiveIntegerField(null=False, default=DEFAULT_EXPIRE)
@@ -82,6 +82,68 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
 
     attrs = None
 
+    class Meta:
+        db_table = 'soa'
+        # We are using the description field here to stop the same SOA from
+        # being assigned to multiple zones. See the documentation in the
+        # Domain models.py file for more info.
+        unique_together = ('primary', 'contact', 'description')
+
+    @classmethod
+    def calc_serial(cls, cur_serial, date):
+        """
+            "The convention is to use a date based sn (serial) value to
+            simplify the task of incrementing the sn - the most popular
+            convention being yyyymmddss where yyyy = year, mm = month and dd =
+            day ss = a sequence number in case you update it more than once in
+            the day!  Using this date format convention the value 2005021002
+            indicates the last update was on the 10th February 2005 and it was
+            the third update that day. The date format is just a convention,
+            not a requirement, so BIND (or any other DNS software) will not
+            validate the contents of this field."
+                -- http://www.zytrax.com/books/dns/ch8/soa.html
+
+        Calculate the correct serial given that today is YYYYMMDD and the
+        current serial is a 10 digit number.
+
+        Cases:
+            cur_serial isn't a date -> +1 serial. Never go backwards.
+            cur_serial > date -> +1 serial. Never go backwards.
+            cur_serial == date -> +1 serial
+            cur_serial < date -> now_date_stamp + '00'
+
+        Everything comes in as string and leaves as an int
+
+        :param date: A date
+        :type date: datetime.date object
+        :param cur_serial: The current 10 digit serial number
+        :type cur_serial: str
+        """
+
+        date_serial = int(date.strftime('%Y%m%d00'))
+        if int(cur_serial) < date_serial:
+            return date_serial
+        else:
+            return int(cur_serial) + 1
+
+    @property
+    def rdtype(self):
+        return 'SOA'
+
+    @property
+    def root_domain(self):
+        try:
+            return self.domain_set.get(
+                ~Q(master_domain__soa=F('soa')), soa__isnull=False
+            )
+        except ObjectDoesNotExist:
+            return None
+
+    def get_incremented_serial(self):
+        return self.__class__.calc_serial(
+            str(self.serial), datetime.date.today()
+        )
+
     def bind_render_record(self, show_ttl=False):
         template = Template(self.template).substitute(**self.justs)
         if show_ttl:
@@ -96,13 +158,6 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     def update_attrs(self):
         self.attrs = AuxAttr(SOAKeyValue, self, 'soa')
 
-    class Meta:
-        db_table = 'soa'
-        # We are using the description field here to stop the same SOA from
-        # being assigned to multiple zones. See the documentation in the
-        # Domain models.py file for more info.
-        unique_together = ('primary', 'contact', 'description')
-
     def details(self):
         return (
             ('Primary', self.primary),
@@ -114,20 +169,8 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
             ('Description', self.description),
         )
 
-    @property
-    def rdtype(self):
-        return 'SOA'
-
-    @property
-    def root_domain(self):
-        try:
-            return self.domain_set.get(~Q(master_domain__soa=F('soa')),
-                                       soa__isnull=False)
-        except ObjectDoesNotExist:
-            return None
-
     def get_debug_build_url(self):
-        return MOZDNS_BASE_URL + "/bind/build_debug/{0}/".format(self.pk)
+        return MOZDNS_BASE_URL + '/bind/build_debug/{0}/'.format(self.pk)
 
     def get_fancy_edit_url(self):
         return '/mozdns/soa/{0}/update'.format(self.pk)
@@ -179,10 +222,10 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
             self.schedule_rebuild(commit=False)
 
     def __str__(self):
-        return "{0}".format(str(self.description))
+        return self.description
 
     def __repr__(self):
-        return "<'{0}'>".format(str(self))
+        return "<SOA '{0}'>".format(self)
 
 
 reversion.register(SOA)
