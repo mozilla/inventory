@@ -1,7 +1,11 @@
-$(document).ready(function () {
+$(document).ready(function() {
+  // If we are on the search page, don't allow searches in the upper box
+  if (window.location.pathname == '/en-US/core/search/') {
+    $('#search-box input').css('visibility', 'hidden');
+  }
   $('#search-box input').keydown(function(event) {
     if (event.keyCode == 13) {
-      window.location = '/en-US/core/search/?search=' + $('#search-box input').val();
+      window.location = '/en-US/core/search/#q=' + $('#search-box input').val();
       return false;
     }
   });
@@ -9,7 +13,7 @@ $(document).ready(function () {
   $('#search-box input').autocomplete({
     minLength: 1,
     appendTo: '#search-box-result',
-    position: { my: "right top", at: "right bottom"},
+    position: { my: 'right top', at: 'right bottom'},
     source: function(request, response) {
         var term = request.term;
         if (term in search_cache) {
@@ -18,16 +22,16 @@ $(document).ready(function () {
         }
         $.getJSON('/en-US/core/search/ajax_type_search/',
           {'query': term, 'record_type': 'SYSTEM'},
-          function( data, status, xhr ) {
+          function(data, status, xhr) {
             search_cache[term] = data.SYSTEM;
             response(data.SYSTEM);
           });
       },
-    select: function( event, ui ) {
+    select: function(event, ui) {
       window.location = '/en-US/systems/show/' + ui.item.pk + '/';
       return false;
     },
-    focus: function( event, ui ) {
+    focus: function(event, ui) {
       return false;
     }
   });
