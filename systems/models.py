@@ -8,6 +8,7 @@ from dhcp.models import DHCP
 from settings import BUG_URL
 
 from core.validation import validate_mac
+from core.site.models import Site
 
 import datetime
 import re
@@ -279,10 +280,11 @@ class ServerModel(models.Model):
 
 
 class SystemRack(models.Model):
-    name = models.CharField(max_length=255, blank=True)
-    location = models.ForeignKey('Location')
+    name = models.CharField(max_length=255)
+    site = models.ForeignKey(Site, null=True)
+    location = models.ForeignKey('Location', null=True)
 
-    search_fields = ('name', 'location__name', 'location__address')
+    search_fields = ('name', 'site__name')
 
     class Meta:
         db_table = u'system_racks'
@@ -290,7 +292,7 @@ class SystemRack(models.Model):
 
     def __str__(self):
         return "%s - %s" % (
-            self.name, self.location.name if self.location else ''
+            self.name, self.site.full_name if self.site else ''
         )
 
     def __unicode__(self):
@@ -382,7 +384,7 @@ class System(DirtyFieldsMixin, models.Model):
 
     search_fields = (
         "hostname", "serial", "notes", "asset_tag",
-        "oob_ip", "system_rack__location__name", "system_rack__name"
+        "oob_ip", "system_rack__site__full_name", "system_rack__name"
     )
 
     class Meta:

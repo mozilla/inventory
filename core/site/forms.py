@@ -8,4 +8,4 @@ class SiteForm(forms.ModelForm):
 
     class Meta:
         model = Site
-        exclude = ('full_name')
+        exclude = ('full_name',)

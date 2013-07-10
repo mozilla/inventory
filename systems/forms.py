@@ -9,6 +9,7 @@ import models
 from datetime import datetime
 
 from systems.constants import VALID_SYSTEM_SUFFIXES
+from core.site.models import Site
 
 import re
 
@@ -22,14 +23,11 @@ def has_changed(instance, field):
 class SystemRackForm(forms.ModelForm):
     class Meta:
         model = models.SystemRack
+        exclude = ('location',)
 
 class ServerModelForm(forms.ModelForm):
     class Meta:
         model = models.ServerModel
-
-class LocationForm(forms.ModelForm):
-    class Meta:
-        model = models.Location
 
 class AllocationForm(forms.ModelForm):
     class Meta:
@@ -37,29 +35,38 @@ class AllocationForm(forms.ModelForm):
 
 class RackFilterForm(forms.Form):
 
-    location = forms.ChoiceField(
+    site = forms.ChoiceField(
         required=False,
-        choices=[('', 'All')] + [(m.id, m)
-                    for m in models.Location.objects.all()])
+        choices=[('', 'All')] + [
+            (m.id, m) for m in Site.objects.all()
+        ])
     status = forms.ChoiceField(
         required=False,
         choices=[('', 'All')] + [(m.id, m)
-                    for m in models.SystemStatus.objects.all()])
+            for m in models.SystemStatus.objects.all()
+        ]
+    )
     rack = forms.ChoiceField(
         required=False,
-        choices=[('', 'All')] + [(m.id, m.location.name + ' ' +  m.name)
-                    for m in models.SystemRack.objects.all().order_by('location','name')])
+        choices=[('', 'All')] + [
+            (m.id, m.site.full_name if m.site else '' + ' ' +  m.name)
+            for m in models.SystemRack.objects.all().order_by('site', 'name')
+        ]
+    )
+
     allocation = forms.ChoiceField(
         required=False,
         choices=[('', 'All')] + [(m.id, m)
                     for m in models.Allocation.objects.all()])
     def __init__(self, *args, **kwargs):
         super(RackFilterForm, self).__init__(*args, **kwargs)
-        self.fields['location'].choices = [('', 'All')] + [(m.id, m) for m in models.Location.objects.all()]
+        self.fields['site'].choices = [('', 'All')] + [(m.id, m.full_name) for m in Site.objects.all()]
         self.fields['status'].choices = [('', 'All')] + [(m.id, m) for m in models.SystemStatus.objects.all()]
-        self.fields['rack'].choices = [('', 'All')] + [(m.id, m.location.name + ' ' +  m.name) for m in models.SystemRack.objects.all().order_by('location','name')]
+        self.fields['rack'].choices = [('', 'All')] + [
+            (m.id, m.site.full_name if m.site else '' + ' ' +  m.name)
+            for m in models.SystemRack.objects.all().order_by('site')
+        ]
         self.fields['allocation'].choices = [('', 'All')] + [(m.id, m) for m in models.Allocation.objects.all()]
-
 
 def return_data_if_true(f):
     @wraps(f)

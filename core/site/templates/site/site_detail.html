@@ -55,9 +55,45 @@
             </div>
         </div>
 
-
         <div style='display:table;'>
             {% from 'core/core_macros.html' import display_networks %}
             {{ display_networks(site.network_set.all(), first_header="Networks homed in "+site.full_name+".", extra_style="width: 100%; margin-left:3em;") }}
         </div>
+
+        {% import 'systems/rack_macros.html' as drawer -%}
+        <div style='display:table;'>
+            {{ drawer.rack_color_chart(statuses, site.get_systems()) }}
+        </div>
+        <script>
+            $(document).ready(function (){
+                $.get('/en-US/systems/racks/ajax_racks_by_site/{{site.pk}}/',
+                function (data) {
+                   $('#rack_usage').empty();
+                   $('#rack_usage').html(data);
+                });
+            });
+        </script>
+        <style>
+            .waiting-area {
+                padding: 10px;
+                border-radius: 10px;
+                margin: 0 auto 20px auto !important;
+                border: solid 1px black;
+                text-align: center;
+                background-color: white;
+            }
+            .waiting-area input, div.waiting-area progress {
+                display: block;
+                margin: 0 auto;
+            }
+        </style>
+        <div id='rack_usage'>
+            <div class='waiting-area'>
+                <span>Loading Racks</span>
+                <progress max="100">
+                    <strong>Progress</strong>
+                </progress>
+            </div>
+        </div>
+
 {% endblock %}

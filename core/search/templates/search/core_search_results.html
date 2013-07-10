@@ -2,6 +2,11 @@
 <div id="ajax_results" width="100%">
 <div id='overflow-info' data-objs='{{overflow_results}}' data-max-obj-num='{{MAX_NUM_OBJECTS}}'></div>
 <div id="meta">
+    {% if meta['counts']['SITE'] -%}
+        {{ meta['counts']['SITE'] }} <a href="#q={{meta['search']}}&Site">Sites</a> |
+    {% else -%}
+        zero Sites |
+    {% endif -%}
     {% if meta['counts']['SYSTEM'] -%}
         {{ meta['counts']['SYSTEM'] }} <a href="#q={{meta['search']}}&System">Systems</a> |
     {% else -%}
@@ -60,6 +65,30 @@
 </div>
 <div id='search-time' style='margin-top: 2px;' ></div>
 {% endif -%}
+{% if objects['SITE'] -%}
+    <h4><a class='plane-link' name="q={{meta['search']}}&SITE">Site</a></h4>
+    <table class="tablesorter">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Parent</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for site in objects['SITE'] %}
+                <tr>
+                    <td><a href="{{ site.get_absolute_url() }}">{{ site.full_name }}</a></td>
+                    <td>
+                    {% if site.parent %}
+                        <a href="{{ site.parent.get_absolute_url() }}">{{ site.parent.full_name }}</a>
+                    {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif -%}
+
 {% if objects['SYSTEM'] -%}
     <h4><a class='plane-link' name="q={{meta['search']}}&System">Systems</a></h4>
     <table class="tablesorter system-table">
@@ -105,7 +134,7 @@
         {% for r in objects['RACK'] -%}
         <tr>
             {% if r.location %}
-                <td>{{ r.location.name }}</td>
+                <td><a href='{{ r.site.get_absolute_url() }}'>{{ r.site.name }}</a></td>
             {% else %}
                 <td></td>
             {% endif %}
@@ -132,8 +161,6 @@
         </tbody>
     </table>
 {% endif -%}
-
-
 {% import 'record/draw_record_table.html' as drawer -%}
 {% if objects['SOA'] -%}
     <h4><a class='plane-link' name="q={{meta['search']}}&SOA">SOA</a></h4>

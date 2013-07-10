@@ -23,6 +23,7 @@ from django.test.client import RequestFactory
 from jinja2.filters import contextfilter
 
 import models
+from systems.models import System
 from libs.jinja import render_to_response as render_to_response
 from middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 from Rack import Rack
@@ -37,6 +38,7 @@ from core.registration.static.models import StaticReg
 from core.registration.static.forms import StaticRegAutoForm
 from core.hwadapter.forms import HWAdapterForm
 from core.range.utils import ip_to_range
+from core.site.models import Site
 
 
 # Import resources
@@ -682,16 +684,16 @@ def new_rack_system_ajax(request, rack_id):
     return HttpResponse(json.dumps(resp_data), mimetype="application/json")
 
 @allow_anyone
-def racks_by_location(request, location=0):
+def racks_by_site(request, site_pk=0):
     ret_list = []
-    if int(location) > 0:
-        location = models.Location.objects.get(id=location)
-        racks = models.SystemRack.objects.select_related('location').filter(location=location).order_by('name')
+    if int(site_pk) > 0:
+        site= Site.objects.get(id=site_pk)
+        racks = models.SystemRack.objects.select_related('site').filter(site=site).order_by('name')
     else:
-        racks = models.SystemRack.objects.select_related('location').order_by('location', 'name')
+        racks = models.SystemRack.objects.select_related('site').order_by('site', 'name')
 
     for r in racks:
-        ret_list.append({'name':'%s %s' % (r.location.name, r.name), 'id':r.id})
+        ret_list.append({'name':'%s %s' % (r.site.full_name if r.site else '', r.name), 'id':r.id})
     return HttpResponse(json.dumps(ret_list))
 
 @allow_anyone
@@ -699,24 +701,27 @@ def racks(request):
     from forms import RackFilterForm
     filter_form = RackFilterForm(request.GET)
 
-    racks = models.SystemRack.objects.select_related('location')
+    racks = models.SystemRack.objects.select_related('site')
 
     system_query = Q()
-    if 'location' in request.GET:
-        location_id = request.GET['location']
+    if 'site' in request.GET:
+        site_id = request.GET['site']
         has_query = True
-        if len(location_id) > 0 and int(location_id) > 0:
-            loc = models.Location.objects.get(id=location_id)
-            filter_form.fields['rack'].choices = [('','ALL')] + [(m.id, m.location.name + ' ' +  m.name) for m in models.SystemRack.objects.filter(location=loc).order_by('name')]
+        if len(site_id) > 0 and int(site_id) > 0:
+            site = Site.objects.get(id=site_id)
+            filter_form.fields['rack'].choices = [('','ALL')] + [
+                (m.id, m.site.full_name + ' ' +  m.name)
+                for m in models.SystemRack.objects.filter(site=site).order_by('name')
+            ]
     else:
         has_query = False
-    if filter_form.is_valid():
 
+    if filter_form.is_valid():
         if filter_form.cleaned_data['rack']:
             racks = racks.filter(id=filter_form.cleaned_data['rack'])
             has_query = True
-        if filter_form.cleaned_data['location'] and int(filter_form.cleaned_data['location']) > 0:
-            racks = racks.filter(location=filter_form.cleaned_data['location'])
+        if filter_form.cleaned_data['site'] and int(filter_form.cleaned_data['site']) > 0:
+            racks = racks.filter(site=filter_form.cleaned_data['site'])
             has_query = True
         if filter_form.cleaned_data['allocation']:
             system_query &= Q(allocation=filter_form.cleaned_data['allocation'])
@@ -794,56 +799,13 @@ def rack_new(request):
         },
         RequestContext(request))
 
-
-def location_show(request, object_id):
-    object = get_object_or_404(models.Location, pk=object_id)
-
-    return render_to_response(
-        'systems/location_detail.html',
-        {
-            'object': object,
-        },
-        RequestContext(request))
-
-
-def location_edit(request, object_id):
-    location = get_object_or_404(models.Location, pk=object_id)
-    from forms import LocationForm
-    initial = {}
-    if request.method == 'POST':
-        form = LocationForm(request.POST, instance=location)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect('/systems/locations/')
-    else:
-        form = LocationForm(instance=location)
-
-    return render_to_response(
-        'generic_form.html',
-        {
-            'form': form,
-        },
-        RequestContext(request))
-
-
-def location_new(request):
-    from forms import LocationForm
-    initial = {}
-    if request.method == 'POST':
-        form = LocationForm(request.POST, initial=initial)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect('/systems/locations/')
-    else:
-        form = LocationForm(initial=initial)
-
-    return render_to_response(
-        'generic_form.html',
-        {
-            'form': form,
-        },
-        RequestContext(request))
-
+def ajax_racks_by_site(request, site_pk):
+    site = get_object_or_404(Site, pk=site_pk)
+    return render(request, 'systems/rack_ajax_by_site.html', {
+        'racks': site.systemrack_set.all(),
+        'site': site,
+        'systems': System.objects
+    })
 
 def server_model_edit(request, object_id):
     server_model = get_object_or_404(models.ServerModel, pk=object_id)
@@ -982,16 +944,6 @@ def allocation_new(request):
         'generic_form.html',
         {
             'form': form,
-        },
-        RequestContext(request))
-
-
-def location_list(request):
-    object_list = models.Location.objects.all()
-    return render_to_response(
-        'systems/location_list.html',
-        {
-            'object_list': object_list,
         },
         RequestContext(request))
 

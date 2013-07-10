@@ -5,9 +5,14 @@ from core.mixins import ObjectUrlMixin, CoreDisplayMixin
 from core.keyvalue.models import KeyValue
 from core.utils import networks_to_Q, to_a
 from core.validation import validate_site_name
+from core.keyvalue.utils import AuxAttr
 
 
 class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
+    systems = None
+    # This is memoized later. Remove it when SystemRack is moved into it's own
+    # file as this circular import is not required.
+
     id = models.AutoField(primary_key=True)
     full_name = models.CharField(
         max_length=255, null=True, blank=True
@@ -29,7 +34,7 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
         return "{0}".format(self.full_name)
 
     def __repr__(self):
-        return "<Site {0}>".format(str(self))
+        return "<Site {0}>".format(self)
 
     @classmethod
     def get_api_fields(cls):
@@ -52,6 +57,9 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
                     "This site has child sites. You cannot change it's name "
                     "without affecting all child sites."
                 )
+
+    def update_attrs(self):
+        self.attrs = AuxAttr(SiteKeyValue, self)
 
     def details(self):
         details = [
@@ -78,13 +86,20 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
         """Compile a Django Q that will match any IP inside this site."""
         return networks_to_Q(self.network_set.all())
 
+    def get_systems(self):
+        """Get all systems associated to racks in this site"""
+        if not self.systems:
+            from systems.models import System
+            self.systems = System.objects.all()
+        return self.systems.filter(system_rack__in=self.systemrack_set.all())
+
 
 class SiteKeyValue(KeyValue):
     obj = models.ForeignKey(Site, related_name='keyvalue_set', null=False)
 
     class Meta:
         db_table = 'site_key_value'
-        unique_together = ('key', 'value')
+        unique_together = ('key', 'value', 'obj')
 
     def _aa_address(self):
         """

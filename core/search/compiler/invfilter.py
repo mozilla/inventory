@@ -1,6 +1,7 @@
 import operator
 import re
 import ipaddr
+from itertools import izip
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.exceptions import ValidationError
@@ -231,8 +232,9 @@ def build_network_qsets(network_str):
         network = Klass(network_str)
         ipf = IPFilter(network.network, network.broadcast, ip_type)
     except (ipaddr.AddressValueError, ipaddr.NetmaskValueError):
-        raise BadDirective("{0} isn't a valid "
-                           "network.".format(network_str))
+        raise BadDirective(
+            "{0} isn't a valid network.".format(network_str)
+        )
     return build_ipf_qsets(ipf.Q)
 
 
@@ -240,9 +242,20 @@ def build_site_qsets(site_name):
     try:
         site = Site.objects.get(name=site_name)
     except ObjectDoesNotExist:
-        raise BadDirective("{0} isn't a valid "
-                           "site.".format(site_name))
-    return build_ipf_qsets(site.compile_Q())
+        raise BadDirective(
+            "{0} isn't a valid site.".format(site_name)
+        )
+    site_q = build_ipf_qsets(site.compile_Q())
+    q_sets = []
+    for q, (name, Klass) in izip(site_q, searchables):
+        if name == 'RACK':
+            q_sets.append(Q(site=site))
+        elif name == 'SITE':
+            q_sets.append(Q(pk=site.pk) | Q(parent=site))
+        else:
+            q_sets.append(q)
+
+    return q_sets
 
 
 def build_vlan_qsets(vlan_name):

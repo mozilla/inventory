@@ -20,7 +20,6 @@
     <br>
     <span style='display:none;'>See <a href="/core/dhcp/{{network.pk}}/">DHCP Build Output</a>.</span>
 
-        <div>
             <div style='float:left;'>
             {% from 'core/core_macros.html' import display_details %}
             {{ display_details(network.details(), caption="Network Attributes", obj=network) }}
@@ -39,28 +38,41 @@
             <div style='float:left; margin-left: 3em;'>
             {{ display_networks(sub_networks, first_header="Sub Networks", extra_style="") }}
             </div>
-        </div>
 
 
-        {% if ranges %}
-                <div style='display:inline-block; margin-left: 3em;'>
-                <table class="tablesorter">
-                        <caption>Ranges</caption>
-                        <th>Type</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Usage</th>
+    {% if ranges %}
+            <div style='display:inline-block; margin-left: 3em;'>
+            <table class="tablesorter">
+                    <caption>Ranges</caption>
+                    <th>Type</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Usage</th>
 
-                        {% for range in ranges %}
-                        <tr>
-                            <td>{{ range.get_rtype_display() }}</td>
-                            <td><a href='{{range.get_absolute_url()}}'>{{ range.start_str }}</a></td>
-                            <td><a href='{{range.get_absolute_url()}}'>{{ range.end_str }}</a></td>
-                            {% set ru = range.range_usage() %}
-                            <td>{{ ru['precent_used']}}</td>
-                        </tr>
-                        {% endfor %}
-                </table>
-                </div>
-        {% endif %}
+                    {% for range in ranges %}
+                    <tr>
+                        <td>{{ range.get_rtype_display() }}</td>
+                        <td><a href='{{range.get_absolute_url()}}'>{{ range.start_str }}</a></td>
+                        <td><a href='{{range.get_absolute_url()}}'>{{ range.end_str }}</a></td>
+                        {% set ru = range.range_usage() %}
+                        <td>{{ ru['precent_used']}}</td>
+                    </tr>
+                    {% endfor %}
+            </table>
+            </div>
+    {% endif %}
+    <script>
+        $(document).ready(function (){
+            $('#usage_area').html("<img id='loading' style='margin-top:5%;margin-bottom:2%;display:block;' src='{{MEDIA_URL}}images/loading.gif'>");
+            $.get('/core/range/range_usage_ajax/',
+                { start: '{{network.update_network() or network.network.network }}', end: '{{ network.network.broadcast }}' },
+                function (data) {
+                    $('#usage_area').empty();
+                    $('#usage_area').html(data);
+                });
+        });
+
+    </script>
+    <div id='usage_area' style='display:block; margin-top: 200px;'>
+    </div>
 {% endblock %}

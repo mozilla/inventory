@@ -4,55 +4,27 @@
 <h2>Listing Racks</h2>
 {% if not read_only %}<a href="{{ "system_rack-new"|url() }}">Create New</a>{% endif %}
 <form action="" method="get">
-Location: {{ filter_form.location }}
+Site: {{ filter_form.site }}
 Status: {{ filter_form.status }}
 Rack: {{ filter_form.rack }}
 Allocation: {{ filter_form.allocation }}
 <input type="submit" value="Filter" />
 </form>
 
+{% import 'systems/rack_macros.html' as drawer -%}
 {% for rack, systems in racks %}
-<table class="racktable rack" id="rack-{{ rack.id }}" style="width: 72em; margin:auto;">
-    <tr>
-        <th colspan="6">
-            {% if rack.location %}
-                Location: <a href="{{ rack.location.get_absolute_url() }}">{{ rack.location }}</a> -
-            {% endif %}
-            Rack: <a href="?rack={{ rack.pk }}">{{ rack }}</a>
-            {% if not read_only %}
-                - <a href="{{ "system_rack-edit"|url(rack.pk) }}">Edit</a>
-                - <a href="{{ "rack-delete"|url(rack.pk) }}">Delete</a>
-            {% endif %}
-        </th>
-    </tr>
-    <tr style="font-weight:bold;">
-        <td style="width:3em;">Order</td>
-        <td style="width:15em;">Host</td>
-        <td style="width:10em">Asset</td>
-        <td style="width:20em;">Model</td>
-        <td style="width:7em;">Allocated To</td>
-        {% if not read_only %}
-            <td style="width: 7em;">ILO</td>
-        {% endif %}
-    </tr>
-    {% for system in systems %}
-        {% include "systems/rack_row_partial.html" %}
-    {% endfor %}
-    {% if not read_only %}
-    <tr><td style="text-align: center" colspan="6"><a class="new-system" href="">Add New System To Rack</a></td></tr>
-    {% endif %}
-</table>
-<br />
+    {{ drawer.display_rack(rack) }}
+    <br />
 {% endfor %}
 <script type="text/javascript" src="/static/javascripts/application.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
         $('.new-system').new_system_from_rack();
-        $('#id_location').change(function(){
+        $('#id_site').change(function(){
             $("#id_rack").get(0).options.length = 0;
             $.ajax({
                 type: "GET",
-                url: "/en-US/systems/racks/bylocation/" + $("#id_location").val() + '/',
+                url: "/en-US/systems/racks/bysite/" + $("#id_site").val() + '/',
                 data: "{}",
                 contentType: "application/json; charset=utf-8",
                 dataType: "json",

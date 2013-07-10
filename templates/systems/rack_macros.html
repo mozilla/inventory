@@ -1,0 +1,66 @@
+{% macro display_rack(rack) %}
+    </table>
+    <table class="racktable rack" id="rack-{{ rack.id }}" style="width: 72em; margin:auto;">
+        <tr>
+            <th colspan="6">
+                {% if rack.site %}
+                    Site: <a href="{{ rack.site.get_absolute_url() }}">{{ rack.site }}</a> -
+                {% endif %}
+                Rack: <a href="?rack={{ rack.pk }}">{{ rack }}</a>
+                {% if not read_only %}
+                    - <a href="{{ "system_rack-edit"|url(rack.pk) }}">Edit</a>
+                    - <a href="{{ "rack-delete"|url(rack.pk) }}">Delete</a>
+                {% endif %}
+            </th>
+        </tr>
+        <tr style="font-weight:bold;">
+            <td style="width:3em;">Order</td>
+            <td style="width:15em;">Host</td>
+            <td style="width:10em">Asset</td>
+            <td style="width:20em;">Model</td>
+            <td style="width:7em;">Allocated To</td>
+            {% if not read_only %}
+                <td style="width: 7em;">ILO</td>
+            {% endif %}
+        </tr>
+        {% for system in rack.system_set.all() %}
+            {% include "systems/rack_row_partial.html" %}
+        {% endfor %}
+        {% if not read_only %}
+        <tr><td style="text-align: center" colspan="6"><a class="new-system" href="">Add New System To Rack</a></td></tr>
+        {% endif %}
+    </table>
+{% endmacro %}
+
+{% macro rack_color_chart(statuses, systems=None) %}
+    <style>
+        #rack-color-chart .status-count {
+            margin-left: 10px;
+            width: 72em;
+            margin-bottom: 10px;
+        }
+    </style>
+    <table class='tablesorter'>
+        <caption>Rack Usage:</caption>
+        {% for status in statuses %}
+            <th>
+                <span class='status'>{{ status }}</span>
+            </th>
+        {% endfor %}
+        <tr>
+        {% for status in statuses %}
+            {% set status_count = systems.filter(system_status=status).count() %}
+            <td>
+                <div class='color' style='
+                    background-color: {{ "#33DDFF" if status.color == "blue" else status.color }};
+                    width: {{ 10 if status_count < 10 else (100 if status_count > 100 else status_count) }}px;
+                    height: auto;
+                '></span>
+                <span class='status-count' style='
+                    margin-left: {{ 1 if status_count > 10 else 2 }}px;
+                '><strong>{{ status_count }}</strong></span>
+            </td>
+        {% endfor %}
+        </tr>
+    </table>
+{% endmacro %}
