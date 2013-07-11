@@ -7,7 +7,7 @@ from mozdns.cname.models import CNAME
 from mozdns.ip.utils import ip_to_dns_form
 from mozdns.validation import validate_name, validate_ttl
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
-from mozdns.models import ViewMixin
+from mozdns.models import ViewMixin, TTLRRMixin
 from core.interface.static_intr.models import StaticInterface
 
 import reversion
@@ -15,7 +15,7 @@ import reversion
 from gettext import gettext as _
 
 
-class PTR(Ip, ViewMixin, ObjectUrlMixin, DisplayMixin):
+class PTR(Ip, ViewMixin, ObjectUrlMixin, DisplayMixin, TTLRRMixin):
     """A PTR is used to map an IP to a domain name.
 
     >>> PTR(ip_str=ip_str, name=fqdn, ip_type=ip_type)
@@ -107,6 +107,7 @@ class PTR(Ip, ViewMixin, ObjectUrlMixin, DisplayMixin):
         if kwargs.pop('update_reverse_domain', True):
             self.update_reverse_domain()
         self.check_no_ns_soa_condition(self.reverse_domain)
+        self.check_for_illegal_rr_ttl(field_name='ip_str')
 
     def __str__(self):
         return "{0} {1} {2}".format(str(self.ip_str), 'PTR', self.name)

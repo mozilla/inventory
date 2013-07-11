@@ -46,6 +46,7 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
             self.check_glue_status()
         self.clean_ip()
         self.set_fqdn()
+        self.check_for_illegal_rr_ttl()
         self.check_TLD_condition()
         self.validate_delegation_conditions()
         self.check_no_ns_soa_condition(self.domain)
