@@ -121,23 +121,14 @@ def render_reverse_zone(view, domain_mega_filter, rdomain_mega_filter):
     data = _render_reverse_zone(
         default_ttl=DEFAULT_TTL,
 
-<<<<<<< HEAD
-        nameserver_set=Nameserver.objects.filter(domain_mega_filter).filter(
-            views__name=view.name).order_by('server'),
-
-        mx_set=MX.objects.filter(domain_mega_filter).filter(
-            views__name=view.name).order_by('server'),
-
-        interface_set=StaticInterface.objects.filter(
-            rdomain_mega_filter, dns_enabled=True).filter(
-                views__name=view.name).order_by(
-                    'pk', 'ip_type', 'label', 'ip_upper', 'ip_lower'),
-=======
         nameserver_set=Nameserver.objects.
         filter(domain_mega_filter).
         filter(views__name=view.name).
         order_by('server'),
->>>>>>> Lots of changes to support lots of features
+
+        mx_set=MX.objects.
+        filter(domain_mega_filter).
+        filter(views__name=view.name).order_by('server'),
 
         interface_set=StaticReg.objects.
         filter(rdomain_mega_filter).

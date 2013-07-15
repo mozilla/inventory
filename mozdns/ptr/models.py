@@ -11,7 +11,6 @@ from mozdns.ip.utils import ip_to_dns_form
 from mozdns.validation import validate_name, validate_ttl
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.models import ViewMixin, TTLRRMixin
-from core.interface.static_intr.models import StaticInterface
 
 import reversion
 
@@ -78,7 +77,7 @@ class BasePTR(object):
         return ip_to_dns_form(self.ip_str)
 
 
-class PTR(BasePTR, Ip, ViewMixin, ObjectUrlMixin, DisplayMixin):
+class PTR(BasePTR, Ip, ViewMixin, ObjectUrlMixin, DisplayMixin, TTLRRMixin):
     """
     A PTR is used to map an IP to a domain name.
 
