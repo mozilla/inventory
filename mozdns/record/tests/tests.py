@@ -33,6 +33,9 @@ class BaseRecordTestCase(object):
         self.factory = RequestFactory()
         self.domain = create_fake_zone("{0}.{1}.{2}".format(random_label(),
                                        random_label(), random_label()))
+        self.second_domain = create_fake_zone("{0}.{1}.{2}".format(
+            random_label(), random_label(), random_label())
+        )
         self.public_view = View.objects.get_or_create(name='public')[0]
         self.private_view = View.objects.get_or_create(name='private')[0]
         self.system = System(hostname="foo.bar.com")
@@ -150,6 +153,61 @@ class BaseRecordTestCase(object):
         new_obj_count = self.test_type.objects.all().count()
         self.assertEqual(start_obj_count + 1, new_obj_count)
 
+    def make_rr(self, first_data, second_data):
+        second_data['fqdn'] = first_data['fqdn']  # make fqdn the same
+
+    def make_not_rr(self, first_obj, second_obj):
+        # I'm assuming make_rr has already been called on these objects to they
+        # should already by rr. changing one should make them not rr.
+        first_obj.label = first_obj.label + 'asdf'
+
+    def assert_rr(self, first_obj, second_obj):
+        self.assertEqual(first_obj.fqdn, second_obj.fqdn)
+
+    def test_rr_missmatched_ttl_post_create(self):
+        # Create a new object with a non-default ttl, then create a second
+        # object with the same fqdn and make sure the ttl is the same as the
+        # first.  Then change the second object's ttl and make sure the first
+        # objects' ttl is the same.
+
+        start_obj_count = self.test_type.objects.all().count()
+        first_data = self.update_rdtype(self.post_data())
+        first_data['ttl'] = 999  # set the ttl
+        resp = self.c.post('/en-US/mozdns/record/record_ajax/',
+                           data=first_data)
+        self.assertEqual(resp.status_code, 200)
+        first_new_obj_count = self.test_type.objects.all().count()
+        self.assertEqual(start_obj_count + 1, first_new_obj_count)
+        first_obj = self.test_type.objects.all().order_by('-pk')[0]
+
+        second_data = self.update_rdtype(self.post_data())
+        self.make_rr(first_data, second_data)  # yay side effects
+        second_data['ttl'] = 420  # Make the fqdn different than the first
+        resp = self.c.post('/en-US/mozdns/record/record_ajax/',
+                           data=second_data)
+        self.assertEqual(resp.status_code, 200)
+        second_new_obj_count = self.test_type.objects.all().count()
+        self.assertEqual(first_new_obj_count + 1, second_new_obj_count)
+        first_obj.save()
+        second_obj = self.test_type.objects.all().order_by('-pk')[0]
+        self.assertEqual(first_obj.ttl, second_obj.ttl)
+
+        # now change second_obj's ttl and make sure it changed firsts'.
+        second_obj.ttl = 888
+        second_obj.save()
+
+        first_obj = self.test_type.objects.get(pk=first_obj.pk)  # refresh
+        self.assertEqual(first_obj.ttl, second_obj.ttl)
+
+        # Then make the fqdn's not match to make sure no ttl's are changed
+        self.make_not_rr(first_obj, second_obj)
+        first_obj.save()
+        first_obj.ttl = 1234
+        first_obj.save()
+
+        second_obj = self.test_type.objects.get(pk=second_obj.pk)  # refresh
+        self.assertEqual(second_obj.ttl, 888)  # nothing should have changed
+
 
 class CNAMERecordTests(BaseRecordTestCase, TestCase):
     test_type = CNAME
@@ -206,6 +264,15 @@ class TXTRecordTests(BaseRecordTestCase, TestCase):
 
 class NameserverRecordTests(BaseRecordTestCase, TestCase):
     test_type = Nameserver
+
+    def make_rr(self, first_data, second_data):
+        second_data['domain'] = first_data['domain']  # make ip_str the same
+
+    def make_not_rr(self, first_obj, second_obj):
+        first_obj.domain = self.second_domain
+
+    def assert_rr(self, first_obj, second_obj):
+        self.assertEqual(first_obj.domain, second_obj.domain)
 
     def post_data(self):
         return {
@@ -312,7 +379,21 @@ class AdderessRecordV6RecordTests(BaseRecordTestCase, TestCase):
         }
 
 
-class PTRV6RecordTests(BaseRecordTestCase, TestCase):
+class BasePTRTests(BaseRecordTestCase):
+    # PTRs need their own because they don't have fqdn's
+
+    def make_rr(self, first_data, second_data):
+        second_data['ip_str'] = first_data['ip_str']  # make ip_str the same
+
+    def make_not_rr(self, first_obj, second_obj):
+        first_obj.ip_str = self.post_data()['ip_str']
+        second_obj.ip_str = self.post_data()['ip_str']
+
+    def assert_rr(self, first_obj, second_obj):
+        self.assertEqual(first_obj.ip_str, second_obj.ip_str)
+
+
+class PTRV6RecordTests(BasePTRTests, TestCase):
     test_type = PTR
 
     def get_domain_and_post_data(self):
@@ -343,7 +424,7 @@ class PTRV6RecordTests(BaseRecordTestCase, TestCase):
         }
 
 
-class PTRV4RecordTests(BaseRecordTestCase, TestCase):
+class PTRV4RecordTests(BasePTRTests, TestCase):
     test_type = PTR
 
     def get_domain_and_post_data(self):

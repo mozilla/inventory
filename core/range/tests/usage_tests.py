@@ -6,9 +6,11 @@ from mozdns.address_record.models import AddressRecord
 
 from systems.models import System
 
+import ipaddr
 from core.registration.static.models import StaticReg
 from core.range.utils import start_end_filter, range_usage, ip_to_range
 from core.range.models import Range
+from core.utils import two_to_one
 from core.network.models import Network
 
 
@@ -135,6 +137,38 @@ class UsageTests(TestCase):
         self.assertEqual([(int(istart) + 0, int(istart) + 2),
                           (int(istart) + 5, int(istart) + 99)],
                          range_details['free_ranges'])
+
+    def test3(self):
+        # https://github.com/mozilla/inventory/issues/19
+        def ip_to_str(u, l):
+            return ipaddr.IPv6Address(two_to_one(u, l))
+        # A
+        a_i_upper = 2
+        a_i_lower = 2
+        a_ip = ip_to_str(a_i_upper, a_i_lower)
+
+        # start
+        filter_start_i_upper = 1
+        filter_start_i_lower = 3
+        start_ip = ip_to_str(filter_start_i_upper, filter_start_i_lower)
+
+        # end
+        filter_end_i_upper = 3
+        filter_end_i_lower = 0
+        end_ip = ip_to_str(filter_end_i_upper, filter_end_i_lower)
+
+        """
+        (3,3) (3,2) (3,1) (3,0) (2,3) (2,2) (2,1) (2,0) (1,3) (1,2) (1,1) (1,0)
+                           end         A                start
+        """
+
+        a = AddressRecord.objects.create(
+            label="foo3", domain=self.domain, ip_str=a_ip,
+            ip_type='6'
+        )
+
+        istart, iend, ipf_q = start_end_filter(start_ip, end_ip, '6')
+        self.assertEqual(a.pk, AddressRecord.objects.get(ipf_q).pk)
 
     def test_point_range_query_v4(self):
         r = ip_to_range("10.3.0.0")

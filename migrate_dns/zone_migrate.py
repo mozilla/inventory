@@ -192,7 +192,7 @@ def migrate_PTR(zone, root_domain, soa, views):
             continue
 
         print str(name) + " PTR " + str(fqdn)
-        ptr = PTR.objects.filter(name = fqdn, ip_upper=ip_upper,
+        ptr = PTR.objects.filter(name=fqdn, ip_upper=ip_upper,
                 ip_lower=ip_lower, ip_type=ip_type)
         if ptr:
             ptr = ptr[0]
@@ -207,6 +207,7 @@ def migrate_PTR(zone, root_domain, soa, views):
         if views:
             for view in views:
                 ptr.views.add(view)
+            ptr.save()
 
 
 
@@ -299,6 +300,7 @@ def migrate_AAAA(zone, root_domain, soa, views):
             )
             a.clean()
             a.save()
+
         for view in views:
             a.views.add(view)
             a.save()

@@ -89,7 +89,34 @@ class ViewMixin(models.Model):
                     "records.")
 
 
-class MozdnsRecord(ViewMixin, DisplayMixin, ObjectUrlMixin):
+class TTLRRMixin(object):
+    def check_for_illegal_rr_ttl(self, field_name='fqdn', rr_value=None):
+        """
+            "You have different records in the same RRset <name,type,class>
+            with different TTLs.  This is not allowed and is being
+            corrected."
+            -- Mark Andrews
+
+        BUG 892531
+
+        A new record's ttl will override any old record's TTL if those records
+        belong to a set or rr (Round Robin) records.
+        """
+        if not rr_value:
+            rr_value = getattr(self, field_name)
+
+        for record in self.__class__.objects.filter(**{field_name: rr_value}):
+            if self.pk and record.pk == self.pk:
+                continue
+            if self.ttl != record.ttl:
+                # This sucks because I'm bypassing the records' save/clean
+                # call.
+                self.__class__.objects.filter(pk=record.pk).update(
+                    ttl=self.ttl
+                )
+
+
+class MozdnsRecord(ViewMixin, TTLRRMixin, DisplayMixin, ObjectUrlMixin):
     ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
                                       validators=[validate_ttl],
                                       help_text="Time to Live of this record")
@@ -123,6 +150,7 @@ class MozdnsRecord(ViewMixin, DisplayMixin, ObjectUrlMixin):
         # function
         self.set_fqdn()
         self.check_TLD_condition()
+        self.check_for_illegal_rr_ttl()
         self.check_no_ns_soa_condition(self.domain)
         self.check_for_delegation()
         if self.rdtype != 'CNAME':

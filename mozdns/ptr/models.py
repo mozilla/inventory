@@ -10,7 +10,7 @@ from mozdns.cname.models import CNAME
 from mozdns.ip.utils import ip_to_dns_form
 from mozdns.validation import validate_name, validate_ttl
 from mozdns.mixins import ObjectUrlMixin, DisplayMixin
-from mozdns.models import ViewMixin
+from mozdns.models import ViewMixin, TTLRRMixin
 
 import reversion
 
@@ -22,6 +22,7 @@ class BasePTR(object):
         # This indirection is so StaticReg can call this function
         if update_reverse_domain:
             self.update_reverse_domain()
+        self.check_for_illegal_rr_ttl(field_name='ip_str')
         self.check_no_ns_soa_condition(self.reverse_domain)
         self.reverse_validate_no_cname()
 
@@ -76,7 +77,7 @@ class BasePTR(object):
         return ip_to_dns_form(self.ip_str)
 
 
-class PTR(BasePTR, Ip, ViewMixin, ObjectUrlMixin, DisplayMixin):
+class PTR(BasePTR, Ip, ViewMixin, ObjectUrlMixin, DisplayMixin, TTLRRMixin):
     """
     A PTR is used to map an IP to a domain name.
 

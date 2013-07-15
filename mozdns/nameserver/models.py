@@ -121,6 +121,9 @@ class Nameserver(MozdnsRecord):
     def clean(self):
         # We are a MozdnsRecord, our clean method is called during save()!
         self.check_for_cname()
+        self.check_for_illegal_rr_ttl(
+            field_name='domain__name', rr_value=self.domain.name
+        )
 
         if not self.needs_glue():
             self.glue = None

@@ -215,7 +215,6 @@ class KeyValue(models.Model):
         super(KeyValue, self).save(*args, **kwargs)
 
 
-
 class NetworkAdapter(models.Model):
     system_id = models.IntegerField()
     mac_address = models.CharField(max_length=255)

@@ -9,6 +9,23 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         # Adding model 'Nameserver'
+        db.create_table('static_interface', (
+            ('domain', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['domain.Domain'])),
+            ('label', self.gf('django.db.models.fields.CharField')(max_length=63, null=True, blank=True)),
+            ('fqdn', self.gf('django.db.models.fields.CharField')(db_index=True, max_length=255, null=True, blank=True)),
+            ('ttl', self.gf('django.db.models.fields.PositiveIntegerField')(default=3600, null=True, blank=True)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=1000, null=True, blank=True)),
+            ('ip_str', self.gf('django.db.models.fields.CharField')(max_length=39)),
+            ('ip_upper', self.gf('django.db.models.fields.BigIntegerField')(null=True, blank=True)),
+            ('ip_lower', self.gf('django.db.models.fields.BigIntegerField')(null=True, blank=True)),
+            ('ip_type', self.gf('django.db.models.fields.CharField')(max_length=1)),
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('mac', self.gf('django.db.models.fields.CharField')(max_length=17)),
+            ('reverse_domain', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='staticintrdomain_set', null=True, to=orm['domain.Domain'])),
+            ('system', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['systems.System'], null=True, blank=True)),
+            ('dhcp_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('dns_enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
+        ))
         db.create_table('nameserver', (
             ('ttl', self.gf('django.db.models.fields.PositiveIntegerField')(default=3600, null=True, blank=True)),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=1000, null=True, blank=True)),

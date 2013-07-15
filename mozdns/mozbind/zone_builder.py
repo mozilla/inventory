@@ -107,9 +107,11 @@ def render_forward_zone(view, mega_filter):
     return data
 
 
-def _render_reverse_zone(default_ttl, nameserver_set, interface_set, ptr_set):
+def _render_reverse_zone(default_ttl, nameserver_set, mx_set, interface_set,
+                         ptr_set):
     BUILD_STR = ''
     BUILD_STR += render_rdtype(nameserver_set)
+    BUILD_STR += render_rdtype(mx_set)
     BUILD_STR += render_rdtype(ptr_set)
     BUILD_STR += render_rdtype(interface_set, reverse=True, rdtype='PTR')
     return BUILD_STR
@@ -123,6 +125,10 @@ def render_reverse_zone(view, domain_mega_filter, rdomain_mega_filter):
         filter(domain_mega_filter).
         filter(views__name=view.name).
         order_by('server'),
+
+        mx_set=MX.objects.
+        filter(domain_mega_filter).
+        filter(views__name=view.name).order_by('server'),
 
         interface_set=StaticReg.objects.
         filter(rdomain_mega_filter).
@@ -152,12 +158,12 @@ def build_zone_data(view, root_domain, soa, logf=None):
     if (soa.has_record_set(view=view, exclude_ns=True) and
             not root_domain.nameserver_set.filter(views=view).exists()):
         msg = ("The {0} zone has a records in the {1} view, but there are "
-               "no nameservers in that view. A zone file for {1} won't be "
-               "built. Use the search string 'zone=:{0} view=:{1}' to find "
-               "the troublesome records".format(root_domain, view.name))
+               "no nameservers in that view. Use the search string 'zone=:{0} "
+               "view=:{1}' to find the troublesome records".format(
+                   root_domain, view.name)
+               )
         fail_mail(msg, subject="Shitty edge case detected.")
         logf('LOG_WARNING', msg)
-        return ''
 
     domains = soa.domain_set.all().order_by('name')
 
