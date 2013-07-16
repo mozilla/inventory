@@ -892,6 +892,7 @@ class DNSBuilder(SVNBuilderMixin):
                          "building zone files.")
 
             self.log(self.format_title("VCS Checkin"))
+            successful_checkin = False
             if self.BUILD_ZONES and self.PUSH_TO_PROD:
                 successful_checkin = self.vcs_checkin()
             else:
