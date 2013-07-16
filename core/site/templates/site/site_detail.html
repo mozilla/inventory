@@ -61,7 +61,7 @@
         </div>
 
         {% import 'systems/rack_macros.html' as drawer -%}
-        <div style='display:table;'>
+        <div style='display:table; clear:both;'>
             {{ drawer.rack_color_chart(statuses, site.get_systems()) }}
         </div>
         <script>

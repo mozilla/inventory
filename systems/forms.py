@@ -42,9 +42,8 @@ class RackFilterForm(forms.Form):
         ])
     status = forms.ChoiceField(
         required=False,
-        choices=[('', 'All')] + [(m.id, m)
-            for m in models.SystemStatus.objects.all()
-        ]
+        choices=[('', 'All')] + [('', 'All (Including Decommisioned)')] +
+            [(m.id, m) for m in models.SystemStatus.objects.all()]
     )
     rack = forms.ChoiceField(
         required=False,
@@ -61,7 +60,7 @@ class RackFilterForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(RackFilterForm, self).__init__(*args, **kwargs)
         self.fields['site'].choices = [('', 'All')] + [(m.id, m.full_name) for m in Site.objects.all()]
-        self.fields['status'].choices = [('', 'All')] + [(m.id, m) for m in models.SystemStatus.objects.all()]
+        self.fields['status'].choices = [('', 'All')] + [('special', 'All (Including Decommisioned)')] + [(m.id, m) for m in models.SystemStatus.objects.all()]
         self.fields['rack'].choices = [('', 'All')] + [
             (m.id, m.site.full_name if m.site else '' + ' ' +  m.name)
             for m in models.SystemRack.objects.all().order_by('site')

@@ -13,7 +13,7 @@ Allocation: {{ filter_form.allocation }}
 
 {% import 'systems/rack_macros.html' as drawer -%}
 {% for rack, systems in racks %}
-    {{ drawer.display_rack(rack) }}
+    {{ drawer.display_rack(rack, systems) }}
     <br />
 {% endfor %}
 <script type="text/javascript" src="/static/javascripts/application.js"></script>

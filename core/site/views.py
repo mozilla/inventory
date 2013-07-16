@@ -44,10 +44,11 @@ def site_detail(request, site_pk):
     from systems.models import SystemStatus
     # TODO, make this a top level import when SystemStatus is in it's own app
     site = get_object_or_404(Site, pk=site_pk)
+
     return render(request, 'site/site_detail.html', {
         'site': site,
         'vlans': get_vlans(site),
         'child_sites': site.site_set.all(),
         'attrs': site.keyvalue_set.all(),
-        'statuses': SystemStatus.objects.all(),
+        'statuses': SystemStatus.objects.all()
     })

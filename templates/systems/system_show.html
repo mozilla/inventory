@@ -60,9 +60,9 @@
 <div style="clear:both;"></div>
 
 <dt>Rack Location:</dt>
-{% if system.system_rack and system.system_rack.location %}
+{% if system.system_rack and system.system_rack.site %}
     <dd>
-        <a href='{{system.system_rack.location.get_absolute_url()}}'>{{system.system_rack.location.name}}</a>
+        <a href='{{system.system_rack.site.get_absolute_url()}}'>{{system.system_rack.site.name}}</a>
     </dd>
 {% else %}
     <dd><i>Not defined</i></dd>

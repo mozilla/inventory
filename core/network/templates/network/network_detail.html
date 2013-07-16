@@ -20,28 +20,35 @@
     <br>
     <span style='display:none;'>See <a href="/core/dhcp/{{network.pk}}/">DHCP Build Output</a>.</span>
 
-            <div style='float:left;'>
-            {% from 'core/core_macros.html' import display_details %}
-            {{ display_details(network.details(), caption="Network Attributes", obj=network) }}
-            </div>
+        <div style='float:left;'>
+        {% from 'core/core_macros.html' import display_details %}
+        {{ display_details(network.details(), caption="Network Attributes", obj=network) }}
+        </div>
 
-            <div style='float:left; margin-left: 3em;'>
-            {% from 'core/core_macros.html' import display_kv %}
-            {{ display_kv(attrs, obj=network, kv_type='network') }}
-            </div>
+        <div style='float:left; margin-left: 3em;'>
+        {% from 'core/core_macros.html' import display_kv %}
+        {{ display_kv(attrs, obj=network, kv_type='network') }}
+        </div>
 
+        {% if eldars %}
             <div style='float:left; margin-left: 3em;'>
+                foo
             {% from 'core/core_macros.html' import display_networks %}
             {{ display_networks(eldars, caption="Parent Network", first_header="Network", extra_style="") }}
             </div>
+        {% endif %}
 
-            <div style='float:left; margin-left: 3em;'>
+        {% if sub_networks %}
+            <div style='float:right; margin-left: 3em;'>
+                bar
             {{ display_networks(sub_networks, first_header="Sub Networks", extra_style="") }}
             </div>
+        {% endif %}
 
 
     {% if ranges %}
             <div style='display:inline-block; margin-left: 3em;'>
+                baz
             <table class="tablesorter">
                     <caption>Ranges</caption>
                     <th>Type</th>
@@ -73,6 +80,6 @@
         });
 
     </script>
-    <div id='usage_area' style='display:block; margin-top: 200px;'>
+    <div id='usage_area' style='clear:both; text-align: center;'>
     </div>
 {% endblock %}

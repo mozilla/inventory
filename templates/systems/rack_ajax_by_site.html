@@ -1,8 +1,7 @@
 {% import 'systems/rack_macros.html' as drawer -%}
 <div style='display:table;'>
-    {{ drawer.rack_color_chart(statuses, systems.filter(system_rack__in=site.systemrack_set.all())) }}
     {% for rack in site.systemrack_set.all() %}
-        {{ drawer.display_rack(rack) }}
+        {{ drawer.display_rack(rack, filter_decom(rack.system_set.all())) }}
         <br />
     {% endfor %}
 </div>

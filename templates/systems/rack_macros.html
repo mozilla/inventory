@@ -1,4 +1,4 @@
-{% macro display_rack(rack) %}
+{% macro display_rack(rack, systems) %}
     </table>
     <table class="racktable rack" id="rack-{{ rack.id }}" style="width: 72em; margin:auto;">
         <tr>
@@ -23,7 +23,7 @@
                 <td style="width: 7em;">ILO</td>
             {% endif %}
         </tr>
-        {% for system in rack.system_set.all() %}
+        {% for system in systems %}
             {% include "systems/rack_row_partial.html" %}
         {% endfor %}
         {% if not read_only %}
@@ -47,6 +47,9 @@
                 <span class='status'>{{ status }}</span>
             </th>
         {% endfor %}
+            <th>
+                <span class='status'>No Status</span>
+            </th>
         <tr>
         {% for status in statuses %}
             {% set status_count = systems.filter(system_status=status).count() %}
@@ -61,6 +64,17 @@
                 '><strong>{{ status_count }}</strong></span>
             </td>
         {% endfor %}
+            {% set status_count = systems.filter(system_status=None).count() %}
+            <td>
+                <div class='color' style='
+                    background-color: LightGrey;
+                    width: {{ 10 if status_count < 10 else (100 if status_count > 100 else status_count) }}px;
+                    height: auto;
+                '></span>
+                <span class='status-count' style='
+                    margin-left: {{ 1 if status_count > 10 else 2 }}px;
+                '><strong>{{ status_count }}</strong></span>
+            </td>
         </tr>
     </table>
 {% endmacro %}

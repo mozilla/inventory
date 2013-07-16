@@ -23,7 +23,7 @@ from django.test.client import RequestFactory
 from jinja2.filters import contextfilter
 
 import models
-from systems.models import System
+from systems.models import System, SystemStatus
 from libs.jinja import render_to_response as render_to_response
 from middleware.restrict_to_remote import allow_anyone,sysadmin_only, LdapGroupRequired
 from Rack import Rack
@@ -724,21 +724,32 @@ def racks(request):
             racks = racks.filter(site=filter_form.cleaned_data['site'])
             has_query = True
         if filter_form.cleaned_data['allocation']:
-            system_query &= Q(allocation=filter_form.cleaned_data['allocation'])
+            system_query = system_query & Q(allocation=filter_form.cleaned_data['allocation'])
             has_query = True
-        if filter_form.cleaned_data['status']:
-            system_query &= Q(system_status=filter_form.cleaned_data['status'])
+        filter_status = filter_form.cleaned_data['status']
+        if filter_status and filter_status != 'special':
+            #system_query &= Q(system_status=filter_form.cleaned_data['status'])
             has_query = True
     ##Here we create an object to hold decommissioned systems for the following filter
     if not has_query:
         racks = []
     else:
-        decommissioned = models.SystemStatus.objects.get(status='decommissioned')
-        racks = [(k, list(k.system_set.select_related(
+        if filter_status != 'special':
+            def no_decom(q):
+                decommissioned = models.SystemStatus.objects.get(status='decommissioned')
+                q.exclude(system_status=decommissioned).order_by('rack_order')
+                return q
+            hack = no_decom
+        else:
+            def show_decom(q):
+                return q.order_by('rack_order')
+            hack = show_decom
+
+        racks = [(k, list(hack(k.system_set.select_related(
             'server_model',
             'allocation',
             'system_status',
-        ).filter(system_query).exclude(system_status=decommissioned).order_by('rack_order'))) for k in racks]
+        ).filter(system_query)))) for k in racks]
 
     return render_to_response('systems/racks.html', {
             'racks': racks,
@@ -801,10 +812,16 @@ def rack_new(request):
 
 def ajax_racks_by_site(request, site_pk):
     site = get_object_or_404(Site, pk=site_pk)
+    decom = SystemStatus.objects.get(status='decommissioned')
+
+    def filter_decom(system_Q):
+        return system_Q.exclude(system_status=decom)
+
     return render(request, 'systems/rack_ajax_by_site.html', {
         'racks': site.systemrack_set.all(),
         'site': site,
-        'systems': System.objects
+        'systems': System.objects,
+        'filter_decom': filter_decom
     })
 
 def server_model_edit(request, object_id):
