@@ -32,6 +32,9 @@ from systems.models import System, SystemRack
 class BadDirective(Exception):
     pass
 
+class BadType(Exception):
+    pass
+
 searchables = (
     ('A', AddressRecord),
     ('CNAME', CNAME),
@@ -46,7 +49,7 @@ searchables = (
     ('SYSTEM', System),
     ('RACK', SystemRack),
     ('TXT', TXT),
-    ('NET', Network),
+    ('NETWORK', Network),
     ('SITE', Site),
     ('VLAN', Vlan),
 )
@@ -156,11 +159,15 @@ def build_rdtype_qsets(rdtype):
     select = Q(pk__gt=-1)
     no_select = Q(pk__lte=-1)
     result = []
+    found_type = False
     for name, Klass in searchables:
         if name == rdtype:
             result.append(select)
+            found_type = True
         else:
             result.append(no_select)
+    if not found_type:
+        raise BadType("Type '{0}' does not exist!".format(rdtype))
     return result
 
 

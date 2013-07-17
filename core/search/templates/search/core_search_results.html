@@ -4,63 +4,45 @@
 <div id="meta">
     {% if meta['counts']['SITE'] -%}
         {{ meta['counts']['SITE'] }} <a href="#q={{meta['search']}}&Site">Sites</a> |
-    {% else -%}
-        zero Sites |
+    {% endif -%}
+    {% if meta['counts']['VLAN'] -%}
+        {{ meta['counts']['VLAN'] }} <a href="#q={{meta['search']}}&Vlan">Vlans</a> |
+    {% endif -%}
+    {% if meta['counts']['NETWORK'] -%}
+        {{ meta['counts']['NETWORK'] }} <a href="#q={{meta['search']}}&Network">Networks</a> |
     {% endif -%}
     {% if meta['counts']['SYSTEM'] -%}
         {{ meta['counts']['SYSTEM'] }} <a href="#q={{meta['search']}}&System">Systems</a> |
-    {% else -%}
-        zero Systems |
     {% endif -%}
     {% if meta['counts']['RACK'] -%}
         {{ meta['counts']['RACK'] }} <a href="#q={{meta['search']}}&Rack">Racks</a> |
-    {% else -%}
-        zero Racks |
     {% endif -%}
     {% if meta['counts']['SOA'] -%}
         {{ meta['counts']['SOA'] }} <a href="#q={{meta['search']}}&SOA">SOA</a> records |
-    {% else -%}
-        zero SOA records |
     {% endif -%}
     {% if meta['counts']['A'] -%}
         {{ meta['counts']['A'] }} <a href="#q={{meta['search']}}&Address">A/AAAA</a> records |
-    {% else -%}
-        zero A/AAAA records |
     {% endif -%}
     {% if meta['counts']['CNAME'] -%}
         {{ meta['counts']['CNAME'] }} <a href="#q={{meta['search']}}&CNAME">CNAME</a> records |
-    {% else -%}
-        zero CNAME records |
     {% endif -%}
     {% if meta['counts']['DOMAIN'] -%}
         {{ meta['counts']['DOMAIN'] }} <a href="#q={{meta['search']}}&Domain">Domains</a> |
-    {% else -%}
-        zero Domains |
     {% endif -%}
     {% if meta['counts']['SREG'] -%}
         {{ meta['counts']['SREG'] }} <a href="#q={{meta['search']}}&Interface">SREG</a> records |
-    {% else -%}
-        zero SREG records |
     {% endif -%}
     {% if meta['counts']['MX'] -%}
         {{ meta['counts']['MX'] }} <a href="#q={{meta['search']}}&MX">MX</a> records |
-    {% else -%}
-        zero MX records |
     {% endif -%}
     {% if meta['counts']['NS'] -%}
         {{ meta['counts']['NS'] }} <a href="#q={{meta['search']}}&NS">NS</a> records |
-    {% else -%}
-        zero NS records |
     {% endif -%}
     {% if meta['counts']['PTR'] -%}
         {{ meta['counts']['PTR'] }} <a href="#q={{meta['search']}}&PTR">PTR</a> records |
-    {% else -%}
-        zero PTR records |
     {% endif -%}
     {% if meta['counts']['TXT'] -%}
         {{ meta['counts']['TXT'] }} <a href="#q={{meta['search']}}&TXT">TXT</a> records
-    {% else -%}
-        zero TXT records
     {% endif -%}
 </div>
 <div id='search-time' style='margin-top: 2px;' ></div>
@@ -83,6 +65,47 @@
                         <a href="{{ site.parent.get_absolute_url() }}">{{ site.parent.full_name }}</a>
                     {% endif %}
                     </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif -%}
+{% if objects['VLAN'] -%}
+    <h4><a class='plane-link' name="q={{meta['search']}}&Vlan">Vlans</a></h4>
+    <table class="tablesorter">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Number</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for vlan in objects['VLAN'] %}
+                <tr>
+                    <td><a href="{{ vlan.get_absolute_url() }}">{{ vlan.name }}</a></td>
+                    <td><a href="{{ vlan.get_absolute_url() }}">{{ vlan.number }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif -%}
+{% if objects['NETWORK'] -%}
+    <h4><a class='plane-link' name="q={{meta['search']}}&Network">Networks</a></h4>
+    <table class="tablesorter">
+        <thead>
+        <tr>
+            <th>Network</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for network in objects['NETWORK'] %}
+                <tr>
+                    <td><a href="{{ network.get_absolute_url() }}">{{ network.network_str }}</a></td>
+                    {% if network.site %}
+                        <td><a href="{{ network.site.get_absolute_url() }}">{{ network.site }}</a></td>
+                    {% else %}
+                        <td><i>None</i></td>
+                    {% endif %}
                 </tr>
             {% endfor %}
         </tbody>

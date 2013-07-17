@@ -6,7 +6,7 @@ from ometa.runtime import ParseError
 
 from core.search.compiler.invdsl import ICompiler
 from core.search.compiler.invfilter import (
-    DirectiveFilter, REFilter, TextFilter, BadDirective
+    DirectiveFilter, REFilter, TextFilter, BadDirective, BadType
 )
 
 from core.search.compiler.invfilter import searchables
@@ -45,6 +45,8 @@ def compile_q_objects(search):
         qs = compiler(search).expr()
         return qs, None
     except (BadDirective, ParseError) as why:
+        return None, str(why)
+    except (BadType, ParseError) as why:
         return None, str(why)
 
 
