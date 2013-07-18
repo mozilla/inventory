@@ -69,7 +69,8 @@ def search_dns_text(request):
         response_str = ""
         for obj in rdtype_set:
             response_str += _("{0:<6}".format(obj.pk) +
-                              obj.bind_render_record(**kwargs) + "\n")
+                              obj.bind_render_record(show_ttl=True, **kwargs) +
+                              "\n")
         return response_str
 
     def render_in_search_format(type_set, **kwargs):

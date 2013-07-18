@@ -34,7 +34,7 @@ class TXT(MozdnsRecord, LabelDomainMixin):
     def rdtype(self):
         return 'TXT'
 
-    def bind_render_record(self, pk=False):
+    def bind_render_record(self, pk=False, show_ttl=False):
         template = Template(self.template).substitute(**self.justs)
         bind_name = self.fqdn + "."
 
@@ -47,9 +47,14 @@ class TXT(MozdnsRecord, LabelDomainMixin):
         else:
             txt_data = '"{0}"'.format(self.txt_data)
 
+        if show_ttl:
+            ttl_ = self.ttl
+        else:
+            ttl_ = '' if self.ttl is None else self.ttl
+
         return template.format(
-            bind_name=bind_name, ttl_='' if self.ttl is None else self.ttl,
-            rdtype=self.rdtype, rdclass='IN', txt_data=txt_data
+            bind_name=bind_name, ttl_=ttl_, rdtype=self.rdtype, rdclass='IN',
+            txt_data=txt_data
         )
 
     class Meta:

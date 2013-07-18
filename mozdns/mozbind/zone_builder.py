@@ -73,7 +73,7 @@ def render_forward_zone(view, mega_filter):
         mx_set=MX.objects.
         filter(mega_filter).
         filter(views__name=view.name).
-        order_by('server'),
+        order_by('id'),
 
         addressrecord_set=AddressRecord.objects.
         filter(mega_filter).
@@ -129,7 +129,7 @@ def render_reverse_zone(view, domain_mega_filter, rdomain_mega_filter):
 
         mx_set=MX.objects.
         filter(domain_mega_filter).
-        filter(views__name=view.name).order_by('server'),
+        filter(views__name=view.name).order_by('id'),
 
         interface_set=StaticReg.objects.
         filter(rdomain_mega_filter).

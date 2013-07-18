@@ -16,10 +16,13 @@ class DisplayMixin(object):
         'extra_just': 1
     }
 
-    def bind_render_record(self, pk=False):
+    def bind_render_record(self, pk=False, show_ttl=False):
         template = Template(self.template).substitute(**self.justs)
         bind_name = self.fqdn + "."
-        ttl_ = '' if self.ttl is None else self.ttl
+        if show_ttl:
+            ttl_ = self.ttl
+        else:
+            ttl_ = '' if self.ttl is None else self.ttl
         return template.format(
             bind_name=bind_name, rdtype=self.rdtype, rdclass='IN',
             ttl_=ttl_, **vars(self)

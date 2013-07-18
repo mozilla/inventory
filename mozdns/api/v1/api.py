@@ -73,6 +73,9 @@ class CommonDNSResource(ModelResource):
                               "domain for this record.")
             bundle.errors['error_messages'] = json.dumps(errors)
 
+        if 'ttl' in bundle.data and bundle.data['ttl'] == 'None':
+            bundle.data['ttl'] = None
+
         return bundle
 
     def obj_update(self, bundle, request=None, skip_errors=False, **kwargs):
@@ -398,8 +401,10 @@ class StaticRegResource(CommonDNSResource, ObjectListMixin,
                         ModelResource):
     system = fields.ToOneField(SystemResource, 'system', null=False, full=True)
     # Injecting here because of cyclical imports :(
-    hwadapter_set = fields.ToManyField('core.api.v1.api.HWAdapterResource',
-                                       'hwadapter_set', full=True, readonly=True)
+    hwadapter_set = fields.ToManyField(
+        'core.api.v1.api.HWAdapterResource', 'hwadapter_set', full=True,
+        readonly=True
+    )
 
     def hydrate(self, bundle):
         if 'system_hostname' in bundle.data and 'system' in bundle.data:

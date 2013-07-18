@@ -65,9 +65,12 @@ class Nameserver(MozdnsRecord):
     def rdtype(self):
         return 'NS'
 
-    def bind_render_record(self, pk=False, **kwargs):
+    def bind_render_record(self, pk=False, show_ttl=False, **kwargs):
         # We need to override this because fqdn is actually self.domain.name
-        ttl_ = '' if self.ttl is None else self.ttl
+        if show_ttl:
+            ttl_ = self.ttl
+        else:
+            ttl_ = '' if self.ttl is None else self.ttl
         template = Template(self.template).substitute(**self.justs)
         return template.format(
             rdtype=self.rdtype, rdclass='IN', bind_name=self.domain.name + '.',
