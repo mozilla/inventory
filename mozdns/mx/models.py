@@ -24,7 +24,7 @@ class MX(MozdnsRecord, LabelDomainMixin):
                               "record points to.")
     priority = models.PositiveIntegerField(null=False,
                                            validators=[validate_mx_priority])
-    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+    template = _("{bind_name:$lhs_just} {ttl_} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just}{priority:$prio_just} "
                  "{server:$rhs_just}.")
     search_fields = ('fqdn', 'server')

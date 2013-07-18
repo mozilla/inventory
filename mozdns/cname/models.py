@@ -26,7 +26,7 @@ class CNAME(MozdnsRecord, LabelDomainMixin):
     id = models.AutoField(primary_key=True)
     target = models.CharField(max_length=100, validators=[validate_name],
                               help_text="CNAME Target")
-    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+    template = _("{bind_name:$lhs_just} {ttl_} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {target:$rhs_just}.")
 
     search_fields = ('fqdn', 'target')

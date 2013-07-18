@@ -45,8 +45,8 @@ class Nameserver(MozdnsRecord):
     sreg_glue = models.ForeignKey(StaticReg, null=True, blank=True,
                                   related_name="nameserver_set")
 
-    template = ("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
-                "{rdtype:$rdtype_just} {server:$rhs_just}.")
+    template = _("{bind_name:$lhs_just} {ttl_} {rdclass:$rdclass_just} "
+                 "{rdtype:$rdtype_just} {server:$rhs_just}.")
 
     search_fields = ("server", "domain__name")
 
@@ -67,10 +67,11 @@ class Nameserver(MozdnsRecord):
 
     def bind_render_record(self, pk=False, **kwargs):
         # We need to override this because fqdn is actually self.domain.name
+        ttl_ = '' if self.ttl is None else self.ttl
         template = Template(self.template).substitute(**self.justs)
         return template.format(
             rdtype=self.rdtype, rdclass='IN', bind_name=self.domain.name + '.',
-            **self.__dict__
+            ttl_=ttl_, **vars(self)
         )
 
     def details(self):

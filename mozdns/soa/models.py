@@ -54,9 +54,10 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     """
 
     id = models.AutoField(primary_key=True)
-    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
-                                      validators=[validate_ttl],
-                                      help_text="Time to Live of this record")
+    ttl = models.PositiveIntegerField(
+        default=3600, blank=True, null=True, validators=[validate_ttl],
+        help_text="Time to Live of this record"
+    )
     primary = models.CharField(max_length=100, validators=[validate_name])
     contact = models.CharField(max_length=100, validators=[validate_name])
     serial = models.PositiveIntegerField(
@@ -75,7 +76,7 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     dirty = models.BooleanField(default=False)
     is_signed = models.BooleanField(default=False)
     search_fields = ('primary', 'contact', 'description')
-    template = _("{root_domain}. {ttl} {rdclass:$rdclass_just} "
+    template = _("{root_domain}. {ttl_} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {primary}. {contact}. "
                  "({serial} {refresh} {retry} {expire})")
 
@@ -83,9 +84,10 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
 
     def bind_render_record(self):
         template = Template(self.template).substitute(**self.justs)
-        return template.format(root_domain=self.root_domain,
-                               rdtype=self.rdtype, rdclass='IN',
-                               **self.__dict__)
+        return template.format(
+            root_domain=self.root_domain, rdtype=self.rdtype, rdclass='IN',
+            ttl_='' if self.ttl is None else self.ttl, **vars(self)
+        )
 
     def update_attrs(self):
         self.attrs = AuxAttr(SOAKeyValue, self, 'soa')

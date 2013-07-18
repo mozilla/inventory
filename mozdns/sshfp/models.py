@@ -43,7 +43,7 @@ class SSHFP(MozdnsRecord, LabelDomainMixin):
         null=False, blank=False, validators=[validate_fingerprint],
         help_text="Fingerprint type must be 1 (SHA-1)")
 
-    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+    template = _("{bind_name:$lhs_just} {ttl_} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {algorithm_number} {fingerprint_type} "
                  "{key:$rhs_just}")
 

@@ -149,7 +149,7 @@ class AddressRecord(BaseAddressRecord):
     ############################
     id = models.AutoField(primary_key=True)
 
-    template = ("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+    template = ("{bind_name:$lhs_just} {ttl_} {rdclass:$rdclass_just} "
                 "{rdtype:$rdtype_just} {ip_str:$rhs_just}")
 
     class Meta:
