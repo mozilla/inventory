@@ -67,7 +67,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
                        STOP_UPDATE_FILE=self.stop_update_file)
 
         b.build_dns()  # This won't check anything in since PUSH_TO_PROD==False
-        self.assertEqual((26, 0), b.svn_lines_changed(b.PROD_DIR))
+        self.assertEqual((28, 0), b.svn_lines_changed(b.PROD_DIR))
         b.PUSH_TO_PROD = True
         b.build_dns()  # This checked stuff in
 

@@ -382,6 +382,8 @@ def validate_ttl(ttl):
         :type   ttl: int
         :raises: ValidationError
     """
+    if ttl is None:
+        return
     if ttl < 0 or ttl > 2147483647:  # See RFC 2181
         raise ValidationError("TTLs must be within the 0 to "
                               "2147483647 range.")

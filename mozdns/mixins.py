@@ -19,11 +19,11 @@ class DisplayMixin(object):
     def bind_render_record(self, pk=False):
         template = Template(self.template).substitute(**self.justs)
         bind_name = self.fqdn + "."
-        if not self.ttl:
-            self.ttl = 3600
+        ttl_ = '' if self.ttl is None else self.ttl
         return template.format(
             bind_name=bind_name, rdtype=self.rdtype, rdclass='IN',
-            **vars(self))
+            ttl_=ttl_, **vars(self)
+        )
 
 
 class ObjectUrlMixin(object):

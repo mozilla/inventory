@@ -42,7 +42,7 @@ class SRV(MozdnsRecord):
     weight = models.PositiveIntegerField(null=False,
                                          validators=[validate_srv_weight])
 
-    template = _("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+    template = _("{bind_name:$lhs_just} {ttl_} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {priority:$prio_just} "
                  "{weight:$extra_just} {port:$extra_just} "
                  "{target:$extra_just}.")

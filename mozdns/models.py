@@ -117,7 +117,7 @@ class TTLRRMixin(object):
 
 
 class MozdnsRecord(ViewMixin, TTLRRMixin, DisplayMixin, ObjectUrlMixin):
-    ttl = models.PositiveIntegerField(default=3600, blank=True, null=True,
+    ttl = models.PositiveIntegerField(default=None, blank=True, null=True,
                                       validators=[validate_ttl],
                                       help_text="Time to Live of this record")
     description = models.CharField(max_length=1000, blank=True, null=True,

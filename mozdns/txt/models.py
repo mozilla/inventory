@@ -22,7 +22,7 @@ class TXT(MozdnsRecord, LabelDomainMixin):
 
     search_fields = ("fqdn", "txt_data")
 
-    template = ("{bind_name:$lhs_just} {ttl} {rdclass:$rdclass_just} "
+    template = ("{bind_name:$lhs_just} {ttl_} {rdclass:$rdclass_just} "
                 "{rdtype:$rdtype_just} {txt_data:$rhs_just}")
 
     @classmethod
@@ -37,8 +37,6 @@ class TXT(MozdnsRecord, LabelDomainMixin):
     def bind_render_record(self, pk=False):
         template = Template(self.template).substitute(**self.justs)
         bind_name = self.fqdn + "."
-        if not self.ttl:
-            self.ttl = 3600
 
         txt_lines = self.txt_data.split('\n')
         if len(txt_lines) > 1:
@@ -50,8 +48,8 @@ class TXT(MozdnsRecord, LabelDomainMixin):
             txt_data = '"{0}"'.format(self.txt_data)
 
         return template.format(
-            bind_name=bind_name, ttl=self.ttl, rdtype=self.rdtype,
-            rdclass='IN', txt_data=txt_data
+            bind_name=bind_name, ttl_='' if self.ttl is None else self.ttl,
+            rdtype=self.rdtype, rdclass='IN', txt_data=txt_data
         )
 
     class Meta:
