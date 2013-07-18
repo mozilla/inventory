@@ -82,11 +82,15 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
 
     attrs = None
 
-    def bind_render_record(self):
+    def bind_render_record(self, show_ttl=False):
         template = Template(self.template).substitute(**self.justs)
+        if show_ttl:
+            ttl_ = self.ttl
+        else:
+            ttl_ = '' if self.ttl is None else self.ttl
         return template.format(
             root_domain=self.root_domain, rdtype=self.rdtype, rdclass='IN',
-            ttl_='' if self.ttl is None else self.ttl, **vars(self)
+            ttl_=ttl_, **vars(self)
         )
 
     def update_attrs(self):
