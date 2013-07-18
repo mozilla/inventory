@@ -74,6 +74,9 @@ class CommonDNSResource(ModelResource):
                                "domain for this record.")
             bundle.errors['error_messages'] = json.dumps(errors)
 
+        if 'ttl' in bundle.data and bundle.data['ttl'] == 'None':
+            bundle.data['ttl'] = None
+
         return bundle
 
     def obj_update(self, bundle, request=None, skip_errors=False, **kwargs):
