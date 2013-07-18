@@ -45,8 +45,8 @@ class Nameserver(MozdnsRecord):
     sreg_glue = models.ForeignKey(StaticReg, null=True, blank=True,
                                   related_name="nameserver_set")
 
-    template = _("{bind_name:$lhs_just} {ttl_} {rdclass:$rdclass_just} "
-                 "{rdtype:$rdtype_just} {server:$rhs_just}.")
+    template = ("{bind_name:$lhs_just} {ttl_} {rdclass:$rdclass_just} "
+                "{rdtype:$rdtype_just} {server:$rhs_just}.")
 
     search_fields = ("server", "domain__name")
 
