@@ -6,6 +6,7 @@ from mozdns.domain.models import Domain
 from mozdns.nameserver.models import Nameserver
 from mozdns.soa.models import SOA
 from mozdns.tests.utils import random_label, random_byte
+from mozdns.view.models import View
 
 
 def localize(url):
@@ -18,6 +19,8 @@ class CreateZoneTests(TestCase):
         self.c = Client()
         Domain(name="com").save()
         Domain(name="mozilla.com").save()
+        self.private_view = View.objects.create(name='private')
+        self.public_view = View.objects.create(name='public')
 
     def get_post_data(self):
         """Return a valid set of data"""
@@ -32,7 +35,16 @@ class CreateZoneTests(TestCase):
             'ttl_1': random_byte(),
             'ttl_2': random_byte(),
             'ttl_3': random_byte(),
+            'private_view_1': 'on',
+            'private_view_2': 'on',
+            'private_view_3': '',
+            'public_view_1': 'on',
+            'public_view_2': '',
+            'public_view_3': 'on',
         }
+        # NS1 has all views
+        # NS2 has private and no public
+        # NS3 has no private and public
 
     def _ensure_no_change(self, post_data):
         soa_count = SOA.objects.all().count()
@@ -138,11 +150,6 @@ class CreateZoneTests(TestCase):
         post_data['nameserver_1'] = '..'
         self._ensure_no_change(post_data)
 
-        # Bad ttl
-        post_data = self.get_post_data()
-        post_data['ttl_1'] = 'asdf'
-        self._ensure_no_change(post_data)
-
         # No glue
         post_data = self.get_post_data()
         post_data['nameserver_3'] = 'ns1.' + post_data['root_domain']
@@ -154,3 +161,27 @@ class CreateZoneTests(TestCase):
         post_data['root_domain'] = 'asdf'
         post_data['soa_primary'] = 'adsf..'
         self._ensure_no_change(post_data)
+
+    def test_create_validate_views(self):
+        # Try a bad primary
+        post_data = self.get_post_data()
+        post_data['root_domain'] = 'safasdf.mozilla.com'
+        resp = self.c.post(localize(reverse('create-zone-ajax')), post_data)
+        self.assertEqual(200, resp.status_code)
+
+        d = Domain.objects.get(name=post_data['root_domain'])
+        # NS1 has all views
+        # NS2 has private and no public
+        # NS3 has no private and public
+
+        ns1 = d.nameserver_set.get(server=post_data['nameserver_1'])
+        self.assertTrue(self.private_view in ns1.views.all())
+        self.assertTrue(self.public_view in ns1.views.all())
+
+        ns2 = d.nameserver_set.get(server=post_data['nameserver_2'])
+        self.assertTrue(self.private_view in ns2.views.all())
+        self.assertTrue(self.public_view not in ns2.views.all())
+
+        ns3 = d.nameserver_set.get(server=post_data['nameserver_3'])
+        self.assertTrue(self.private_view not in ns3.views.all())
+        self.assertTrue(self.public_view in ns3.views.all())

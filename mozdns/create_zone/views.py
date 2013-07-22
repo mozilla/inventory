@@ -1,6 +1,6 @@
 from gettext import gettext as gt
 import simplejson as json
-import time
+import re
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.shortcuts import render
@@ -15,8 +15,7 @@ from mozdns.utils import get_zones, ensure_domain, prune_tree
 
 def create_zone_ajax(request):
     """This view tries to create a new zone and returns an JSON with either
-    'success' = True or 'success' = False and some errors. By default all
-    records are created and added to the public view.
+    'success' = True or 'success' = False and some errors.
 
     Throughout this function note that objects that are created are recorded,
     and if an error is caught, the previously created objects are deleted. This
@@ -51,11 +50,29 @@ def create_zone_ajax(request):
 
     # Find all the NS entries
     nss = []
-    for k, v in request.POST.iteritems():
+    number_re = re.compile('nameserver_(\d+)')
+    private_view, _ = View.objects.get_or_create(name='private')
+    public_view, _ = View.objects.get_or_create(name='public')
+
+    for k, server in request.POST.iteritems():
         if k.startswith('nameserver_'):
-            ttl = qd.get('ttl_{0}'.format(k[-1:]), 3600)
-            server = v
-            nss.append(Nameserver(server=server, ttl=ttl))
+            n = number_re.search(k)
+            if not n:
+                continue
+            ns_number = n.groups()[0]
+            views = []
+            if qd.get('private_view_{0}'.format(ns_number), 'off') == 'on':
+                views.append(private_view)
+            if qd.get('public_view_{0}'.format(ns_number), 'off') == 'on':
+                views.append(public_view)
+            ttl = qd.get('ttl_{0}'.format(ns_number))
+            if ttl and ttl.isdigit():
+                ttl = int(ttl)
+            else:
+                ttl = None
+            nss.append(
+                (Nameserver(server=server, ttl=ttl), views)
+            )
 
     if not nss:
         # They must create at least one nameserver
@@ -70,8 +87,10 @@ def create_zone_ajax(request):
     domain = ensure_domain(
         root_domain, purgeable=True, inherit_soa=False, force=True)
 
-    soa = SOA(primary=primary, contact=contact, serial=int(time.time()),
-              description="SOA for {0}".format(root_domain))
+    soa = SOA(
+        primary=primary, contact=contact,
+        description="SOA for {0}".format(root_domain))
+
     try:
         soa.save()
     except ValidationError, e:
@@ -84,13 +103,12 @@ def create_zone_ajax(request):
     private_view, _ = View.objects.get_or_create(name='private')
     public_view, _ = View.objects.get_or_create(name='public')
     saved_nss = []  # If these are errors, back out
-    for i, ns in enumerate(nss):
+    for i, (ns, views) in enumerate(nss):
         ns.domain = domain
         try:
             ns.save()
-            ns.views.add(private_view)
-            if not domain.name.endswith('10.in-addr.arpa'):
-                ns.views.add(public_view)
+            for view in views:
+                ns.views.add(view)
             saved_nss.append(ns)
         except ValidationError, e:
             suffixes = ["th", "st", "nd", "rd", ] + ["th"] * 16
