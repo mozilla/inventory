@@ -140,9 +140,7 @@ def start_end_filter(start, end, ip_type):
     istart = IPKlass(start)
     iend = IPKlass(end)
 
-    if int(istart) == int(iend):
-        raise ValidationError("start and end cannot be equal")
-    elif int(istart) > int(iend):
+    if int(istart) > int(iend):
         raise ValidationError("start cannot be greater than end")
 
     start_upper, start_lower = one_to_two(int(istart))

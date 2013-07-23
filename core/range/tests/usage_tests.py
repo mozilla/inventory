@@ -205,3 +205,12 @@ class UsageTests(TestCase):
         sreg.full_clean()
         sreg.save()
         self.assertEqual(sreg.range, self.r_v6)
+
+    def test_start_end_the_same(self):
+        # BUG 896662
+        ip_start = "10.0.0.0"
+        ip_end = "10.0.0.0"
+        PTR.objects.create(name="foo.mz", ip_str="10.0.0.0", ip_type='4')
+        range_details = range_usage(ip_start, ip_end, '4')
+        self.assertEqual(0, range_details['unused'])
+        self.assertEqual(1, range_details['used'])
