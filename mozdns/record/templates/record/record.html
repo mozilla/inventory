@@ -15,7 +15,23 @@
             select_state('create'); // Initial state is searching
             $('#delete-control').css('visibitily', 'hidden');
         }
+        $('#special').hover(
+            function (){
+                if ($('#view-enforcement').attr('data-view-enforcement') == 'on') {
+                    $(this).attr('style', '');
+                }
+            },
+            function (){
+                $(this).attr('style', 'color: transparent; background-color: transparent; border: none;');
+            }
+        ).click(function () {
+            $('#view-enforcement').attr('data-view-enforcement', 'off');
+            $('#view-enforcement').empty();
+            $('#view-enforcement').html("<span style='color: red;'>You have just bypassed standard view enforcement. You may now create split horizon records.</span>");
+        });
     });
+    </script>
+
     </script>
 
     <div id="object-controls">
@@ -49,4 +65,9 @@
         <div id="current-form-area">
         </div>
     </div>
+{% endblock %}
+{% block footer %}
+<div id='view-enforcement' style='position:absolute; bottom:0px; right: 0;' data-view-enforcement='on'>
+    <input id='special' type="button" style="color: transparent; background-color: transparent; border: none;" value='&pi;'>
+</div>
 {% endblock %}

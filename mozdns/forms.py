@@ -7,6 +7,24 @@ from django.core.exceptions import ValidationError
 class BaseForm(ModelForm):
     comment = forms.CharField(widget=forms.HiddenInput, required=False)
 
+    def __init__(self, *args, **kwargs):
+        super(BaseForm, self).__init__(*args, **kwargs)
+
+        def ttl_helper(o):
+            if not o:
+                return 'default (SOA minimum)'
+            if hasattr(o, 'domain') and o.domain.soa:
+                return '{0} (click to override)'.format(o.domain.soa.minimum)
+            if hasattr(o, 'reverse_domain') and o.reverse_domain.soa:
+                return '{0} (click to override)'.format(
+                    o.reverse_domain.soa.minimum
+                )
+            return 'default (SOA minimum)'
+
+        self.fields['ttl'].widget = forms.TextInput(
+            attrs={'placeholder': ttl_helper(self.instance)}
+        )
+
     def save(self, commit=True):
         """
         Saves this ``form``'s cleaned_data into model instance
