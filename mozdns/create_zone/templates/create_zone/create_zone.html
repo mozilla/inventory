@@ -32,7 +32,7 @@
                 }
             });
         });
-        $("#zoneForm").data('blockCounter', 1);
+        //$("#zoneForm").attr('data-block-counter', 1);
         removeButtons = $('#zoneForm').find('.remove-entry:not(:first)');
         if (removeButtons){
             $(removeButtons).css('visibility', 'visible');
@@ -42,22 +42,31 @@
         }
 
         $('#btnMore').click(function() {
-            var form, blocsk, newBlock, newEntry, nextFree;
+            var form, blocks, newBlock, newEntry, nextFree;
             var removeButton, newTTL;
 
 
             form = $("#zoneForm");
-            blockCounter = form.data('blockCounter');
-            form.data('blockCounter', blockCounter + 1);
+            blockCounter = parseInt(form.attr('data-block-counter'));
+            form.attr('data-block-counter', blockCounter + 1);
             blocks = form.find(".nameserver-block");
+            if (blocks.length == 0) {
+                console.log('no existing blocks, using template');
+                blocks = form.find(".nameserver-block-template");
+            }
             newBlock = $(blocks.last()).clone();
+            newBlock.css('display', '');
             newEntry = newBlock.find(".nameserver-entry");
             newTTL = newBlock.find(".nameserver-ttl");
+            newPrivateView = newBlock.find(".nameserver-private-view");
+            newPublicView = newBlock.find(".nameserver-public-view");
 
             blockCounter += 1;
 
             newEntry.attr('name', 'nameserver_' + blockCounter);
             newTTL.attr('name', 'ttl_' + blockCounter);
+            newPublicView.attr('name', 'nameserver_public_view_' + blockCounter);
+            newPrivateView.attr('name', 'nameserver_private_view_' + blockCounter);
             // Bind remove handler
             removeButton = newBlock.find('.remove-entry');
             $(removeButton).css('visibility', 'visible');
@@ -104,7 +113,7 @@
     </div>
 
     <div class="form-container">
-    <form id='zoneForm' method='POST'>
+    <form id='zoneForm' method='POST' data-block-counter='{{1 if not nss else nss.count()}}'>
         <h3>Create a new DNS Zone</h3>
         {% if message %}
             <p><i>{{message}}</i></p>
@@ -136,25 +145,28 @@
         <table>
         <caption>Add nameservers for this zone.</caption>
         <tbody>
-            {% if not nss %}
-            <tr class='nameserver-block'>
-                <th><label>NS:</label></th>
-                <td><input class="nameserver-entry" type='text' name='nameserver_1'></td>
-                <th><label>TTL:</label></th>
-                <td><input class="nameserver-ttl" type='text' name='ttl_1' value="3600"> <input class='remove-entry' id='first-remove'type='button' value='-' style='visibility:hidden;'></td>
+            <tr class='nameserver-block-template', style='display: none'>
+                    <td><input class="nameserver-entry" type='text' name='nameserver_blank' value=""></td>
+                    <td>
+                        <label for="ttl_1">TTL: <input class="nameserver-ttl" type='text'
+                            name='ttl_1' value="" size='4'></label>
+                    </td>
+                    <td><label for="nameserver_private_view_blank">Enable in Private View <input class="nameserver-entry" type='checkbox' name='private_view_blank' checked='checked'></label></td>
+                    <td><label for="nameserver_private_view_blank">Enable in Public View <input class="nameserver-entry" type='checkbox' name='public_view_blank' checked='checked'></label></td>
+                    <td><input class='remove-entry' id='first-remove'type='button' value='Remove'></td>
             </tr>
-            {% endif %}
             {% for ns in nss %}
             <tr class='nameserver-block'>
                     <td><input class="nameserver-entry" type='text' name='nameserver_{{loop.index}}' value="{{ns.server}}"></td>
                     <td>
-                        <input class="nameserver-ttl" type='text'
-                        name='ttl_{{loop.index}}' value="{{ns.ttl}}">
-                        <input class='remove-entry' id='first-remove'type='button' value='-'
-                        {% if loop.first %}
-                            style='visibility:hidden;'
-                        {% endif %}
-                        ></td>
+                        <label for="ttl_{{loop.index}}">TTL: <input class="nameserver-ttl" type='text'
+                            name='ttl_{{loop.index}}' value="{{ns.ttl or ''}}" size='4'></label>
+                    </td>
+                    <td><label for="nameserver_private_view_{{loop.index}}">Enable in Private View
+                        <input class="nameserver-private-view" type='checkbox' name='private_view_{{loop.index}}' {{ "checked='checked'" if ns.views.filter(name='private').exists() else "" }}></label></td>
+                    <td><label for="nameserver_private_view_{{loop.index}}">Enable in Public View
+                        <input class="nameserver-public-view" type='checkbox' name='public_view_{{loop.index}}' {{ "checked='checked'" if ns.views.filter(name='public').exists() else "" }}></label></td>
+                    <td><input class='remove-entry' id='first-remove'type='button' value='Remove'></td>
             </tr>
             {% endfor %}
         </tbody>

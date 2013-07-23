@@ -14,6 +14,8 @@ def get_post_data(random_str, suffix):
         'soa_primary': 'ns1.mozilla.com',
         'soa_contact': 'noc.mozilla.com',
         'nameserver_1': 'ns1.mozilla.com',
+        'private_view_1': 'on',
+        'public_view_1': 'on',
         'ttl_1': '1234'
     }
 

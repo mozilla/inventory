@@ -38,6 +38,7 @@ function select_state(state) {
                 function (){
                     bind_smart_names();
                     bind_view_ip_type_detection();
+                    bind_force_private_if_public();
                 },
                 function (){
                     if ($('#object_redirect_url').attr('record-url')) {
@@ -79,6 +80,7 @@ function select_state(state) {
                     function (){
                         fix_css();
                         bind_view_ip_type_detection();
+                        bind_force_private_if_public();
                     },
                     function (){
                     }
@@ -424,7 +426,7 @@ function bind_view_ip_type_detection() {
 
     var i; // loop var
 
-    $('#id_ip_str').keyup(function(){
+    $('#id_ip_str').on('change keypress paste focus textInput input', function(){
         set_ip_type($('#id_ip_str').val());
         function do_detect(prefixs, view_el){
             var ip_str = $('#id_ip_str').val();
@@ -437,8 +439,24 @@ function bind_view_ip_type_detection() {
             }
         }
         if (!found) {  // Only do view detect if we havne't done it before
-            do_detect(private_prefixs, '#id_views_0');
-            do_detect(public_prefixs, '#id_views_1');
+           do_detect(private_prefixs, '#id_views_0');
+           do_detect(public_prefixs, '#id_views_1');
         }
     });
+}
+function bind_force_private_if_public() {
+  function force_private_if_public(public_el, private_el) {
+    if ($('#view-enforcement').attr('data-view-enforcement') == 'off') {
+      return
+    }
+    if ($(public_el).prop('checked')) {
+      $(private_el).prop('checked', true);
+    }
+  }
+  $('#id_views_1').on('change', function(){
+    force_private_if_public('#id_views_1', '#id_views_0');
+  });
+  $('#id_views_0').on('change', function(){
+    force_private_if_public('#id_views_1', '#id_views_0');
+  });
 }
