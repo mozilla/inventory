@@ -7,7 +7,6 @@ from tastypie.api import Api
 
 from systems.models import System
 from api_v3.system_api import SystemResource
-import core
 from core.utils import locked_function
 from core.registration.static.models import StaticReg
 from mozdns.utils import ensure_label_domain, prune_tree
