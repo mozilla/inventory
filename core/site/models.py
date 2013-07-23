@@ -28,7 +28,7 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
 
     class Meta:
         db_table = 'site'
-        unique_together = ('name', 'parent')
+        unique_together = ('full_name',)
 
     def __str__(self):
         return "{0}".format(self.full_name)
@@ -46,10 +46,10 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        self.full_name = self.get_site_path()
         super(Site, self).save(*args, **kwargs)
 
     def clean(self):
+        self.full_name = self.get_site_path()
         if self.pk:
             db_self = self.__class__.objects.get(pk=self.pk)
             if self.site_set.exists() and self.name != db_self.name:

@@ -41,7 +41,6 @@ class BaseCreateView(CreateView):
     def post(self, request, *args, **kwargs):
         try:
             obj = super(BaseCreateView, self).post(request, *args, **kwargs)
-
         # redirect back to form if errors
         except (IntegrityError, ValidationError), e:
             messages.error(request, str(e))
