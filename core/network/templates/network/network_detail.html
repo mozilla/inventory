@@ -30,9 +30,9 @@
         {{ display_kv(attrs, obj=network, kv_type='network') }}
         </div>
 
+        {% from 'core/core_macros.html' import display_networks %}
         {% if eldars %}
             <div style='float:left; margin-left: 3em;'>
-            {% from 'core/core_macros.html' import display_networks %}
             {{ display_networks(eldars, caption="Parent Network", first_header="Network", extra_style="") }}
             </div>
         {% endif %}

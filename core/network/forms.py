@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 
 from core.site.models import Site
 from core.vlan.models import Vlan
@@ -20,6 +21,12 @@ class NetworkForm(forms.ModelForm):
     class Meta:
         model = Network
         exclude = ('ip_upper', 'ip_lower', 'prefixlen')
+
+    def validate_unique(self):
+        try:
+            self.instance.validate_unique()
+        except ValidationError, e:
+            self._update_errors(e.message_dict)
 
 
 class NetworkForm_network(forms.Form):
