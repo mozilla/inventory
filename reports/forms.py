@@ -7,7 +7,8 @@ except ImportError:
 
 import models
 from django.forms.widgets import RadioSelect, CheckboxSelectMultiple
-from systems.models import Location, Allocation, SystemStatus, OperatingSystem
+from systems.models import Allocation, SystemStatus, OperatingSystem
+from core.site.models import Site
 class MultiSelectFormField(forms.MultipleChoiceField):
     widget = forms.CheckboxSelectMultiple
     
@@ -43,10 +44,10 @@ class ReportForm(forms.Form):
         widget=CheckboxSelectMultiple(attrs={'class': 'system_status'}),
         choices=[('-1', 'All')] + [(m.id, m) for m in SystemStatus.objects.all()])
 
-    location = forms.MultipleChoiceField(
+    site = forms.MultipleChoiceField(
         required=False,
         widget=CheckboxSelectMultiple(attrs={'class': 'system_location'}),
-        choices=[('-1', 'All')] + [(m.id, m) for m in Location.objects.all()])
+        choices=[('-1', 'All')] + [(m.id, m) for m in Site.objects.all()])
                     
     allocation = forms.ChoiceField(
         required=False,
