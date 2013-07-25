@@ -1,12 +1,7 @@
-{% extends "core/core_base.html" %}
-{% block header %}
-    {{ object_list[0]|humanized_class_name + 's' }}
-{% endblock %}
-
+{% extends "core/core_list.html" %}
 {% block content %}
 
     <div class='dns-title'>{{ object_list[0]|humanized_class_name + 's'}}</div>
-
 
     {% block action_bar %}
         {% if object_list %}
@@ -15,34 +10,37 @@
     {% endblock %}
 
 
-    <!-- Basic bootstrap table -->
-    <table class="tablesorter table-bordered table-striped">
+    <table class="tablesorter">
+        <thead>
         <tr>
             <th>Vlan</th>
             <th>Site & Network</th>
         </tr>
+        </thead>
 
-        {% for obj in object_list %}
-        <tr>
-            <td>
-                <a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a>
-            </td>
-            <td>
-                <ul>
-                {% for network in obj.network_set.all() %}
-                    <li>
-                        {% if network.site %}
-                            <a href='{{network.site.get_absolute_url()}}'>{{network.site}}</a>
-                        {% else %}}
-                            No site
-                        {% endif %}
-                        -
-                        <a href='{{network.get_absolute_url()}}'>{{network}}</a>
-                    </li>
-                {% endfor %}
-                </ul>
-            </td>
-        </tr>
-        {% endfor %}
+        <tbody>
+            {% for obj in object_list %}
+            <tr>
+                <td>
+                    <a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a>
+                </td>
+                <td>
+                    <ul>
+                    {% for network in obj.network_set.all() %}
+                        <li>
+                            {% if network.site %}
+                                <a href='{{network.site.get_absolute_url()}}'>{{network.site}}</a>
+                            {% else %}}
+                                No site
+                            {% endif %}
+                            -
+                            <a href='{{network.get_absolute_url()}}'>{{network}}</a>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 {% endblock %}

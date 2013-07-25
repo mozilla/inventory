@@ -1,5 +1,14 @@
 {% extends "core/core_base.html" %}
+{% block head %}
+    <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
 
+            $(".tablesorter").tablesorter();
+            console.log('core list');
+        });
+    </script>
+{% endblock %}
 
 {% block content %}
     <div class='dns-title'>{{ object }}</div>

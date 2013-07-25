@@ -1,10 +1,6 @@
-{% extends "core/core_base.html" %}
-{% block header %}
-    {{ object_list[0]|humanized_class_name + 's' }}
-{% endblock %}
+{% extends "core/core_list.html" %}
 
 {% block content %}
-
     {% block action_bar %}
         {% if object_list %}
         {# The problem here is that we are getting the create url from the first object. If there is no first object, because nothing has been created, there is no way to find the create url. BUG TODO#}

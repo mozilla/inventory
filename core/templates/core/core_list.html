@@ -1,9 +1,17 @@
 {% extends "core/core_base.html" %}
-{% block header %}
-    {{ object_list[0]|humanized_class_name + 's' }}
+{% block head %}
+    <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $(".tablesorter").tablesorter();
+            console.log('core list');
+        });
+    </script>
 {% endblock %}
 
 {% block content %}
+    {{ object_list[0]|humanized_class_name + 's' }}
 
     <div class='dns-title'>{{ object_list[0]|humanized_class_name + 's'}}</div>
 
@@ -24,10 +32,10 @@
             </tr>
         </thead>
 
-    <tbody>
+        <tbody>
             {% for obj in object_list %}
                 <tr><td><a href='{{ obj.get_absolute_url() }}'>{{ obj }}</a></td></tr>
             {% endfor %}
-    </tbody>
+        </tbody>
     </table>
 {% endblock %}

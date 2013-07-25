@@ -1,4 +1,4 @@
-{% extends "core/core_base.html" %}
+{% extends "core/core_detail.html" %}
 
 
 {% block content %}
@@ -38,8 +38,8 @@
         {% endif %}
 
         {% if sub_networks %}
-            <div style='float:right; margin-left: 3em;'>
-            {{ display_networks(sub_networks, first_header="Sub Networks", extra_style="") }}
+            <div style='float:left; margin-left: 3em;'>
+            {{ display_networks(sub_networks, caption="Sub Networks", extra_style="") }}
             </div>
         {% endif %}
 
