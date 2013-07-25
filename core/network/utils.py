@@ -5,7 +5,7 @@ def calc_networks(network):
     network.update_network()
     eldars = []
     sub_networks = []
-    for pnet in Network.objects.all():
+    for pnet in Network.objects.all().order_by('prefixlen'):
         pnet.update_network()
         if pnet.pk == network.pk:
             continue

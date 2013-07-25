@@ -11,7 +11,8 @@ from core.views import (CoreDeleteView, CoreListView, CoreUpdateView,
 
 class NetworkView(object):
     model = Network
-    queryset = Network.objects.select_related('site').all()
+    queryset = Network.objects.select_related(
+        'site').all().order_by('prefixlen')
     form_class = NetworkForm
 
 

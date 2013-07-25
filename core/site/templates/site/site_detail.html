@@ -57,7 +57,7 @@
 
         <div style='display:table;'>
             {% from 'core/core_macros.html' import display_networks %}
-            {{ display_networks(site.network_set.all(), first_header="Networks homed in "+site.full_name+".", extra_style="width: 100%; margin-left:3em;") }}
+            {{ display_networks(site.network_set.all().order_by('prefixlen'), first_header="Networks homed in "+site.full_name+".", extra_style="width: 100%; margin-left:3em;") }}
         </div>
 
         {% import 'systems/rack_macros.html' as drawer -%}
