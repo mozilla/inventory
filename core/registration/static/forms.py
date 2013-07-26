@@ -25,6 +25,7 @@ class StaticRegFQDNForm(BaseForm):
         )
         widgets = {'views': forms.CheckboxSelectMultiple}
 
+
 class StaticRegAutoForm(BaseForm):
     def clean(self, *args, **kwargs):
         self.instance.ip_type = resolve_ip_type(self.cleaned_data['ip_str'])[0]
@@ -36,7 +37,7 @@ class StaticRegAutoForm(BaseForm):
     class Meta:
         model = StaticReg
         fields = (
-            'fqdn', 'ip_str', 'views', 'description', 'system'
+            'fqdn', 'ip_str', 'views', 'description', 'system', 'ttl'
         )
         widgets = {
             'views': forms.CheckboxSelectMultiple,
