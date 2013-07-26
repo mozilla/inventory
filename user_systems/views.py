@@ -299,6 +299,7 @@ def user_system_view(request, template, data, instance=None):
     the_owner_list.append("STOCK-TOR")
     the_owner_list.append("STOCK-LON")
     the_owner_list.append("STOCK-PAR")
+    the_owner_list.append("STOCK-PDX")
     the_owner_list.append("desktop-mtv1")
     the_owner_list.append("desktop-sfo1")
     the_owner_list.append("desktop-tor1")
