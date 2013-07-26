@@ -13,9 +13,10 @@ class BaseForm(ModelForm):
         def ttl_helper(o):
             if not o:
                 return 'default (SOA minimum)'
-            if hasattr(o, 'domain') and o.domain.soa:
+            if hasattr(o, 'domain') and o.domain and o.domain.soa:
                 return '{0} (click to override)'.format(o.domain.soa.minimum)
-            if hasattr(o, 'reverse_domain') and o.reverse_domain.soa:
+            if (hasattr(o, 'reverse_domain') and o.reverse_domain and
+                    o.reverse_domain.soa):
                 return '{0} (click to override)'.format(
                     o.reverse_domain.soa.minimum
                 )
