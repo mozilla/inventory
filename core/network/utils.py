@@ -29,3 +29,8 @@ def calc_parent(network):
 def calc_parent_str(network_str, ip_type):
     network = Network(network_str=network_str, ip_type=ip_type)
     return calc_parent(network)
+
+
+def calc_networks_str(network_str, ip_type):
+    network = Network(network_str=network_str, ip_type=ip_type)
+    return calc_networks(network)

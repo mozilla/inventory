@@ -23,9 +23,11 @@ from mozdns.view.models import View
 from core.registration.static.models import StaticReg
 from core.site.models import Site
 from core.network.models import Network
+from core.network.utils import calc_networks_str
 from core.utils import IPFilter, one_to_two
 from core.vlan.models import Vlan
 from core.utils import start_end_filter, resolve_ip_type
+from core.search.utils import objects_to_Q
 
 from systems.models import System, SystemRack
 
@@ -226,14 +228,69 @@ def build_range_qsets(range_):
 
 
 def build_ip_qsets(ip_str):
+    """
+    Possible objects returned:
+        * A/PTR/SREG
+        * Network
+        * Vlan
+        * Site
+    """
     ip_type, Klass = resolve_ip_type(ip_str)
+
+    NetworkCls = ipaddr.IPv4Network if ip_type == '4' else ipaddr.IPv6Network
     try:
-        ip = Klass(ip_str)
-        ip_upper, ip_lower = one_to_two(int(ip))
-    except (ipaddr.AddressValueError):
+        ip = NetworkCls(ip_str).network
+        network_str = str(NetworkCls(ip_str))
+    except ipaddr.AddressValueError:
         raise BadDirective("{0} isn't a valid "
                            "IP address.".format(ip_str))
-    return build_ipf_qsets(Q(ip_upper=ip_upper, ip_lower=ip_lower))
+    except ipaddr.NetmaskValueError, e:
+        raise BadDirective(
+            "The netmask '{0}' doesn't make any sense.".format(e)
+        )
+
+    try:
+        network = Network.objects.get(network_str=network_str)
+        network_q = objects_to_Q([network])
+        site = network.site
+        vlan = network.vlan
+    except Network.DoesNotExist:
+        parents, children = calc_networks_str(str(NetworkCls(ip_str)), ip_type)
+        network_q = objects_to_Q(parents) | objects_to_Q(children)
+
+        # Find the site. This will be the site of the smallest network that is
+        # in parents or if there are no parents, the largest child.
+        site = None
+        vlan = None
+        for parent in reversed(parents):
+            if parent.site:
+                site = parent.site
+                vlan = parent.vlan
+                break
+
+        if not site:
+            for child in children:
+                if child.site:
+                    site = child.site
+                    vlan = child.vlan
+                    break
+
+    ip_upper, ip_lower = one_to_two(int(ip))
+
+    ipf_qs = build_ipf_qsets(Q(ip_upper=ip_upper, ip_lower=ip_lower))
+    q_sets = []
+
+    for q, (name, Klass) in izip(ipf_qs, searchables):
+        if name == 'NETWORK':
+            q_sets.append(network_q)
+        elif name == 'SITE' and site:
+            q_sets.append(Q(pk=site.pk))
+        elif name == 'VLAN' and vlan:
+            q_sets.append(Q(pk=vlan.pk))
+        else:
+            q_sets.append(q)
+
+    return q_sets
 
 
 def build_network_qsets(network_str):
