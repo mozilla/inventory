@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 
 from dhcp.models import DHCP
 from settings import BUG_URL
+from mozdns.validation import validate_name
 
 from core.validation import validate_mac
 from core.site.models import Site
@@ -340,7 +341,9 @@ class System(DirtyFieldsMixin, models.Model):
         (0, 'No'),
         (1, 'Yes'),
     )
-    hostname = models.CharField(unique=True, max_length=255)
+    hostname = models.CharField(
+        unique=True, max_length=255, validators=[validate_name]
+    )
     serial = models.CharField(max_length=255, blank=True, null=True)
     operating_system = models.ForeignKey(
         'OperatingSystem', blank=True, null=True)

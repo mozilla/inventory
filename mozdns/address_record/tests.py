@@ -657,3 +657,26 @@ class AddressRecordTests(TestCase):
         cn.save()
         self.assertRaises(ValidationError, a.delete)
         a.delete(check_cname=False)
+
+    def test_delete_with_cname_pointing_to_a_with_rr(self):
+        # You should be allowed to delete an A record if there is another A
+        # record that the cname could point to.
+        label = 'foo100'
+        a = AddressRecord.objects.create(
+            label=label, domain=self.o_e, ip_str='128.193.1.10',
+            ip_type='4'
+        )
+        a2 = AddressRecord.objects.create(
+            label=label, domain=self.o_e, ip_str='128.193.1.11',
+            ip_type='4'
+        )
+        CNAME.objects.create(
+            label="foomom", domain=self.o_e, target=label + "." +
+            self.o_e.name
+        )
+        a_pk = a.pk
+        a.delete()
+        self.assertFalse(AddressRecord.objects.filter(pk=a_pk))
+
+        self.assertRaises(ValidationError, a2.delete)
+        a2.delete(check_cname=False)
