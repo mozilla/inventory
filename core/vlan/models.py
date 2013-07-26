@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 
 from core.mixins import ObjectUrlMixin, CoreDisplayMixin
 from mozdns.domain.models import Domain
@@ -45,6 +46,15 @@ class Vlan(models.Model, ObjectUrlMixin, CoreDisplayMixin):
     def compile_Q(self):
         """Compile a Django Q that will match any IP inside this vlan."""
         return networks_to_Q(self.network_set.all())
+
+    def compile_network_Q(self):
+        """
+        Compile a Django Q that will match all networks that relate to this
+        vlan.
+        """
+        def combine(q, n):
+            return q | Q(pk=n.pk)
+        return reduce(combine, self.network_set.all(), Q(pk__lt=-1))
 
     def find_domain(self):
         """

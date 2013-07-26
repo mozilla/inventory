@@ -103,6 +103,7 @@ div advanced-search-knobs input{
                         results = document.getElementById('results');
                         results.innerHTML = data;
                         // Every table needs to have it's feilds configured.
+                        $(".other-table").tablesorter();
                         $(".system-table").tablesorter({
                             sortList: [[0,1]],
                             headers: {

@@ -162,7 +162,7 @@ def start_end_filter(start, end, ip_type):
 def networks_to_Q(networks):
     """Take a list of network objects and compile a Q that matches any object
     that exists in one of those networks."""
-    q = Q()
+    q = Q(pk__lt=-1)
     for network in networks:
         network.update_ipf()
         q = q | network.ipf.Q

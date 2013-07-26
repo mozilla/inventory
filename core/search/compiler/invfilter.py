@@ -1,9 +1,10 @@
 import operator
 import re
 import ipaddr
+
 from itertools import izip
 
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 
@@ -32,8 +33,10 @@ from systems.models import System, SystemRack
 class BadDirective(Exception):
     pass
 
+
 class BadType(Exception):
     pass
+
 
 searchables = (
     ('A', AddressRecord),
@@ -247,7 +250,7 @@ def build_network_qsets(network_str):
 
 def build_site_qsets(site_name):
     try:
-        site = Site.objects.get(name=site_name)
+        site = Site.objects.get(full_name=site_name)
     except ObjectDoesNotExist:
         raise BadDirective(
             "{0} isn't a valid site.".format(site_name)
@@ -255,7 +258,7 @@ def build_site_qsets(site_name):
     site_q = build_ipf_qsets(site.compile_Q())
     q_sets = []
     for q, (name, Klass) in izip(site_q, searchables):
-        if name == 'RACK':
+        if name in ('RACK', 'NETWORK'):
             q_sets.append(Q(site=site))
         elif name == 'SITE':
             q_sets.append(Q(pk=site.pk) | Q(parent=site))
@@ -265,19 +268,74 @@ def build_site_qsets(site_name):
     return q_sets
 
 
-def build_vlan_qsets(vlan_name):
+def resolve_vlans(vlan_str):
+    """
+        case 0: vlan_str is <name>,<number>
+        case 1: vlan_str is <number>,<name>
+        case 2: vlan_str is <number>
+        case 3: vlan_str is <name>
+    """
     try:
+        # Case 0
+        vlan_name, vlan_number = vlan_str.split(',')
         if vlan_name.isdigit():
-            vlan = Vlan.objects.get(number=vlan_name)
+            vlan_name, vlan_number = vlan_number, vlan_name
+        vlans = Vlan.objects.filter(number=vlan_number, name=vlan_name)
+    except ValueError:
+        # Case 1 and 2
+        if vlan_str.isdigit():
+            vlans = Vlan.objects.filter(number=vlan_str)
         else:
-            vlan = Vlan.objects.get(name=vlan_name)
-    except ObjectDoesNotExist:
-        raise BadDirective("{0} isn't a valid "
-                           "vlan identifier.".format(vlan_name))
-    except MultipleObjectsReturned:
-        raise BadDirective("{0} doesn't uniquely identify"
-                           "a vlan.".format(vlan_name))
-    return build_ipf_qsets(vlan.compile_Q())
+            vlans = Vlan.objects.filter(name=vlan_str)
+    if not vlans.exists():
+        raise BadDirective(
+            "{0} doesn't resolve to a vlan Inventory knows "
+            "about.".format(vlan_str)
+        )
+    return vlans
+
+
+def make_vlan_q_set(vlan):
+    ip_qs = build_ipf_qsets(vlan.compile_Q())
+    q_sets = []
+    for q, (name, Klass) in izip(ip_qs, searchables):
+        if name in ('NETWORK'):
+            q_sets.append(vlan.compile_network_Q())
+        elif name == 'VLAN':
+            q_sets.append(Q(pk=vlan.pk))
+        else:
+            q_sets.append(q)
+    return q_sets
+
+
+def build_vlan_qsets(vlan_str):
+    """
+    To use this directive you should use the 'vlan=:' directive. Vlan's have a
+    number and a name and some vlan's have the same number/name. If you specify
+    a vlan name that maps back to two different vlans, both vlans and their
+    corresponding objects will be displayed. To specify a vlan number -and-
+    name, comma seperate (no spaces in between) the number and name. Some
+    examples::
+
+        vlan=:foo,23
+        vlan=:23,foo
+        vlan=:foo
+        vlan=:23
+
+    """
+    vlans = resolve_vlans(vlan_str)
+    vlan_qs = map(make_vlan_q_set, vlans)
+
+    def OR(l1, l2):
+        q_sets = []
+        for i, j in izip(l1, l2):
+            if i is None and j is None:
+                q_sets.append(None)
+            else:
+                q_sets.append(i | j)
+        return q_sets
+
+    return reduce(OR, vlan_qs)
 
 
 def build_zone_qsets(zone):
