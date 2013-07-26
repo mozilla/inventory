@@ -70,7 +70,11 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
                     "Cannot delete the record {0}. It is a glue "
                     "record.".format(self.record_type()))
         if kwargs.pop("check_cname", True):
-            if CNAME.objects.filter(target=self.fqdn):
+            # If there is a cname pointing at us and there is no other address
+            # record that it could be pointing at, fail to be deleted.
+            if (CNAME.objects.filter(target=self.fqdn).exists() and
+                    not self.__class__.objects.filter(fqdn=self.fqdn)
+                    .exclude(pk=self.pk).exists()):
                 raise ValidationError(
                     "A CNAME points to this {0} record. Change the CNAME "
                     "before deleting this record.".format(self.record_type()))
