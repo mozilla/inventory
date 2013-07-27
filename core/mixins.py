@@ -66,9 +66,11 @@ class RangeProperty(object):
 
 from mozdns.mixins import DisplayMixin
 
+
 # We are using the DisplayMixin here to get the justs. Eventually, these values
 # should be factored out into a base class.
 class CoreDisplayMixin(DisplayMixin):
-    def bind_render_record(self, pk=False):
+    def bind_render_record(self, pk=False, **kwargs):
         template = Template(self.template).substitute(**self.justs)
-        return template.format(rdtype=self.rdtype, **vars(self))
+        kwargs.update(vars(self))
+        return template.format(rdtype=self.rdtype, **kwargs)

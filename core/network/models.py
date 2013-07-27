@@ -45,7 +45,8 @@ class Network(models.Model, ObjectUrlMixin, CoreDisplayMixin):
     network = None
 
     template = (
-        "{network_str:$lhs_just} {rdtype:$rdtype_just} IPv{ip_type:$rhs_just}"
+        "{network_str:$lhs_just} {rdtype:$rdtype_just} IPv{ip_type:$rhs_just} "
+        "vlan=:{vlan_str} site=:{site_str}"
     )
 
     class Meta:
@@ -67,6 +68,17 @@ class Network(models.Model, ObjectUrlMixin, CoreDisplayMixin):
     @property
     def rdtype(self):
         return 'NET'
+
+    def bind_render_record(self, **kwargs):
+        vlan_str = (
+            '{0},{1}'.format(self.vlan.name, self.vlan.number)
+            if self.vlan
+            else 'None'
+        )
+        site_str = self.site.full_name if self.site else 'None'
+        return super(Network, self).bind_render_record(
+            vlan_str=vlan_str, site_str=site_str, **kwargs
+        )
 
     def details(self):
         details = [
