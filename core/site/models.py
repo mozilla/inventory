@@ -23,7 +23,7 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
     search_fields = ('full_name',)
 
     template = (
-        "{full_name:$lhs_just} {rdtype:$rdtype_just} name: {name:$rhs_just}"
+        "{full_name:$lhs_just} {rdtype:$rdtype_just} {full_name:$rhs_just}"
     )
 
     class Meta:
