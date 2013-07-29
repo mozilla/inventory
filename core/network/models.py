@@ -205,6 +205,12 @@ class NetworkKeyValue(DHCPKeyValue, CommonOption):
         """
         pass
 
+    def _aa_security_zone(self):
+        """
+        The security zone of this network.
+        """
+        pass
+
     def _aa_filename(self):
         """
         filename filename;
