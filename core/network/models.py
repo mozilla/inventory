@@ -89,8 +89,13 @@ class Network(models.Model, ObjectUrlMixin, CoreDisplayMixin):
                 ('Vlan',
                  to_a("{0}:{1}".format(self.vlan.name, self.vlan.number),
                       self.vlan)))
+        else:
+            details.append(('Vlan', 'None'))
+
         if self.site:
             details.append(('Site', to_a(self.site.full_name, self.site)))
+        else:
+            details.append(('Site', 'None'))
 
         return details
 

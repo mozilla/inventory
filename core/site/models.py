@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 
 from core.mixins import ObjectUrlMixin, CoreDisplayMixin
 from core.keyvalue.models import KeyValue
@@ -68,6 +69,11 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
         if self.parent:
             details.append(
                 ('Parent Site', to_a(self.parent.full_name, self.parent))
+            )
+        else:
+            details.append(
+                ('All sites', to_a('Global Site View', reverse('site-list'),
+                                   use_absolute_url=False))
             )
         return details
 

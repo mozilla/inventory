@@ -223,5 +223,8 @@ def resolve_ip_type(ip_str):
     return ip_type, Klass
 
 
-def to_a(text, obj):
-    return "<a href='{0}'>{1}</a>".format(obj.get_absolute_url(), text)
+def to_a(text, obj, use_absolute_url=True):
+    if use_absolute_url:
+        return "<a href='{0}'>{1}</a>".format(obj.get_absolute_url(), text)
+    else:
+        return "<a href='{0}'>{1}</a>".format(obj, text)
