@@ -55,6 +55,11 @@ class KeyValue(models.Model):
             self.__class__.__name__.lower(), self.pk
         )
 
+    def get_absolute_url(self):
+        return '/en-US/core/keyvalue/{0}/{1}/'.format(
+            self.__class__.__name__.lower(), self.obj.pk
+        )
+
     def get_bundle(self):
         return {
             'key': self.key, 'value': self.value, 'uri': self.uri,

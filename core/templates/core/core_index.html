@@ -1,0 +1,47 @@
+{% extends "core/core_list.html" %}
+
+
+{% block content %}
+    <link href="{{ MEDIA_URL }}css/core_index.css" media="screen" rel="stylesheet" type="text/css" />
+    <div class='core-spread-sheet'>
+    {% for table in tables %}
+        <table class="tablesorter">
+            <caption>{{ table['caption'] }}</caption>
+                <thead nowrap>
+                    {% for header, get_data in table['headers'] %}
+                        <th style='padding-right: {{ width_helper(header) }}px;'>{{ header }}</th>
+                    {% endfor %}
+                    {% for site in sites %}
+                        <th style='padding-right: {{ width_helper(site.full_name) }}px;' class='core-spread-sheet-site-name'>
+                            <a href='{{ site.get_absolute_url() }}'>{{ site.full_name }}</a>
+                        </th>
+                    {% endfor %}
+                </thead>
+
+                <tbody>
+                    {% for vlan in table['vlans'] %}
+                    <tr>
+                        {% for header, getter in table['headers'] %}
+                            <td nowrap>{{ getter(vlan) }}</td>
+                        {% endfor %}
+                        {% for site in sites %}
+                            <td nowrap>
+                                {% for network in site.network_set.filter(vlan=vlan).order_by('ip_type') %}
+                                    <div class='core-spread-sheet-data'>
+                                    {% for label, get_data in table['network_data'] %}
+                                        {% set data = get_data(network) %}
+                                        {% if data %}
+                                            <span>{{ data }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+        </table>
+    {% endfor %}
+    </div>
+{% endblock %}

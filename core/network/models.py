@@ -9,11 +9,12 @@ from core.vlan.models import Vlan
 from core.site.models import Site
 from core.mixins import ObjectUrlMixin, CoreDisplayMixin
 from core.keyvalue.base_option import CommonOption, DHCPKeyValue
+from core.keyvalue.mixins import KVUrlMixin
 
 import ipaddr
 
 
-class Network(models.Model, ObjectUrlMixin, CoreDisplayMixin):
+class Network(models.Model, ObjectUrlMixin, CoreDisplayMixin, KVUrlMixin):
     id = models.AutoField(primary_key=True)
     vlan = models.ForeignKey(Vlan, null=True,
                              blank=True, on_delete=models.SET_NULL)

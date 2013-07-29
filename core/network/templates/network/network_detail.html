@@ -46,14 +46,16 @@
 
     {% if ranges %}
             <div style='display:inline-block; margin-left: 3em;'>
-                baz
             <table class="tablesorter">
                     <caption>Ranges</caption>
+                    <thead>
                     <th>Type</th>
                     <th>Start</th>
                     <th>End</th>
                     <th>Usage</th>
+                    </thead>
 
+                    <tbody>
                     {% for range in ranges %}
                     <tr>
                         <td>{{ range.get_rtype_display() }}</td>
@@ -62,6 +64,7 @@
                         {% set ru = range.range_usage() %}
                         <td>{{ ru['precent_used']}}</td>
                     </tr>
+                    </tbody>
                     {% endfor %}
             </table>
             </div>
