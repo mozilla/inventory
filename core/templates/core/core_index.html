@@ -11,7 +11,7 @@
                     {% for header, get_data in table['headers'] %}
                         <th style='padding-right: {{ width_helper(header) }}px;'>{{ header }}</th>
                     {% endfor %}
-                    {% for site in sites %}
+                    {% for site in table['sites'] %}
                         <th style='padding-right: {{ width_helper(site.full_name) }}px;' class='core-spread-sheet-site-name'>
                             <a href='{{ site.get_absolute_url() }}'>{{ site.full_name }}</a>
                         </th>
@@ -24,7 +24,7 @@
                         {% for header, getter in table['headers'] %}
                             <td nowrap>{{ getter(vlan) }}</td>
                         {% endfor %}
-                        {% for site in sites %}
+                        {% for site in table['sites'] %}
                             <td nowrap>
                                 {% for network in site.network_set.filter(vlan=vlan).order_by('ip_type') %}
                                     <div class='core-spread-sheet-data'>

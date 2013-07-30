@@ -1,10 +1,12 @@
 from django.shortcuts import render
+from django.db.models import Q
 
 from base.base.views import BaseListView, BaseDetailView, BaseCreateView
 from base.base.views import BaseUpdateView, BaseDeleteView
-from core.vlan.models import Vlan
 from core.site.models import Site
 from core.utils import to_a
+
+import itertools
 
 
 class CoreListView(BaseListView):
@@ -34,7 +36,6 @@ class CoreDeleteView(BaseDeleteView):
 
 
 def core_index(request):
-    vlans = Vlan.objects.all()
     sites = Site.objects.all()
 
     def width_helper(text):
@@ -47,9 +48,10 @@ def core_index(request):
         else:
             return ''
 
-    table_meta = {
-        'caption': 'The New Vlans Mana Page',
-        'vlans': vlans,
+    table_meta_template = {
+        'caption': '',
+        'vlans': None,
+        'sites': None,
         'headers': [
             ('name', lambda v: to_a(v.name, v)),
             ('number', lambda v: to_a(v.number, v))
@@ -58,12 +60,35 @@ def core_index(request):
             # This will be applied per network in a vlan and
             # wll be the stored in the td
             ('security_zone', get_security_zone),
-            ('network', lambda n: to_a(n.network_str, n.site))
+            ('network', lambda n: to_a(n.network_str, n))
         ]
     }
 
+    tables = []
+
+    all_names = Site.objects.distinct('name').values_list('name', flat=True)
+
+    def make_table(caption, sites):
+        nets = []
+        for site in sites:
+            nets.append(
+                site.network_set.filter(site=site).filter(~Q(vlan=None))
+            )
+        flat_nets = list(itertools.chain(*nets))
+
+        vlans = map(lambda n: n.vlan, flat_nets)
+        table = table_meta_template.copy()
+        table['caption'] = caption
+        table['vlans'] = vlans
+        table['sites'] = sites
+        return table
+
+    for site_name in all_names:
+        sites = Site.objects.filter(name=site_name)
+        tables.append(make_table(site_name.title(), sites))
+
     return render(request, 'core/core_index.html', {
         'sites': sites,
-        'tables': [table_meta],
+        'tables': tables,
         'width_helper': width_helper
     })
