@@ -36,8 +36,8 @@ class IPTests(TestCase):
 
         vlan1 = Vlan.objects.create(name='vlan-foo', number=1)
         vlan2 = Vlan.objects.create(name='vlan-foo', number=2)
-        site1 = Site.objects.create(name='foo-site')
-        site2 = Site.objects.create(name='bar-site')
+        site1 = Site.objects.create(full_name='foo-site')
+        site2 = Site.objects.create(full_name='bar-site')
         Network.objects.create(
             network_str='10.0.0.0/30', ip_type='4', vlan=vlan1, site=site1
         )

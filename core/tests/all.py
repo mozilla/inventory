@@ -1,9 +1,7 @@
-# from core.mozuser.tests import *
-# from core.ctnr.tests import *
-# from core.node.tests import *
-from core.registration.tests.all import *
-from core.range.tests.all import *
-from core.network.tests import *
-from core.search.tests.all import *
-from core.keyvalue.tests import *
-from core.hwadapter.tests import *
+from core.registration.tests.all import *  # noqa
+from core.range.tests.all import *  # noqa
+from core.network.tests import *  # noqa
+from core.search.tests.all import *  # noqa
+from core.keyvalue.tests import *  # noqa
+from core.hwadapter.tests import *  # noqa
+from core.site.tests import *  # noqa

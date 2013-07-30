@@ -41,6 +41,8 @@ def validate_intrerface_name(name):
 
 
 def validate_site_name(name):
+    if not name:
+        raise ValidationError("A site name must be non empty.")
     if name.find(' ') > 0:
         raise ValidationError("A site name must not contain spaces.")
     if name.find('.') > 0:

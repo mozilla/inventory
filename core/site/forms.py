@@ -5,11 +5,12 @@ from core.site.models import Site
 
 
 class SiteForm(forms.ModelForm):
-    name = forms.CharField()
+    full_name = forms.CharField()
 
     class Meta:
         model = Site
-        exclude = ('full_name',)
+        include = ('full_name',)
+        exclude = ('parent', 'name')
 
     def validate_unique(self):
         try:

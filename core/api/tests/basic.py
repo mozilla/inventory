@@ -5,6 +5,7 @@ from mozdns.tests.utils import create_fake_zone, random_label
 from core.registration.static.models import StaticReg
 from core.hwadapter.models import HWAdapter
 from core.group.models import Group
+from core.site.models import Site
 from systems.models import System
 
 import simplejson as json
@@ -152,6 +153,21 @@ class HWAdapterTest(CoreAPITests, ResourceTestCase):
     def post_data(self):
         return {
             'description': random_label(),
+            'name': 'eth0',
+            'sreg': self.sreg.pk
+        }
+
+
+class Site(CoreAPITests, ResourceTestCase):
+    test_type = Site
+    test_name = 'site'
+
+    def setUp(self):
+        super(Site, self).setUp()
+
+    def post_data(self):
+        return {
+            'full_name': random_label(),
             'name': 'eth0',
             'sreg': self.sreg.pk
         }

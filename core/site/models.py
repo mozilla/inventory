@@ -18,7 +18,9 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
     full_name = models.CharField(
         max_length=255, null=True, blank=True
     )
-    name = models.CharField(max_length=255, validators=[validate_site_name])
+    name = models.CharField(
+        max_length=255, validators=[validate_site_name], blank=True
+    )
     parent = models.ForeignKey("self", null=True, blank=True)
 
     search_fields = ('full_name',)
@@ -46,11 +48,16 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
         return 'SITE'
 
     def save(self, *args, **kwargs):
+        self.name = self.full_name.split('.')[0]
         self.full_clean()
         super(Site, self).save(*args, **kwargs)
 
     def clean(self):
-        self.full_name = self.get_site_path()
+        map(validate_site_name, self.full_name.split('.'))
+        self.name, parent_name = (
+            self.full_name.split('.')[0], self.full_name.split('.')[1:]
+        )
+        validate_site_name(self.name)
         if self.pk:
             db_self = self.__class__.objects.get(pk=self.pk)
             if self.site_set.exists() and self.name != db_self.name:
@@ -58,6 +65,19 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
                     "This site has child sites. You cannot change it's name "
                     "without affecting all child sites."
                 )
+        if not self.full_name.find('.') == -1:
+            self.parent, _ = self.__class__.objects.get_or_create(
+                full_name='.'.join(parent_name)
+            )
+        else:
+            self.parent = None
+
+    def delete(self, *args, **kwargs):
+        if self.site_set.all().exists():
+            raise ValidationError(
+                "This site has child sites. You cannot delete it."
+            )
+        super(Site, self).delete(*args, **kwargs)
 
     def update_attrs(self):
         self.attrs = AuxAttr(SiteKeyValue, self)
