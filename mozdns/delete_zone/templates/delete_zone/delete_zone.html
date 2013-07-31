@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <script src='{{ MEDIA_URL }}javascripts/delete_zone.js'></script>
+    <script>
+        $(document).ready(function () {
+            setup_delete({{ zones }}, '/en-US/mozdns/delete_zone/delete_zone_ajax/' );
+        })
+    </script>
+    <div id='delete-dialog' style='display:none;' data-domain-name=''>
+        <p>Are you sure?</p>
+    </div>
+    <div>
+        <label for='zone_list'><input id='zone_list' name='zone_list'></label>
+        <label for='delete_button'>
+            <input id='delete_button' type='button' name='delete_button' value='Delete Zone'>
+        </label>
+    </div>
+    <div style='margin-top:3em;'>
+        <div id="waiting-to-delete-block" width="100%" style='display: none;'>
+            {% import 'loading.html' as l -%}
+            {{ l.loading_area('Deleting Zone. Please be patient.') }}
+        </div>
+        <div id="waiting-block" width="100%" style='display: none;'>
+            {% import 'loading.html' as l -%}
+            {{ l.loading_area('Loading Zone') }}
+        </div>
+        <div id="results-block" width="100%" style='display: none;'>
+        </div>
+    </div>
+{% endblock %}

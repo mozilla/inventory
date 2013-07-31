@@ -1,0 +1,22 @@
+{% macro loading_area(text) %}
+    <style>
+        .waiting-area {
+            padding: 10px;
+            border-radius: 10px;
+            margin: 0 auto 20px auto !important;
+            border: solid 1px black;
+            text-align: center;
+            background-color: white;
+        }
+        .waiting-area input, div.waiting-area progress {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+    <div class='waiting-area'>
+        <span>{{ text }}</span>
+        <progress max="100">
+            <strong>Progress</strong>
+        </progress>
+    </div>
+{% endmacro %}
