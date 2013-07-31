@@ -84,7 +84,7 @@ def search_dns_text(request):
         if 'error_messages' in kwargs:
             return json.dumps({'text_response': kwargs['error_messages']})
         response_str = ""
-        for type_ in ['NETWORK', 'SITE', 'VLAN']:
+        for type_ in ['NET', 'SITE', 'VLAN']:
             response_str += render_rdtype(kwargs['objects'][type_])
         for type_ in ['SOA', 'NS', 'MX', 'SRV', 'CNAME', 'SSHFP', 'TXT',
                       'A', 'SREG', 'PTR']:

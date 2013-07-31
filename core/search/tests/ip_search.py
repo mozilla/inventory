@@ -50,6 +50,6 @@ class IPTests(TestCase):
         self.assertFalse(error)
         self.assertEqual(len(res['PTR']), 1)
         self.assertEqual(len(res['A']), 1)
-        self.assertEqual(len(res['NETWORK']), 1)
+        self.assertEqual(len(res['NET']), 1)
         self.assertEqual(len(res['SITE']), 1)
         self.assertEqual(len(res['VLAN']), 1)

@@ -54,7 +54,7 @@ searchables = (
     ('SYSTEM', System),
     ('RACK', SystemRack),
     ('TXT', TXT),
-    ('NETWORK', Network),
+    ('NET', Network),
     ('SITE', Site),
     ('VLAN', Vlan),
 )
@@ -281,7 +281,7 @@ def build_ip_qsets(ip_str):
     q_sets = []
 
     for q, (name, Klass) in izip(ipf_qs, searchables):
-        if name == 'NETWORK':
+        if name == 'NET':
             q_sets.append(network_q)
         elif name == 'SITE' and site:
             q_sets.append(Q(pk=site.pk))
@@ -315,7 +315,7 @@ def build_site_qsets(site_name):
     site_q = build_ipf_qsets(site.compile_Q())
     q_sets = []
     for q, (name, Klass) in izip(site_q, searchables):
-        if name in ('RACK', 'NETWORK'):
+        if name in ('RACK', 'NET'):
             q_sets.append(Q(site=site))
         elif name == 'SITE':
             q_sets.append(Q(pk=site.pk) | Q(parent=site))
@@ -356,7 +356,7 @@ def make_vlan_q_set(vlan):
     ip_qs = build_ipf_qsets(vlan.compile_Q())
     q_sets = []
     for q, (name, Klass) in izip(ip_qs, searchables):
-        if name in ('NETWORK'):
+        if name in ('NET'):
             q_sets.append(vlan.compile_network_Q())
         elif name == 'VLAN':
             q_sets.append(Q(pk=vlan.pk))

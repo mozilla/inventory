@@ -8,8 +8,8 @@
     {% if meta['counts']['VLAN'] -%}
         {{ meta['counts']['VLAN'] }} <a href="#q={{meta['search']}}&Vlan">Vlans</a> |
     {% endif -%}
-    {% if meta['counts']['NETWORK'] -%}
-        {{ meta['counts']['NETWORK'] }} <a href="#q={{meta['search']}}&Network">Networks</a> |
+    {% if meta['counts']['NET'] -%}
+        {{ meta['counts']['NET'] }} <a href="#q={{meta['search']}}&Network">Networks</a> |
     {% endif -%}
     {% if meta['counts']['SYSTEM'] -%}
         {{ meta['counts']['SYSTEM'] }} <a href="#q={{meta['search']}}&System">Systems</a> |
@@ -89,7 +89,7 @@
         </tbody>
     </table>
 {% endif -%}
-{% if objects['NETWORK'] -%}
+{% if objects['NET'] -%}
     <h4><a class='plane-link' name="q={{meta['search']}}&Network">Networks</a></h4>
     <table class="tablesorter other-table">
         <thead>
@@ -99,7 +99,7 @@
         </tr>
         </thead>
         <tbody>
-            {% for network in objects['NETWORK'] %}
+            {% for network in objects['NET'] %}
                 <tr>
                     <td><a href="{{ network.get_absolute_url() }}">{{ network.network_str }}</a></td>
                     {% if network.site %}
