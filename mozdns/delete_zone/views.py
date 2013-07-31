@@ -17,7 +17,8 @@ def delete_zone_helper(domain_name):
             'success': False,
             'message': 'Which zone do you want to delete?'
         }
-    if domain_name in ('mozilla.com', 'mozilla.net', 'mozilla.org'):
+    if domain_name in ('mozilla.com', 'mozilla.net', 'mozilla.org',
+                       'allizom.org'):
         raise ValidationError('Go home.')
 
     zone_objs = compile_to_django("zone=:{0}".format(domain_name))
