@@ -37,6 +37,8 @@ class Network(models.Model, ObjectUrlMixin, CoreDisplayMixin, KVUrlMixin):
         help_text="The number of binary 1's in the netmask."
     )
 
+    is_reserved = models.BooleanField(default=False, blank=False)
+
     dhcpd_raw_include = models.TextField(
         null=True, blank=True, help_text="The config options in this box "
         "will be included *as is* in the dhcpd.conf file for this "
@@ -84,6 +86,7 @@ class Network(models.Model, ObjectUrlMixin, CoreDisplayMixin, KVUrlMixin):
     def details(self):
         details = [
             ('Network', self.network_str),
+            ('Reserved', str(self.is_reserved)),
         ]
         if self.vlan:
             details.append(
