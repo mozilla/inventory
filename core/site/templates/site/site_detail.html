@@ -74,10 +74,14 @@
         </div>
         <script>
             $(document).ready(function (){
-                $.get('/en-US/systems/racks/ajax_racks_by_site/{{site.pk}}/',
-                function (data) {
-                   $('#rack_usage').empty();
-                   $('#rack_usage').html(data);
+                $('#show-racks').click(function (){
+                    $('.waiting-area').css('display', 'block');
+                    $('#show-racks').remove();
+                    $.get('/en-US/systems/racks/ajax_racks_by_site/{{site.pk}}/',
+                    function (data) {
+                        $('#rack_usage').empty();
+                        $('#rack_usage').html(data);
+                    });
                 });
             });
         </script>
@@ -96,7 +100,8 @@
             }
         </style>
         <div id='rack_usage'>
-            <div class='waiting-area'>
+            <button id='show-racks'>Display all racks in {{ site.full_name }}</button>
+            <div class='waiting-area' style='display:none;'>
                 <span>Loading Racks</span>
                 <progress max="100">
                     <strong>Progress</strong>
