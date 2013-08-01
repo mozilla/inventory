@@ -305,13 +305,7 @@ def build_network_qsets(network_str):
     return build_ipf_qsets(ipf.Q)
 
 
-def build_site_qsets(site_name):
-    try:
-        site = Site.objects.get(full_name=site_name)
-    except ObjectDoesNotExist:
-        raise BadDirective(
-            "{0} isn't a valid site.".format(site_name)
-        )
+def build_site_single_qset(site):
     site_q = build_ipf_qsets(site.compile_Q())
     q_sets = []
     for q, (name, Klass) in izip(site_q, searchables):
@@ -323,6 +317,30 @@ def build_site_qsets(site_name):
             q_sets.append(q)
 
     return q_sets
+
+
+def build_site_qsets(site_name):
+    # Look for a more specific results first
+    sites = Site.objects.filter(full_name=site_name)
+    if not sites:
+        sites = Site.objects.filter(name=site_name)
+    if not sites:
+        raise BadDirective(
+            "{0} isn't a valid site.".format(site_name)
+        )
+
+    def combine(q1, q2):
+        q_sets = []
+        for x, y in izip(q1, q2):
+            if not (x and y):
+                q_sets.append(None)
+            else:
+                q_sets.append(x | y)
+        return q_sets
+
+    site_qs = map(build_site_single_qset, sites)
+    x = reduce(combine, site_qs)
+    return x
 
 
 def resolve_vlans(vlan_str):
