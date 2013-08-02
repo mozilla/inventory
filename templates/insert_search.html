@@ -1,0 +1,8 @@
+{% macro insert_search(target_div_id, search_input_id) %}
+    {# Assume jquery is somewhere #}
+    <script>
+        $(document).ready(function (){
+            search_watcher($({{search_input_id}}), $({{target_div_id}}));
+        });
+    </script>
+{% endmacro %}

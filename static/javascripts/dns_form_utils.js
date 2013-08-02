@@ -447,7 +447,7 @@ function bind_view_ip_type_detection() {
 function bind_force_private_if_public() {
   function force_private_if_public(public_el, private_el) {
     if ($('#view-enforcement').attr('data-view-enforcement') == 'off') {
-      return
+      return;
     }
     if ($(public_el).prop('checked')) {
       $(private_el).prop('checked', true);

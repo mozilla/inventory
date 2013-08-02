@@ -1,11 +1,13 @@
+<script src="{{ MEDIA_URL }}javascripts/insert_unsorted_search.js">
+</script>
+<script src="{{ MEDIA_URL }}javascripts/valid_ip.js">
+</script>
 <script>
     // So if people paste links around.
     console.log("Form loaded: I see rdtype=: {{record_type}} and pk=:{{record_pk}}");
     $(document).ready(function (){
         if ($('#id_ip_str') && !$('#id_ip_str').val()){
-            $(
-            "<input type='button' id='ffip' value='FFIP'/>"
-            ).insertAfter('#id_ip_str').css('margin-left', '0.7em');
+            $("<input type='button' id='ffip' value='FFIP'/>").insertAfter('#id_ip_str').css('margin-left', '0.7em');
             $('#ffip').click(function () {
                 make_free_ip_search(
                     $('#id_ip_str'),
@@ -16,6 +18,23 @@
                 );
             });
         }
+        var possible_input_ids = [
+            '#id_ip_str',
+            '#id_target',
+            '#id_fqdn',
+        ];
+        search_watcher(possible_input_ids, $('#related-things'), function (search){
+            console.log("callback here");
+            console.log(search);
+            if (search !== '') {
+                $('#related-help-text').css('display', 'block');
+                $('#related-help-text').html(
+                    'Below are related objects found with the search <code>"' + search + '"</code>'
+                );
+            } else {
+                $('#related-help-text').css('display', 'none');
+            }
+        });
     });
 </script>
 <div id='find-free-ip-dialog' style='display:none;'>
@@ -58,10 +77,37 @@
     }
     div.form-container {
         float: left;
+        margin-bottom: 30px;
     }
     div.form-container ul {
         width: 30em;
     }
+    div#related-things {
+        clear: both;
+        padding: 10px;
+        padding: 20px 10px 5px 10px;
+        /*       top  rht  btm  lft */
+    }
+    div#related-things {
+        clear: both;
+    }
+    div#related {
+        margin-top: 10px;
+        clear: both;
+    }
+    div#related-help-text {
+        width: 100%;
+        background-color: white;
+        vertical-align: middle;
+        border-radius: 5px;
+        text-align: center;
+        vertical-align:text-middle;
+        clear: both;
+    }
+    .matched-ip {
+        background-color: #67ff5f;
+    }
+
 </style>
 {% if object_ %}
     {% set d = object_.reverse_domain if record_type == 'PTR' else object_.domain %}
@@ -123,5 +169,11 @@
             </table>
             <input id='submit-button' type="submit" value="Commit"/>
         <form>
+    </div>
+</div>
+<div id='related'>
+    <div id='related-help-text' style='display: none'>
+    </div>
+    <div id='related-things' style='display: none'>
     </div>
 </div>
