@@ -7,16 +7,15 @@ from core.network.models import Network
 
 
 class NetworkForm(forms.ModelForm):
-    site = forms.ModelChoiceField(
-        queryset=Site.objects.all(),
-        empty_label="(Defaults to parent's site.)",
-        required=False)
+    site = forms.ModelChoiceField(queryset=Site.objects.all(), required=False)
 
     def __init__(self, *args, **kwargs):
         super(NetworkForm, self).__init__(*args, **kwargs)
         self.fields['dhcpd_raw_include'].label = "DHCP Config Extras"
         self.fields['dhcpd_raw_include'].widget.attrs.update(
-            {'cols': '80', 'style': 'display: none;width: 680px'})
+            {'cols': '80',
+             'style': 'display: none;width: 680px; margin-top:10px'}
+        )
 
     class Meta:
         model = Network
