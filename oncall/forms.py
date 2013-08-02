@@ -24,10 +24,12 @@ class OncallForm(forms.Form):
                 cur_onc_name = cur.user.username
             except OncallAssignment.DoesNotExist:
                 cur_onc_name = ''
-
+            oncall_title = onc_type.title()
+            if oncall_title == 'Desktop':
+                oncall_title = 'Service Desk'
             # dynamically add fields for each oncall type
             self.fields[onc_type] = forms.ChoiceField(
-                label=onc_type.title() + ' Oncall',
+                label=oncall_title + ' Oncall',
                 choices=make_choices(
                     'userprofile__is_{0}_oncall'.format(onc_type)
                 ),
