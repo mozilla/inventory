@@ -111,11 +111,18 @@ class DomainDetailView(DomainView, DetailView):
         ns_objects = domain.nameserver_set.all().order_by('server')
         ns_headers, ns_matrix, ns_urls = tablefy(ns_objects)
 
+        domain_objects = domain.domain_set.all().order_by('name')
+        domain_headers, domain_matrix, domain_urls = tablefy(domain_objects)
+
         # Join the two dicts
         context = dict({
             "ns_headers": ns_headers,
             "ns_matrix": ns_matrix,
             "ns_urls": ns_urls,
+
+            "domain_headers": domain_headers,
+            "domain_matrix": domain_matrix,
+            "domain_urls": domain_urls,
 
             "address_headers": adr_headers,
             "address_matrix": adr_matrix,

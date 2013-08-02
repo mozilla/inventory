@@ -16,11 +16,15 @@
 
     {% from "base/tables.html" import render_table %}
 
+    {% if domain_matrix %}
+        <h3> Child Domains </h3>
+        {{ render_table(domain_headers, domain_matrix, domain_urls) }}
+    {% endif %}
+
     {% if ns_matrix %}
         <h3> Nameservers </h3>
         {{ render_table(ns_headers, ns_matrix, ns_urls) }}
     {% endif %}
-
 
     {% if mx_matrix %}
         <h3> MX Records </h3>
