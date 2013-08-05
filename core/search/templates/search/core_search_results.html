@@ -131,14 +131,14 @@
         <tbody>
         {% for s in objects['SYSTEM'] -%}
         <tr>
-            <td>{{ s.hostname }}</td>
+            <td><a href='{{ s.get_absolute_url() }}'>{{ s.hostname }}</a></td>
             <td>{{ s.oob_ip }}</td>
             <td>{{ s.server_model if s.server_model_id else "" }}</td>
             <td>{{ s.system_rack if s.system_rack_id else "" }}</td>
             <td>{{ s.serial }}</td>
             <td>{{ s.asset_tag }}   </td>
             <td>{{ s.system_status }}   </td>
-            <td><a href='{{ s.get_absolute_url() }}'>View</a> <a href='{{ s.get_edit_url() }}'>Edit</a></td>
+            <td><a href='{{ s.get_edit_url() }}'>Edit</a></td>
         </tr>
         {% endfor -%}
         </tbody>
