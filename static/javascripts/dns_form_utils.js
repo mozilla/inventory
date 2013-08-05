@@ -43,7 +43,7 @@ function select_state(state) {
                 function (){
                     if ($('#object_redirect_url').attr('record-url')) {
                         alert("Creation Successful!");
-                        window.location = '/core/';
+                        window.location = data.attr('creation_redirect') || '/core/';
                     }
                 }
             );
