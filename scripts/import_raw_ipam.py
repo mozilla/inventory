@@ -7,10 +7,8 @@ from core.network.models import Network, NetworkKeyValue
 
 
 def ensure_site(site_name):
-    parent = None
     for s in reversed(site_name.split('.')):
-        site, _ = Site.objects.get_or_create(name=s, parent=parent)
-        parent = site
+        site, _ = Site.objects.get_or_create(full_name=s)
     return site
 
 
