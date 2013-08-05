@@ -248,12 +248,13 @@ function setup_search_table(){
                     2: { sorter:'hostname' },
                 }
             };
-            break
+            break;
         case 'TXT':
         case 'SSHFP':
         case 'MX':
         case 'NS':
         case 'SRV':
+        case 'SOA':
         case 'CNAME': table_config = {
                 sortList: [[0,1]],
                 headers: {
@@ -262,7 +263,7 @@ function setup_search_table(){
                     2: { sorter:'hostname' },
                 }
             };
-            break
+            break;
         case 'DOMAIN': table_config = {
                 sortList: [[0,1]],
                 headers: {
@@ -270,7 +271,7 @@ function setup_search_table(){
                     1: { sorter:'hostname' },
                 }
             };
-            break
+            break;
     }
     $("#record-table").tablesorter(table_config);
     $("#record-table th:last-child").css('width', '30px');
@@ -281,7 +282,7 @@ function setup_search_table(){
     });
 }
 
-function do_search(){
+function do_search(callback){
     //console.log("searching" + $('#search-query').val());
     var data = $('#dns-data');
     var record_type = data.attr('record_type');
@@ -301,6 +302,9 @@ function do_search(){
             if (data.data('tableSorting')) {
                 // http://stackoverflow.com/questions/2288655/jquery-tablesorter-sort-same-column-after-update
                 $("#record-table").trigger("sorton", [data.data('tableSorting'),0]);
+            }
+            if (callback) {
+              callback();
             }
         }).error(function(e) {
             var newDoc = document.open("text/html", "replace");
