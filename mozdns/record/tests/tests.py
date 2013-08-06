@@ -212,6 +212,10 @@ class BaseRecordTestCase(object):
 class CNAMERecordTests(BaseRecordTestCase, TestCase):
     test_type = CNAME
 
+    def test_rr_missmatched_ttl_post_create(self):
+        # Round Robin CNAMEs are not allowed since they are singleton records
+        pass
+
     def post_data(self):
         return {
             'description': random_label(),

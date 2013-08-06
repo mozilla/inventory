@@ -361,6 +361,20 @@ class CNAMETests(TestCase):
 
         self.assertRaises(ValidationError, rec.clean)
 
+    def test_cname_cname_exists(self):
+        label = "testyfoo"
+        data = "wat"
+        dom, _ = Domain.objects.get_or_create(name="cd")
+        dom, _ = Domain.objects.get_or_create(name="what.cd")
+
+        CNAME.objects.get_or_create(
+            label=label, domain=dom, target='some.thing.different'
+        )
+        self.assertRaises(
+            ValidationError, CNAME.objects.create,
+            **{'label': label, 'domain': dom, 'target': data}
+        )
+
     def test_cname_point_to_itself(self):
         label = "foopy"
         data = "foopy.what.cd"

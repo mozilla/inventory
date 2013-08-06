@@ -75,7 +75,7 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
     # This indicates if this SOA's zone needs to be rebuilt
     dirty = models.BooleanField(default=False)
     is_signed = models.BooleanField(default=False)
-    search_fields = ('primary', 'contact', 'description')
+    search_fields = ('description',)
     template = _("{root_domain}. {ttl_} {rdclass:$rdclass_just} "
                  "{rdtype:$rdtype_just} {primary}. {contact}. "
                  "({serial} {refresh} {retry} {expire})")

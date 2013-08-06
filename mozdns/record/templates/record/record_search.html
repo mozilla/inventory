@@ -11,10 +11,26 @@
         // A little bit of js to handle the timing of doing search results
         var timerHandle;
         var timeOutInterval = 200; // 2 seconds
+        function do_rtype_search(){
+            $('.overflow-info').remove();
+            do_search(function show_overflow_info(){
+                if($('.overflow-info').data('total-obj-count') == $('.overflow-info').data('obj-count')) {
+                    var extra = '';
+                } else {
+                    var extra = ' (<a href="' + $('.overflow-info').data('all-results') + '">' +
+                                'See all results)'
+                }
+                $('#overflow-info-display').html(
+                    'Showing ' + $('.overflow-info').data('obj-count') +
+                    ' out of ' + $('.overflow-info').data('total-obj-count') +
+                    ' matched results ' + extra
+                );
+            });
+        }
         $('#search-query').keyup(function(){
             clearTimeout(timerHandle);
             if ($('#search-query').val()){
-                timerHandle = setTimeout(do_search, timeOutInterval);
+                timerHandle = setTimeout(do_rtype_search, timeOutInterval);
             }
         });
         setup_search_table();
@@ -35,6 +51,8 @@
     <br />
     <div id='record-search'>
         <label for='search-query'>Search {{record_type}}'s: <input id='search-query' width="200px" /></label>
+        <div id='overflow-info-display' style='margin-top: 5px;'>
+        </div>
         <div id='search-results' class="containter">
             <table class="tablesorter" id="record-table">
             </table>

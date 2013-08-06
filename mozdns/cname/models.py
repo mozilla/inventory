@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 import mozdns
@@ -115,13 +116,28 @@ class CNAME(MozdnsRecord, LabelDomainMixin):
         qset = smart_fqdn_exists(self.fqdn, cn=False)
         if qset:
             objects = qset.all()
-            raise ValidationError("Objects with this name already exist: {0}".
-                                  format(objects))
+            raise ValidationError(
+                "Objects with this name already exist: {0}".format(objects)
+            )
+
+        cname_qset = self.__class__.objects.filter(
+            label=self.label, domain=self.domain
+        )
+
+        if self.pk:
+            cname_qset = cname_qset.filter(~Q(pk=self.pk))
+
+        if cname_qset.exists():
+            raise ValidationError(
+                "A CNAME with this fqdn already exist."
+            )
+
         MX = mozdns.mx.models.MX
         if MX.objects.filter(server=self.fqdn):
-            raise ValidationError("RFC 2181 says you shouldn't point MX "
-                                  "records at CNAMEs and an MX points to"
-                                  " this name!")
+            raise ValidationError(
+                "RFC 2181 says you shouldn't point MX records at CNAMEs and "
+                "an MX points to this name!"
+            )
         # There are preexisting records that break this rule. We can't support
         # this requirement until those records are fixed
         # PTR = mozdns.ptr.models.PTR

@@ -73,8 +73,10 @@ def record_search_ajax(request):
     records, error = search_type(query, record_type)
     if error:
         records = []
+        total_obj_count = 0
     else:
         try:
+            total_obj_count = records.count()
             records = records[:50]
         except MySQLdb.OperationalError, e:
             if "Got error " in str(e) and " from regexp" in str(e):
@@ -85,8 +87,10 @@ def record_search_ajax(request):
                 raise
 
     return render(request, 'record/record_search_results.html', {
+        'query': "{0} AND type=:{1}".format(query, record_type),
         'objs': records,
         'record_type': record_type,
+        'total_obj_count': total_obj_count
     })
 
 

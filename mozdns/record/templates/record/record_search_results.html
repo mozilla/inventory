@@ -1,2 +1,7 @@
 {% import 'record/draw_record_table.html' as drawer %}
+<div class='overflow-info'
+    data-obj-count="{{ objs.count() }}"
+    data-total-obj-count="{{ total_obj_count }}"
+    data-all-results="{{ 'core-search'|url() }}#q={{query}}"
+></div>
 {{ drawer.draw_record_table(record_type, objs, table_id='record-table') }}
