@@ -16,7 +16,7 @@ class SystemRackHandler(BaseHandler):
     fields = (
             ('id'),
             ('name'),
-            ('location', ('id', 'name')),
+            ('site', ('id', 'full_name')),
         
         )
     model = SystemRack
