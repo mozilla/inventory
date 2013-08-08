@@ -1,11 +1,12 @@
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 
-import ipaddr
-import smtplib
-from email.mime.text import MIMEText
 from settings.local import people_who_need_to_know_about_failures
 from settings.local import inventorys_email
+
+from email.mime.text import MIMEText
+import ipaddr
+import smtplib
 
 
 # http://dev.mysql.com/doc/refman/5.0/en/miscellaneous-functions.html
@@ -78,7 +79,8 @@ class IPFilterSet(object):
         return self.trim(rx, rs[1:], ip_type)
 
     def intersect(self, r1, r2, ip_type):
-        """Cases:
+        """
+        Cases:
             * Subset or equal
             * Left intersect
             * Right intersect
@@ -157,6 +159,61 @@ def start_end_filter(start, end, ip_type):
               ip_type=ip_type)
 
     return istart, iend, q
+
+
+def overlap(r1, r2, ip_type=None, cast_to_int=False):
+    if cast_to_int:
+        if ip_type == '4':
+            IP = ipaddr.IPv4Address
+        elif ip_type == '6':
+            IP = ipaddr.IPv6Address
+        else:
+            raise Exception('Not using overlap right. Missing ip_type')
+        to_int = lambda r: (int(IP(r[0])), int(IP(r[1])))
+        return _overlap(to_int(r1), to_int(r2))
+    else:
+        return _overlap(r1, r2)
+
+
+def _overlap(r1, r2):
+    # Make r1 always larger than r2
+    size = lambda r: abs(r[0] - r[1])
+
+    if size(r1) > size(r2):
+        (r1_start, r1_end), (r2_start, r2_end) = r1, r2
+    else:
+        # They could be the same size
+        (r1_start, r1_end), (r2_start, r2_end) = r2, r1
+
+    if r1_start > r2_end or r1_end < r2_start:  # no overlap
+        return None
+
+    if r1_end == r2_end and r1_start == r2_start:
+        # Low                   High
+        # r1    |---------|
+        # r2    |---------|
+        # rx    |---------|
+        return r1
+
+    if r1_start < r2_start and r1_end > r2_end:
+        # r2 is subset of r1
+        # Low                   High
+        # r1    |---------|
+        # r2     |-------|
+        # rx    |---------|
+        return r2
+    if r1_start > r2_start and r1_end > r2_end:
+        # Low                   High
+        # r1    |-----------|
+        # r2 |---------|
+        # rx    |------|
+        return r1_start, r2_end
+    if r1_start < r2_start and r1_end < r2_end:
+        # Low                   High
+        # r1 |-----------|
+        # r2      |---------|
+        # rx      |------|
+        return r2_start, r1_end
 
 
 def networks_to_Q(networks):

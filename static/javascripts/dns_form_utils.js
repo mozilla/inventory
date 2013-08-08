@@ -365,53 +365,14 @@ function setup_delete(){
         var data = $('#dns-data');
         var record_type = data.attr('record_type');
         var record_pk = data.attr('record_pk');
-        $('#commit-message').val('')
-        $('#delete-message').val('')
+        $('#commit-message').val('');
+        $('#delete-message').val('');
         if ($('#add-comment').is(':checked')) {
             $("#delete-dialog").dialog('open');
         } else {
             delete_handler();
         }
         return false;
-    });
-}
-
-function make_free_ip_search(target_ip_str, start, end, dialog_div, message_area) {
-    dialog_div.dialog({
-        title: 'Specify a range in which an unallocated ip address should be found.',
-        autoShow: false,
-        minWidth: 520,
-        buttons: {
-            "Find A Free IP": function() {
-                $.get("/core/range/usage_text/",
-                    {
-                        start: start.val(),
-                        end: end.val(),
-                        format: 'human_readable'
-                    }, function(data) {
-                        var data = $.parseJSON(data);
-                        message_area.empty()
-                        if (!data['success']) {
-                            message_area.append(data['error_messages']);
-                        } else if (data['unused'] == 0) {
-                            message_area.append("No ip addresses are free.");
-                        } else {
-                            var p_unused = data['unused'] / (data['unused'] + data['used']);
-                            p_unused = "" + p_unused; // Cast it
-                            message = "%" + p_unused.substring(2, 4) + " of address are unallocated"
-                                      + " in this range. The first unused address is "
-                                      + data['free_ranges'][0][0];
-                            message_area.append(message);
-                        }
-                    }).error(function (data) {
-                        var data = $.parseJSON(data);
-                    });
-            },
-            Cancel: function() {
-                // pass
-                $(this).dialog("close");
-            }
-        }
     });
 }
 
@@ -425,7 +386,16 @@ function set_ip_type(ip){
     }
 }
 
-function bind_view_ip_type_detection() {
+function bind_view_ip_type_detection(ip_str_id, views_0_id, views_1_id) {
+    if (typeof ip_str_id === 'undefined'){
+      ip_str_id = '#id_ip_str';
+    }
+    if (typeof views_0_id === 'undefined'){
+      views_0_id = '#id_views_0';
+    }
+    if (typeof views_1_id === 'undefined'){
+      views_1_id = '#id_views_1';
+    }
     // If an ip starts with '10' automatically set the private view
     // If an ip starts with '63.245' automatically set the public view
     var public_prefixs = ['63.245', '2620:0101', '2620:101'];
@@ -434,21 +404,21 @@ function bind_view_ip_type_detection() {
 
     var i; // loop var
 
-    $('#id_ip_str').on('change keypress paste focus textInput input', function(){
-        set_ip_type($('#id_ip_str').val());
+    $(ip_str_id).on('change keypress paste focus textInput input', function(){
+        set_ip_type($(ip_str_id).val());
         function do_detect(prefixs, view_el){
-            var ip_str = $('#id_ip_str').val();
+            var ip_str = $(ip_str_id).val();
             for(i = 0; i < prefixs.length; i++) {
                 if (ip_str.substring(0, prefixs[i].length) === prefixs[i]) {
-                    $(view_el).attr('checked', 'checked');
+                    $(view_el).prop('checked', true);
                     found = true;
                     break;
                 }
             }
         }
         if (!found) {  // Only do view detect if we havne't done it before
-           do_detect(private_prefixs, '#id_views_0');
-           do_detect(public_prefixs, '#id_views_1');
+           do_detect(private_prefixs, views_0_id);
+           do_detect(public_prefixs, views_1_id);
         }
     });
 }

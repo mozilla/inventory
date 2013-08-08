@@ -6,15 +6,18 @@
 
     {% block action_bar %}
         {% if network.get_edit_url %}
-            <a class="btn btn-primary" href="{{ network.get_edit_url() }}">Edit</a>
+            <a class="btn" href="{{ network.get_edit_url() }}">Edit</a>
         {% endif %}
 
         {% block mid_action_bar %}
         {% endblock %}
 
         {% if network.get_delete_url %}
-            <a class="btn btn-danger" href="{{ network.get_delete_url() }}">Delete</a>
+            <a class="btn" href="{{ network.get_delete_url() }}">Delete</a>
         {% endif %}
+        <a class="btn medium white" href="{{ 'create-range' | url()}}?network={{ network.pk }}&start_str={{ network.network_str.split('/')[0] }}&end_str={{ network.network_str.split('/')[0] }}">
+            Create a range in this network
+        </a>
     {% endblock %}
 
     <br>
@@ -45,29 +48,29 @@
 
 
     {% if ranges %}
-            <div style='display:inline-block; margin-left: 3em;'>
+    <div style='display:inline-block; margin-left: 3em;'>
             <table class="tablesorter">
                     <caption>Ranges</caption>
                     <thead>
-                    <th>Type</th>
                     <th>Start</th>
                     <th>End</th>
+                    <th>Name</th>
                     <th>Usage</th>
                     </thead>
 
                     <tbody>
                     {% for range in ranges %}
                     <tr>
-                        <td>{{ range.get_rtype_display() }}</td>
                         <td><a href='{{range.get_absolute_url()}}'>{{ range.start_str }}</a></td>
                         <td><a href='{{range.get_absolute_url()}}'>{{ range.end_str }}</a></td>
+                        <td>{{ range.name }}</td>
                         {% set ru = range.range_usage() %}
                         <td>{{ ru['precent_used']}}</td>
                     </tr>
                     </tbody>
                     {% endfor %}
             </table>
-            </div>
+    </div>
     {% endif %}
     <script>
         $(document).ready(function (){

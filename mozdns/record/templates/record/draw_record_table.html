@@ -19,7 +19,7 @@
             <td>{{ soa.primary }}</td>
             <td>{{ soa.contact }}</td>
             <td>{{ 'Zone waiting to be rebuilt' if soa.dirty else 'Zone is up-to-date'}}</td>
-            <td><a href="{{ soa.get_absolute_url() }}">View</a></td>
+            <td><a class='btn btn-small' href="{{ soa.get_absolute_url() }}">View</a></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -40,7 +40,7 @@
                 {{ domain.soa }}
                 {% endif %}
             </td>
-            <td><a href="{{ domain.get_absolute_url() }}">View</a></td>
+            <td><a class='btn btn-small' href="{{ domain.get_absolute_url() }}">View</a></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -59,7 +59,7 @@
             <td>{{ ns.domain.name }}</td>
             <td><b>NS</b></td>
             <td>{{ ns.server }}</td>
-            <td><a href="{{ ns.get_fancy_edit_url() }}">Edit</a></td>
+            <td><a class='btn btn-small' href="{{ ns.get_fancy_edit_url() }}">Edit</a></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -80,7 +80,7 @@
             <td><b>MX</b></td>
             <td>{{ mx.priority }}</td>
             <td>{{ mx.server }}</td>
-            <td><a href="{{ mx.get_fancy_edit_url() }}">Edit</a></td>
+            <td><a class='btn btn-small' href="{{ mx.get_fancy_edit_url() }}">Edit</a></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -99,7 +99,7 @@
             <td>{{ srv.fqdn }}</td>
             <td><b>SRV</b></td>
             <td>{{ srv.target }}</td>
-            <td><a href="{{ srv.get_fancy_edit_url() }}">Edit</a></td>
+            <td><a class='btn btn-small' href="{{ srv.get_fancy_edit_url() }}">Edit</a></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -118,7 +118,7 @@
             <td>{{ txt.fqdn }}</td>
             <td><b>TXT</b></td>
             <td>{{ txt.txt_data }}</td>
-            <td><a href="{{ txt.get_fancy_edit_url() }}">Edit</a></td>
+            <td><a class='btn btn-small' href="{{ txt.get_fancy_edit_url() }}">Edit</a></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -137,7 +137,7 @@
             <td>{{ cname.fqdn }}</td>
             <td><b>CNAME</b></td>
             <td>{{ cname.target }}</td>
-            <td><a href="{{ cname.get_fancy_edit_url() }}">Edit</a></td>
+            <td><a class='btn btn-small' href="{{ cname.get_fancy_edit_url() }}">Edit</a></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -156,7 +156,7 @@
             <td>{{ obj.fqdn }}</td>
             <td><b>{{ obj.record_type() }}</b></td>
             <td>{{ obj.ip_str }}</td>
-            <td><a href="{{ obj.get_fancy_edit_url() }}">Edit</a></td>
+            <td><a class='btn btn-small' href="{{ obj.get_fancy_edit_url() }}">Edit</a></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -175,7 +175,7 @@
             <td>{{ obj.fqdn }}</td>
             <td><b>{{ obj.record_type() }}</b></td>
             <td>{{ obj.ip_str }}</td>
-            <td><a href="{{ obj.get_fancy_edit_url() }}">Edit</a></td>
+            <td><a class='btn btn-small' href="{{ obj.get_fancy_edit_url() }}">Edit</a></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -194,7 +194,7 @@
             <td>{{ ptr.ip_str }}</td>
             <td><b>PTR</b></td>
             <td>{{ ptr.name }}</td>
-            <td><a href="{{ ptr.get_fancy_edit_url() }}">Edit</a></td>
+            <td><a class='btn btn-small' href="{{ ptr.get_fancy_edit_url() }}">Edit</a></td>
         </tr>
         {% endfor %}
         </tbody>

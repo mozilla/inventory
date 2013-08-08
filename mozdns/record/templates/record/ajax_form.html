@@ -7,15 +7,46 @@
     console.log("Form loaded: I see rdtype=: {{record_type}} and pk=:{{record_pk}}");
     $(document).ready(function (){
         if ($('#id_ip_str') && !$('#id_ip_str').val()){
-            $("<input type='button' id='ffip' value='FFIP'/>").insertAfter('#id_ip_str').css('margin-left', '0.7em');
+            $("<input type='button' id='ffip' value='Automatically Assign'/>").insertAfter('#id_ip_str').css('margin-left', '0.7em');
+
+            // Pull in find IP stuff
             $('#ffip').click(function () {
-                make_free_ip_search(
-                    $('#id_ip_str'),
-                    $('#range_start'),
-                    $('#range_end'),
-                    $('#find-free-ip-dialog'),
-                    $('#free-ip-result')
-                );
+              $('#choose-ip-area').css('display', 'block');
+              $('#choose-ip-area').css('visibility', 'hidden');
+              $.get('/core/range/ajax_find_related/', function (data){
+                    $('#choose-ip').html(data);
+                    // This function was pulled into existance by this ajax request
+                    chosen_init({
+                      dialog_div_id: '#choose-ip',
+                      target_el_id: '#id_ip_str',  // target_el_id
+                      reset_button_id: '#choose-ip-reset',
+                      display_range_id: '#choose-ip-display-ranges-area',
+                      find_related_url: "/en-US{{ 'find-related' | url() }}",  // find_related_url
+                      reset_callback: function (){
+                        $('#related-things').empty();
+                        $('#related-help-text').empty();
+                        $('#id_ip_str').val('');
+                        $('#id_fqdn').val('');
+                        $('#id_views_0').attr('checked', false);
+                        $('#id_views_1').attr('checked', false);
+                      },
+                      found_ip_callback: function (range, name_fragment){
+                        if(typeof range.free_ip == 'undefined') {
+                          $('#id_ip_str').val('');
+                        } else {
+                          $('#id_ip_str').val(range.free_ip);
+                          $('#id_ip_str').focus();
+                        }
+                        if (name_fragment.length) {
+                          $('#id_fqdn').val('.' + name_fragment + '.mozilla.com');
+                          $('#id_fqdn').focus();
+                        }
+                      }
+                    });
+                    $('#choose-ip-area').css('transition', 'visibility 0.5s linear 0s');
+                    $('#choose-ip-area').css('visibility', 'visible');
+                    $('#choose-ip-area').css('transition', 'height 0.5s linear 0s');
+              });
             });
         }
         var possible_input_ids = [
@@ -37,10 +68,65 @@
         });
     });
 </script>
+<style>
+  #choose-ip-area {
+    margin-top: 2em;
+    background-color:white;
+    border-radius: 5px;
+    padding: 2em 2em 1em 2em;
+  }
+  #choose-ip-help-text {
+    margin-top: 3em;
+  }
+  #choose-ip-reset-area {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+  #choose-ip-display-ranges-area {
+    width: 60%;
+  }
+  .range-choice {
+    text-decoration: none;
+    color: black;
+  }
+  .range {
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+    margin: 2px 2px 15px 2px;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #D8D8D8;
+  }
+  #choose-ip-errors {
+    margin-top: 3em;
+    color: red;
+  }
+</style>
 <div id='find-free-ip-dialog' style='display:none;'>
     <label>Start: <input id='range_start' type='text'></label>
     <label>End: <input id='range_end' type='text'></label>
     <div id='free-ip-result'></div>
+</div>
+<div id='choose-ip-area' style='display:none;'>
+  <div id='choose-ip'></div>
+  <div id='choose-ip-errors'>
+  </div>
+  <div id='choose-ip-help-text'>
+    <p>This little widget can help you find an IP address be location a valid IP Range.</p>
+    <p>Instructions:</p>
+    <ul>
+      <li>Select a site from the first dropdown</li>
+      <li>Select a vlan from the second dropdown</li>
+      <li>Select a network from the third dropdown</li>
+      <li>Finally, click on a range that you want to find an IP in</li>
+    </ul>
+  </div>
+  <div id='choose-ip-display-ranges-area'>
+  </div>
+  <div id='choose-ip-reset-area'>
+    <p>If at anytime you time you want to start over click  <button id='choose-ip-reset'>Reset</button></p>
+  </div>
 </div>
 
 <div id='form-message' class='form-message'>
@@ -125,8 +211,8 @@
 
         <table class='tablesorter'>
             <tr>
-                <td>
-                    Record History: <a href='{{ object_.get_history_url() }}'> click </a>
+                <td style='text-align: center'>
+                    <a class='btn btn-small' href='{{ object_.get_history_url() }}'>Record History</a>
                 </td>
             </tr>
         </table>
@@ -146,7 +232,7 @@
                         {% endif %}
                 </td>
                 <td>
-                    <a href='{{ d.soa.get_debug_build_url() }}'>Debug</a>
+                    <a class='btn btn-small' href='{{ d.soa.get_debug_build_url() }}'>Debug</a>
                 </td>
             </tr>
             {% else %}

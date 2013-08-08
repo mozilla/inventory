@@ -27,6 +27,8 @@ from jinja2.filters import contextfilter
 from django.utils import translation
 from libs.jinja import jinja_render_to_response
 from api_v2.keyvalue_handler import KeyValueHandler
+from core.registration.static.models import StaticReg
+from core.dhcp.render import render_sregs
 
 factory = RequestFactory()
 
@@ -105,7 +107,13 @@ def showfile(request, dhcp_scope):
         To get it stored. Make an innocous change to a hosts key/value entry. 
         An example would be to change the nic name from nic0 to nic1 then back to nic0 again and click save. 
         Once the file gets regenerated, it will be stored here"""
+    sregs = StaticReg.objects.filter(
+        hwadapter_set__keyvalue_set__key='dhcp_scope',
+        hwadapter_set__keyvalue_set__value=dhcp_scope
+    )
+    content += '\n\n' + render_sregs(sregs)
     output = content.replace("\n","<br />")
+
     return render_to_response('dhcp/showfile.html', {
 
         "output": output 

@@ -28,43 +28,60 @@
     #id_sreg-fqdn {
         width: 400px;
     }
+    .range-choice {
+      text-decoration: none;
+      color: black;
+    }
+    .range {
+      border-width: 1px;
+      border-style: solid;
+      border-color: black;
+      margin: 2px 2px 15px 2px;
+      padding: 5px;
+      border-radius: 5px;
+      background-color: #D8D8D8;
+    }
+    #choose-ip-errors {
+      margin-top: 3em;
+      color: red;
+    }
 </style>
 <div id="add-sreg-dialog" title="Create New Static Registration" style="display: {{display or 'none'}}; width: 700px;">
+    <div id='choose-ip-area' style='display:none;'>
+      <div id='choose-ip'></div>
+      <div id='choose-ip-errors'> </div>
+      <div id='choose-ip-help-text'>
+        <p>This little widget can help you find an IP address be location a valid IP Range.</p>
+        <p>Instructions:</p>
+        <ul>
+          <li>Select a site from the first dropdown</li>
+          <li>Select a vlan from the second dropdown</li>
+          <li>Select a network from the third dropdown</li>
+          <li>Finally, click on a range that you want to find an IP in</li>
+        </ul>
+      </div>
+      <div id='choose-ip-display-ranges-area'></div>
+      <div id='choose-ip-reset-area'>
+        <p>If at anytime you time you want to start over click  <button id='choose-ip-reset'>Reset</button></p>
+      </div>
+    </div>
     <form id='id-sreg-hwadapter-form' name='sreg-hwadapter-form'>
     {{ sreg_form.system }}
     <table>
         <caption>Step 1. Configure Registration IP</caption>
-        <tr><td colspan="2">Range: <select id='id-sreg-range'></select></td></tr>
         <tr>
-            <td>
-                <label for='id-show-all-ranges'>Show all ranges
-                    <input type='checkbox' id='id-show-all-ranges' style='width: 159px;'>
-                </label>
-            </td>
-            <td>
-                <label for='id-auto-assign-ip'>Auto Assign IP
-                    <input type='checkbox' id='id-auto-assign-ip' style='width: 159px;' checked='checked'>
-                </label>
-            </td>
         </tr>
         <tr>
             <td colspan="2">
                 {{ sreg_form.ip_str.errors }}
-                <label for='id_sreg-ip_str'> IP Address: {{sreg_form.ip_str}}
-                </label>
+                <label for='id_sreg-ip_str'> IP Address: {{sreg_form.ip_str}}</label>
+                <input id='ffip' type='button' value='Automatically Assign'></input>
                 <span class='helptext'>IP Address of Registration</span>
             </td>
         </tr>
     </table>
     <table>
         <caption>Step 2. Configure Registration DNS Name</caption>
-        <tr>
-            <td>
-                <label for='id-override-fqdn'>Specify FQDN
-                    <input type='checkbox' name='override-fqdn' id='id-override-fqdn' checked="">
-                </label>
-            </td>
-        </tr>
         <tr>
             {{ sreg_form.fqdn.errors }}
             <td colspan="2">FQDN: {{sreg_form.fqdn}}
@@ -97,6 +114,16 @@
                     </td>
                     <td colspan="2">
                          {{ hw_form.name }}
+                    </td>
+                </tr>
+                <tr>
+                    <ul class='.errors'>
+                    </ul>
+                    <td colspan="2">
+                        <span id='dhcp_scope'>DHCP Scope: </span>
+                    </td>
+                    <td colspan="2">
+                         {{ hw_form.dhcp_scope }}
                     </td>
                 </tr>
                 <tr>

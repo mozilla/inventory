@@ -2,6 +2,7 @@
 {% block head %}
 <script type="text/javascript" src="/static/javascripts/master_form_utils.js"></script>
 <script type="text/javascript" src="/static/javascripts/system_show.js"></script>
+<script type="text/javascript" src="/static/javascripts/dns_form_utils.js"></script>
 {% endblock %}
 
 {% block subtitle %} - {{ system.hostname }} - show{% endblock %}
@@ -186,10 +187,7 @@
 </div>
 
 <!--- Disabling this until DHCP is deployed -->
-<div style="clear:both;display:none;">
-<dl class="show">
-<dt>Registrations: </dt>
-<br>
+<div class='show' style="clear:both; display: none;">
     <div>
         {% from 'core/core_macros.html' import display_sregs %}
         {{ display_sregs(sregs) }}

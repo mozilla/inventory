@@ -30,7 +30,7 @@
         {{ meta['counts']['DOMAIN'] }} <a href="#q={{meta['search']}}&Domain">Domains</a> |
     {% endif -%}
     {% if meta['counts']['SREG'] -%}
-        {{ meta['counts']['SREG'] }} <a href="#q={{meta['search']}}&Interface">SREG</a> records |
+        {{ meta['counts']['SREG'] }} <a href="#q={{meta['search']}}&Static Registrations">SREG</a> records |
     {% endif -%}
     {% if meta['counts']['MX'] -%}
         {{ meta['counts']['MX'] }} <a href="#q={{meta['search']}}&MX">MX</a> records |
@@ -138,7 +138,7 @@
             <td>{{ s.serial }}</td>
             <td>{{ s.asset_tag }}   </td>
             <td>{{ s.system_status }}   </td>
-            <td><a href='{{ s.get_edit_url() }}'>Edit</a></td>
+            <td><a class='btn btn-small' href='{{ s.get_edit_url() }}'>Edit</a></td>
         </tr>
         {% endfor -%}
         </tbody>
@@ -163,7 +163,7 @@
                 <td></td>
             {% endif %}
             <td>{{ r.name }}</td>
-            <td><a href='{{ r.get_absolute_url() }}'>View</a> <a href='{{ r.get_edit_url() }}'>Edit</a></td>
+            <td><a class='btn btn-small' href='{{ r.get_absolute_url() }}'>View</a> <a class='btn btn-small' href='{{ r.get_edit_url() }}'>Edit</a></td>
         </tr>
         {% endfor -%}
         </tbody>
@@ -222,7 +222,7 @@
 {% endif -%}
 
 {% if objects['SREG'] -%}
-    <h4><a class='plane-link' name="q={{meta['search']}}&Interface">Interface</a> Records</h4>
+    <h4><a class='plane-link' name="q={{meta['search']}}&Registration">Static Registrations</a></h4>
     {{ drawer.draw_record_table('SREG', objects['SREG'], table_class='tablesorter sreg-table', table_id='sreg-table') }}
 {% endif -%}
 

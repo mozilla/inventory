@@ -3,12 +3,15 @@ from django.core.exceptions import ValidationError
 
 from core.group.models import Group
 from core.keyvalue.base_option import DHCPKeyValue, CommonOption
+from core.keyvalue.mixins import KVUrlMixin
 from core.mixins import ObjectUrlMixin
 from core.registration.static.models import StaticReg
 from core.validation import validate_mac
 
+from truth.models import Truth
 
-class HWAdapter(models.Model, ObjectUrlMixin):
+
+class HWAdapter(models.Model, ObjectUrlMixin, KVUrlMixin):
     id = models.AutoField(primary_key=True)
     description = models.CharField(max_length=255, blank=True, null=True)
     enable_dhcp = models.BooleanField(blank=False, null=False, default=True)
@@ -58,3 +61,11 @@ class HWAdapterKeyValue(DHCPKeyValue, CommonOption):
     class Meta:
         db_table = 'hwadapter_key_value'
         unique_together = ('key', 'value', 'obj')
+
+    def _aa_dhcp_scope(self):
+        """
+        A Valid DHCP scope. Find them here:
+        https://inventory.mozilla.org/en-US/dhcp/show/
+        """
+        if not Truth.objects.filter(name=self.value).exists():
+            raise ValidationError("This isn't a valid DHCP scope.")

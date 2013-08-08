@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+
+.ranges {
+    border-style:solid;
+    border-width:1px;
+    padding: 2em;
+}
+.network {
+    border-style:solid;
+    border-width:1px;
+    margin: 2em;
+}
+
+.no-template {
+    color: red;
+}
+
+.has-template {
+    color: green;
+}
+
+</style>
+<body>
+<script>
+    $(document).ready(function (){
+        $('#no-template').click(function (){
+            console.log('event');
+            var cur = $('.has-ranges').css('display');
+            if (cur === 'none'){
+                $('.has-ranges').css('display', 'block');
+            } else {
+                $('.has-ranges').css('display', 'none');
+            }
+        });
+        console.log('hi');
+    });
+</script>
+<div id='controls'>
+    <label for='no-template'>Show only ranges with no template
+    <input type='checkbox' name='no-template' id='no-template'></input></label>
+</div>
+{% for network in networks %}
+    {% set ranges = calc_template_ranges(network) %}
+        {% if ranges %}
+            <div class='network has-ranges'>
+            <span>Network: {{network}}</span>
+            <div class='ranges'>
+                <span class='has-template'>Range tempaltes</span>
+                <ul>
+                {% for range in ranges %}
+                    {% if loop.first %}
+                    {% endif %}
+                        <li>
+                            <span><b>Start</b>: {{ range.start }}  <b>End</b>: {{ range.end }} </span>
+                        </li>
+                        <ul>
+                        {% for k, v in range.iteritems() %}
+                            <ul>
+                            {% if k in ('start', 'end') %}
+                                {# pass #}
+                            {% else %}
+                                <li>
+                                    <b>{{ k }}</b>: {{ v }}
+                                </li>
+                            {% endif %}
+                            </ul>
+                        {% endfor %}
+                        </ul>
+                {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <div class='network'>
+            <span>Network: {{network}}</span>
+            <span class='no-template'>This network has no range template</span>
+        {% endif %}
+    </div>
+{% endfor %}
+{% endblock %}

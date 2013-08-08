@@ -1,0 +1,38 @@
+{# destination_input is the input where the ip that is chosen will be placed #}
+<script src="{{ MEDIA_URL }}javascripts/chosen/chosen.jquery.js" type="text/javascript"></script>
+<link rel='stylesheet' href="{{ MEDIA_URL }}javascripts/chosen/chosen.css" type="text/css" />
+<script src="{{ MEDIA_URL }}javascripts/ip_chooser.js" type="text/javascript"></script>
+
+
+<div class='ip-chooser-main'>
+    <select id='choose-site' class='chosen-select' data-choice-type='site' data-placeholder="Choose a Site">
+        {% for site in sites %}
+            {% if loop.first %}
+                <option class='choice' value=""></option>
+            {% endif %}
+            {% if site.network_set.exists() %}
+              <option class='choice' value="{{ site.pk }}">{{ site.full_name }}</option>
+            {% else %}
+              <option class='choice' value="{{ site.pk }}" disabled>{{ site.full_name }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <select id='choose-vlan' class='chosen-select' data-choice-type='vlan' data-placeholder="Choose a Vlan">
+
+        {% for vlan in vlans %}
+            {% if loop.first %}
+                <option class='choice' value=""></option>
+            {% endif %}
+            <option class='choice' value="{{ vlan.pk }}">{{ vlan.name }}:{{ vlan.number }}</option>
+        {% endfor %}
+    </select>
+    <select id='choose-network' class='chosen-select' data-choice-type='network' data-placeholder="Choose a Network">
+
+        {% for network in networks %}
+            {% if loop.first %}
+                <option class='choice' value=""></option>
+            {% endif %}
+            <option class='choice' value="{{ network.pk }}">{{ network.network_str }}</option>
+        {% endfor %}
+    </select>
+</div>

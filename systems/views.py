@@ -499,8 +499,10 @@ def system_show(request, id):
     show_nics_in_key_value = False
     is_release = False
     try:
-        request = factory.get('/api/v2/keyvalue/3/',
-                {'key_type':'adapters_by_system','system':system.hostname})
+        request = factory.get(
+            '/api/v2/keyvalue/3/',
+            {'key_type': 'adapters_by_system', 'system': system.hostname}
+        )
         h = KeyValueHandler()
         adapters = h.read(request, key_value_id='3')
     except:
@@ -512,16 +514,16 @@ def system_show(request, id):
             system.server_model.part_number and
             system.server_model.vendor == "HP"):
 
-        system.warranty_link = "http://www11.itrc.hp.com/service/ewarranty/warrantyResults.do?productNumber=%s&serialNumber1=%s&country=US" % (system.server_model.part_number, system.serial)
+        system.warranty_link = "http://www11.itrc.hp.com/service/ewarranty/warrantyResults.do?productNumber=%s&serialNumber1=%s&country=US" % (system.server_model.part_number, system.serial)  # noqa
     if show_nics_in_key_value:
         key_values = system.keyvalue_set.all()
     else:
         key_values = system.keyvalue_set.exclude(key__istartswith='nic.')
 
-    sregs = StaticReg.objects.filter(system = system)
+    sregs = StaticReg.objects.filter(system=system)
     groups = Group.objects.all()
     sreg_form = StaticRegAutoForm(prefix='sreg', initial={'system': system})
-    blank_hw_form = HWAdapterForm(prefix='add-hw')  # Used for ui dialog for creation
+    blank_hw_form = HWAdapterForm(prefix='add-hw')  # noqa Used for ui dialog for creation
     HWAdapterFormset = formset_factory(HWAdapterForm)
     hw_formset = HWAdapterFormset(prefix='hwadapters')
 
@@ -538,6 +540,7 @@ def system_show(request, id):
         'is_release': is_release,
         'read_only': getattr(request, 'read_only', False),
     })
+
 
 @allow_anyone
 def system_show_by_asset_tag(request, id):

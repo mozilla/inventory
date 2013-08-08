@@ -5,7 +5,9 @@ from django.db import transaction, IntegrityError
 
 from core.registration.static.forms import StaticRegAutoForm
 from core.hwadapter.forms import HWAdapterForm
+from core.hwadapter.models import HWAdapterKeyValue
 import simplejson as json
+
 
 def save_kv_pairs(obj, qd, prefix):
     """
@@ -24,6 +26,7 @@ def save_kv_pairs(obj, qd, prefix):
         key, value = parse_kv(field, value)
         if key and value:
             save_kv(key, value)
+
 
 def ajax_create_sreg(request):
     HWAdapterFormset = formset_factory(HWAdapterForm)
@@ -52,12 +55,17 @@ def ajax_create_sreg(request):
         for hwform in filter(lambda f: f.has_changed(), hw_formset):
             hwform.initial['sreg'] = sreg
             if hwform.is_valid():
-                hwform.instance.sreg = sreg  # WTF, why doesn't initial do this?
+                hwform.instance.sreg = sreg  # why doesn't initial do this?
                 try:
                     hw = hwform.save()
                     save_kv_pairs(
                         hw, hwform.data, 'kv-{0}-'.format(hwform.prefix)
                     )  # prefix thing is kind of hacky
+                    dhcp_scope = hwform.cleaned_data.get('dhcp_scope', None)
+                    if dhcp_scope:
+                        HWAdapterKeyValue.objects.get_or_create(
+                            obj=hw, key='dhcp_scope', value=dhcp_scope
+                        )
                 except IntegrityError, e:
                     # the MySQL driver is such a load of crap
                     if 'Duplicate entry' in str(e):
@@ -79,7 +87,6 @@ def ajax_create_sreg(request):
 
     errors = save_objects()
 
-    #if not result:
     if errors:
         return HttpResponse(json.dumps({
             'success': False,

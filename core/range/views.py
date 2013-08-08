@@ -1,4 +1,4 @@
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -6,7 +6,14 @@ from django.http import HttpResponse
 from core.utils import int_to_ip, resolve_ip_type
 from core.range.forms import RangeForm
 from core.range.utils import range_usage
+from core.range.ip_choosing_utils import (
+    calculate_filters, label_value_maker, calc_template_ranges,
+    integrate_real_ranges, UN
+)
 from core.range.models import Range
+from core.site.models import Site
+from core.vlan.models import Vlan
+from core.network.models import Network
 from mozdns.ip.models import ipv6_to_longs
 from core.views import CoreDeleteView, CoreDetailView
 from core.views import CoreCreateView, CoreUpdateView, CoreListView
@@ -26,7 +33,13 @@ class RangeDeleteView(RangeView, CoreDeleteView):
 
 
 class RangeCreateView(RangeView, CoreCreateView):
-    pass
+    def get_form(self, form_class):
+        if not self.request.POST:
+            initial = {}
+            initial.update(dict(self.request.GET.items()))
+            return form_class(initial=initial)
+        else:
+            return super(RangeCreateView, self).get_form(form_class)
 
 
 class RangeUpdateView(RangeView, CoreUpdateView):
@@ -164,40 +177,124 @@ def get_next_available_ip_by_range(request, range_id):
     return HttpResponse(json.dumps(ret))
 
 
-def get_all_ranges_ajax(request):
-    system_pk = request.GET.get('system_pk', '-1')
-    location = None
-    system = None
-    ret_list = []
-    from systems.models import System
+def find_related(request):
+    """
+    Given a list of site, vlan, and network primary keys, help a user make
+    choices about where to put an IP address
+
+    A user can select from choices:
+        Networks
+        Vlans
+        Sites
+
+    The goal of the UI is to help a user choose a range -- which for this
+    function can be seen as filtering down to exactly 1 network.
+
+    When a user selects a site, this can limit which networks and in turn which
+    vlans are displayed.
+
+    When a user selects a vlan, this can limit which networks are displayed
+    which in turn can limit which sites are displayed
+
+    When a user selects a network, this will limit both networks, vlans, and
+    sites to at most one object per each type.
+
+    input::
+        {
+            'choice': [<type>, <pk>],
+            'sites': [1, ...],
+            'vlans': [1, ...],
+            'networks': [1, ...],
+        }
+
+    The value of '<type>' is a string that is either 'site', 'vlan', or
+    'network'. The value of '<pk>' is a number.
+
+    output:
+        Same as input but with things filtered plus a new list of 'range'
+        information. E.x.:
+        {
+            'sites': [<pks>],
+            'vlans': [<pks>],
+            'networks': [<pks>],
+            'range': [
+                {'name': ...
+                 'ip_start': ...
+                 'ip_end': ...
+                 'reserved': ...
+                },
+                ...
+                ...
+                ...
+                {'name': ...
+                 'ip_start': ...
+                 'ip_end': ...
+                 'reserved': ...
+                }
+            ]
+        }
+
+    This function will key off of 'choice' to determine how to slim down a
+    users choice of objects.
+    """
+    state = json.loads(request.raw_post_data)
+
+    if not state:
+        raise Exception("No state?")
+
+    if 'choice' not in state:
+        raise Exception("No choice?")
+
     try:
-        system = System.objects.get(pk=system_pk)
-    except ObjectDoesNotExist:
-        pass
-    if system:
-        try:
-            location = system.system_rack.location.name.title()
-        except AttributeError:
-            pass
+        choice_type, choice_pk = state['choice']
+    except ValueError:
+        raise Exception(
+            "Choice was '{0}'. This is wrong".format(state['choice'])
+        )
 
-    for r in Range.objects.all().order_by('network__site'):
-        relevant = False
-        if r.network.site:
-            site_name = r.network.site.get_site_path()
-            if location and location == r.network.site.name.title():
-                relevant = True
-        else:
-            site_name = ''
+    filter_network, filter_site, filter_vlan = calculate_filters(
+        choice_type, choice_pk
+    )
+    format_network, format_site, format_vlan = label_value_maker()
 
-        if r.network.vlan:
-            vlan_name = r.network.vlan.name
-        else:
-            vlan_name = ''
+    new_state = {
+        'sites': format_site(filter_site(state['sites'])),
+        'vlans': format_vlan(filter_vlan(state['vlans'])),
+    }
 
-        ret_list.append({'id': r.pk,
-                         'display': r.choice_display(),
-                         'vlan': vlan_name,
-                         'site': site_name,
-                         'relevant': relevant
-                         })
-    return HttpResponse(json.dumps(ret_list))
+    # Network are special. If there is only one, we need to add some range
+    # info. If there are zero or more than one, don't add any range objects
+    networks = filter_network(state['networks'])
+    if len(networks) == 1:
+        new_state['ranges'] = integrate_real_ranges(
+            networks[0], calc_template_ranges(networks[0])
+        )
+    new_state['networks'] = format_network(networks)
+
+    return HttpResponse(json.dumps(new_state))
+
+
+def ajax_find_related(request):
+    networks = Network.objects.filter(UN).order_by(
+        'ip_type', 'network_str', 'prefixlen'
+    )
+    return render(request, 'range/ip_chooser.html', {
+        'sites': Site.objects.all().order_by('name'),
+        'vlans': Vlan.objects.all().order_by('name'),
+        'networks': networks
+    })
+
+
+def debug_show_ranges(request):
+    """
+    List all networks and show their range templates and also include range
+    objects. These ranges and templates will show up in the FFIP interface.
+    This is a good place to see all of these ranges in one place.
+    """
+    networks = Network.objects.filter(UN).order_by(
+        'ip_type', 'network_str', 'prefixlen'
+    )
+    return render(request, 'range/debug_show_ranges.html', {
+        'calc_template_ranges': calc_template_ranges,
+        'networks': networks
+    })

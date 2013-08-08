@@ -39,10 +39,9 @@
         <thead>
             <tr>
                     <th>Network</th>
-                    <th>Type</th>
                     <th>Start</th>
                     <th>End</th>
-                    <th>Usage</th>
+                    <th>Name</th>
             </tr>
         </thead>
 
@@ -50,10 +49,9 @@
             {% for r in ranges %}
             <tr>
                 <td><a href='{{r.network.get_absolute_url()}}'}}>{{ r.network }}</a></td>
-                <td>{{ r.get_rtype_display() }}</td>
                 <td><a href='{{ r.get_absolute_url() }}'>{{ r.start_str }}</a></td>
                 <td><a href='{{ r.get_absolute_url() }}'>{{ r.end_str }}</a></td>
-                <td>{{ r.range_usage()['precent_used'] }}</td>
+                <td>{{ r.name }}</td>
             {% endfor %}
             </tr>
         </tbody>
@@ -141,7 +139,6 @@
     {{ display_obj_field(sreg.range, 'range', sreg.range or 'N/A') }}
     {{ display_obj_field(sreg.range.network, 'network', sreg.range.network or 'N/A') }}
     {{ display_obj_kv(sreg) }}
-    {{ display_hwadapters(sreg.hwadapter_set.all()) }}
 {%- endmacro %}
 
 {% macro display_obj_kv(obj) -%}
@@ -172,9 +169,14 @@
                     <a href='/core/keyvalue/{{hw.__class__.keyvalue_set.related.model.__name__.lower()}}/{{hw.pk}}/'>Key Value</a>
                 </span>
             </caption>
+            <thead>
+            </thead>
+            <tbody>
             {{ display_obj_field(hw, 'mac', hw.mac, top_row=True) }}
             {{ display_obj_field(hw, 'name', hw.name) }}
             {{ display_obj_field(hw, 'group', hw.group or 'None') }}
+            {{ display_obj_kv(hw) }}
+            </tbody>
         </table>
     {% endfor %}
 {%- endmacro %}
@@ -182,23 +184,32 @@
 {% macro display_sregs(sregs) -%}
     <link href="/static/stylesheets/registration_display.css" rel="stylesheet" type="text/css">
     <br />
-    <div class='registration-display'>
     {% for sreg in sregs %}
-        <table class="registration-table tablesorter">
-            <caption>
-                {% if sreg.name %}
-                    StaticRegistration {{ sreg.name }}
-                {% else %}
-                    StaticRegistration {{ loop.index }}
-                {% endif %}
-                <span class='sreg-action'>
-                    <a class='add-hwadapter' data-sreg-pk='{{sreg.pk}}'>Add Hardware Adapter</a> |
-                    <a href='{{sreg.get_edit_url()}}'>Edit</a> |
-                    <a href='/core/keyvalue/{{sreg.__class__.keyvalue_set.related.model.__name__.lower()}}/{{sreg.pk}}/'>Key Value</a>
-                </span>
-            </caption>
-            {{ display_sreg(sreg) }}
-        </table>
+        <div>
+            <div>
+                <table class="registration-table tablesorter">
+                    <caption>
+                        {% if sreg.name %}
+                            StaticRegistration {{ sreg.name }}
+                        {% else %}
+                            StaticRegistration {{ loop.index }}
+                        {% endif %}
+                        <span class='sreg-action'>
+                            <a class='add-hwadapter' data-sreg-pk='{{sreg.pk}}'>Add Hardware Adapter</a> |
+                            <a href='{{sreg.get_edit_url()}}'>Edit</a> |
+                            <a href='/core/keyvalue/{{sreg.__class__.keyvalue_set.related.model.__name__.lower()}}/{{sreg.pk}}/'>Key Value</a>
+                        </span>
+                    </caption>
+                    <thead>
+                    </thead>
+                    <tbody>
+                    {{ display_sreg(sreg) }}
+                    </tbody>
+                </table>
+            </div>
+            <div class='hwadapter-display'>
+                {{ display_hwadapters(sreg.hwadapter_set.all()) }}
+            </div>
+        </div>
     {% endfor %}
-    </div>
 {%- endmacro %}

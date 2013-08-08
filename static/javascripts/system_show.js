@@ -31,6 +31,43 @@ function do_redirect(e) {
 }
 
 $(document).ready(function() {
+  // Pull in find IP stuff
+  $('#ffip').click(function () {
+    $('#choose-ip-area').css('display', 'block');
+    $('#choose-ip-area').css('visibility', 'hidden');
+    $.get('/core/range/ajax_find_related/', function (data){
+          $('#choose-ip').html(data);
+          // This function was pulled into existance by this ajax request
+          chosen_init({
+            dialog_div_id: '#choose-ip',
+            target_el_id: '#id_sreg-ip_str',
+            reset_button_id: '#choose-ip-reset',
+            display_range_id: '#choose-ip-display-ranges-area',
+            find_related_url: '/en-US/core/range/find_related/',
+            reset_callback: function (){
+              $('#id_sreg-fqdn').val('');
+              $('#id_sreg-ip_str').val('');
+              $('#id_sreg-views_0').attr('checked', false);
+              $('#id_sreg-views_1').attr('checked', false);
+            },
+            found_ip_callback: function (range, name_fragment){
+              if(typeof range.free_ip == 'undefined') {
+                $('#id_sreg-ip_str').val('');
+              } else {
+                $('#id_sreg-ip_str').val(range.free_ip);
+                $('#id_sreg-ip_str').focus();
+              }
+              if (name_fragment.length) {
+                $('#id_sreg-fqdn').val('.' + name_fragment + '.mozilla.com');
+                $('#id_sreg-fqdn').focus();
+              }
+            }
+          });
+          $('#choose-ip-area').css('transition', 'visibility 0.5s linear 0s');
+          $('#choose-ip-area').css('visibility', 'visible');
+          $('#choose-ip-area').css('transition', 'height 0.5s linear 0s');
+    });
+  });
   var system_id = $('#meta-data').attr('data-system-id');
 
   $('a.goto_range').click(function() {
@@ -41,21 +78,6 @@ $(document).ready(function() {
           ip_str + '&ip_type=' + ip_type, do_redirect);
   });
 
-  $('#id-show-all-ranges').click(function() {
-    if ($(this).attr('checked')) {
-      $('#id-sreg-range option').each(function() {
-        $(this).css('display', '');
-      });
-    } else {
-      $('#id-sreg-range option').each(function() {
-        if ($(this).attr('relevant') === 'false') {
-          $(this).css('display', 'none');
-        }
-      });
-    }
-  });
-  $('#id-show-all-ranges').attr('checked', ''); // Default
-
   $('#add-sreg-dialog').dialog({
     title: 'Create new registration',
     autoShow: false,
@@ -64,12 +86,6 @@ $(document).ready(function() {
     width: 700,
     buttons: {
       'Save': function() {
-        if (!$('#id_sreg-ip_str').val() &&
-            !$('#id-sreg-range').val() &&
-            $('#id-auto-assign-ip').is(':checked')) {
-          alert('Select a range');
-          return;
-        }
         if (!$('#id_sreg-ip_str').val()) {
           alert('IP Address Required');
           return;
@@ -80,11 +96,12 @@ $(document).ready(function() {
           data: $('#id-sreg-hwadapter-form').serialize(),
           success: function(data) {
             var result = jQuery.parseJSON(data);
-            if (result.success == true) {
+            if (result.success === true) {
               self.location.reload();
             } else {
               // Clear errors
               $('.errors').remove();
+              var field, error, error_list, error_el;
               if (result.errors.hw_adapters) {
                 /*
                  * Here we look at the errors and try to tie them back to input
@@ -94,7 +111,6 @@ $(document).ready(function() {
                  * the hw adapters that were submited.
                  */
                 var blocks = $('#hwadapter-tables').find('.hwadapter-table');
-                var field, error, error_list, error_el;
                 console.log(result.errors.hw_adapters);
                 for (var i = 0; i < result.errors.hw_adapters.length; i++) {
                   error_list = $("<ul class='errors'></ul>");
@@ -105,7 +121,7 @@ $(document).ready(function() {
                        j++) {
                     field = result.errors.hw_adapters[i][j][0];
                     error = result.errors.hw_adapters[i][j][1];
-                    if (field == '') {
+                    if (field === '') {
                       message = error;
                     } else {
                       message = field + ': ' + error;
@@ -124,11 +140,11 @@ $(document).ready(function() {
                 error_list = $("<ul class='errors'></ul>");
                 $(error_list).css('color', 'red');
                 $('#id-sreg-hwadapter-form').prepend(error_list);
-                for (var i = 0; i < result.errors.sreg.length; i++) {
-                  field = result.errors.sreg[i][0];
-                  for (var k = 0; k < result.errors.sreg[i][1].length; k++) {
-                    error = result.errors.sreg[i][1][k];
-                    if (field == '' || field == '__all__') {
+                for (var p = 0; p < result.errors.sreg.length; p++) {
+                  field = result.errors.sreg[p][0];
+                  for (var k = 0; k < result.errors.sreg[p][1].length; k++) {
+                    error = result.errors.sreg[p][1][k];
+                    if (field === '' || field == '__all__') {
                       message = error;
                     } else {
                       message = field + ': ' + error;
@@ -150,145 +166,25 @@ $(document).ready(function() {
         });
       },
       Cancel: function() {
-          $('#id-sreg-range').get(0).options.length = 0;
           $(this).dialog('close');
       }
     },
     close: function(event, ui) {
-      $('#id-sreg-range').get(0).options.length = 0;
     }
   }); // End dialog
 
   $('.add_new_sreg').click(function() {
     make_smart_name_get_domains($('#id_sreg-fqdn'), true);
-    $.ajax({
-        type: 'GET',
-        url: '/core/range/get_all_ranges_ajax/',
-        data: {'system_pk': system_id},
-        contentType: 'application/json; charset=utf-8',
-        dataType: 'json',
-        beforeSend: function() {
-            $('#id-sreg-range').get(0).options[0] = new Option(
-              'Loading...', ''
-            );
-        },
-        success: function(msg) {
-            $('#id-sreg-range').get(0).options.length = 0;
-            $('#id-sreg-range').get(0).options[0] = new Option(
-              'Select Range', ''
-            );
-            $.each(msg, function(index, item) {
-              var tld = $('#hostname_dd').html().split('.').pop();
-              // Build a suggested FQDN and store it on the range option
-              if (tld === 'com' || tld === 'net' || tld === 'org') {
-                suggested_fqdn = 'mozilla.' + tld;
-              } else {
-                suggested_fqdn = 'mozilla.com';
-              }
-              if (item.site !== '') {
-                suggested_fqdn = item.site + '.' + suggested_fqdn;
-              }
-              if (item.vlan !== '') {
-                suggested_fqdn = item.vlan + '.' + suggested_fqdn;
-              }
-              suggested_fqdn = $(
-                '#hostname_dd').html().split('.')[0] + '.' + suggested_fqdn;
-              var option = new Option(item.display, item.id);
-              $(option).attr('suggested_fqdn', suggested_fqdn);
-              $(option).attr('relevant', item.relevant);
-              if (!item.relevant) {
-                $(option).css('display', 'none');
-              }
-              $('#id-sreg-range').get(0).options[
-                $('#id-sreg-range').get(0).options.length] = option;
-            });
-            if ($('#id-show-all-ranges').attr('checked')) {
-              $('#id-sreg-range option').each(function() {
-                $(this).css('display', '');
-              });
-            } else {
-              $('#id-sreg-range option').each(function() {
-                if ($(this).attr('relevant') === 'false') {
-                  $(this).css('display', 'none');
-                }
-              });
-            }
-        },
-        error: function() {
-          alert('Failed to load Ranges');
-        }
-      }); // End Ajax
-      $('#add-sreg-dialog').dialog('open');
+    $('#add-sreg-dialog').dialog('open');
     return false;
   });
 
-  // Use fqdn or auto creation options.
-  $('#id-override-fqdn').click(function() {
-    if ($(this).attr('checked') == 'checked') {
-      $('#id_sreg-fqdn').removeAttr('readonly');
-    } else {
-      $('#id_sreg-fqdn').attr('readonly', 'readonly');
-    }
-
-  });
   // Defaults
   $('#id_sreg-fqdn').val('');
-  $('#id_sreg-fqdn').attr('readonly', 'readonly');
-  $('#id-override-fqdn').attr('checked', '');
 
-  function auto_assign_ip(the_range) {
-    if (the_range) {
-      $.get('/core/range/get_next_available_ip_by_range/' + the_range + '/',
-        function(data) {
-          var obj = jQuery.parseJSON(data);
-          if (obj.success == true) {
-            $('#id_sreg-ip_str').val(obj.ip_str);
-            $('#id_sreg-ip_str').keyup();  // Set the views!
-          } else {
-            alert(obj.error);
-          }
-      });
-    } else {
-      alert('Please select a range.');
-      $('#id_sreg-ip_str').val('Auto Assign');
-    }
-  }
-
-  $('#id-auto-assign-ip').click(function() {
-      if ($('#id-auto-assign-ip').prop('checked')) {
-        console.log('we are checked');
-        var the_range = $('#id-sreg-range').val();
-        auto_assign_ip(the_range);
-        $('#id_sreg-ip_str').attr('readonly', 'readonly');
-      } else {
-        console.log('we are NOT checked');
-        $('#id_sreg-ip_str').removeAttr('readonly');
-        if ($('#id_sreg-ip_str').val() === 'Auto Assign') {
-          $('#id_sreg-ip_str').val('');
-        }
-        // Reset the range select but don't clear the IP
-        $('#id-sreg-range').attr('selectedIndex', 0);
-      }
-
-  });
-
-  $('#id-sreg-range').change(function() {
-    if ($('#id-auto-assign-ip').attr('checked')) {
-      auto_assign_ip($(this).val());
-    }
-    if ($('#id-override-fqdn').attr('checked') === 'checked') {
-      var suggested_fqdn = $(
-        '#id-sreg-range option:selected').attr('suggested_fqdn');
-      console.log('Suggesting: ' + suggested_fqdn);
-      $('#id_sreg-fqdn').val(suggested_fqdn);
-      $('.hw-option-hostname').val(suggested_fqdn);
-    }
-  });
   // Default IP
   $('#id-auto-assign-ip').attr('checked', 'checked'); // Set it to auto assign
-  $('#id_sreg-ip_str').val('Auto Assign');
-  $('#id_sreg-ip_str').attr('readonly', 'readonly');
-  bind_view_ip_type_detection();
+  bind_view_ip_type_detection('#id_sreg-ip_str', '#id_sreg-views_0', '#id_sreg-views_1');
 
   /*
    * Dynamically adding Hardware Adapters
@@ -302,11 +198,11 @@ $(document).ready(function() {
     var removeButton, newTTL;
 
     hwtable = $('#hwadapter-tables');
-    nextFree = parseInt($('#id_hwadapters-TOTAL_FORMS').val());
+    nextFree = parseInt($('#id_hwadapters-TOTAL_FORMS').val(), 'base10');
     blocks = hwtable.find('.hwadapter-table');
     newBlock = $(blocks.last()).clone();
 
-    $(newBlock).find('input').each(function(i, el) {
+    $(newBlock).find('input, select').each(function(i, el) {
       if ($(el).attr('name')) {
         $(el).attr('name', $(el).attr('name').replace(nextFree - 1, nextFree));
       }
@@ -329,46 +225,6 @@ $(document).ready(function() {
     newBlock.insertAfter(blocks.last());
   });
 
-  // gdmit this code is duplicate code!  static/javascripts/dns_form_utils.js
-
-  function bind_view_ip_type_detection() {
-    // If an ip starts with '10' automatically set the private view
-    // If an ip starts with '63.245' automatically set the public view
-    var public_prefixs = ['63.245', '2620:0101', '2620:101'];
-    var private_prefixs = ['10'].concat(public_prefixs);
-    var found = false; // Help us only do view detect once
-
-    var i; // loop var
-
-    $('#id_sreg-ip_str').keyup(function() {
-      set_ip_type($('#id_sreg-ip_str').val());
-      function do_detect(prefixs, view_el) {
-        var ip_str = $('#id_sreg-ip_str').val();
-        for (i = 0; i < prefixs.length; i++) {
-          if (ip_str.substring(0, prefixs[i].length) === prefixs[i]) {
-            $(view_el).attr('checked', 'checked');
-            found = true;
-            break;
-          }
-        }
-      }
-      if (!found) {  // Only do view detect if we havne't done it before
-        do_detect(private_prefixs, '#id_sreg-views_0');
-        do_detect(public_prefixs, '#id_sreg-views_1');
-      }
-    });
-
-    function set_ip_type(ip) {
-      if (ip.indexOf('.') > 0) {
-        $('#id_ip_type option[value="4"]').attr('selected', 'selected');
-        $('#id_ip_type option[value="6"]').removeAttr('selected');
-      } else if (ip.indexOf(':') > 0) {
-        $('#id_ip_type option[value="4"]').removeAttr('selected');
-        $('#id_ip_type option[value="6"]').attr('selected', 'selected');
-      }
-    }
-  }
-
   // Create/Delete Hardware Adapters
   $('.delete-hwadapter').click(function() {
     var hw_pk = $(this).attr('data-hwadapter-pk');
@@ -390,6 +246,7 @@ $(document).ready(function() {
     }
     return false;
   });
+
   $('.add-hwadapter').click(function() {
     var sreg_pk = $(this).attr('data-sreg-pk');
     $('#id_add-hw-sreg').val(sreg_pk);

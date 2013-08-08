@@ -43,11 +43,16 @@
                 <a href='{{ object_.domain.soa.get_debug_build_url() }}'>Debug</a>
             </td>
         </tr>
+        {% else %}
+            <td>
+                Not in any forward zone.
+            </td>
         {% endif %}
+
         {% if object_.reverse_domain.soa %}
         </tr>
             <td>
-                <a href='{{ object_.reverse_domain.soa.get_absolute_url() }}'>{{ d.soa }}</a>
+                <a href='{{ object_.reverse_domain.soa.get_absolute_url() }}'>{{ object_.reverse_domain.soa }}</a>
             </td>
             <td>
                     {% if object_.reverse_domain.soa.dirty %}
@@ -60,6 +65,12 @@
                 <a href='{{ object_.reverse_domain.soa.get_debug_build_url() }}'>Debug</a>
             </td>
         </tr>
+        {% else %}
+            <td>
+                Not in any reverse zone.
+            </td>
+            <td></td>
+            <td></td>
         {% endif %}
     </table>
 </div>

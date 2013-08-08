@@ -74,6 +74,7 @@ class Range(models.Model, ObjectUrlMixin):
     rtype = models.CharField(
         max_length=2, choices=RANGE_TYPE, default=STATIC, editable=True
     )
+    name = models.CharField(max_length=255, null=True, blank=False)
 
     class Meta:
         db_table = 'range'
@@ -202,7 +203,7 @@ class Range(models.Model, ObjectUrlMixin):
         if not self.network.site:
             site_name = "No Site"
         else:
-            site_name = self.network.site.name.upper()
+            site_name = self.network.site.full_name.upper()
 
         if not self.network.vlan:
             vlan_name = "No Vlan"

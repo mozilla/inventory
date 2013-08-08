@@ -17,6 +17,10 @@ always_push_svn = True
 from libs.DHCPHelper import DHCPHelper
 from dhcp.DHCP import DHCP as DHCPInterface
 from systems.models import ScheduledTask
+
+from core.registration.static.models import StaticReg
+from core.dhcp.render import render_sregs
+
 def main():
     dh = DHCPHelper()
     dhcp_scopes = []
@@ -38,6 +42,14 @@ def main():
             try:
                 f = open(final_destination_file,"w")
                 f.write(output_text)
+                sregs = StaticReg.objects.filter(
+                    hwadapter_set__keyvalue_set__key='dhcp_scope',
+                    hwadapter_set__keyvalue_set__value=dhcp_scope
+                )
+                print render_sregs(sregs)
+
+                f.write(render_sregs(sregs))
+
                 f.close()
                 print "Wrote config to {0}".format(final_destination_file)
             except IOError:
