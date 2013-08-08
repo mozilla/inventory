@@ -76,7 +76,7 @@ def core_index(request):
             )
         flat_nets = list(itertools.chain(*nets))
 
-        vlans = map(lambda n: n.vlan, flat_nets)
+        vlans = set(map(lambda n: n.vlan, flat_nets))
         table = table_meta_template.copy()
         table['caption'] = caption
         table['vlans'] = vlans
