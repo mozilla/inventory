@@ -6,7 +6,7 @@
                 {% if rack.site %}
                     Site: <a href="{{ rack.site.get_absolute_url() }}">{{ rack.site }}</a> -
                 {% endif %}
-                Rack: <a href="?rack={{ rack.pk }}">{{ rack }}</a>
+                Rack: <a href="/en-US/systems/racks/?rack={{ rack.pk }}">{{ rack }}</a>
                 {% if not read_only %}
                     - <a href="{{ "system_rack-edit"|url(rack.pk) }}">Edit</a>
                     - <a href="{{ "rack-delete"|url(rack.pk) }}">Delete</a>
