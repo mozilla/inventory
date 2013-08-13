@@ -21,10 +21,10 @@ $(document).ready(function() {
           return;
         }
         $.getJSON('/en-US/core/search/ajax_type_search/',
-          {'query': term, 'record_type': 'SYSTEM'},
+          {'query': term, 'record_type': 'SYS'},
           function(data, status, xhr) {
-            search_cache[term] = data.SYSTEM;
-            response(data.SYSTEM);
+            search_cache[term] = data.SYS;
+            response(data.SYS);
           });
       },
     select: function(event, ui) {

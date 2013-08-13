@@ -12,6 +12,7 @@ from core.validation import validate_mac
 from core.site.models import Site
 from core.keyvalue.mixins import KVUrlMixin
 from core.keyvalue.models import KeyValue as BaseKeyValue
+from core.mixins import CoreDisplayMixin
 
 import datetime
 import re
@@ -74,12 +75,16 @@ class SystemWithRelatedManager(models.Manager):
 class Allocation(models.Model):
     name = models.CharField(max_length=255, blank=False)
 
-    def __unicode__(self):
-        return self.name
-
     class Meta:
         db_table = u'allocations'
         ordering = ['name']
+
+    def __unicode__(self):
+        return self.name
+
+    @classmethod
+    def get_api_fields(cls):
+        return ('name',)
 
 
 class ScheduledTask(models.Model):
@@ -260,12 +265,16 @@ class OperatingSystem(models.Model):
     name = models.CharField(max_length=255, blank=True)
     version = models.CharField(max_length=255, blank=True)
 
-    def __unicode__(self):
-        return "%s - %s" % (self.name, self.version)
-
     class Meta:
         db_table = u'operating_systems'
         ordering = ['name', 'version']
+
+    def __unicode__(self):
+        return "%s - %s" % (self.name, self.version)
+
+    @classmethod
+    def get_api_fields(cls):
+        return ('name', 'version')
 
 
 class ServerModel(models.Model):
@@ -274,12 +283,16 @@ class ServerModel(models.Model):
     description = models.TextField(blank=True, null=True)
     part_number = models.CharField(max_length=255, blank=True, null=True)
 
-    def __unicode__(self):
-        return "%s - %s" % (self.vendor, self.model)
-
     class Meta:
         db_table = u'server_models'
         ordering = ['vendor', 'model']
+
+    def __unicode__(self):
+        return "%s - %s" % (self.vendor, self.model)
+
+    @classmethod
+    def get_api_fields(cls):
+        return ('vendor', 'model', 'part_number', 'description')
 
 
 class SystemRack(models.Model):
@@ -300,6 +313,10 @@ class SystemRack(models.Model):
 
     def __unicode__(self):
         return str(self)
+
+    @classmethod
+    def get_api_fields(cls):
+        return ('name', 'location', 'site')
 
     def get_absolute_url(self):
         return '/en-US/systems/racks/?rack={0}'.format(self.pk)
@@ -324,6 +341,10 @@ class SystemType(models.Model):
     def __unicode__(self):
         return self.type_name
 
+    @classmethod
+    def get_api_fields(cls):
+        return ('type_name',)
+
 
 class SystemStatus(models.Model):
     status = models.CharField(max_length=255, blank=True)
@@ -337,29 +358,37 @@ class SystemStatus(models.Model):
     def __unicode__(self):
         return self.status
 
+    @classmethod
+    def get_api_fields(cls):
+        return ('status',)
 
-class System(DirtyFieldsMixin, models.Model):
+
+class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
 
     YES_NO_CHOICES = (
         (0, 'No'),
         (1, 'Yes'),
     )
+
+    # Related Objects
+    operating_system = models.ForeignKey(
+        'OperatingSystem', blank=True, null=True)
+    server_model = models.ForeignKey('ServerModel', blank=True, null=True)
+    allocation = models.ForeignKey('Allocation', blank=True, null=True)
+    system_rack = models.ForeignKey('SystemRack', blank=True, null=True)
+    system_type = models.ForeignKey('SystemType', blank=True, null=True)
+    system_status = models.ForeignKey('SystemStatus', blank=True, null=True)
+
     hostname = models.CharField(
         unique=True, max_length=255, validators=[validate_name]
     )
     serial = models.CharField(max_length=255, blank=True, null=True)
-    operating_system = models.ForeignKey(
-        'OperatingSystem', blank=True, null=True)
-    server_model = models.ForeignKey('ServerModel', blank=True, null=True)
     created_on = models.DateTimeField(null=True, blank=True)
     updated_on = models.DateTimeField(null=True, blank=True)
     oob_ip = models.CharField(max_length=30, blank=True, null=True)
     asset_tag = models.CharField(max_length=255, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
     licenses = models.TextField(blank=True, null=True)
-    allocation = models.ForeignKey('Allocation', blank=True, null=True)
-    system_rack = models.ForeignKey('SystemRack', blank=True, null=True)
-    system_type = models.ForeignKey('SystemType', blank=True, null=True)
     rack_order = models.DecimalField(
         null=True, blank=True, max_digits=6, decimal_places=2)
     switch_ports = models.CharField(max_length=255, blank=True, null=True)
@@ -367,7 +396,6 @@ class System(DirtyFieldsMixin, models.Model):
     oob_switch_port = models.CharField(max_length=255, blank=True, null=True)
     purchase_date = models.DateField(null=True, blank=True)
     purchase_price = models.CharField(max_length=255, blank=True, null=True)
-    system_status = models.ForeignKey('SystemStatus', blank=True, null=True)
     change_password = models.DateTimeField(null=True, blank=True)
     ram = models.CharField(max_length=255, blank=True, null=True)
     is_dhcp_server = models.IntegerField(
@@ -392,11 +420,27 @@ class System(DirtyFieldsMixin, models.Model):
         "oob_ip", "system_rack__site__full_name", "system_rack__name"
     )
 
+    template = (
+        "{hostname:$lhs_just} {oob_ip_str:$rdtype_just} INV "
+        "{rdtype:$rdtype_just} {asset_tag_str} {serial_str}"
+    )
+
     class Meta:
         db_table = u'systems'
 
     def __str__(self):
         return self.hostname
+
+    @classmethod
+    def get_api_fields(cls):
+        return (
+            'operating_system', 'server_model', 'allocation', 'system_rack',
+            'system_type', 'system_status', 'hostname', 'serial', 'oob_ip',
+            'asset_tag', 'notes', 'rack_order', 'switch_ports',
+            'patch_panel_port', 'oob_switch_port', 'purchase_date',
+            'purchase_price', 'change_password', 'warranty_start',
+            'warranty_end',
+        )
 
     @property
     def primary_ip(self):
@@ -431,6 +475,18 @@ class System(DirtyFieldsMixin, models.Model):
     @classmethod
     def field_names(cls):
         return [field.name for field in cls._meta.fields]
+
+    @property
+    def rdtype(self):
+        return 'SYS'
+
+    def bind_render_record(self, **kwargs):
+        data = {
+            'oob_ip_str': self.oob_ip or 'None',
+            'asset_tag_str': self.asset_tag or 'None',
+            'serial_str': self.serial or 'None'
+        }
+        return super(System, self).bind_render_record(**data)
 
     def save(self, *args, **kwargs):
         self.save_history(kwargs)

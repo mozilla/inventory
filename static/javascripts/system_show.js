@@ -2,7 +2,7 @@ function display_inpage_search_results(query, results_selector, callback) {
   $.get('/en-US/core/search/search_ajax/',
     {
       'format': 'table',
-      'search': query + ' AND !(type=:SYSTEM OR type=:SREG)'
+      'search': query + ' AND !(type=:SYS OR type=:SREG)'
     },
     function(data) {
       if (!data) {

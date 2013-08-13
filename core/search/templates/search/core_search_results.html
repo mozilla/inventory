@@ -11,8 +11,8 @@
     {% if meta['counts']['NET'] -%}
         {{ meta['counts']['NET'] }} <a href="#q={{meta['search']}}&Network">Networks</a> |
     {% endif -%}
-    {% if meta['counts']['SYSTEM'] -%}
-        {{ meta['counts']['SYSTEM'] }} <a href="#q={{meta['search']}}&System">Systems</a> |
+    {% if meta['counts']['SYS'] -%}
+        {{ meta['counts']['SYS'] }} <a href="#q={{meta['search']}}&System">Systems</a> |
     {% endif -%}
     {% if meta['counts']['RACK'] -%}
         {{ meta['counts']['RACK'] }} <a href="#q={{meta['search']}}&Rack">Racks</a> |
@@ -113,7 +113,7 @@
     </table>
 {% endif -%}
 
-{% if objects['SYSTEM'] -%}
+{% if objects['SYS'] -%}
     <h4><a class='plane-link' name="q={{meta['search']}}&System">Systems</a></h4>
     <table class="tablesorter system-table">
         <thead>
@@ -129,7 +129,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for s in objects['SYSTEM'] -%}
+        {% for s in objects['SYS'] -%}
         <tr>
             <td><a href='{{ s.get_absolute_url() }}'>{{ s.hostname }}</a></td>
             <td>{{ s.oob_ip }}</td>

@@ -1,14 +1,17 @@
 from tastypie.test import ResourceTestCase
 
-
 from mozdns.tests.utils import create_fake_zone, random_label
 from core.registration.static.models import StaticReg
 from core.hwadapter.models import HWAdapter
 from core.group.models import Group
-from core.site.models import Site
-from systems.models import System
+
+from systems.models import (
+    System, SystemRack, SystemStatus, OperatingSystem, Allocation,
+    ServerModel, SystemType
+)
 
 import simplejson as json
+from datetime import datetime
 
 API_VERSION = '1'
 
@@ -154,20 +157,76 @@ class HWAdapterTest(CoreAPITests, ResourceTestCase):
         return {
             'description': random_label(),
             'name': 'eth0',
-            'sreg': self.sreg.pk
+            'sreg': self.sreg.pk,
+            'mac': '11:22:33:44:55:66'
         }
 
 
-class Site(CoreAPITests, ResourceTestCase):
-    test_type = Site
-    test_name = 'site'
+class SystemTest(CoreAPITests, ResourceTestCase):
+    test_type = System
+    test_name = 'system'
 
     def setUp(self):
-        super(Site, self).setUp()
+        self.operating_system = OperatingSystem.objects.create()
+        self.server_model = ServerModel.objects.create()
+        self.allocation = Allocation.objects.create()
+        self.system_rack = SystemRack.objects.create()
+        self.system_type = SystemType.objects.create()
+        self.system_status = SystemStatus.objects.create()
+        self.change_password_date = datetime(2002, 12, 25)
+        super(SystemTest, self).setUp()
+
+    def compare_data(self, old_data, new_obj_data):
+        for key in old_data.keys():
+            if key in ('operating_system', 'operating_system', 'server_model',
+                       'allocation', 'system_rack', 'system_type',
+                       'system_status'):
+                self.assertEqual(
+                    getattr(self, key).pk, new_obj_data[key]['pk']
+                )
+            elif key == 'change_password':
+                self.assertTrue(new_obj_data[key].startswith(old_data[key]))
+            else:
+                self.assertEqual(old_data[key], new_obj_data[key])
 
     def post_data(self):
         return {
-            'full_name': random_label(),
-            'name': 'eth0',
-            'sreg': self.sreg.pk
+            'operating_system': self.operating_system.pk,
+            'server_model': self.server_model.pk,
+            'allocation': self.allocation.pk,
+            'system_rack': self.system_rack.pk,
+            'system_type': self.system_type.pk,
+            'system_status': self.system_status.pk,
+            'hostname': '{0}.{1}.mozilla.com'.format(
+                random_label(), random_label()
+            ),
+            'serial': '1234',
+            'oob_ip': '10.2.3.4',
+            'asset_tag': 'foobar',
+            'notes': 'foobar notes',
+            'rack_order': '1.21',
+            'switch_ports': 'hihi',
+            'patch_panel_port': 'derpdaderp',
+            'oob_switch_port': 'derpdaderp',
+            'purchase_date': '2012-08-01',
+            'purchase_price': '$3000',
+            'change_password': self.change_password_date.isoformat(),
+            'warranty_start': '2012-08-01',
+            'warranty_end': '2012-08-04'
         }
+
+    def test_changing_only_one_field(self):
+        # Systems don't have descriptions, they have notes
+        resp, post_data = self.generic_create(self.post_data())
+        new_object_url = self.localize_url(resp['Location'])
+        change_post_data = {}
+        change_post_data['notes'] = "==DIFFERENT=="
+        post_data['notes'] = "==DIFFERENT=="
+        resp, patch_data = self.generic_update(
+            new_object_url, change_post_data
+        )
+        new_resp = self.api_client.get(
+            new_object_url, format='json', follow=True
+        )
+        updated_obj_data = json.loads(new_resp.content)
+        self.compare_data(post_data, updated_obj_data)

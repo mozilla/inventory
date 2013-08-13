@@ -1,10 +1,21 @@
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.shortcuts import render
+from django.http import HttpResponse
 
 from mcsv.importer import Resolver, Generator
 from mcsv.importer import csv_import
+
 from systems.models import System
+
+from core.search.compiler.django_compile import compile_to_django
+
+from MySQLdb import OperationalError
+
+import csv
+import re
+import cStringIO
+import simplejson as json
 
 
 def csv_importer(request):
@@ -52,3 +63,50 @@ def csv_format(request):
     return render(request, 'csv/csv_importer_help.html', {
         'generator': generator
     })
+
+
+def ajax_csv_exporter(request):
+    search = request.GET.get('search', None)
+
+    if not search:
+        return HttpResponse('What do you want?!?', status=400)
+
+    obj_map, error_resp = compile_to_django(search)
+    if not obj_map:
+        return HttpResponse(
+            json.dumps({'error_messages': error_resp}),
+            status=400
+        )
+
+    attr_ignore = ('notes', 'licenses')
+
+    systems = obj_map['SYS']
+
+    system_fields = [
+        field.name
+        for field in System._meta.fields
+        if field.name not in attr_ignore
+    ]
+
+    queue = cStringIO.StringIO()
+    queue.write(','.join(system_fields) + '\n')
+    out = csv.writer(
+        queue, dialect='excel', lineterminator='\n'
+    )
+    try:
+        for system in systems:
+            row = []
+            for field in system_fields:
+                value = getattr(system, field)
+                if field == 'licenses':
+                    value = re.escape(value)
+                row.append(str(value))
+            out.writerow(row)
+    except OperationalError as why:
+        return HttpResponse(
+            json.dumps({'error_messages': str(why)}),
+            status=400
+        )
+
+    queue.seek(0)
+    return HttpResponse(json.dumps({'csv_content': queue.readlines()}))

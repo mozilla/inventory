@@ -5,10 +5,7 @@ from tastypie.resources import ModelResource
 from tastypie.authorization import Authorization
 from tastypie.api import Api
 
-from systems.models import System
-from api_v3.system_api import SystemResource
 from core.utils import locked_function
-from core.registration.static.models import StaticReg
 from mozdns.utils import ensure_label_domain, prune_tree
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
@@ -259,9 +256,6 @@ class ObjectListMixin(ModelResource):
         return self.full_dehydrate(bundle).data
 
 
-v1_dns_api.register(SystemResource())
-
-
 class CNAMEResource(CommonDNSResource, ObjectListMixin, ModelResource):
     class Meta:
         always_return_data = True
@@ -395,70 +389,6 @@ class PTRResource(CommonDNSResource, ObjectListMixin, ModelResource):
 
 v1_dns_api.register(PTRResource())
 
-
-class StaticRegResource(CommonDNSResource, ObjectListMixin,
-                        ModelResource):
-    system = fields.ToOneField(SystemResource, 'system', null=False, full=True)
-    # Injecting here because of cyclical imports :(
-    hwadapter_set = fields.ToManyField(
-        'core.api.v1.api.HWAdapterResource', 'hwadapter_set', full=True,
-        readonly=True
-    )
-
-    def hydrate(self, bundle):
-        if 'system_hostname' in bundle.data and 'system' in bundle.data:
-            bundle.errors = ("Please only specify a system via the 'system' "
-                             "xor the 'system_hostname' parameter")
-        if 'system_hostname' in bundle.data:
-            system_hostname = bundle.data.get('system_hostname')
-            try:
-                system = System.objects.get(hostname=system_hostname)
-                bundle.data['system'] = system
-            except ObjectDoesNotExist:
-                bundle.errors['system'] = (
-                    "Couldn't find system with  hostname {0}"
-                    .format(system_hostname))
-        super(StaticRegResource, self).hydrate(bundle)
-        return bundle
-
-    def extract_kv(self, bundle):
-        """
-        This function decides if the POST/PATCH is a trying to add a KV pair to
-        the interface. If it is, it makes sure key and value keys are the only
-        keys that exist in bundle.data.
-        """
-        # TODO, rip this out
-        kv = []
-        if 'key' in bundle.data and 'value' in bundle.data:
-            # It's key and value. Nothing else is allowed in the bundle.
-            if set('key', 'value') != set(bundle.data):
-                error = ("key and value must be the only keys in your "
-                         "request when you are updating KV pairs.")
-                bundle.errors['keyvalue'] = error
-                return []
-            else:
-                kv.append((bundle.data['key'], bundle.data['value']))
-        elif 'key' in bundle.data and 'value' not in bundle.data:
-            error = ("When specifying a key you must also specify a value "
-                     "for that key")
-            bundle.errors['keyvalue'] = error
-            return []
-        elif 'value' in bundle.data and 'key' not in bundle.data:
-            error = ("When specifying a value you must also specify a key "
-                     "for that value")
-            bundle.errors['keyvalue'] = error
-            return []
-        return kv
-
-    class Meta:
-        always_return_data = True
-        queryset = StaticReg.objects.all()
-        fields = StaticReg.get_api_fields() + ['views', 'system']
-        authorization = Authorization()
-        allowed_methods = allowed_methods
-        resource_name = 'staticreg'
-
-v1_dns_api.register(StaticRegResource())
 
 """
 class XXXResource(CommonDNSResource, ObjectListMixin, ModelResource):

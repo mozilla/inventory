@@ -51,7 +51,7 @@ searchables = (
     ('SRV', SRV),
     ('SSHFP', SSHFP),
     ('SREG', StaticReg),
-    ('SYSTEM', System),
+    ('SYS', System),
     ('RACK', SystemRack),
     ('TXT', TXT),
     ('NET', Network),

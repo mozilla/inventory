@@ -23,7 +23,8 @@ API_VERSION = '1'
 class TestCaseUtils(object):
     def localize_url(self, url):
         if 'en-US' not in url:
-            url = url.replace('mozdns', 'en-US/mozdns')
+            url = url.replace('testserver/mozdns', 'testserver/en-US/mozdns')
+            url = url.replace('testserver/core', 'testserver/en-US/core')
         return url
 
 
@@ -663,6 +664,8 @@ class PTRV4APITests(MozdnsAPITests, ResourceTestCase):
 
 
 class StaticSregV4APITests(MozdnsAPITests, ResourceTestCase):
+    object_list_url = "/en-US/core/api/v{0}_core/{1}/"
+    object_url = "/en-US/core/api/v{0}_core/{1}/{2}/"
     test_type = StaticReg
 
     def setUp(self):
@@ -708,6 +711,8 @@ class StaticSregV4APITests(MozdnsAPITests, ResourceTestCase):
 
 
 class StaticSregV6APITests(MozdnsAPITests, ResourceTestCase):
+    object_list_url = "/en-US/core/api/v{0}_core/{1}/"
+    object_url = "/en-US/core/api/v{0}_core/{1}/{2}/"
     test_type = StaticReg
 
     def setUp(self):
