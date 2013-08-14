@@ -16,7 +16,7 @@ from core.vlan.models import VlanKeyValue
 from core.group.models import GroupKeyValue
 from core.hwadapter.models import HWAdapterKeyValue
 
-#from systems.models import KeyValue as SystemKeyValue
+from systems.models import KeyValue as SystemKeyValue
 
 klasses = (
     NetworkKeyValue,
@@ -24,7 +24,7 @@ klasses = (
     SiteKeyValue,
     SOAKeyValue,
     VlanKeyValue,
-    #SystemKeyValue,
+    SystemKeyValue,
     StaticRegKeyValue,
     GroupKeyValue,
     HWAdapterKeyValue
@@ -82,8 +82,6 @@ def validate_keyvalue_ajax(request):
     value = request.POST.get('value', None)
     key_pk = request.POST.get('key_pk', None)
     delete_key = request.POST.get('delete_key', None)
-    print "{0} {1} {2} {3} {4}".format(kv_class, key, value, key_pk,
-                                       delete_key)
 
     if not (kv_class and bool(delete_key)):
         return HttpResponse(

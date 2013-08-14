@@ -285,11 +285,11 @@ class SystemApi(TestCase):
 
     def test_delete_key_by_system(self):
         system = System.objects.get(hostname='fake-hostname2')
-        k = KeyValue(system=system, key='testing', value='blahblah')
+        k = KeyValue(obj=system, key='testing', value='blahblah')
         k.save()
         resp = self.client.delete('/en-US/api/v2/keyvalue/?key_type=delete_key_by_system&system=fake-hostname2&key=testing', follow=True)
         try:
-            count = KeyValue.objects.get(system=system, key='testing').count()
+            count = KeyValue.objects.get(obj=system, key='testing').count()
         except KeyValue.DoesNotExist:
             count = 0
         self.assertEqual(resp.status_code, 200)

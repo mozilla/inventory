@@ -16,7 +16,7 @@ class MacroExpansion:
             host = self.operators[1]
             key = self.operators[2]
             system = System.objects.get(hostname=host)
-            self.output_text = KeyValue.objects.filter(system=system).filter(key=key)[0].value
+            self.output_text = KeyValue.objects.filter(obj=system).filter(key=key)[0].value
             self.output()
         except Exception, e:
             self.output_text = 'Host/Key Combination Not Found'

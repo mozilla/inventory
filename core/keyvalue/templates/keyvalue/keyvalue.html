@@ -55,6 +55,10 @@
             console.log("[DEBUG] Submit pressed");
 
             var success = true;
+            console.log('Starting to verify...');
+            $('#verification-waiting').css('display', 'block');
+            $('#submit-button').css('display', 'none');
+            // JQuery is syncronous here...
             $('#keyvalue-pairs .kv').each(function (index, el) {
                 var key_pk = $(el).attr('data-pk');
                 var key = $(el).find('.attr-kv-k').val()
@@ -88,10 +92,13 @@
                            },
                 });
             });
+            console.log('Verified!');
             if (success) {
                 alert("All keys were updated/deleted/created!");
                 return true;
             }
+            $('#submit-button').css('display', 'block');
+            $('#verification-waiting').css('display', 'none');
             return false;
         });
         return false;
@@ -157,7 +164,10 @@
                 </tr>
         {% endfor %}
         </table>
-        <input type='submit' value='Submit'>
+        <input id='submit-button' type='submit' value='Submit'>
+        <div id='verification-waiting' style='display:inline; display: none;'>
+            Verifying all Key Value pairs. Please be patient....
+        </div>
     </form>
     <div>
         {% if docs %}

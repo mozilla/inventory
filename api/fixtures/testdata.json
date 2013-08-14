@@ -422,7 +422,7 @@
         "pk": 1, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "ip_address",
             "value": "10.99.32.1"
         }
@@ -431,7 +431,7 @@
         "pk": 2, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "parent.0",
             "value": "${host:fake-hostname1:ip_address}"
         }
@@ -440,7 +440,7 @@
         "pk": 3, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "parent.0",
             "value": "${host:fake-hostname1}"
         }
@@ -449,7 +449,7 @@
         "pk": 3, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "2",
+            "obj": "2",
             "key": "nic.0.ipv4_address.0",
             "value": "10.99.32.3"
         }
@@ -458,7 +458,7 @@
         "pk": 4, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "parent.1",
             "value": "${truth:test:cluster_name}"
         }
@@ -467,7 +467,7 @@
         "pk": 5, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "2",
+            "obj": "2",
             "key": "ip_address",
             "value": "10.99.32.3"
         }
@@ -476,7 +476,7 @@
         "pk": 6, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.0.dhcp_scope.0",
             "value": "phx-vlan73"
         }
@@ -485,7 +485,7 @@
         "pk": 7, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.0.mac_address.0",
             "value": "00:00:00:00:00:AA"
         }
@@ -494,7 +494,7 @@
         "pk": 8, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.0.ipv4_address.0",
             "value": "10.99.32.1"
         }
@@ -503,7 +503,7 @@
         "pk": 9, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.1.mac_address.0",
             "value": "00:00:00:00:00:BB"
         }
@@ -512,7 +512,7 @@
         "pk": 10, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.1.ipv4_address.0",
             "value": "10.99.32.2"
         }
@@ -521,7 +521,7 @@
         "pk": 11, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.0.adapter_name.0",
             "value": "nic0"
         }
@@ -530,7 +530,7 @@
         "pk": 12, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.1.adapter_name.0",
             "value": "nic1"
         }
@@ -539,7 +539,7 @@
         "pk": 13, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.1.dhcp_scope.0",
             "value": "phx-vlan73"
         }
@@ -548,7 +548,7 @@
         "pk": 14, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.0.dhcp_hostname.0",
             "value": "fake-hostname2_dhcp0"
         }
@@ -557,7 +557,7 @@
         "pk": 15, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.0.dhcp_filename.0",
             "value": "the_filename.bz2"
         }
@@ -566,7 +566,7 @@
         "pk": 16, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.0.reverse_dns_zone_domain",
             "value": "mozilla.com"
         }
@@ -575,7 +575,7 @@
         "pk": 17, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.0.reverse_dns_zone.0",
             "value": "phx1-32.8.10.in-addr.arpa"
         }
@@ -584,7 +584,7 @@
         "pk": 18, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "2",
+            "obj": "2",
             "key": "nic.0.reverse_dns_zone_domain",
             "value": "mozilla.com"
         }
@@ -593,7 +593,7 @@
         "pk": 19, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "2",
+            "obj": "2",
             "key": "nic.0.reverse_dns_zone.0",
             "value": "phx1-32.8.10.in-addr.arpa"
         }
@@ -602,7 +602,7 @@
         "pk": 20, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "Null",
             "value": "Null"
         }
@@ -611,7 +611,7 @@
         "pk": 21, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "parent.3",
             "value": "${truth:scl3-101}"
         }
@@ -620,7 +620,7 @@
         "pk": 22, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "2",
+            "obj": "2",
             "key": "parent.3",
             "value": "${truth:scl3-101}"
         }
@@ -629,7 +629,7 @@
         "pk": 23, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "parent.4",
             "value": "${truth:hp-1ru-server}"
         }
@@ -638,7 +638,7 @@
         "pk": 24, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "system_slot",
             "value": "3"
         }
@@ -647,7 +647,7 @@
         "pk": 25, 
         "model": "systems.keyvalue", 
         "fields": {
-            "system": "1",
+            "obj": "1",
             "key": "nic.1.dhcp_domain_name_servers.0",
             "value": "127.0.0.1, 127.0.0.2"
         }

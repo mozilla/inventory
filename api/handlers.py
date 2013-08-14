@@ -299,7 +299,7 @@ class KeyValueHandler(BaseHandler):
                 #Iterate through the list and get all of the key/value pairs
                 tmp_list = []
                 for row in keyvalue_pairs:
-                    keyvalue = KeyValue.objects.filter(system=row.system)
+                    keyvalue = KeyValue.objects.filter(obj=row.system)
                     tmp_dict = {}
                     for kv in keyvalue:
                         tmp_dict[kv.key] = kv.value
@@ -317,7 +317,8 @@ class KeyValueHandler(BaseHandler):
             if key_type == 'adapters_by_system':
                 #Get keystores from truth that have dhcp.is_scope = True
                 system = System.objects.get(hostname=request.GET['system'])
-                keyvalue_pairs = KeyValue.objects.filter(key__startswith='nic.').filter(system=system).order_by('key')
+                keyvalue_pairs =
+                KeyValue.objects.filter(key__startswith='nic.').filter(obj=system).order_by('key')
                 #Iterate through the list and get all of the key/value pairs
                 tmp_dict = {}
                 adapter_ids = []
@@ -364,7 +365,8 @@ class KeyValueHandler(BaseHandler):
                 #Get keystores from truth that have dhcp.is_scope = True
                 dhcp_scope = request.GET['dhcp_scope']
                 system = System.objects.get(hostname=request.GET['system'])
-                keyvalue_pairs = KeyValue.objects.filter(key__startswith='nic.').filter(system=system).order_by('key')
+                keyvalue_pairs =
+                KeyValue.objects.filter(key__startswith='nic.').filter(obj=system).order_by('key')
                 #Iterate through the list and get all of the key/value pairs
                 tmp_dict = {}
                 adapter_ids = []
@@ -522,7 +524,7 @@ class KeyValueHandler(BaseHandler):
             try:
                 system_hostname = request.GET['system_hostname']
                 system = System.objects.get(hostname=system_hostname)
-                KeyValue.objects.filter(key__startswith='nic', system=system).delete()
+                KeyValue.objects.filter(key__startswith='nic', obj=system).delete()
                 resp = rc.ALL_OK
                 resp.write('json = {"id":"0"}')
             except:
@@ -536,7 +538,8 @@ class KeyValueHandler(BaseHandler):
                 adapter_number = request.GET['adapter_number']
                 system_hostname = request.GET['system_hostname']
                 system = System.objects.get(hostname=system_hostname)
-                KeyValue.objects.filter(key__startswith='nic.%s' % adapter_number, system=system).delete()
+                KeyValue.objects.filter(key__startswith='nic.%s' %
+                        adapter_number, obj=system).delete()
                 #KeyValue.objects.filter(key__startswith='nic.0', system=system).delete()
                 resp = rc.ALL_OK
                 resp.write('json = {"id":"14"}')
