@@ -199,7 +199,9 @@ div advanced-search-knobs input{
 </script>
 <div id="banner_area" class="banner center">
     <div id='banner_text'><h1>Inventory</h1></div>
-    <input class='search_tools' id="id_search" type="text" size="50" name="search" value="{{ search }}" autofocus="autofocus" style='margin-bottom; 20px'>
+    <form onsubmit='function (){}'>
+        <input class='search_tools' id="id_search" type="text" size="50" name="search" value="{{ search }}" autofocus="autofocus" style='margin-bottom; 20px'>
+    </form>
     <div style='display:block;'></div>
     <input class='search_tools' value="Search" title="Search" type="button" id="btn_s">
     <input value="I'm Feeling Lucky" title="I'm Feeling Lucky" name="lucky" type="submit" id="btn_i">
