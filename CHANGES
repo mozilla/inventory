@@ -1,0 +1,6 @@
+
+08/14/2013
+
+* Added keyword search to main search page.
+* Fixed bug in CSV importer that would cause the browser to redirect to a page displaying an error
+  message instead of injecting the error into the page via AJAX/JQuery.
