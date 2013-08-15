@@ -16,16 +16,16 @@ class DHCPHelper(object):
         #Iterate through the list and get all of the key/value pairs
         tmp_list = []
         for row in keyvalue_pairs:
-            keyvalue = KeyValue.objects.filter(obj=row.system)
+            keyvalue = KeyValue.objects.filter(obj=row.obj)
             tmp_dict = {}
             for kv in keyvalue:
                 tmp_dict[kv.key] = kv.value
-            tmp_dict['hostname'] = row.system.hostname
+            tmp_dict['hostname'] = row.obj.hostname
             appendable = True
             for the_items in tmp_list:
                 if 'hostname' not in the_items:
                     appendable = True
-                elif the_items['hostname'] == row.system.hostname:
+                elif the_items['hostname'] == row.obj.hostname:
                     appendable = False
             if appendable is True:
                 tmp_list.append(tmp_dict)

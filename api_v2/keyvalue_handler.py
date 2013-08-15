@@ -34,7 +34,7 @@ class KeyValueHandler(BaseHandler):
                     resp.write(e)
                     return resp
             try:
-                n.system = system
+                n.obj = system
                 if 'key' in request.POST:
                     n.key = request.POST['key']
                 if 'value' in request.POST:
@@ -201,7 +201,7 @@ class KeyValueHandler(BaseHandler):
                 return resp
 
             if n is not None:
-                n.system = system
+                n.obj = system
             if 'value' in request.POST and n is not None:
                 n.value = request.POST['value']
             if n is not None:
@@ -278,12 +278,12 @@ class KeyValueHandler(BaseHandler):
                     tmp_dict = {}
                     for kv in keyvalue:
                         tmp_dict[kv.key] = kv.value
-                    tmp_dict['hostname'] = row.system.hostname
+                    tmp_dict['hostname'] = row.obj.hostname
                     appendable = True
                     for the_items in tmp_list:
                         if 'hostname' not in the_items:
                             appendable = True
-                        elif the_items['hostname'] == row.system.hostname:
+                        elif the_items['hostname'] == row.obj.hostname:
                             appendable = False
                     if appendable is True:
                         tmp_list.append(tmp_dict)
@@ -299,12 +299,12 @@ class KeyValueHandler(BaseHandler):
                     tmp_dict = {}
                     for kv in keyvalue:
                         tmp_dict[kv.key] = kv.value
-                    tmp_dict['hostname'] = row.system.hostname
+                    tmp_dict['hostname'] = row.obj.hostname
                     appendable = True
                     for the_items in tmp_list:
                         if 'hostname' not in the_items:
                             appendable = True
-                        elif the_items['hostname'] == row.system.hostname:
+                        elif the_items['hostname'] == row.obj.hostname:
                             appendable = False
                     if appendable is True:
                         tmp_list.append(tmp_dict)
@@ -493,7 +493,7 @@ class KeyValueHandler(BaseHandler):
                         m = MacroExpansion(matches.group(1))
                         row.value = m.output()
                 for r in base:
-                    key_name = 'host:%s:%s' % (r.system.hostname, r.key)
+                    key_name = 'host:%s:%s' % (r.obj.hostname, r.key)
                     tmp_list[key_name] = r.value
             except Exception, e:
                 pass
@@ -521,7 +521,7 @@ class KeyValueHandler(BaseHandler):
                         m = MacroExpansion(matches.group(1))
                         row.value = m.output()
                 for r in base:
-                    key_name = 'host:%s:%s' % (r.system.hostname, r.key)
+                    key_name = 'host:%s:%s' % (r.obj.hostname, r.key)
                     tmp_list[key_name] = r.value
             except Exception, e:
                 pass

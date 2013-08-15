@@ -19,7 +19,7 @@ class KeyValueHandler(BaseHandler):
         if 'system_id' in request.POST:
             n = KeyValue()
             system = System.objects.get(id=request.POST['system_id'])
-            n.system = system
+            n.obj = system
             if 'key' in request.POST:
                 n.key = request.POST['key']
             if 'value' in request.POST:
@@ -159,7 +159,7 @@ class KeyValueHandler(BaseHandler):
                 resp.write('Neither system_id or truth_id found')
 
             if n is not None:
-                n.system = system
+                n.obj = system
             if 'value' in request.POST and n is not None:
                 n.value = request.POST['value']
             if n is not None:
