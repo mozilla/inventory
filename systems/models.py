@@ -212,6 +212,10 @@ class KeyValue(BaseKeyValue, KVUrlMixin):
         if re.match('^nic\.\d+\.mac_address\.\d+$', self.key):
             self.value = self.value.replace('-', ':')
             self.value = validate_mac(self.value)
+        if self.key is None:
+            self.key = ''
+        if self.value is None:
+            self.value = ''
         super(KeyValue, self).save(*args, **kwargs)
 
 
