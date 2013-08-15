@@ -726,29 +726,22 @@ def racks(request):
             system_query = system_query & Q(allocation=filter_form.cleaned_data['allocation'])
             has_query = True
         filter_status = filter_form.cleaned_data['status']
-        if filter_status and filter_status != 'special':
+        if filter_status:
             #system_query &= Q(system_status=filter_form.cleaned_data['status'])
             has_query = True
+        if not filter_form.cleaned_data['show_decommissioned']:
+            decommissioned = models.SystemStatus.objects.get(status='decommissioned')
+            system_query = system_query & ~Q(system_status=decommissioned)
+
     ##Here we create an object to hold decommissioned systems for the following filter
     if not has_query:
         racks = []
     else:
-        if filter_status != 'special':
-            def no_decom(q):
-                decommissioned = models.SystemStatus.objects.get(status='decommissioned')
-                q.exclude(system_status=decommissioned).order_by('rack_order')
-                return q
-            hack = no_decom
-        else:
-            def show_decom(q):
-                return q.order_by('rack_order')
-            hack = show_decom
-
-        racks = [(k, list(hack(k.system_set.select_related(
+        racks = [(k, list(k.system_set.select_related(
             'server_model',
             'allocation',
             'system_status',
-        ).filter(system_query)))) for k in racks]
+        ).filter(system_query))) for k in racks]
 
     return render_to_response('systems/racks.html', {
             'racks': racks,

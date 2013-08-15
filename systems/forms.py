@@ -37,35 +37,39 @@ class RackFilterForm(forms.Form):
 
     site = forms.ChoiceField(
         required=False,
-        choices=[('', 'All')] + [
+        choices=[('', 'ALL')] + [
             (m.id, m) for m in Site.objects.all()
         ])
     status = forms.ChoiceField(
         required=False,
-        choices=[('', 'All')] + [('', 'All (Including Decommisioned)')] +
+        choices=[('', 'ALL')] +
             [(m.id, m) for m in models.SystemStatus.objects.all()]
     )
     rack = forms.ChoiceField(
         required=False,
-        choices=[('', 'All')] + [
-            (m.id, m.site.full_name if m.site else '' + ' ' +  m.name)
+        choices=[('', 'ALL')] + [
+            (m.id, '{0} - {1}'.format(m.site.full_name, m.name) if m.site else '' + ' ' +  m.name)
             for m in models.SystemRack.objects.all().order_by('site', 'name')
         ]
     )
 
     allocation = forms.ChoiceField(
         required=False,
-        choices=[('', 'All')] + [(m.id, m)
+        choices=[('', 'ALL')] + [(m.id, m)
                     for m in models.Allocation.objects.all()])
+
+    show_decommissioned = forms.BooleanField(required=False)
+
     def __init__(self, *args, **kwargs):
         super(RackFilterForm, self).__init__(*args, **kwargs)
-        self.fields['site'].choices = [('', 'All')] + [(m.id, m.full_name) for m in Site.objects.all()]
-        self.fields['status'].choices = [('', 'All')] + [('special', 'All (Including Decommisioned)')] + [(m.id, m) for m in models.SystemStatus.objects.all()]
-        self.fields['rack'].choices = [('', 'All')] + [
-            (m.id, m.site.full_name if m.site else '' + ' ' +  m.name)
-            for m in models.SystemRack.objects.all().order_by('site')
+        self.fields['site'].choices = [('', 'ALL')] + [(m.id, m.full_name) for m in Site.objects.all()]
+        self.fields['status'].choices = [('', 'ALL')] + [(m.id, m) for m in models.SystemStatus.objects.all()]
+        self.fields['rack'].choices = [('', 'ALL')] + [
+            (m.id, '{0} - {1}'.format(m.site.full_name, m.name) if m.site else '' + ' ' +  m.name)
+            for m in models.SystemRack.objects.all().order_by('site', 'name')
         ]
-        self.fields['allocation'].choices = [('', 'All')] + [(m.id, m) for m in models.Allocation.objects.all()]
+        self.fields['allocation'].choices = [('', 'ALL')] + [(m.id, m) for m in models.Allocation.objects.all()]
+        self.fields['show_decommissioned'].initial = False
 
 def return_data_if_true(f):
     @wraps(f)

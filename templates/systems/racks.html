@@ -4,11 +4,8 @@
 <h2>Listing Racks</h2>
 {% if not read_only %}<a href="{{ "system_rack-new"|url() }}">Create New</a>{% endif %}
 <form action="" method="get">
-Site: {{ filter_form.site }}
-Status: {{ filter_form.status }}
-Rack: {{ filter_form.rack }}
-Allocation: {{ filter_form.allocation }}
-<input type="submit" value="Filter" />
+    {{ filter_form.as_p() }}
+    <input type="submit" value="Filter" />
 </form>
 
 {% import 'systems/rack_macros.html' as drawer -%}
