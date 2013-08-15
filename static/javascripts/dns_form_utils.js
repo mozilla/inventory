@@ -295,13 +295,17 @@ function do_search(callback){
         function (table) {
             $("#record-table").remove();
             $("#search-results").append(table);
-            setup_search_table();
-            // let the plugin know that we made a update
+            try {
+              setup_search_table();
+              // let the plugin know that we made a update
 
-            $("#record-table").trigger("update");
-            if (data.data('tableSorting')) {
-                // http://stackoverflow.com/questions/2288655/jquery-tablesorter-sort-same-column-after-update
-                $("#record-table").trigger("sorton", [data.data('tableSorting'),0]);
+              $("#record-table").trigger("update");
+              if (data.data('tableSorting')) {
+                  // http://stackoverflow.com/questions/2288655/jquery-tablesorter-sort-same-column-after-update
+                  $("#record-table").trigger("sorton", [data.data('tableSorting'),0]);
+              }
+            } catch (err) {
+              // the tablesorter jquery plugin totally blows
             }
             if (callback) {
               callback();
