@@ -13,7 +13,7 @@ class KeyValueACL(BaseKeyValueACL):
         self.check_for_permission(self.user, allowed)
     
     def check_ip_not_exist_other_system(self, system, ip_address):
-        keys = SystemModels.KeyValue.objects.filter(value=ip_address).exclude(system=system)
+        keys = SystemModels.KeyValue.objects.filter(value=ip_address).exclude(obj=system)
         if keys:
             raise Exception('IP Address Taken')
             #raise IPAddressTaken('You do not have permission to access this key scope')

@@ -64,7 +64,7 @@ class Generics(object):
 
         def create_kv(s, key, value):
             return sys_models.KeyValue.objects.get_or_create(
-                system=s, key=key, value=value
+                obj=s, key=key, value=value
             )[0]
 
         bundle = {

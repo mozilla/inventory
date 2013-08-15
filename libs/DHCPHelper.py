@@ -16,7 +16,7 @@ class DHCPHelper(object):
         #Iterate through the list and get all of the key/value pairs
         tmp_list = []
         for row in keyvalue_pairs:
-            keyvalue = KeyValue.objects.filter(system=row.system)
+            keyvalue = KeyValue.objects.filter(obj=row.system)
             tmp_dict = {}
             for kv in keyvalue:
                 tmp_dict[kv.key] = kv.value
@@ -34,7 +34,7 @@ class DHCPHelper(object):
     def adapters_by_system_and_scope(self, system, scope):
         dhcp_scope = scope
         system = System.objects.get(hostname=system)
-        keyvalue_pairs = KeyValue.objects.filter(key__startswith='nic.').filter(system=system).order_by('key')
+        keyvalue_pairs = KeyValue.objects.filter(key__startswith='nic.').filter(obj=system).order_by('key')
         #Iterate through the list and get all of the key/value pairs
         tmp_dict = {}
         adapter_ids = []

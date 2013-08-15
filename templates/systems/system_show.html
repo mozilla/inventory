@@ -219,6 +219,9 @@
 
     {% endfor %}
     </table>
+    <div>
+    Goto <a href='{{ system.get_edit_url() }}#tabs-4'>Add New Adapter</a>
+    </div>
 
 </pre></dd>
 <div style="clear:both;"></div>
@@ -226,6 +229,10 @@
 
 
 </pre></dd>
+<div class='show' style="clear:both;">
+    {% from 'core/core_macros.html' import display_kv %}
+    {{ display_kv(system.keyvalue_set.all().order_by('key'), obj=system, kv_type='system') }}
+</div>
 <div style="clear:both;"></div>
 </dl>
 </div>

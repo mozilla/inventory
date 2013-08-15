@@ -27,7 +27,7 @@ class KeyValueTree:
         if truth_only is False:
             try:
                 system = System.objects.get(hostname=search_string)
-                base = KeyValue.expanded_objects.filter(system=system)
+                base = KeyValue.expanded_objects.filter(obj=system)
                 self.is_system = True
             except:
                 self.is_system = False
@@ -76,8 +76,8 @@ class KeyValueTree:
             obj = None
             if parent_type == 'host':
                 obj = System.objects.get(hostname=parent_name)
-                base = KeyValue.expanded_objects.filter(system=obj).exclude(key__contains='parent')
-                base_parents = KeyValue.expanded_objects.filter(system=obj,key__contains='parent')
+                base = KeyValue.expanded_objects.filter(obj=obj).exclude(key__contains='parent')
+                base_parents = KeyValue.expanded_objects.filter(obj=obj,key__contains='parent')
                 parent_compare = obj.hostname
             elif parent_type == 'truth':
                 obj = Truth.objects.get(name=parent_name)

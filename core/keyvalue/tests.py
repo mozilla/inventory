@@ -13,10 +13,9 @@ class KVApiTests(TestCase):
         self.c = Client()
         create_fake_zone('10.in-addr.arpa', suffix='')
         root_domain = create_fake_zone('foobar.mozilla.com', suffix='')
-        s = System(hostname="asdf.mozilla.com")
-        s.save()
+        system = System.objects.create(hostname="asdf.mozilla.com")
         sreg = StaticReg.objects.create(
-            label='foo', domain=root_domain, system=s,
+            label='foo', domain=root_domain, system=system,
             ip_type='4', ip_str='10.0.0.0'
         )
 
@@ -25,6 +24,7 @@ class KVApiTests(TestCase):
         self.test_objs = (
             ('groupkeyvalue', g),
             ('staticregkeyvalue', sreg),
+            ('keyvalue', system),
         )
 
     def testCRUD(self):

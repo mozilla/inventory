@@ -290,7 +290,7 @@ def system_quicksearch_ajax(request):
 
 def get_key_value_store(request, id):
     system = models.System.objects.get(id=id)
-    key_value_store = models.KeyValue.objects.filter(system=system)
+    key_value_store = models.KeyValue.objects.filter(obj=system)
     return render_to_response('systems/key_value_store.html', {
             'key_value_store': key_value_store,
            },
@@ -300,13 +300,13 @@ def delete_key_value(request, id, system_id):
     matches = re.search('^nic\.(\d+)', str(kv.key) )
     if matches:
         try:
-            existing_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
+            existing_dhcp_scope = models.KeyValue.objects.filter(obj=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
             models.ScheduledTask(task=existing_dhcp_scope, type='dhcp').save()
         except:
             pass
     kv.delete()
     system = models.System.objects.get(id=system_id)
-    key_value_store = models.KeyValue.objects.filter(system=system)
+    key_value_store = models.KeyValue.objects.filter(obj=system)
     return render_to_response('systems/key_value_store.html', {
             'key_value_store': key_value_store,
            },
@@ -356,13 +356,13 @@ def save_key_value(request, id):
                     resp['errorMessage'] = str(e)
                     return HttpResponse(json.dumps(resp))
             try:
-                existing_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
+                existing_dhcp_scope = models.KeyValue.objects.filter(obj=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
                 if existing_dhcp_scope is not None:
                     models.ScheduledTask(task=existing_dhcp_scope, type='dhcp').save()
             except Exception, e: 
                 pass
             try:
-                existing_reverse_dns_zone = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.reverse_dns_zone.0' % matches.group(1))[0].value
+                existing_reverse_dns_zone = models.KeyValue.objects.filter(obj=kv.system).filter(key='nic.%s.reverse_dns_zone.0' % matches.group(1))[0].value
                 if existing_reverse_dns_zone is not None:
                     models.ScheduledTask(task=existing_reverse_dns_zone, type='reverse_dns_zone').save()
             except Exception, e: 
@@ -382,12 +382,12 @@ def save_key_value(request, id):
                 new_dhcp_scope = None
                 new_reverse_dns_zone = None
                 try:
-                    new_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
+                    new_dhcp_scope = models.KeyValue.objects.filter(obj=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
                 except Exception, e:
                     pass
 
                 try:
-                    new_reverse_dns_zone = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.reverse_dns_zone.0' % matches.group(1))[0].value
+                    new_reverse_dns_zone = models.KeyValue.objects.filter(obj=kv.system).filter(key='nic.%s.reverse_dns_zone.0' % matches.group(1))[0].value
                 except Exception, e:
                     pass
                 if new_dhcp_scope is not None:
@@ -414,22 +414,21 @@ def create_key_value(request, id):
     system = models.System.objects.get(id=id)
     key = 'None'
     value = 'None'
-    print request.POST
     if 'key' in request.POST:
         key = request.POST['key'].strip()
     if 'value' in request.POST:
         value = request.POST['value'].strip()
-    kv = models.KeyValue(system=system,key=key,value=value)
+    kv = models.KeyValue(obj=system,key=key,value=value)
     print "Key is %s: Value is %s." % (key, value)
     kv.save();
     matches = re.search('^nic\.(\d+)', str(kv.key) )
     if matches:
         try:
-            existing_dhcp_scope = models.KeyValue.objects.filter(system=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
+            existing_dhcp_scope = models.KeyValue.objects.filter(obj=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
             models.ScheduledTask(task=existing_dhcp_scope, type='dhcp').save()
         except:
             pass
-    key_value_store = models.KeyValue.objects.filter(system=system)
+    key_value_store = models.KeyValue.objects.filter(obj=system)
     return render_to_response('systems/key_value_store.html', {
             'key_value_store': key_value_store,
            },

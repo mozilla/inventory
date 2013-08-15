@@ -149,7 +149,7 @@ class Generator(object):
                 if not system.pk:
                     # It has to be a new key
                     kv = sys_models.KeyValue(
-                        system=system, key=key, value=value
+                        obj=system, key=key, value=value
                     )
                 else:
                     # Attempt to find an existing key first
@@ -159,7 +159,7 @@ class Generator(object):
                         orig_kv = system.keyvalue_set.get(pk=kv.pk)
                     except system.keyvalue_set.model.DoesNotExist:
                         kv = sys_models.KeyValue(
-                            system=system, key=key, value=value
+                            obj=system, key=key, value=value
                         )
                 if save:
                     kv.save()

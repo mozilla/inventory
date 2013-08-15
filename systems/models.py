@@ -10,6 +10,8 @@ from mozdns.validation import validate_name
 
 from core.validation import validate_mac
 from core.site.models import Site
+from core.keyvalue.mixins import KVUrlMixin
+from core.keyvalue.models import KeyValue as BaseKeyValue
 
 import datetime
 import re
@@ -192,10 +194,8 @@ class ApiManager(models.Manager):
         return results
 
 
-class KeyValue(models.Model):
-    system = models.ForeignKey('System')
-    key = models.CharField(max_length=255, blank=True, null=True)
-    value = models.CharField(max_length=255, blank=True, null=True)
+class KeyValue(BaseKeyValue, KVUrlMixin):
+    obj = models.ForeignKey('System', null=True)
     objects = models.Manager()
     expanded_objects = ApiManager()
 
@@ -212,7 +212,6 @@ class KeyValue(models.Model):
         if re.match('^nic\.\d+\.mac_address\.\d+$', self.key):
             self.value = self.value.replace('-', ':')
             self.value = validate_mac(self.value)
-
         super(KeyValue, self).save(*args, **kwargs)
 
 
@@ -570,7 +569,7 @@ class System(DirtyFieldsMixin, models.Model):
     def update_host_for_migration(self, new_hostname):
         if new_hostname.startswith(self.hostname):
             kv = KeyValue(
-                system=self, key='system.hostname.alias.0', value=self.hostname
+                obj=self, key='system.hostname.alias.0', value=self.hostname
             )
             kv.save()
             try:
@@ -597,7 +596,7 @@ class System(DirtyFieldsMixin, models.Model):
     def get_nic_names(self):
         adapter_names = []
         pairs = KeyValue.objects.filter(
-            system=self, key__startswith='nic', key__contains='adapter_name'
+            obj=self, key__startswith='nic', key__contains='adapter_name'
         )
         for row in pairs:
             m = re.match('^nic\.\d+\.adapter_name\.\d+', row.key)
@@ -607,7 +606,7 @@ class System(DirtyFieldsMixin, models.Model):
 
     def get_adapter_numbers(self):
         nic_numbers = []
-        pairs = KeyValue.objects.filter(system=self, key__startswith='nic')
+        pairs = KeyValue.objects.filter(obj=self, key__startswith='nic')
         for row in pairs:
             m = re.match('^nic\.(\d+)\.', row.key)
             if m:

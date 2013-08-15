@@ -236,7 +236,7 @@ ul.css-tabs a.current {
 			$('#key_value_store_span').html('&nbsp;').load('/en-US/systems/get_key_value_store/' + system_id + '/');
 
 		}
-		load_key_value_store(system_id);
+		//load_key_value_store(system_id);
         $("#add_adapter_form").validate({
                             rules: {
                                 quick_add_adapter_number: {
@@ -269,48 +269,61 @@ ul.css-tabs a.current {
                                         quick_add_host_name: "Host Name is required"
                             },
                             submitHandler: function(data){
-                                    $.post("/en-US/systems/create_key_value/" + system_id + '/',
-                                        { 
-                                        key: 'nic.' + $('#quick_add_adapter_number').val() + '.ipv4_address.0', 
-                                        value: $('#quick_add_ip_address').val() 
-                                        }
-                                    );
-                                    $.post("/en-US/systems/create_key_value/" + system_id + '/',
-                                        { 
-                                        key: 'nic.' + $('#quick_add_adapter_number').val() + '.hostname.0', 
-                                        value: $('#quick_add_host_name').val() 
-                                        }
-                                    );
-                                    $.post("/en-US/systems/create_key_value/" + system_id + '/',
-                                        { 
-                                        key: 'nic.' + $('#quick_add_adapter_number').val() + '.mac_address.0', 
-                                        value: $('#quick_add_mac_address').val() 
-                                        }
-                                    );
+                                    var data_inputs = [
+                                        {
+                                            key: 'nic.' + $('#quick_add_adapter_number').val() + '.ipv4_address.0',
+                                            value: $('#quick_add_ip_address').val()
+                                        },
+                                        {
+                                            key: 'nic.' + $('#quick_add_adapter_number').val() + '.hostname.0',
+                                            value: $('#quick_add_host_name').val()
+                                        },
+                                        {
+                                            key: 'nic.' + $('#quick_add_adapter_number').val() + '.name.0',
+                                            value: $('#quick_add_adapter_name').val()
+                                        },
+                                        {
+                                            key: 'nic.' + $('#quick_add_adapter_number').val() + '.mac_address.0',
+                                            value: $('#quick_add_mac_address').val()
+                                        },
+                                    ];
                                     if($("#quick_add_dhcp_scope").val()){
-                                        $.post("/en-US/systems/create_key_value/" + system_id + '/',
-                                            { 
-                                            key: 'nic.' + $('#quick_add_adapter_number').val() + '.dhcp_scope.0', 
-                                            value: $('#quick_add_dhcp_scope').val() 
+                                        data_inputs.push(
+                                            {
+                                                key: 'nic.' + $('#quick_add_adapter_number').val() + '.dhcp_scope.0',
+                                                value: $('#quick_add_dhcp_scope').val()
                                             }
                                         );
                                     }
-                                    $.post("/en-US/systems/create_key_value/" + system_id + '/',
-                                        { 
-                                        key: 'nic.' + $('#quick_add_adapter_number').val() + '.name.0', 
-                                        value: $('#quick_add_adapter_name').val() 
-                                        }
-                                    );
                                     if($('#quick_add_option_host_name').val().length > 0){
-                                        $.post("/en-US/systems/create_key_value/" + system_id + '/',
-                                            { 
-                                            key: 'nic.' + $('#quick_add_adapter_number').val() + '.option_hostname.0', 
-                                            value: $('#quick_add_option_host_name').val() 
+                                        data_inputs.push(
+                                            {
+                                                key: 'nic.' + $('#quick_add_adapter_number').val() + '.option_hostname.0',
+                                                value: $('#quick_add_option_host_name').val()
                                             }
                                         );
+                                    }
+                                    var errors = false;
+                                    $(data_inputs).each(function (i, kv){
+                                        console.log(kv);
+                                        $.ajax({
+                                            type: 'POST',
+                                            async: false,
+                                            data: kv,
+                                            url: "/en-US/systems/create_key_value/" + system_id + '/',
+                                            error: function (e){
+                                                errors = true;
+                                                console.log('Error!');
+                                                console.log(e);
+                                            }
+                                        });
+
+                                    });
+                                    if (!errors){
+                                        window.location = '/en-US/systems/show/' + system_id + '/';  // Temporary hack until all this code DIES IN A FIRE...
                                     }
                                     //$("#key_value_store_quick_add_adapter").data("overlay").close()
-                                    $('#key_value_store_span').html('&nbsp;').load('/en-US/systems/get_key_value_store/' + system_id + '/');
+                                    //$('#key_value_store_span').html('&nbsp;').load('/en-US/systems/get_key_value_store/' + system_id + '/');
                                 return false;
                             }
 
