@@ -158,6 +158,7 @@ class OperatingSystemData(CustomAPIResource):
         data.set('resource_uri', '/tasty/v3/operating_system/8/')
         data.set('version', '6.2')
         return data
+
 class KeyValueResource(CustomAPIResource):
     system = fields.ToOneField('api_v3.system_api.SystemResource', 'obj', full=False)
 
