@@ -10,3 +10,4 @@
 * Added a new interface for managing System KeyValue objects
 * Changed systems.models.KeyValue.system to system.models.KeyValue.obj to align with other key value
   classes
+* Added a rack's name to the rack drop down on the rack filter page
