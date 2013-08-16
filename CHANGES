@@ -1,9 +1,6 @@
-
-08/14/2013
-
-* Added keyword search to main search page.
-* Fixed bug in CSV importer that would cause the browser to redirect to a page displaying an error
-  message instead of injecting the error into the page via AJAX/JQuery.
+08/16/2013
+* Added nic.\d+.hostname.\d+, mgmt.\d+.hostname.\d+, and system.hostname.alias.\d+ to csv importer
+  key templates
 
 08/15/2013
 
@@ -11,3 +8,9 @@
 * Changed systems.models.KeyValue.system to system.models.KeyValue.obj to align with other key value
   classes
 * Added a rack's name to the rack drop down on the rack filter page
+
+08/14/2013
+
+* Added keyword search to main search page.
+* Fixed bug in CSV importer that would cause the browser to redirect to a page displaying an error
+  message instead of injecting the error into the page via AJAX/JQuery.
