@@ -94,9 +94,10 @@ class Resolver(Generics):
     system_kv = make_tagger(system_kvs)
 
     system_kv_patterns = []
-    for key_type in ('mac_address', 'ip_address', 'name'):
+    for key_type in ('mac_address', 'ip_address', 'name', 'hostname'):
         system_kv_patterns.append('nic.\d+.{0}.\d+'.format(key_type))
         system_kv_patterns.append('mgmt.\d+.{0}.\d+'.format(key_type))
+    system_kv_patterns.append('system.hostname.alias.\d+')
 
     @meta
     def primary_attribute(self, **kwargs):
