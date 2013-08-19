@@ -84,5 +84,6 @@ class DjangoCompiler(ICompiler):
 
     def NOT_op(self):
         def NOT(t):
-            return map(lambda Q: ~Q, t)
+            # If Q is none, return it, else negate it
+            return map(lambda Q: Q and ~Q, t)
         return NOT
