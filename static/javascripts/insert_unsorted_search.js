@@ -30,7 +30,7 @@ function search_watcher(possible_input_ids, target_div, callback){
             if (search !== '') {
               search = search + ' OR ';
             }
-            return search + '/^' + $(el).val() + '$';
+            return search + '/^' + $(el).val().replace('*', '\\*') + '$';
           }
         }
         return search;
