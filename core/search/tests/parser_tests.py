@@ -223,3 +223,13 @@ class EXPRTests(T):
         t = "mozillaecuadOR.org"
         out = "mozillaecuadOR.org"
         self.assertEqual(out, self.parse(t))
+
+    def test29(self):
+        t = 'a AND b AND c AND d AND e'
+        out = '(a AND (b AND (c AND (d AND e))))'
+        self.assertEqual(out, self.parse(t))
+
+    def test30(self):
+        t = 'a OR b OR c OR d OR e'
+        out = '((((a OR b) OR c) OR d) OR e)'
+        self.assertEqual(out, self.parse(t))

@@ -54,9 +54,11 @@ parens = '(' ws expr:e ws ')' -> e
 # 3) e_or
 
 # x AND y  <-- Explicit AND
-e_and = AND:op wss value:v -> (op, v)
+e_and = AND:op wss expr:v -> (op, v)
 
 # x y  <-- Implicit AND
+# Only value's are allowed next to implicit ands. You have to be explicit about
+# boolean logic if you want to get fancy
 i_and = (' '+ ~OR ~AND) value:v -> (self.AND_op(), v)
 
 # x OR y  <-- Explicit OR
