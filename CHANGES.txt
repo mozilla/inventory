@@ -3,6 +3,9 @@
   This was to align nameing conventions with other objects like NET and be more uniform with invtool.
 * Added system csv exporter to the mcsv module.
 * Fixed a small bug in the search parser
+* Added CSV importer keys for 'option_hostname', 'dhcp_filename',
+  'dhcp_domain_name' and 'dhcp_domain_name_servers'
+
 
 08/19/2013
 * Fixed a search bug where searching for !view=:public would cause and ISE
