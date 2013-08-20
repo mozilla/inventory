@@ -1,3 +1,6 @@
+08/19/2013
+* Fixed a search bug where searching for !view=:public would cause and ISE
+
 08/16/2013
 * Added nic.\d+.hostname.\d+, mgmt.\d+.hostname.\d+, and system.hostname.alias.\d+ to csv importer
   key templates
