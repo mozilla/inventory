@@ -94,7 +94,11 @@ class Resolver(Generics):
     system_kv = make_tagger(system_kvs)
 
     system_kv_patterns = []
-    for key_type in ('mac_address', 'ip_address', 'name', 'hostname'):
+    for key_type in (
+        'mac_address', 'ip_address', 'name', 'hostname', 'dhcp_scope',
+        'option_hostname', 'dhcp_filename', 'dhcp_domain_name',
+        'dhcp_domain_name_servers'
+    ):
         system_kv_patterns.append('nic.\d+.{0}.\d+'.format(key_type))
         system_kv_patterns.append('mgmt.\d+.{0}.\d+'.format(key_type))
     system_kv_patterns.append('system.hostname.alias.\d+')
