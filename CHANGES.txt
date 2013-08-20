@@ -1,3 +1,8 @@
+08/20/2013
+* Added API for System objects. Changed the name 'SYSTEM' in searches (i.e. type=:SYSTEM) to 'SYS'.
+  This was to align nameing conventions with other objects like NET and be more uniform with invtool.
+* Added system csv exporter to the mcsv module.
+
 08/19/2013
 * Fixed a search bug where searching for !view=:public would cause and ISE
 
