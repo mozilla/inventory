@@ -137,7 +137,9 @@ def create_zone_ajax(request):
     return HttpResponse(json.dumps(
         {
             'success': True,
-            'success_url': '/core/?search=zone=:{0}'.format(domain.name)
+            'success_url': '/en-US/core/search/#q=zone=:{0}'.format(
+                domain.name
+            )
         }))
 
 
