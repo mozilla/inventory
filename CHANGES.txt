@@ -1,3 +1,6 @@
+08/21/2013
+* BUG 886623 Changed SOA serial format to be YYYYMMDDXX
+
 08/20/2013
 * Added API for System objects. Changed the name 'SYSTEM' in searches (i.e. type=:SYSTEM) to 'SYS'.
   This was to align nameing conventions with other objects like NET and be more uniform with invtool.
