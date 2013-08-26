@@ -21,7 +21,7 @@ import datetime
 # TODO, put these defaults in a config file.
 ONE_WEEK = 604800
 DEFAULT_EXPIRE = ONE_WEEK * 2
-DEFAULT_RETRY = ONE_WEEK / 7  # One day
+DEFAULT_RETRY = 3 * 60  # 3 min
 DEFAULT_REFRESH = 180  # 3 min
 DEFAULT_MINIMUM = 180  # 3 min
 

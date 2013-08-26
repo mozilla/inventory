@@ -1,3 +1,7 @@
+08/26/2013
+* BUG 909388 Changed SOA retry default to 3 minutes
+
+
 08/21/2013
 * BUG 886623 Changed SOA serial format to be YYYYMMDDXX
 
