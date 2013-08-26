@@ -14,7 +14,6 @@ class BaseListView(ListView):
     Inherit ListView to specify our pagination.
     """
     template_name = 'list.html'
-    paginate_by = 200
 
 
 class BaseDetailView(DetailView):

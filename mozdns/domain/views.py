@@ -55,10 +55,12 @@ class DomainDeleteView(DomainView, MozdnsDeleteView):
 class DomainListView(DomainView, MozdnsListView):
     queryset = Domain.objects.filter(is_reverse=False)
     template_name = "domain/domain_list.html"
+    paginate_by = 200
 
 
 class ReverseDomainListView(DomainView, MozdnsListView):
     queryset = Domain.objects.filter(is_reverse=True).order_by('name')
+    paginate_by = 200
 
 
 class DomainDetailView(DomainView, DetailView):
