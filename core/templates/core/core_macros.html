@@ -137,7 +137,7 @@
     {{ display_obj_field(sreg, 'fqdn', sreg.fqdn, top_row=True) }}
     {{ display_obj_field(sreg, 'inet4 addr' if sreg.ip_type == '4' else 'inet6 addr', sreg.ip_str) }}
     {{ display_obj_field(sreg.range, 'range', sreg.range or 'N/A') }}
-    {{ display_obj_field(sreg.range.network, 'network', sreg.range.network or 'N/A') }}
+    {{ display_obj_field(sreg.network, 'network', sreg.network or 'N/A') }}
     {{ display_obj_kv(sreg) }}
 {%- endmacro %}
 

@@ -186,13 +186,12 @@
 <div id="system-dns-info">
 </div>
 
-<!--- Disabling this until DHCP is deployed -->
-<div class='show' style="clear:both; display: none;">
+<div class='show' style="clear:both;">
     <div>
         {% from 'core/core_macros.html' import display_sregs %}
         {{ display_sregs(sregs) }}
     </div>
-    <a class="add_new_sreg" href="">Add Static Registration</a>
+    <a class="btn btn-small add_new_sreg" href="">Add Static Registration</a>
 </div>
 
 <div>
