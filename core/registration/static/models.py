@@ -11,6 +11,7 @@ from mozdns.address_record.models import BaseAddressRecord
 from mozdns.domain.models import Domain
 from mozdns.ip.utils import ip_to_dns_form
 from mozdns.ptr.models import BasePTR
+from core.network.utils import calc_networks_str
 
 
 class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
@@ -107,6 +108,27 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     @property
     def rdtype(self):
         return 'SREG'
+
+    @property
+    def range(self):
+        """
+        Allow easy lookup of an SREG's range object if it exists
+        """
+        from core.range.utils import ip_to_range
+        return ip_to_range(self.ip_str)
+
+    @property
+    def network(self):
+        """
+        Allow easy lookup of an SREG's network object if it exists
+        """
+        parents, _ = calc_networks_str(
+            "{0}/32".format(self.ip_str), self.ip_type
+        )
+        if not parents:
+            return None
+        else:
+            return parents[-1]
 
     def record_type(self):
         return 'A/PTR'
