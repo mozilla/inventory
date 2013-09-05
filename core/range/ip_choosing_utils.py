@@ -206,6 +206,8 @@ def calc_template_ranges(network):
                     'end': str(network.network.broadcast - 1),
                     'name_fragment': name_fragment
                 })
+        else:
+            template_ranges = []
         return template_ranges
     elif network.ip_type == '6' and network.prefixlen == 64:
         # Only do /64s for IPv6
@@ -216,16 +218,23 @@ def calc_template_ranges(network):
         return [
             {
                 'name': 'template',
-                'rtype': 'reserved',
+                'rtype': 'reserved (netops)',
                 'start': str(nbase + 1),
                 'end': str(nbase + int('ffff', 16)),
                 'name_fragment': name_fragment
             },
             {
                 'name': 'template',
-                'rtype': 'multi-host pools',
-                'start': str(nbase + int('10000', 16)),
-                'end': str(network.network.broadcast - 1),
+                'rtype': 'general purpose',
+                'start': str(nbase + int('10001', 16)),
+                'end': str(nbase + int('1ffff', 16)),
+                'name_fragment': name_fragment
+            },
+            {
+                'name': 'template',
+                'rtype': 'vips',
+                'start': str(nbase + int('20001', 16)),
+                'end': str(nbase + int('2ffff', 16)),
                 'name_fragment': name_fragment
             }
         ]

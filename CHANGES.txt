@@ -1,3 +1,6 @@
+09/05/2013
+* Updated ipv6 default range policy
+
 09/04/2013
 * Added widget that helps you choose free IP addresses to A/PTR create pages
 
