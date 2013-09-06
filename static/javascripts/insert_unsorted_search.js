@@ -22,7 +22,7 @@ function search_watcher(possible_input_ids, target_div, callback){
               if (search !== '') {
                 search = search + ' OR ';
               }
-              return search + 'ip=:' + $(el).val();
+              return search + 'ip=:' + $(el).val().replace(/ /g, '');
             } else {
               return search;
             }
@@ -30,7 +30,7 @@ function search_watcher(possible_input_ids, target_div, callback){
             if (search !== '') {
               search = search + ' OR ';
             }
-            return search + '/^' + $(el).val().replace('*', '\\*') + '$';
+            return search + '/^' + $(el).val().replace('*', '\\*').replace(/ /g, '') + '$';
           }
         }
         return search;
