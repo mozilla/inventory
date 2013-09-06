@@ -744,7 +744,7 @@ def racks(request):
             'server_model',
             'allocation',
             'system_status',
-        ).filter(system_query))) for k in racks]
+        ).filter(system_query).order_by('rack_order'))) for k in racks]
 
     return render_to_response('systems/racks.html', {
             'racks': racks,
