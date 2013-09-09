@@ -13,3 +13,6 @@
 [submodule "vendor-local/src/parsley"]
 	path = vendor-local/src/parsley
 	url = https://github.com/washort/parsley
+[submodule "vendor"]
+	path = vendor
+	url = git@github.com:mozilla/playdoh-lib.git
