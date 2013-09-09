@@ -16,7 +16,6 @@ build.py
 tmp/*
 *~
 *.mo
-src/
 .vagrant
 build/
 */*.*_auto__.*
