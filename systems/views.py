@@ -177,12 +177,14 @@ def list_all_systems_ajax(request):
         search_q |= Q(oob_ip__icontains=search_term)
         search_q |= Q(keyvalue__value__icontains=search_term)
         try:
-            total_count = models.System.with_related.filter(search_q).distinct('hostname').count()
+            total_count = models.System.with_related.filter(search_q).values('hostname').distinct().count()
         except:
             total_count = 0
         end_display = int(iDisplayStart) + int(iDisplayLength)
         try:
-            systems = models.System.with_related.filter(search_q).order_by('hostname').distinct('hostname')[iDisplayStart:end_display]
+            systems = models.System.objects.filter(
+                pk__in=models.System.with_related.filter(search_q).values_list('id', flat=True).distinct()
+            )[iDisplayStart:end_display]
             the_data = build_json(request, systems, sEcho, total_count, iDisplayLength, sort_col, sort_dir)
         except:
             the_data = '{"sEcho": %s, "iTotalRecords":0, "iTotalDisplayRecords":0, "aaData":[]}' % (sEcho) 
