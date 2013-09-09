@@ -1,7 +1,6 @@
-import MySQLdb
-
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
+from django.db.utils import DatabaseError
 
 from mozdns.utils import get_zones
 
@@ -11,7 +10,6 @@ from core.search.compiler.django_compile import search_type
 import simplejson as json
 from gettext import gettext as _
 
-from MySQLdb import OperationalError
 from jinja2 import Environment, PackageLoader, ChoiceLoader
 
 env = Environment(loader=ChoiceLoader(
@@ -105,7 +103,7 @@ def _search(request, response):
         for type_, q in obj_map.iteritems():
             obj_counts[type_] = q.count() if q else 0
             total_objects += obj_counts[type_]
-    except OperationalError as why:
+    except DatabaseError as why:
         return HttpResponse(response(**{'error_messages': str(why)}))
 
     format = request.GET.get('format', '')
@@ -143,7 +141,7 @@ def ajax_type_search(request):
     else:
         try:
             records = records[:50]
-        except MySQLdb.OperationalError, e:
+        except DatabaseError, e:
             if "Got error " in str(e) and " from regexp" in str(e):
                 # This is nasty. If the user is using an invalid regex patter,
                 # the db might shit a brick

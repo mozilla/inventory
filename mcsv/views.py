@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.utils import DatabaseError
 from django.shortcuts import render
 from django.http import HttpResponse
 
@@ -9,8 +10,6 @@ from mcsv.importer import csv_import
 from systems.models import System
 
 from core.search.compiler.django_compile import compile_to_django
-
-from MySQLdb import OperationalError
 
 import csv
 import re
@@ -102,7 +101,7 @@ def ajax_csv_exporter(request):
                     value = re.escape(value)
                 row.append(str(value))
             out.writerow(row)
-    except OperationalError as why:
+    except DatabaseError as why:
         return HttpResponse(
             json.dumps({'error_messages': str(why)}),
             status=400

@@ -1,10 +1,10 @@
-import MySQLdb
 import simplejson as json
 
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import Http404
 from django.core.exceptions import ValidationError
+from django.db.utils import DatabaseError
 
 from mozdns.domain.models import Domain
 from core.search.compiler.django_compile import search_type
@@ -79,7 +79,7 @@ def record_search_ajax(request):
         try:
             total_obj_count = records.count()
             records = records[:50]
-        except MySQLdb.OperationalError, e:
+        except DatabaseError, e:
             if "Got error " in str(e) and " from regexp" in str(e):
                 # This is nasty. If the user is using an invalid regex patter,
                 # the db might shit a brick
