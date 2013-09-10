@@ -1,3 +1,6 @@
+09/10/2013
+* Fixed BUG 905752, 913632, and addressed 914279
+
 09/05/2013
 * Updated ipv6 default range policy
 

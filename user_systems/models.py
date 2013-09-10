@@ -53,7 +53,7 @@ class UnmanagedSystem(models.Model):
     asset_tag = models.CharField(max_length=255, blank=True)
     operating_system = models.ForeignKey(OperatingSystem, blank=True, null=True)
     owner = models.ForeignKey('Owner', blank=True, null=True)
-    system_type = models.ForeignKey('UnmanagedSystemType', blank=True, null=True)
+    system_type = models.ForeignKey('UnmanagedSystemType', blank=False, null=True)
     server_model = models.ForeignKey(ServerModel, blank=True, null=True)
     created_on = models.DateTimeField(null=True, blank=True)
     updated_on = models.DateTimeField(null=True, blank=True)

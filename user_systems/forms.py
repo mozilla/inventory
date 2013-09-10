@@ -1,7 +1,7 @@
 from django import forms
 from django.forms.extras.widgets import SelectDateWidget
 
-from models import UnmanagedSystem, Owner, UserLicense
+from models import UnmanagedSystem, Owner, UserLicense, UnmanagedSystemType
 try:
     from functools import wraps
 except ImportError:
@@ -29,6 +29,10 @@ class UserSystemForm(forms.ModelForm):
 
     date_purchased = forms.DateField(widget=SelectDateWidget(years=range(1999,datetime.today().year + 2)), initial=datetime.now())
     loaner_return_date = forms.DateField(widget=SelectDateWidget(), initial=datetime.now(), required=False)
+    system_type = forms.ModelChoiceField(
+        queryset=UnmanagedSystemType.objects.all(), empty_label="(Required)",
+        required=True
+    )
 
     class Meta:
         model = UnmanagedSystem
