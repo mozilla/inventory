@@ -39,27 +39,36 @@ $(document).ready(function() {
           $('#choose-ip').html(data);
           // This function was pulled into existance by this ajax request
           chosen_init({
+            hints: ['#id_sreg-fqdn'],
             dialog_div_id: '#choose-ip',
             target_el_id: '#id_sreg-ip_str',
             reset_button_id: '#choose-ip-reset',
             display_range_id: '#choose-ip-display-ranges-area',
             find_related_url: '/en-US/core/range/find_related/',
             reset_callback: function (){
-              $('#id_sreg-fqdn').val('');
+              if ($('#id_sreg-fqdn').data('auto-name') === $('#id_sreg-fqdn').val()) {
+                  $('#id_sreg-fqdn').val('');
+              }
               $('#id_sreg-ip_str').val('');
               $('#id_sreg-views_0').attr('checked', false);
               $('#id_sreg-views_1').attr('checked', false);
             },
             found_ip_callback: function (range, name_fragment){
+              function suggest_name(target) {
+                  if (name_fragment.length && !$(target).val()) {
+                    var auto_name = '.' + name_fragment + '.mozilla.com';
+                    $(target).val(auto_name);
+                    $(target).focus();
+                    $(target).data('auto-name', auto_name);
+                  }
+              }
               if(typeof range.free_ip == 'undefined') {
                 $('#id_sreg-ip_str').val('');
               } else {
+                if ($('#id_sreg-fqdn').val() === '') {
+                  suggest_name('#id_sreg-fqdn');
+                }
                 $('#id_sreg-ip_str').val(range.free_ip);
-                $('#id_sreg-ip_str').focus();
-              }
-              if (name_fragment.length) {
-                $('#id_sreg-fqdn').val('.' + name_fragment + '.mozilla.com');
-                $('#id_sreg-fqdn').focus();
               }
             }
           });
