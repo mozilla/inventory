@@ -17,6 +17,7 @@
                     $('#choose-ip').html(data);
                     // This function was pulled into existance by this ajax request
                     chosen_init({
+                      hints: ['#id_fqdn', '#id_name'],
                       dialog_div_id: '#choose-ip',
                       target_el_id: '#id_ip_str',  // target_el_id
                       reset_button_id: '#choose-ip-reset',
@@ -26,7 +27,13 @@
                         $('#related-things').empty();
                         $('#related-help-text').empty();
                         $('#id_ip_str').val('');
-                        $('#id_fqdn').val('');
+
+                        if ($('#id_fqdn').data('auto-name') === $('#id_fqdn').val()) {
+                            $('#id_fqdn').val('');
+                        }
+                        if ($('#id_name').data('auto-name') === $('#id_name').val()) {
+                            $('#id_name').val('');
+                        }
                         $('#id_views_0').attr('checked', false);
                         $('#id_views_1').attr('checked', false);
                       },
@@ -37,9 +44,19 @@
                           $('#id_ip_str').val(range.free_ip);
                           $('#id_ip_str').focus();
                         }
-                        if (name_fragment.length) {
-                          $('#id_fqdn').val('.' + name_fragment + '.mozilla.com');
-                          $('#id_fqdn').focus();
+                        function suggest_name(target) {
+                            if (name_fragment.length && !$(target).val()) {
+                              var auto_name = '.' + name_fragment + '.mozilla.com';
+                              $(target).val(auto_name);
+                              $(target).focus();
+                              $(target).data('auto-name', auto_name);
+                            }
+                        }
+                        if ($('#id_fqdn').val() === '') {
+                          suggest_name('#id_fqdn');
+                        }
+                        if ($('#id_name').val() === '') {
+                          suggest_name('#id_name');
                         }
                       }
                     });
