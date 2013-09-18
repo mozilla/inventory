@@ -212,6 +212,9 @@ $(document).ready(function() {
     newBlock = $(blocks.last()).clone();
 
     $(newBlock).find('input, select').each(function(i, el) {
+      if ($(el).attr('class') === 'increment') {  // TODO make this a substring check
+        $(el).val($(el).val().replace(/\d+$/, function(n){ return ++n; }));
+      }
       if ($(el).attr('name')) {
         $(el).attr('name', $(el).attr('name').replace(nextFree - 1, nextFree));
       }

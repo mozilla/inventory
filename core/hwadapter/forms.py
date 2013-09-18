@@ -7,6 +7,10 @@ from truth.models import Truth
 
 
 class HWAdapterForm(forms.ModelForm):
+    name = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'increment'})
+    )
+
     def __init__(self, *args, **kwargs):
         super(HWAdapterForm, self).__init__(*args, **kwargs)
         if not self.instance.pk:
