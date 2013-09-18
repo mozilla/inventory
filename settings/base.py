@@ -148,6 +148,7 @@ DEBUG_TOOLBAR_PANELS = (
 )
 TMP_MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (
     'reversion.middleware.RevisionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 MIDDLEWARE_CLASSES = []

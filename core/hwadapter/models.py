@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 
 from core.group.models import Group
 from core.keyvalue.base_option import DHCPKeyValue, CommonOption
-from core.keyvalue.mixins import KVUrlMixin
+from core.keyvalue.mixins import KVUrlMixin, HWAdapterMixin
 from core.mixins import ObjectUrlMixin
 from core.registration.static.models import StaticReg
 from core.validation import validate_mac
@@ -53,7 +53,7 @@ class HWAdapter(models.Model, ObjectUrlMixin, KVUrlMixin):
         return self.sreg.system.get_absolute_url()
 
 
-class HWAdapterKeyValue(DHCPKeyValue, CommonOption):
+class HWAdapterKeyValue(HWAdapterMixin, DHCPKeyValue, CommonOption):
     obj = models.ForeignKey(
         HWAdapter, related_name='keyvalue_set', null=False
     )
@@ -68,4 +68,6 @@ class HWAdapterKeyValue(DHCPKeyValue, CommonOption):
         https://inventory.mozilla.org/en-US/dhcp/show/
         """
         if not Truth.objects.filter(name=self.value).exists():
-            raise ValidationError("This isn't a valid DHCP scope.")
+            raise ValidationError(
+                "The value {0} isn't a valid DHCP scope.".format(self.value)
+            )

@@ -1,0 +1,153 @@
+pre {
+    margin: 0;
+}
+
+.legend {
+  background-color: white;
+  padding: 0em 1em 2em 1em;
+}
+
+.legend div {
+  display: inline-block;
+  margin-left: 2em;
+  margin-right: 2em;
+  margin-borrom: 2em;
+}
+
+.legend i {
+  padding: 1em;
+}
+
+.legend h4 {
+  margin-left: 2em;
+  padding-top: 1em;
+}
+
+.lol-header {
+  padding-top: 1em;
+}
+
+.new-object-border {
+  border-style: solid;
+  border-width: 1px;
+  margin-top: 1em;
+  padding: 0.5em;
+  border-radius: 2px;
+}
+
+.replaced-object-border {
+  color: orange;
+  border-style: dashed;
+  border-width: 3px;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding: 0.5em;
+  border-radius: 2px;
+}
+
+.sreg-container {
+  background-color: white;
+  margin: 2em;
+  padding-left: 2em;
+  padding-top: 2em;
+  padding-bottom: 2em;
+}
+
+.sreg-attr {
+  display: block;
+}
+
+.sreg-attrs {
+  display: inline-block;
+  margin-bottom: 1em;
+}
+
+.sreg-match-obj {
+  display: inline-block;
+}
+
+.hws-container {
+  padding-left: 2em;
+}
+
+.hw-container {
+  background-color: white;
+  display: inline-block;
+}
+
+.hw-attr {
+  display: block;
+}
+
+.hw-attr {
+  display: block;
+}
+
+.carry-over-kvs span {
+  padding-left: 1em;
+}
+
+.carry-over-kv {
+  display: block;
+  padding-left: 1em;
+}
+
+.sreg-match-objs {
+  display: inline-block;
+  padding-left: 1em;
+}
+
+.sreg-match-obj {
+  display: block;
+  padding-left: 1em;
+}
+
+.dhcp-outputs {
+  display: inline-block;
+  margin-top: 2em;
+}
+
+.dhcp-output {
+}
+
+.dhcp-output-line {
+  display: block;
+}
+
+.old-dhcp-output-border {
+  box-shadow: 5px 5px 5px #888888;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.old-dhcp-output {
+  display: block;
+  padding: 1em;
+  margin-top: 1em;
+}
+
+.new-dhcp-output-border {
+  box-shadow: 5px 5px 5px #008F00;
+  border-style: solid;
+  border-width: 1px;
+}
+.new-dhcp-output {
+  display: block;
+  padding: 1em;
+}
+
+.c-errors {
+  margin-top: 1em;
+  box-shadow: 5px 5px 5px red;
+  border-style: solid;
+  border-width: 1px;
+  block-inline;
+}
+
+.c-error {
+  color: red;
+}
+
+.combine-bottons {
+  margin-top: 2em;
+}

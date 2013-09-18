@@ -37,9 +37,6 @@ def log(msg, level=0):
         print "[BUILD] {0}".format(msg),
         return
 
-def print_system(system):
-    return "{0} ({1}systems/edit/{2}/)".format(system, INV_URL, system.pk)
-
 """
 >>> ip_to_domain_name('10.20.30.40')
 '40.30.20.10.IN-ADDR.ARPA'

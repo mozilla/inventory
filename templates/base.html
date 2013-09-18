@@ -1,6 +1,10 @@
 <!doctype html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- Make the Country code uppercase -->
+<html lang="{{ '-'.join([request.LANGUAGE_CODE.split('-')[0], request.LANGUAGE_CODE.split('-')[1].upper()]) 
+   if request.LANGUAGE_CODE
+   else 'en-US'
+}}">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>{% block title %}Inventory{% block subtitle %}{% endblock %}{% endblock %}</title>
@@ -27,7 +31,7 @@
     <script src="{{MEDIA_URL}}javascripts/search-box.js"></script>
     {% block head %}{% endblock %}
 </head>
-<body>
+<body data-media-url="{{ MEDIA_URL }}">
 <div class="header-bar">
     <div id='search-box'>
         <input placeholder='Search...' autofocus="autofocus"></input>
