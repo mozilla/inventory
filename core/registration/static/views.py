@@ -1,11 +1,20 @@
 from django.http import HttpResponse
 from django.core.exceptions import ValidationError
+from django.shortcuts import render, get_object_or_404
 from django.forms.formsets import formset_factory
 from django.db import transaction, IntegrityError
 
 from core.registration.static.forms import StaticRegAutoForm
 from core.hwadapter.forms import HWAdapterForm
 from core.hwadapter.models import HWAdapterKeyValue
+from core.search.compiler.django_compile import search_type
+from core.registration.static.combine_utils import (
+    generate_sreg_bundles_system, combine_multiple, combine
+)
+
+from systems.models import System
+
+import MySQLdb
 import simplejson as json
 
 
@@ -94,4 +103,79 @@ def ajax_create_sreg(request):
         }))
     return HttpResponse(json.dumps({
         'success': True
+    }))
+
+
+def combine_status_list(request):
+    if request.POST:
+        search = request.POST.get('search', '')
+        start = request.POST.get('start', '0')
+        end = request.POST.get('end', '100')
+        records, error = search_type(search, 'SYS')
+        if not search or error or not (start.isdigit() and end.isdigit()):
+            records = []
+        else:
+            try:
+                records = records[int(start):int(end)]
+            except MySQLdb.OperationalError, e:
+                if "Got error " in str(e) and " from regexp" in str(e):
+                    # This is nasty. If the user is using an invalid regex
+                    # patter, the db might shit a brick
+                    records = []
+                else:
+                    raise
+
+        bundles = []
+        for record in records:
+            bundles += generate_sreg_bundles_system(record)
+
+        combine_multiple(bundles, rollback=True)
+
+        return render(request, 'static_reg/combine_status_list.html', {
+            'bundles': bundles,
+            'search': search
+        })
+    else:
+        return render(request, 'static_reg/combine_status_list.html', {
+            'search': ''
+        })
+
+
+def ajax_combine_sreg(request):
+    if not request.POST:
+        return HttpResponse(json.dumps({
+            'success': False,
+            'errors': 'Missing object pks'
+        }))
+
+    a_pk = request.POST.get('a_pk', None)
+    ptr_pk = request.POST.get('ptr_pk', None)
+    system_pk = request.POST.get('system_pk', None)
+
+    if not (a_pk and ptr_pk and system_pk):
+        return HttpResponse(json.dumps({
+            'success': False,
+            'errors': 'Missing object pks'
+        }))
+
+    a_pk, ptr_pk, system_pk = int(a_pk), int(ptr_pk), int(system_pk)
+
+    system = get_object_or_404(System, pk=system_pk)
+
+    bundles = generate_sreg_bundles_system(system)
+
+    bundle = None
+    for a_bundle in bundles:
+        if (a_bundle['a'].pk == a_pk and a_bundle['ptr'].pk == ptr_pk and
+                a_bundle['system'].pk == system_pk):
+            bundle = a_bundle
+            break
+
+    assert bundle is not None
+
+    combine(bundle)
+    return HttpResponse(json.dumps({
+        'success': not bundle['errors'],
+        'redirect_url': system.get_absolute_url(),
+        'errors': bundle.get('errors', '')
     }))

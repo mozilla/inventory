@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <link href="{{ MEDIA_URL }}css/combine_status_list.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="{{ MEDIA_URL }}javascripts/combine_status_list.js"></script>
+{% endblock %}
+
+{% block content %}
+<form method='post'>
+    <label>Hostname search: <input type='text' value='{{search}}' name='search'></input></label>
+    <label><input type='submit'/></label>
+</form>
+
+        <div class='legend'>
+            <h4><u>Legend</u></h4>
+            <div>
+                <div class='new-object-border'>
+                    <i>NEW OBJECTS</i>
+                </div>
+            </div>
+            <div>
+                <div class='replaced-object-border'>
+                    <i>TO-BE-DELETED OBJECTS</i>
+                </div>
+            </div>
+            <div>
+                <div class='new-dhcp-output-border' title='NEW KV derived DHCP statement'>
+                    <i>DHCP Output after SREG and HWAdapters have been created</i>
+                </div>
+            </div>
+            <div>
+                <div class='old-dhcp-output-border' title='Old KV derived DHCP statement'>
+                    <i>Current DHCP output (Before SREG creation)</i>
+                </div>
+            </div>
+        </div>
+
+    {% for bundle in bundles %}
+        <div class='sreg-container'>
+            <div
+              class='bundle-data'
+              data-a-pk='{{ bundle['a_pk'] }}'
+              data-ptr-pk='{{ bundle['ptr_pk'] }}'
+              data-system-pk='{{ bundle['system'].pk }}'
+            ></div>
+            <span class='lol-header'><b>NEW SREG Possible</b></span>
+            <div>
+                <div class='sreg-attrs new-object-border' title='NEW SREG object attributes'>
+                    <span class='sreg-attr'>SREG IP: {{ bundle['ip'] }}</span>
+                    <span class='sreg-attr'>SREG FQDN: {{ bundle['fqdn'] }}</span>
+                    <span class='sreg-attr'>SREG SYSTEM:
+                        <a href='{{ bundle['system'].get_absolute_url() }}'>{{ bundle['system'] }}</a>
+                    </span>
+                </div>
+            </div>
+            <span class='lol-header'><u>Objects that will be replaced</u></span>
+            <div>
+                <div class='sreg-match-objs replaced-object-border' title='Object that will be replaced by the SREG'>
+                    <span class='sreg-match-obj'>A:
+                        <a href='{{ bundle['a'].get_absolute_url() }}'>{{ bundle['a'] }}</a>
+                    </span>
+                    <span class='sreg-match-obj'>PTR:
+                        <a href='{{ bundle['ptr'].get_absolute_url() }}'>{{ bundle['ptr'] }}</a>
+                    </span>
+                </div>
+            </div>
+            <span class='lol-header'><u>KeyValue Store Analysis</u></span>
+            <div class='hws-container'>
+                <span class='info'>
+                    {{ bundle['hwadapters'].__len__() }} possible Hardware Adapter(s) detected
+                </span>
+                {% for hwadapter in bundle['hwadapters'] %}
+                    <div>
+                        <div>
+                            <div class='hw-container new-object-border' title='NEW Hardware Adapter Object'>
+                                {% set hw, kvs = hwadapter.emit_hwadapter() %}
+                                <span class='hw-attr'>HW MAC: {{ hw['mac'] }}</span>
+                                <span class='hw-attr'>HW NAME: {{ hw['name'] }}</span>
+                                <div class='carry-over-kvs'>
+                                    {% for kv in kvs %}
+                                        <div class='carry-over-kv'>
+                                            <span class='key'><i>Key:</i> {{ kv.key }}</span>
+                                            <span class='value'><i>Value:</i> {{ kv.value }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+                <div>
+                    <div class='dhcp-outputs'>
+                        <div class='dhcp-output new-dhcp-output-border new-dhcp-output' title='NEW KV derived DHCP statement'>
+                            {{ bundle['new-dhcp-output'] }}
+                        </div>
+                        <div class='dhcp-output old-dhcp-output-border old-dhcp-output' title='Old KV derived DHCP statement'>
+                            {{ bundle['old-dhcp-output'] }}
+                        </div>
+                    </div>
+                </div>
+                {% if bundle['errors'] %}
+                    <div class='c-errors'>
+                        <span class='c-error'>{{ bundle['errors'] }}</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div>
+                <div class='combine-bottons'>
+                    <input type='button' class='combine-button' value='Everything looks good, create the SREG!'>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+{% endblock %}

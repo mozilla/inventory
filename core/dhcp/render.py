@@ -61,7 +61,7 @@ def render_sregs(sregs):
     build_str = ''
     groups = {}
     for sreg in sregs:
-        hws = sreg.hwadapter_set.filter(enable_dhcp=True)
+        hws = sreg.hwadapter_set.filter(enable_dhcp=True).order_by('mac')
         for hw in hws:
             if hw.group:
                 # If this host belongs to a group we will render it, and any

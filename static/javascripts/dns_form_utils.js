@@ -165,8 +165,8 @@ function bind_smart_names(){
     // 'id_target' | server . Make these smart names.
     var inputs = $('input');
     for (var x = 0; x < inputs.length; x++){
-        if(inputs[x].id === 'id_name' || inputs[x].id === 'id_fqdn'
-                || inputs[x].id === 'id_target' || inputs[x].id === 'id_server'){
+        if(inputs[x].id === 'id_name' || inputs[x].id === 'id_fqdn' ||
+              inputs[x].id === 'id_target' || inputs[x].id === 'id_server'){
             make_smart_name_get_domains(inputs[x], true);
             $(inputs[x]).css('width', '400px');
         }

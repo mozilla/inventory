@@ -6,62 +6,8 @@ import pprint
 pp = pprint.PrettyPrinter(indent=2)
 
 nic_nums = re.compile("^nic\.(\d+)\..*\.(\d+)$")
-class Interface(object):
-    mac = None
-    hostname = None
-    system = None
-    nic_ = None
-    keys = set()
 
-    def __init__(self, system, sub_nic):
-        self.system = system
-        self._nic = sub_nic # Just in case we need it for something
-        tmp = nic_nums.match(sub_nic[0].key)
-        if tmp:
-            self.primary = tmp.group(1)
-            self.alias = tmp.group(2)
-        else:
-            self.primary = None
-            self.alias = None
-        self.ips = []
-        self.dns_auto_build = True
-        self.dns_auto_hostname = True
 
-    def has_dns_info(self):
-        # Eventually do validation here
-        if (isinstance(self.ips, type([])) and len(self.ips) > 0 and
-                isinstance(self.hostname, basestring)):
-            return True
-        else:
-            return False
-
-    def set_kv(self, key, value):
-        key_str = "nic.{0}.{1}.{2}".format(self.primary, key, self.alias)
-        kv = self.system.keyvalue_set.filter(key=key_str)
-        if kv:
-            kv = kv[0]
-            kv.value = value
-            kv.save()
-        else:
-            kv = system.models.KeyValue(key=key_str, value=str(value))
-            kv.save()
-
-        setattr(self, key, value)
-        return
-
-    def delete(self):
-        for nic in self._nic:
-            nic.delete()
-
-    def pprint(self):
-        pp.pformat(vars(self))
-
-    def __str__(self):
-        return "nic.{0}.{1} IP: {2} Hostname: {3}".format(self.primary,
-                self.alias, self.ips, self.hostname)
-
-    def __repr__(self):
-        return "<Interface: {0}>".format(self)
 
 is_mac_key = re.compile("^nic\.\d+\.mac_address\.\d+$")
 is_hostname_key = re.compile("^nic\.\d+\.hostname\.\d+$")
