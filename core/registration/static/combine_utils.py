@@ -504,7 +504,13 @@ def combine(bundle, rollback=False):
             try:
                 for kv in kvs:
                     if kv['key'] == 'option_hostname':
-                        key = 'host_name'
+                        # If the option host-name value matches the SREG fqdn
+                        # we don't need to add the option, it will be added by
+                        # default. all other cases it will be overriden.
+                        if kv['value'] == sreg.fqdn:
+                            continue
+                        else:
+                            key = 'host_name'
                     else:
                         key = kv['key']
                     if HWAdapterKeyValue.objects.filter(key=key,

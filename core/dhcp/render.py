@@ -41,6 +41,8 @@ def render_host(fqdn, ip_str, mac, i_n, options, statements, tabs=2):
     build_str += "{0}hardware ethernet {1};\n".format('\t' * tabs, mac)
     build_str += "{0}fixed-address {1};\n".format('\t' * tabs, ip_str)
     build_str += render_statements(statements, tabs=tabs)
+    if not options.filter(key='host_name').exists():
+        build_str += "{0}option host-name \"{1}\";\n".format('\t' * tabs, fqdn)
     build_str += render_options(options, tabs=tabs)
     build_str += "{0}}}\n\n".format('\t' * (tabs - 1))
     return build_str
