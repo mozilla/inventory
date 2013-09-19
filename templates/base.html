@@ -1,8 +1,8 @@
 <!doctype html>
 
 <!-- Make the Country code uppercase -->
-<html lang="{{ '-'.join([request.LANGUAGE_CODE.split('-')[0], request.LANGUAGE_CODE.split('-')[1].upper()]) 
-   if request.LANGUAGE_CODE
+<html lang="{{ '-'.join([request.LANGUAGE_CODE.split('-')[0], request.LANGUAGE_CODE.split('-')[1].upper()])
+   if request and request.LANGUAGE_CODE
    else 'en-US'
 }}">
 <head>
