@@ -327,15 +327,30 @@ def build_nic(sub_nic):
     return intr
 
 
-def find_matching_a_ptr(system):
+def find_matching_a_ptr(name):
     matches = []
-    for a in AddressRecord.objects.filter(fqdn=system.hostname):
+    for a in AddressRecord.objects.filter(fqdn=name):
         try:
             ptr = PTR.objects.get(name=a.fqdn, ip_str=a.ip_str)
         except PTR.DoesNotExist:
             continue  # No matching PTR
-        matches.append((system.hostname, a.ip_str, a, ptr))
+        matches.append((name, a.ip_str, a, ptr))
     return matches
+
+
+def generate_possible_names(name):
+    """
+    Its possible for a nic to get a different hostname. This function returns
+    some common patterns.
+    """
+    # releng management host names
+    alt_names = [
+        "{0}-mgmt.inband.{1}".format(
+            name.split('.')[0], '.'.join(name.split('.')[2:])
+        ),
+        name
+    ]
+    return alt_names
 
 
 def hwadapter_is_for_sreg(match, nic):
@@ -344,7 +359,9 @@ def hwadapter_is_for_sreg(match, nic):
     """
     if len(nic.ips) != 1:
         return False
+
     fqdn, ip_str, _, _ = match
+
     if not isinstance(nic.hostname, basestring):
         return False
 
@@ -396,8 +413,8 @@ def get_old_dhcp_statement(system, kvs):
     return output_text
 
 
-def generate_sreg_bundles_system(system):
-    a_ptr_matches = find_matching_a_ptr(system)
+def generate_sreg_bundles(system, name):
+    a_ptr_matches = find_matching_a_ptr(name)
     nics = build_nics_from_system(system)
     bundles = {}
     for match in a_ptr_matches:
@@ -406,13 +423,13 @@ def generate_sreg_bundles_system(system):
             if hwadapter_is_for_sreg(match, nic):
                 bundle = bundles.setdefault(fqdn + ip_str, {
                     'system': system,
-                    'ip': ip_str,
+                    'ptr_pk': ptr.pk,
+                    'hwadapters': [],
                     'fqdn': fqdn,
-                    'a': a,
+                    'ip': ip_str,
                     'a_pk': a.pk,
                     'ptr': ptr,
-                    'ptr_pk': ptr.pk,
-                    'hwadapters': []
+                    'a': a
                 })
                 bundle['hwadapters'].append(nic)
                 if nic.paired:
@@ -474,11 +491,11 @@ def combine(bundle, rollback=False):
                 return
 
             try:
-
                 hw, _ = HWAdapter.objects.get_or_create(
                     sreg=sreg, mac=hw_info['mac']
                 )
                 hw.name = hw_info['name']
+                hw.save()
             except ValidationError, e:
                 transaction.rollback()
                 bundle['errors'] = 'Error while creating HW Adapter'
