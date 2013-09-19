@@ -9,7 +9,7 @@ from core.hwadapter.forms import HWAdapterForm
 from core.hwadapter.models import HWAdapterKeyValue
 from core.search.compiler.django_compile import search_type
 from core.registration.static.combine_utils import (
-    generate_sreg_bundles_system, combine_multiple, combine
+    generate_sreg_bundles, combine_multiple, combine, generate_possible_names
 )
 
 from systems.models import System
@@ -107,10 +107,11 @@ def ajax_create_sreg(request):
 
 
 def combine_status_list(request):
-    if request.POST:
-        search = request.POST.get('search', '')
-        start = request.POST.get('start', '0')
-        end = request.POST.get('end', '100')
+    qd = request.POST or request.GET
+    if qd:
+        search = qd.get('search', '')
+        start = qd.get('start', '0')
+        end = qd.get('end', '100')
         records, error = search_type(search, 'SYS')
         if not search or error or not (start.isdigit() and end.isdigit()):
             records = []
@@ -126,8 +127,9 @@ def combine_status_list(request):
                     raise
 
         bundles = []
-        for record in records:
-            bundles += generate_sreg_bundles_system(record)
+        for system in records:
+            for name in generate_possible_names(system.hostname):
+                bundles += generate_sreg_bundles(system, name)
 
         combine_multiple(bundles, rollback=True)
 
@@ -151,8 +153,9 @@ def ajax_combine_sreg(request):
     a_pk = request.POST.get('a_pk', None)
     ptr_pk = request.POST.get('ptr_pk', None)
     system_pk = request.POST.get('system_pk', None)
+    name = request.POST.get('name', None)
 
-    if not (a_pk and ptr_pk and system_pk):
+    if not (a_pk and ptr_pk and system_pk and name):
         return HttpResponse(json.dumps({
             'success': False,
             'errors': 'Missing object pks'
@@ -162,12 +165,13 @@ def ajax_combine_sreg(request):
 
     system = get_object_or_404(System, pk=system_pk)
 
-    bundles = generate_sreg_bundles_system(system)
+    bundles = generate_sreg_bundles(system, name)
 
     bundle = None
     for a_bundle in bundles:
         if (a_bundle['a'].pk == a_pk and a_bundle['ptr'].pk == ptr_pk and
-                a_bundle['system'].pk == system_pk):
+                a_bundle['system'].pk == system_pk and
+                a_bundle['fqdn'] == name):
             bundle = a_bundle
             break
 

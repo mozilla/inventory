@@ -7,8 +7,8 @@
 
 {% block content %}
 <form method='post'>
-    <label>Hostname search: <input type='text' value='{{search}}' name='search'></input></label>
-    <label><input type='submit'/></label>
+    <label>Hostname search: <input id='search' type='text' value='{{search}}' name='search'></input></label>
+    <label><input id='submit' type='submit'/></label>
 </form>
 
         <div class='legend'>
@@ -41,6 +41,7 @@
               class='bundle-data'
               data-a-pk='{{ bundle['a_pk'] }}'
               data-ptr-pk='{{ bundle['ptr_pk'] }}'
+              data-name='{{ bundle['fqdn'] }}'
               data-system-pk='{{ bundle['system'].pk }}'
             ></div>
             <span class='lol-header'><b>NEW SREG Possible</b></span>
