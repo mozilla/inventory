@@ -92,7 +92,7 @@
     <table>
         <caption>Step 3. DNS Options</caption>
         {{ sreg_form.views.errors }}
-        <tr><td colspan="2">DNS Views: {{sreg_form.views}}</td></tr>
+        <tr><td colspan="2">DNS Views: {{ sreg_form.views }}</td></tr>
     </table>
     <table>
         <caption>Step 4. Registration Name (Optional)</caption>
@@ -145,7 +145,7 @@
                     <td colspan="2">
                         <input class='hw-option-hostname' type='text'
                          name='kv-hwadapters-0-hostname' style='width: 25em;'
-                         value=''>
+                         value='{{ system.hostname }}'>
                     </td>
                 </tr>
                 <tr>
