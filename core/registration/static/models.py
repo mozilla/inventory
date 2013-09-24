@@ -189,16 +189,20 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
                 "Change the Nameserver to edit this record."
             )
 
-    A_template = ("{bind_name:$rhs_just} {ttl} {rdclass:$rdclass_just}"
-                  "{rdtype_clob:$rdtype_just} {ip_str:$lhs_just}")
-    PTR_template = ("{dns_ip:$lhs_just} {ttl} {rdclass:$rdclass_just}"
-                    " {rdtype_clob:$rdtype_just} {fqdn:1}.")
+    A_template = (
+        "{bind_name:$lhs_just} {ttl_} {rdclass:$rdclass_just} "
+        "{rdtype_clob:$rdtype_just} {ip_str:$rhs_just}"
+    )
+    PTR_template = (
+        "{ip_name:$lhs_just} {ttl_} {rdclass:$rdclass_just} "
+        "{rdtype_clob:$rdtype_just} {bind_name:1}"
+    )
 
     def bind_render_record(self, pk=False, **kwargs):
         self.rdtype_clob = kwargs.pop('rdtype', 'SREG')
         if kwargs.pop('reverse', False):
             self.template = self.PTR_template
-            self.dns_ip = ip_to_dns_form(self.ip_str)
+            self.ip_name = ip_to_dns_form(self.ip_str)
         else:
             self.template = self.A_template
         return super(StaticReg, self).bind_render_record(pk=pk, **kwargs)
