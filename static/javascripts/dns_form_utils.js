@@ -153,8 +153,8 @@ function fix_css(){
     // 'id_target' | server . Make these smart names.
     var inputs = $('input');
     for (var x = 0; x < inputs.length; x++){
-        if(inputs[x].id === 'id_name' || inputs[x].id === 'id_fqdn'
-                || inputs[x].id === 'id_target' || inputs[x].id === 'id_server'){
+        if(inputs[x].id === 'id_name' || inputs[x].id === 'id_fqdn' ||
+              inputs[x].id === 'id_target' || inputs[x].id === 'id_server'){
             $(inputs[x]).css('width', '400px');
         }
     }
@@ -185,15 +185,15 @@ function make_smart_name(element, domains, append){
             // We saved the matching part to ui.item.value
             var name = $(element).val(); // The name the user entered
             if(!append) {
-                $(element).val(ui.item.label);
+                $(element).val(ui.item.label).change();
             } else if (ui.item.value !== ''){
                 var foo =  name.substring(0,name.lastIndexOf(ui.item.value));
-                $(element).val(foo + ui.item.label);
+                $(element).val(foo + ui.item.label).change();
             } else {
                 if (name.lastIndexOf('.') == name.length - 1) {
-                    $(element).val(name + ui.item.label);
+                    $(element).val(name + ui.item.label).change();
                 } else {
-                    $(element).val(name + '.' + ui.item.label);
+                    $(element).val(name + '.' + ui.item.label).change();
                 }
             }
             return false;
@@ -203,14 +203,17 @@ function make_smart_name(element, domains, append){
         },
         autoFocus: false,
         source: function (li, callback) {
-            labels = li.term.split('.')
+            labels = li.term.split('.');
 
             var suggested_domains = [];
             var domain_name = '';
             var search_name = '';
+            function compare (a, b) {
+                return (a.length < b.length) ? 0 : 1;
+            }
             while (labels) {
                 search_name = labels.join('.');
-                for (var domain in domains.sort(function(a,b) {return (a.length < b.length) ? 0 : 1; })){
+                for (var domain in domains.sort(compare)){
                     domain_name = domains[domain];
                     if (domain_name.startsWith(search_name)){
                         suggested_domains.push({label: domain_name, value: search_name});
@@ -324,7 +327,7 @@ function setup_delete(){
     function delete_handler(){
         $.post('/en-US/mozdns/record/delete/' + record_type + '/' + record_pk + '/',
             function (data) {
-                data = $.parseJSON(data)
+                data = $.parseJSON(data);
                 if (data['success']) {
                     console.log('Error: ' + data['error']);
                     alert("Delete successful");

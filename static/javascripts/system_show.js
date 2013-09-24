@@ -188,9 +188,6 @@ $(document).ready(function() {
     return false;
   });
 
-  // Defaults
-  $('#id_sreg-fqdn').val('');
-
   // Default IP
   $('#id-auto-assign-ip').attr('checked', 'checked'); // Set it to auto assign
   bind_view_ip_type_detection('#id_sreg-ip_str', '#id_sreg-views_0', '#id_sreg-views_1');

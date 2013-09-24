@@ -522,7 +522,10 @@ def system_show(request, id):
 
     sregs = StaticReg.objects.filter(system=system)
     groups = Group.objects.all()
-    sreg_form = StaticRegAutoForm(prefix='sreg', initial={'system': system})
+    sreg_form = StaticRegAutoForm(prefix='sreg', initial={
+        'system': system,
+        'fqdn': system.hostname
+    })
     blank_hw_form = HWAdapterForm(prefix='add-hw')  # noqa Used for ui dialog for creation
     HWAdapterFormset = formset_factory(HWAdapterForm)
     hw_formset = HWAdapterFormset(prefix='hwadapters')
