@@ -19,6 +19,7 @@ class HWAdapterForm(forms.ModelForm):
                     [('', '------------')] +
                     list(Truth.objects.all().values_list('name', 'name'))
                 ),
+                widget=forms.Select(attrs={'class': 'dhcp-scopes'}),
                 required=True
             )
 

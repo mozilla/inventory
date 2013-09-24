@@ -196,6 +196,24 @@ $(document).ready(function() {
   bind_view_ip_type_detection('#id_sreg-ip_str', '#id_sreg-views_0', '#id_sreg-views_1');
 
   /*
+   * Dynamically update option-hostname on hwadapter forms
+   */
+
+  $('#id_sreg-fqdn').on('change keypress paste focus textInput input', function (){
+    var fqdn = $('#id_sreg-fqdn').val();
+    $('.hw-option-hostname').each(function (i, el) {
+      var option_hostname = $(el).val();
+      if (option_hostname.length > 1 && fqdn === '') {
+        // pass
+      } else if (
+        option_hostname.substring(0, fqdn.length) === fqdn || // startswith
+        fqdn.substring(0, option_hostname.length) === option_hostname) { // startswith
+        $(el).val(fqdn);
+      }
+    });
+  });
+
+  /*
    * Dynamically adding Hardware Adapters
    */
 
@@ -209,7 +227,11 @@ $(document).ready(function() {
     hwtable = $('#hwadapter-tables');
     nextFree = parseInt($('#id_hwadapters-TOTAL_FORMS').val(), 'base10');
     blocks = hwtable.find('.hwadapter-table');
+    dhcp_scope_options = $(blocks.last()).find('.dhcp-scopes');
     newBlock = $(blocks.last()).clone();
+    $($(newBlock).find('.dhcp-scopes')).each(function (i, el) {
+      $(el).val(dhcp_scope_options.eq(i).val());
+    });
 
     $(newBlock).find('input, select').each(function(i, el) {
       if ($(el).attr('class') === 'increment') {  // TODO make this a substring check

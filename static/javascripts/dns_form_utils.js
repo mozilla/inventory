@@ -1,5 +1,5 @@
-function select_state(state) {
-    function insert_new_form(record_type, record_pk, pre_callback, post_callback){
+  function select_state(state) {
+      function insert_new_form(record_type, record_pk, pre_callback, post_callback){
         console.log(record_type + " " + record_pk);
         $.get('/en-US/mozdns/record/record_ajax/',
 

@@ -84,7 +84,7 @@
         <caption>Step 2. Configure Registration DNS Name</caption>
         <tr>
             {{ sreg_form.fqdn.errors }}
-            <td colspan="2">FQDN: {{sreg_form.fqdn}}
+            <td colspan="2">FQDN: {{ sreg_form.fqdn }}
                 <span class='helptext'>FQDN</span>
             </td>
         </tr>
@@ -110,7 +110,7 @@
                     <ul class='.errors'>
                     </ul>
                     <td colspan="2">
-                        <span id='option-hostname'>Adapter Name: </span>
+                        <span class='option-hostname'>Adapter Name: </span>
                     </td>
                     <td colspan="2">
                          {{ hw_form.name }}
@@ -120,7 +120,7 @@
                     <ul class='.errors'>
                     </ul>
                     <td colspan="2">
-                        <span id='dhcp_scope'>DHCP Scope: </span>
+                        <span class='dhcp_scope'>DHCP Scope: </span>
                     </td>
                     <td colspan="2">
                          {{ hw_form.dhcp_scope }}
@@ -130,7 +130,7 @@
                     <ul class='.errors'>
                     </ul>
                     <td colspan="2">
-                        <span id='mac'>Mac Address(es): </span>
+                        <span class='mac'>Mac Address(es): </span>
                     </td>
                     <td colspan="2">
                         {{ hw_form.mac }}
@@ -140,7 +140,7 @@
                     <ul class='.errors'>
                     </ul>
                     <td colspan="2">
-                        <span id='option-hostname'>Option Hostname: </span>
+                        <span class='option-hostname'>Option Hostname: </span>
                     </td>
                     <td colspan="2">
                         <input class='hw-option-hostname' type='text'
@@ -152,7 +152,7 @@
                     <ul class='.errors'>
                     </ul>
                     <td colspan="2">
-                        <span id='group'>DHCP Group: </span>
+                        <span class='group'>DHCP Group: </span>
                     </td>
                     <td>
                         {{ hw_form.group }}

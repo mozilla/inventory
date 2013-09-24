@@ -79,10 +79,12 @@
                                 <span class='hw-attr'>HW NAME: {{ hw['name'] }}</span>
                                 <div class='carry-over-kvs'>
                                     {% for kv in kvs %}
-                                        <div class='carry-over-kv'>
-                                            <span class='key'><i>Key:</i> {{ kv.key }}</span>
-                                            <span class='value'><i>Value:</i> {{ kv.value }}</span>
-                                        </div>
+                                        {% if not (kv.key == 'option_hostname' and kv.value == bundle['fqdn']) %}
+                                            <div class='carry-over-kv'>
+                                                <span class='key'><i>Key:</i> {{ kv.key }}</span>
+                                                <span class='value'><i>Value:</i> {{ kv.value }}</span>
+                                            </div>
+                                        {% endif %}
                                     {% endfor %}
                                 </div>
                             </div>

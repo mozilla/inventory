@@ -2,8 +2,11 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 
 from systems.models import System, KeyValue as SystemKeyValue
+
 from mozdns.address_record.models import AddressRecord
 from mozdns.ptr.models import PTR
+from mozdns.view.models import View
+
 from core.registration.static.models import StaticReg
 from core.hwadapter.models import HWAdapter, HWAdapterKeyValue
 from core.dhcp.render import render_sregs
@@ -20,6 +23,7 @@ pp = pprint.PrettyPrinter(indent=2)
 nic_nums = re.compile("^nic\.(\d+)\..*\.(\d+)$")
 is_mac_key = re.compile("^nic\.\d+\.mac_address\.\d+$")
 is_hostname_key = re.compile("^nic\.\d+\.hostname\.\d+$")
+is_option_hostname_key = re.compile("^nic\.\d+\.option_hostname\.\d+$")
 is_ip_key = re.compile("^nic\.\d+\.ipv4_address\.\d+$")
 is_dns_auto_build_key = re.compile("^nic\.\d+\.dns_auto_build\.\d+$")
 is_dns_auto_hostname_key = re.compile("^nic\.\d+\.dns_auto_hostname\.\d+$")
@@ -34,6 +38,7 @@ class Interface(object):
         self.mac = None
         self.name = ""
         self.hostname = None
+        self.option_hostname = ''
         self.nic_ = None
         self.keys = set()
         self.hw_keys = []
@@ -275,6 +280,10 @@ def build_nic(sub_nic):
             intr.mac = nic_data.value
             intr.keys.add('mac')
             continue
+        if is_option_hostname_key.match(nic_data.key):
+            intr.option_hostname = nic_data.value
+            intr.keys.add('option_hostname')
+            continue
         if is_name_key.match(nic_data.key):
             intr.name = nic_data.value
             intr.keys.add('name')
@@ -334,7 +343,22 @@ def find_matching_a_ptr(name):
             ptr = PTR.objects.get(name=a.fqdn, ip_str=a.ip_str)
         except PTR.DoesNotExist:
             continue  # No matching PTR
-        matches.append((name, a.ip_str, a, ptr))
+
+        views_match = True
+        for view in a.views.all():
+            if not ptr.views.filter(pk=view.pk):
+                views_match = False
+                break
+
+        if views_match:
+            for view in ptr.views.all():
+                if not a.views.filter(pk=view.pk):
+                    views_match = False
+                    break
+
+        if views_match:
+            matches.append((name, a.ip_str, a, ptr))
+
     return matches
 
 
@@ -347,6 +371,9 @@ def generate_possible_names(name):
     alt_names = [
         "{0}-mgmt.inband.{1}".format(
             name.split('.')[0], '.'.join(name.split('.')[2:])
+        ),
+        "{0}-mgmt.{1}".format(
+            name.split('.')[0], '.'.join(name.split('.')[1:])
         ),
         name
     ]
@@ -362,10 +389,13 @@ def hwadapter_is_for_sreg(match, nic):
 
     fqdn, ip_str, _, _ = match
 
-    if not isinstance(nic.hostname, basestring):
+    if not (isinstance(nic.hostname, basestring) or
+            isinstance(nic.option_hostname, basestring)):
         return False
 
-    if nic.ips[0] == ip_str and fqdn.startswith(nic.hostname):
+    if nic.ips[0] == ip_str and (
+            fqdn.startswith(nic.hostname) or
+            fqdn.startswith(nic.option_hostname)):
         return True
 
     return False
@@ -462,6 +492,7 @@ def combine(bundle, rollback=False):
         bundle['new-dhcp-output'] = (
             "<span class='no-dhcp-output'>No new DHCP output</span>"
         )
+        view_names = [v.name for v in bundle['a'].views.all()]
         try:
             bundle['a'].delete(check_cname=False)
         except ValidationError, e:
@@ -478,6 +509,8 @@ def combine(bundle, rollback=False):
 
         try:
             sreg.save()
+            for name in view_names:
+                sreg.views.add(View.objects.get(name=name))
         except ValidationError, e:
             transaction.rollback()
             bundle['errors'] = 'Error while creating the SREG record.' + str(e)
