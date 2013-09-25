@@ -1,4 +1,9 @@
 {% import 'systems/rack_macros.html' as drawer -%}
+<script>
+    $(document).ready(function() {
+        $('.new-system').new_system_from_rack();
+    });
+</script>
 <div style='display:table;'>
     {% for rack in site.systemrack_set.all() %}
         {{ drawer.display_rack(rack, filter_decom(rack.system_set.all())) }}

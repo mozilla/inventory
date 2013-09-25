@@ -681,7 +681,7 @@ def new_rack_system_ajax(request, rack_id):
     data['form'] = rack_form
     data['rack'] = rack
 
-    resp_data['payload'] = render_to_string(template, data, RequestContext(request))
+    resp_data['payload'] = render_to_string(template, data, RequestContext(request)).strip(' ')
 
     return HttpResponse(json.dumps(resp_data), mimetype="application/json")
 
