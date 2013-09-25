@@ -12,16 +12,8 @@
     <div>
         <span>Back to <a href="{{ form.instance.get_absolute_url() }}">{{ form.instance}}</a></span>
     </div>
-    <div>
-        <span><a href='/core/keyvalue/site/{{form.instance.pk}}/'>Edit</a> Key Value Store</span>
-    </div>
-        </br>
     <form class="well form-horizontal" method="post" action="">
         {{ form.as_p() }}
-        </br>
-        </br>
-        </br>
-
         <input type="submit" value="Submit" />
     </form>
 {% endblock %}
