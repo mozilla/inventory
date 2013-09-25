@@ -46,7 +46,7 @@ class ReportForm(forms.Form):
 
     site = forms.MultipleChoiceField(
         required=False,
-        widget=CheckboxSelectMultiple(attrs={'class': 'system_location'}),
+        widget=CheckboxSelectMultiple(attrs={'class': 'system_site'}),
         choices=[('-1', 'All')] + [(m.id, m) for m in Site.objects.all()])
                     
     allocation = forms.ChoiceField(
