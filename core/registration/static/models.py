@@ -3,15 +3,16 @@ from django.core.exceptions import ValidationError
 
 from systems.models import System
 
-import mozdns
-from core.keyvalue.base_option import DHCPKeyValue
 from core.keyvalue.utils import AuxAttr
+from core.network.utils import calc_networks_str
+from core.keyvalue.base_option import DHCPKeyValue
 from core.keyvalue.mixins import KVUrlMixin
+
+import mozdns
 from mozdns.address_record.models import BaseAddressRecord
+from mozdns.ptr.models import BasePTR
 from mozdns.domain.models import Domain
 from mozdns.ip.utils import ip_to_dns_form
-from mozdns.ptr.models import BasePTR
-from core.network.utils import calc_networks_str
 
 
 class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
@@ -89,7 +90,7 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         return '<StaticReg: {0}>'.format(str(self))
 
     def __str__(self):
-        return "FQDN: {0} IP: {1}".format(self.fqdn, self.ip_str)
+        return "{0} SREG {1}".format(self.fqdn, self.ip_str)
 
     def update_attrs(self):
         self.attrs = AuxAttr(StaticRegKeyValue, self)
