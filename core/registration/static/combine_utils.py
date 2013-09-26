@@ -536,7 +536,7 @@ def combine(bundle, rollback=False):
 
             try:
                 for kv in kvs:
-                    if kv['key'] == 'option_hostname':
+                    if kv['key'] in ('hostname', 'option_hostname'):
                         # If the option host-name value matches the SREG fqdn
                         # we don't need to add the option, it will be added by
                         # default. all other cases it will be overriden.
