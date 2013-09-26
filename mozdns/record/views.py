@@ -72,8 +72,8 @@ def record_search_ajax(request):
         raise Http404
     records, error = search_type(query, record_type)
     if error:
-        records = []
         total_obj_count = 0
+        records = []
     else:
         try:
             total_obj_count = records.count()
@@ -82,6 +82,7 @@ def record_search_ajax(request):
             if "Got error " in str(e) and " from regexp" in str(e):
                 # This is nasty. If the user is using an invalid regex patter,
                 # the db might shit a brick
+                total_obj_count = 0
                 records = []
             else:
                 raise
