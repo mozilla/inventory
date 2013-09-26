@@ -1,3 +1,9 @@
+09/26/2013
+* BUG 916776. Fixed create system link on rack display.
+* BUG 916332. Removed broken link.
+* BUG 908640. Fixed 'All' button behavior
+* BUG 914361. Automatic detection of vlan/dc via the autodetect button
+
 09/10/2013
 * Fixed BUG 905752, 913632, and addressed 914279
 
