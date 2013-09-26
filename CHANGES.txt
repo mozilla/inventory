@@ -1,4 +1,5 @@
 09/26/2013
+* Fixed minor bug in record search form that caused a bad regex to ISE
 * BUG 916776. Fixed create system link on rack display.
 * BUG 916332. Removed broken link.
 * BUG 908640. Fixed 'All' button behavior
