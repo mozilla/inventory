@@ -68,7 +68,7 @@ $(document).ready(function() {
                 if ($('#id_sreg-fqdn').val() === '') {
                   suggest_name('#id_sreg-fqdn');
                 }
-                $('#id_sreg-ip_str').val(range.free_ip);
+                $('#id_sreg-ip_str').val(range.free_ip).change();
               }
             }
           });

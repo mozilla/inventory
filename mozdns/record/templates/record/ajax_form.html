@@ -41,7 +41,7 @@
                         if(typeof range.free_ip == 'undefined') {
                           $('#id_ip_str').val('');
                         } else {
-                          $('#id_ip_str').val(range.free_ip);
+                          $('#id_ip_str').val(range.free_ip).change();
                           $('#id_ip_str').focus();
                         }
                         function suggest_name(target) {
