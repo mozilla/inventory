@@ -35,8 +35,8 @@ def render_host(fqdn, ip_str, mac, i_n, options, statements, tabs=2):
     # XXX Better way to generate unique_identifier ?
 
     build_str = ''
-    build_str += "{0}host {1}-{2} {{\n".format(
-        '\t' * (tabs - 1), fqdn, unique_identifier
+    build_str += "{0}host {1}-{2}-{3} {{\n".format(
+        '\t' * (tabs - 1), fqdn, i_n, unique_identifier
     )
     build_str += "{0}hardware ethernet {1};\n".format('\t' * tabs, mac)
     build_str += "{0}fixed-address {1};\n".format('\t' * tabs, ip_str)
