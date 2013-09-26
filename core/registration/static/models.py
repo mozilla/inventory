@@ -14,6 +14,8 @@ from mozdns.ptr.models import BasePTR
 from mozdns.domain.models import Domain
 from mozdns.ip.utils import ip_to_dns_form
 
+import reversion
+
 
 class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     # Keep in mind that BaseAddressRecord will have it's methods called before
@@ -217,3 +219,6 @@ class StaticRegKeyValue(DHCPKeyValue):
     class Meta:
         db_table = 'static_key_value'
         unique_together = ('key', 'value', 'obj')
+
+
+reversion.register(StaticReg)

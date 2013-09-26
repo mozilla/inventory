@@ -15,6 +15,8 @@ from core.dhcp.utils import htmlify_dhcp_output
 from libs.DHCPHelper import DHCPHelper
 from dhcp.DHCP import DHCP as DHCPInterface
 
+import reversion
+
 import pprint
 import re
 
@@ -511,6 +513,7 @@ def combine(bundle, rollback=False):
             sreg.save()
             for name in view_names:
                 sreg.views.add(View.objects.get(name=name))
+            reversion.set_comment('Migrated via combine()')
         except ValidationError, e:
             transaction.rollback()
             bundle['errors'] = 'Error while creating the SREG record.' + str(e)

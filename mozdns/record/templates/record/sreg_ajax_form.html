@@ -9,6 +9,13 @@
     <div id='object_redirect_url' record-url='{{object_.get_fancy_edit_url()}}' style='display:none'>
     </div>
     {% endif %}
+    <table class='tablesorter'>
+        <tr>
+            <td style='text-align: center'>
+                <a class='btn btn-small' href='{{ object_.get_history_url() }}'>Record History</a>
+            </td>
+        </tr>
+    </table>
 
     <table class='tablesorter'>
         <tr>

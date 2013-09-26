@@ -10,6 +10,8 @@ from core.validation import validate_mac
 
 from truth.models import Truth
 
+import reversion
+
 
 class HWAdapter(models.Model, ObjectUrlMixin, KVUrlMixin):
     id = models.AutoField(primary_key=True)
@@ -71,3 +73,5 @@ class HWAdapterKeyValue(HWAdapterMixin, DHCPKeyValue, CommonOption):
             raise ValidationError(
                 "The value {0} isn't a valid DHCP scope.".format(self.value)
             )
+
+reversion.register(HWAdapter)
