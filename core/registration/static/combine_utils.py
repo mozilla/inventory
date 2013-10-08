@@ -475,7 +475,7 @@ def generate_sreg_bundles(system, name):
 
 
 @transaction.commit_manually
-def combine(bundle, rollback=False):
+def combine(bundle, rollback=False, use_reversion=True):
     """
     Returns one sreg and DHCP output for that SREG.
 
@@ -513,7 +513,8 @@ def combine(bundle, rollback=False):
             sreg.save()
             for name in view_names:
                 sreg.views.add(View.objects.get(name=name))
-            reversion.set_comment('Migrated via combine()')
+            if use_reversion:
+                reversion.set_comment('Migrated via combine()')
         except ValidationError, e:
             transaction.rollback()
             bundle['errors'] = 'Error while creating the SREG record.' + str(e)

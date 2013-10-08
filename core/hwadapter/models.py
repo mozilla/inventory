@@ -51,6 +51,20 @@ class HWAdapter(models.Model, ObjectUrlMixin, KVUrlMixin):
     def get_api_fields(cls):
         return ['mac', 'name', 'description', 'enable_dhcp']
 
+    @classmethod
+    def get_bulk_action_list(cls, query, fields=None):
+        if not fields:
+            fields = cls.get_api_fields() + ['pk', 'sreg']
+
+        hw_t_bundles = cls.objects.filter(query).values_list(*fields)
+
+        d_bundles = {}
+        for t_bundle in hw_t_bundles:
+            d_bundle = dict(zip(fields, t_bundle))
+            d_bundles.setdefault(d_bundle['sreg'], []).append(d_bundle)
+
+        return d_bundles
+
     def get_absolute_url(self):
         return self.sreg.system.get_absolute_url()
 

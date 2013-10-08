@@ -108,6 +108,27 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     def get_api_fields(cls):
         return super(StaticReg, cls).get_api_fields()
 
+    @classmethod
+    def get_bulk_action_list(cls, query, fields=None, show_related=True):
+        if not fields:
+            fields = cls.get_api_fields() + ['pk']
+
+        if show_related:
+            # StaticReg objects are serialized. All other fields
+            # are not serialized into JSON
+            fields += ['hwadapter_set', 'system']
+
+        # Pull in all system blobs and tally which pks we've seen. In one swoop
+        # pull in all staticreg blobs and put them with their systems.
+        sreg_t_bundles = cls.objects.filter(query).values_list(*fields)
+
+        d_bundles = {}
+        for t_bundle in sreg_t_bundles:
+            d_bundle = dict(zip(fields, t_bundle))
+            d_bundles[d_bundle['pk']] = d_bundle
+
+        return d_bundles
+
     @property
     def rdtype(self):
         return 'SREG'

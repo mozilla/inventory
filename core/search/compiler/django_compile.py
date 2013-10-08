@@ -19,12 +19,29 @@ def compile_to_django(search):
     return qs_to_object_map(compiled_qs), ""
 
 
+def compile_to_q(search):
+    compiled_qs, error = compile_q_objects(search)
+    if error:
+        return None, error
+    return qs_to_q_map(compiled_qs), ""
+
+
 def search_type(search, rdtype):
     """A simple wrapper for returning an rdtypes queryset"""
     obj_map, error = compile_to_django(search)
     if error:
         return None, error
     return obj_map[rdtype], None
+
+
+def qs_to_q_map(qs):
+    obj_map = {}
+    for q, (type_, Klass) in izip(qs, searchables):
+        if not q:
+            obj_map[type_] = []
+        else:
+            obj_map[type_] = q
+    return obj_map
 
 
 def qs_to_object_map(qs):
