@@ -5,76 +5,39 @@ from systems.models import System
 from core.search.compiler.django_compile import compile_to_q
 
 from MySQLdb import OperationalError
+from bulk_action.import_utils import loads, dumps, system_import, BadImportData
 
-import decimal
-import datetime
-import simplejson as json
 import pprint
 
 
-class BadImport(Exception):
-    def __init__(self, bad_data=None, msg=''):
-        self.bad_data = bad_data
-        self.msg = msg
-        return super(BadImportData).__init__()
-
-
-class BAEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, decimal.Decimal):
-            return str(o)
-        elif isinstance(o, datetime.datetime) or isinstance(o, datetime.date):
-            return o.isoformat()
-        super(BAEncoder, self).default(o)
-
-
-class BADecoder(json.JSONDecoder):
-    pass
-
-
-def dumps(j):
-    return json.dumps(j, cls=BAEncoder)
-
-
-def loads(j):
-    return json.loads(j, cls=BADecoder)
-
-
-def bulk_import(raw_data):
+def bulk_import(main_blob):
     try:
-        data = loads(raw_data)
+        blobs = loads(main_blob)
     except ValueError, e:  # Can't find JSONDecodeError
         return HttpResponse(dumps({'errors': str(e)}))
-    if not isinstance(data, list):
+    if not isinstance(blobs, list):
         return HttpResponse(
-            dumps({'errors': 'Data must be a list of systems'})
+            dumps({'errors': 'Main JSON blob must be a list of systems'})
         )
-    for s_data in data:
-        system_import(s_data)
-    print data
-    return {}
-
-
-def system_import(data):
-    if 'pk' in data:
+    for i, s_blob in enumerate(blobs):
         try:
-            system_update(data)
-        except System.DoesNotExist:
-            raise BadImport(
-                bad_data=data,
-                msg='Could not find the system corresponding to this data.'
-            )
+            save_functions = system_import(s_blob)
+            for priority, fn in sorted(save_functions, key=lambda f: f[0]):
+                fn()
+        except BadImportData, e:
+            return HttpResponse(dumps({
+                'errors': 'Found an issue while processing the {0} system '
+                'blob: {1}.\nBad blob was:\n{2}'.format(i, e.msg, e.bad_blob)
+            }))
 
-
-def system_update(data):
-    pass
+    return blobs
 
 
 def bulk_action_import(request):
-    data = request.POST.get('data', None)
-    if not data:
+    blob = request.POST.get('blob', None)
+    if not blob:
         return HttpResponse(dumps({'errors': 'what do you want?'}))
-    return HttpResponse(bulk_import(data))
+    return HttpResponse(bulk_import(blob))
 
 
 def bulk_action_export(request):

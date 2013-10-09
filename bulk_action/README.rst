@@ -6,6 +6,8 @@ Action Supported:
     * create
     * udpate
 
+Right now, this API is not a good tool for deleting entire system objects.
+
 Goal
 ----
 This API can be used to create/update to many objects at the same time. It will allow a large change
@@ -19,11 +21,11 @@ Using this API is usually a three part process:
     2. Edit exported data
     3. Upload data to Inventory for saving
 
-Skipping step 1, even if you are creating objects, is highly discouraged.
+Skipping step 1, even if you are creating new objects, is highly discouraged.
 
 Data Structure
 --------------
-Communication between client and server is done via JSON protocol.  The Bulk
+Communication between client and server is done via a JSON protocol.  The Bulk
 Action API relies on a strictly structured JSON blob that is exported by
 Inventory, modified by a user, and then sent back to Inventory for processing.
 
