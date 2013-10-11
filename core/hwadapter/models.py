@@ -61,7 +61,8 @@ class HWAdapter(models.Model, ObjectUrlMixin, KVUrlMixin):
         d_bundles = {}
         for t_bundle in hw_t_bundles:
             d_bundle = dict(zip(fields, t_bundle))
-            d_bundles.setdefault(d_bundle['sreg'], []).append(d_bundle)
+            sreg = d_bundle.pop('sreg')
+            d_bundles.setdefault(sreg, []).append(d_bundle)
 
         return d_bundles
 

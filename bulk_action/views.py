@@ -10,27 +10,28 @@ from bulk_action.import_utils import loads, dumps, system_import, BadImportData
 import pprint
 
 
-def bulk_import(main_blob):
+def bulk_import(main_blob, load_json=True):
     try:
-        blobs = loads(main_blob)
+        if load_json:
+            blobs = loads(main_blob)
+        else:
+            blobs = main_blob
     except ValueError, e:  # Can't find JSONDecodeError
-        return HttpResponse(dumps({'errors': str(e)}))
+        return None, {'errors': str(e)}
     if not isinstance(blobs, list):
-        return HttpResponse(
-            dumps({'errors': 'Main JSON blob must be a list of systems'})
-        )
+        return None, {'errors': 'Main JSON blob must be a list of systems'}
     for i, s_blob in enumerate(blobs):
         try:
             save_functions = system_import(s_blob)
             for priority, fn in sorted(save_functions, key=lambda f: f[0]):
                 fn()
         except BadImportData, e:
-            return HttpResponse(dumps({
+            return None, {
                 'errors': 'Found an issue while processing the {0} system '
-                'blob: {1}.\nBad blob was:\n{2}'.format(i, e.msg, e.bad_blob)
-            }))
+                'blob: {1}\nBad blob was:\n{2}'.format(i, e.msg, e.bad_blob)
+            }
 
-    return blobs
+    return blobs, None
 
 
 def bulk_action_import(request):

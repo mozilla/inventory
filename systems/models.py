@@ -512,13 +512,14 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
             hwadapter_set.related.model.get_bulk_action_list(hw_q)
         )
 
-        # JOIN static_reg, hw_adapter ON sreg_pk
+        # JOIN staticreg, hw_adapter ON sreg_pk
         for sreg_pk, hw_bundle in hw_bundles.iteritems():
             sreg_bundles[sreg_pk]['hwadapter_set'] = hw_bundle
 
         for sreg_pk, sreg_bundle in sreg_bundles.iteritems():
-            sys_d_bundles[sreg_bundle['system']].setdefault(
-                'static_reg_set', []
+            system = sreg_bundle.pop('system')
+            sys_d_bundles[system].setdefault(
+                'staticreg_set', []
             ).append(sreg_bundle)
 
         return sys_d_bundles.values()

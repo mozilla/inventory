@@ -112,6 +112,9 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     def get_bulk_action_list(cls, query, fields=None, show_related=True):
         if not fields:
             fields = cls.get_api_fields() + ['pk']
+            # views is a M2M relationship and won't show up correctley in
+            # values_list
+            fields.remove('views')
 
         if show_related:
             # StaticReg objects are serialized. All other fields
@@ -125,6 +128,10 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         d_bundles = {}
         for t_bundle in sreg_t_bundles:
             d_bundle = dict(zip(fields, t_bundle))
+            d_bundle['views'] = list(
+                cls.objects.get(pk=d_bundle['pk'])
+                .views.values_list('pk', flat=True)
+            )
             d_bundles[d_bundle['pk']] = d_bundle
 
         return d_bundles
