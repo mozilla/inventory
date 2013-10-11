@@ -6,7 +6,7 @@ Action Supported:
     * create
     * udpate
 
-Right now, this API is not a good tool for deleting entire system objects.
+Right now, this API is not a tool that can delete objects.
 
 Goal
 ----

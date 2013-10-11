@@ -61,6 +61,11 @@ class HWAdapter(models.Model, ObjectUrlMixin, KVUrlMixin):
         d_bundles = {}
         for t_bundle in hw_t_bundles:
             d_bundle = dict(zip(fields, t_bundle))
+            d_bundle['keyvalue_set'] = list(
+                cls.keyvalue_set.related.model.objects.filter(
+                    obj=d_bundle['pk']
+                ).values('key', 'value', 'pk')
+            )
             sreg = d_bundle.pop('sreg')
             d_bundles.setdefault(sreg, []).append(d_bundle)
 

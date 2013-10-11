@@ -128,6 +128,11 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         d_bundles = {}
         for t_bundle in sreg_t_bundles:
             d_bundle = dict(zip(fields, t_bundle))
+            d_bundle['keyvalue_set'] = list(
+                cls.keyvalue_set.related.model.objects.filter(
+                    obj=d_bundle['pk']
+                ).values('key', 'value', 'pk')
+            )
             d_bundle['views'] = list(
                 cls.objects.get(pk=d_bundle['pk'])
                 .views.values_list('pk', flat=True)

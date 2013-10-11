@@ -43,6 +43,16 @@ def loads(j):
     return json.loads(j, cls=BADecoder)
 
 
+def make_save(obj, blob):
+    def save():
+        obj.save()
+        if 'pk' in blob:
+            assert blob['pk'] == obj.pk
+        else:
+            blob['pk'] = obj.pk
+    return save
+
+
 def recurse_confirm_no_pk(blob):
     for attr, value in blob.iteritems():
         if isinstance(value, list) and attr != 'views':
@@ -105,7 +115,7 @@ def hw_import(sreg, blob):
     if 'pk' in blob:
         try:
             hw = HWAdapter.objects.get(pk=blob['pk'])
-            return hw_update(hw, sreg, blob)
+            return hw_update(hw, blob)
         except StaticReg.DoesNotExist:
             raise BadImportData(
                 bad_blob=blob,
@@ -125,19 +135,42 @@ def hw_import(sreg, blob):
             )
 
 
-def import_kv(obj, values):
-    # TODO implment this
-    return []
-
-
-def make_save(obj, blob):
-    def save():
-        obj.save()
+def import_kv(obj, blobs):
+    save_functions = []
+    Klass = obj.keyvalue_set.model
+    for blob in blobs:
         if 'pk' in blob:
-            assert blob['pk'] == obj.pk
+            try:
+                kv = Klass.objects.get(pk=blob['pk'])
+            except Klass.DoesNotExist:
+                raise BadImportData(
+                    bad_blob=blob,
+                    msg='Could not find the Key Value pair with primary key '
+                    '{0}.'.format(blob['pk'])
+                )
+            save_functions += update_kv(kv, blob)
         else:
-            blob['pk'] = obj.pk
-    return save
+            kv = Klass(obj=obj)
+            save_functions += update_kv(kv, blob)
+    return save_functions
+
+
+def update_kv(kv, blob):
+    try:
+        kv.key, kv.value = blob['key'], blob['value']
+    except KeyError:
+        raise BadImportData(
+            bad_blob=blob,
+            msg="Either the 'key' or 'value' attribute is missing from this "
+            "blob. Both are required for KeyValue pairs."
+        )
+
+    def save():
+        # Refresh the cash with an actual object
+        kv.obj = kv.obj.__class__.objects.get(pk=kv.obj.pk)
+        make_save(kv, blob)()
+
+    return [(4, save)]
 
 
 def hw_update(hw, blob):
@@ -148,7 +181,12 @@ def hw_update(hw, blob):
         else:
             setattr(hw, attr, value)
 
-    return [(3, make_save(hw, blob))] + save_functions
+    def save():
+        # Refresh the cash with an actual object
+        hw.sreg = StaticReg.objects.get(pk=hw.sreg.pk)
+        make_save(hw, blob)()
+
+    return [(3, save)] + save_functions
 
 
 def sreg_update(sreg, blob):

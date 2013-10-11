@@ -521,6 +521,11 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
             sys_d_bundles[system].setdefault(
                 'staticreg_set', []
             ).append(sreg_bundle)
+            sys_d_bundles[system]['keyvalue_set'] = list(
+                cls.keyvalue_set.related.model.objects.filter(
+                    obj=d_bundle['pk']
+                ).values('key', 'value', 'pk')
+            )
 
         return sys_d_bundles.values()
 
