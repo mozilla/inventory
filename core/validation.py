@@ -32,8 +32,6 @@ valid_hw_name_formats = [
 
 
 def validate_hw_name(name):
-    if not name:
-        return
     validate_name(
         valid_hw_name_formats, name,
         "Not in valid format. Try something like hw0."
@@ -41,8 +39,6 @@ def validate_hw_name(name):
 
 
 def validate_sreg_name(name):
-    if not name:
-        return
     validate_name(
         valid_sreg_name_formats, name,
         "Not in valid format. Try something like nic0 or mgmt0."
