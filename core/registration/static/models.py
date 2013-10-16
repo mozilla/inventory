@@ -9,6 +9,7 @@ from core.network.utils import calc_networks_str
 from core.keyvalue.base_option import DHCPKeyValue
 from core.keyvalue.mixins import KVUrlMixin
 from core.validation import validate_sreg_name
+from core.utils import create_key_index
 
 import mozdns
 from mozdns.address_record.models import BaseAddressRecord
@@ -48,7 +49,7 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     )
 
     name = models.CharField(
-        max_length=255, null=False, default='', blank=True,
+        max_length=255, null=False, blank=True,
         validators=[validate_sreg_name],
         help_text="The name and primary number of this registration"
     )
@@ -59,7 +60,10 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
 
     class Meta:
         db_table = 'static_reg'
-        unique_together = ('ip_upper', 'ip_lower', 'label', 'domain')
+        unique_together = (
+            ('ip_upper', 'ip_lower', 'label', 'domain'),
+            ('system', 'name')
+        )
 
     def __repr__(self):
         return '<StaticReg: {0}>'.format(str(self))
@@ -84,7 +88,7 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     @classmethod
     def get_bulk_action_list(cls, query, fields=None, show_related=True):
         if not fields:
-            fields = cls.get_api_fields() + ['pk']
+            fields = cls.get_api_fields() + ['pk', 'name']
             # views is a M2M relationship and won't show up correctley in
             # values_list
             fields.remove('views')
@@ -92,7 +96,7 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         if show_related:
             # StaticReg objects are serialized. All other fields
             # are not serialized into JSON
-            fields += ['hwadapter_set', 'system']
+            fields += ['system__hostname']
 
         # Pull in all system blobs and tally which pks we've seen. In one swoop
         # pull in all staticreg blobs and put them with their systems.
@@ -101,7 +105,7 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         d_bundles = {}
         for t_bundle in sreg_t_bundles:
             d_bundle = dict(zip(fields, t_bundle))
-            d_bundle['keyvalue_set'] = list(
+            d_bundle['keyvalue_set'] = create_key_index(
                 cls.keyvalue_set.related.model.objects.filter(
                     obj=d_bundle['pk']
                 ).values('key', 'value', 'pk')
@@ -110,6 +114,8 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
                 cls.objects.get(pk=d_bundle['pk'])
                 .views.values_list('pk', flat=True)
             )
+            # This shouldn't be name yet because we need to look up pk so we
+            # can setup hwadapter_set
             d_bundles[d_bundle['pk']] = d_bundle
 
         return d_bundles
@@ -255,7 +261,7 @@ class StaticRegKeyValue(DHCPKeyValue):
 
     class Meta:
         db_table = 'static_key_value'
-        unique_together = ('key', 'value', 'obj')
+        unique_together = ('key', 'obj')
 
 
 reversion.register(StaticReg)

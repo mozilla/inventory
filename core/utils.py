@@ -285,3 +285,10 @@ def to_a(text, obj, use_absolute_url=True):
         return "<a href='{0}'>{1}</a>".format(obj.get_absolute_url(), text)
     else:
         return "<a href='{0}'>{1}</a>".format(obj, text)
+
+
+def create_key_index(kvs):
+    index = {}
+    for kv in kvs:
+        index[kv['key']] = kv
+    return index

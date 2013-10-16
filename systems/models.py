@@ -14,6 +14,7 @@ from core.site.models import Site
 from core.keyvalue.mixins import KVUrlMixin
 from core.keyvalue.models import KeyValue as BaseKeyValue
 from core.mixins import CoreDisplayMixin
+from core.utils import create_key_index
 
 import datetime
 import re
@@ -497,7 +498,13 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
         sys_pks = []
         for t_bundle in sys_t_bundles:
             d_bundle = dict(zip(fields, t_bundle))
-            sys_d_bundles[d_bundle['pk']] = d_bundle
+            system_hostname = d_bundle['hostname']
+            sys_d_bundles[system_hostname] = d_bundle
+            sys_d_bundles[system_hostname]['keyvalue_set'] = create_key_index(
+                cls.keyvalue_set.related.model.objects.filter(
+                    obj=d_bundle['pk']
+                ).values('key', 'value', 'pk')
+            )
             if show_related:
                 sys_pks.append(d_bundle['pk'])
 
@@ -517,17 +524,12 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
             sreg_bundles[sreg_pk]['hwadapter_set'] = hw_bundle
 
         for sreg_pk, sreg_bundle in sreg_bundles.iteritems():
-            system = sreg_bundle.pop('system')
+            system = sreg_bundle.pop('system__hostname')
             sys_d_bundles[system].setdefault(
-                'staticreg_set', []
-            ).append(sreg_bundle)
-            sys_d_bundles[system]['keyvalue_set'] = list(
-                cls.keyvalue_set.related.model.objects.filter(
-                    obj=d_bundle['pk']
-                ).values('key', 'value', 'pk')
-            )
+                'staticreg_set', {}
+            )[sreg_bundle['name']] = sreg_bundle
 
-        return sys_d_bundles.values()
+        return sys_d_bundles
 
     @property
     def rdtype(self):

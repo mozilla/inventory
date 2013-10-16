@@ -8,6 +8,7 @@ from core.keyvalue.mixins import KVUrlMixin, HWAdapterMixin
 from core.mixins import ObjectUrlMixin
 from core.registration.static.models import StaticReg
 from core.validation import validate_mac, validate_hw_name
+from core.utils import create_key_index
 
 from truth.models import Truth
 
@@ -19,7 +20,7 @@ class HWAdapter(models.Model, ObjectUrlMixin, KVUrlMixin):
     description = models.CharField(max_length=255, null=True, blank=True)
     enable_dhcp = models.BooleanField(blank=False, null=False, default=True)
     name = models.CharField(
-        max_length=255, null=False, default='', validators=[validate_hw_name],
+        max_length=255, null=False, validators=[validate_hw_name],
         blank=True, help_text="(Leave blank and Inventory will choose for you)"
     )
     mac = models.CharField(
@@ -35,7 +36,10 @@ class HWAdapter(models.Model, ObjectUrlMixin, KVUrlMixin):
 
     class Meta:
         db_table = 'hwadapter'
-        unique_together = ('mac', 'sreg',)
+        unique_together = (
+            ('mac', 'sreg'),
+            ('sreg', 'name')
+        )
 
     def __str__(self):
         return '{0}'.format(self.mac)
@@ -57,13 +61,13 @@ class HWAdapter(models.Model, ObjectUrlMixin, KVUrlMixin):
         d_bundles = {}
         for t_bundle in hw_t_bundles:
             d_bundle = dict(zip(fields, t_bundle))
-            d_bundle['keyvalue_set'] = list(
+            d_bundle['keyvalue_set'] = create_key_index(
                 cls.keyvalue_set.related.model.objects.filter(
                     obj=d_bundle['pk']
                 ).values('key', 'value', 'pk')
             )
             sreg = d_bundle.pop('sreg')
-            d_bundles.setdefault(sreg, []).append(d_bundle)
+            d_bundles.setdefault(sreg, {})[d_bundle['name']] = d_bundle
 
         return d_bundles
 
@@ -119,7 +123,7 @@ class HWAdapterKeyValue(HWAdapterMixin, DHCPKeyValue, CommonOption):
 
     class Meta:
         db_table = 'hwadapter_key_value'
-        unique_together = ('key', 'value', 'obj')
+        unique_together = ('key', 'obj')
 
     def _aa_dhcp_scope(self):
         """
