@@ -288,6 +288,7 @@ def build_nic(sub_nic):
             continue
         if is_name_key.match(nic_data.key):
             intr.name = nic_data.value
+            intr.name = intr.name.replace('nic', 'hw')
             intr.keys.add('name')
             continue
         if is_hostname_key.match(nic_data.key):

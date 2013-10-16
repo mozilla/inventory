@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 
 from systems.models import System
@@ -7,6 +8,7 @@ from core.keyvalue.utils import AuxAttr
 from core.network.utils import calc_networks_str
 from core.keyvalue.base_option import DHCPKeyValue
 from core.keyvalue.mixins import KVUrlMixin
+from core.validation import validate_sreg_name
 
 import mozdns
 from mozdns.address_record.models import BaseAddressRecord
@@ -23,8 +25,8 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     """
     The StaticReg Class.
 
-        >>> s = StaticReg.objects.create(label=label, domain=domain,
-        ... ip_str=ip_str, ip_type=ip_type)
+        >>> s = StaticReg.objects.create(label=label, domain=domain,  # noqa
+        ... ip_str=ip_str, ip_type=ip_type)  # noqa
 
     If you want an A/AAAA, PTR, and a DHCP lease, create on of these objects
     and associate a mac address with it.
@@ -34,41 +36,6 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     from BaseAddressRecord and will call it's clean and save method. StaticReg
     also inherits from BasePTR and will call :func:`clean_reverse` which
     essentially calls the :class:`PTR` classes :func:`clean` method.
-
-
-    Using the 'attrs' attribute.
-
-    To interface with the Key Value store of a registration use the 'attrs'
-    attribute. This attribute is a direct proxy to the Keys and Values in the
-    Key Value store. When you assign an attribute of the 'attrs' attribute a
-    value, a key is create/updated. For example:
-
-    >>> sreg = <Assume this is an existing StaticReg instance>
-    >>> sreg.update_attrs()  # This updates the object with keys/values already
-    >>> # in the KeyValue store.
-    >>> sreg.attrs.baz
-    '0'
-
-    In the previous line, there was a key called 'baz' and it's value
-    would be returned when you accessed the attribute 'baz'.
-    >>> sreg.attrs.foo
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-    AttributeError: 'attrs' object has no attribute 'foo'
-
-    Here 'attrs' didn't have an attribute 'foo' which means that there was no
-    KeyValue with key 'foo'. If we wanted to create that key and give it a
-    value of 'bar' we would do:
-
-    >>> sreg.attrs.bar = 'foo'
-
-    This *immediately* creates a KeyValue pair with key='bar' and value='foo'.
-
-    >>> sreg.attrs.bar = 'baz'
-
-    This *immediately* updates the KeyValue object with a value of 'baz'. It is
-    not like the Django ORM where you must call the `save()` function for any
-    changes to propagate to the database.
     """
     id = models.AutoField(primary_key=True)
     reverse_domain = models.ForeignKey(
@@ -78,6 +45,12 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     system = models.ForeignKey(
         System, null=True, blank=True, help_text="System to associate the "
         "registration with"
+    )
+
+    name = models.CharField(
+        max_length=255, null=False, default='', blank=True,
+        validators=[validate_sreg_name],
+        help_text="The name and primary number of this registration"
     )
 
     attrs = None
@@ -166,9 +139,6 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         else:
             return parents[-1]
 
-    def record_type(self):
-        return 'A/PTR'
-
     def delete(self, *args, **kwargs):
         if self.reverse_domain and self.reverse_domain.soa:
             self.reverse_domain.soa.schedule_rebuild()
@@ -178,6 +148,8 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     def save(self, *args, **kwargs):
         urd = kwargs.pop('update_reverse_domain', True)
         self.clean_reverse(update_reverse_domain=urd)  # BasePTR
+        if not self.name:
+            self.name = self.calc_name()
         super(StaticReg, self).save(*args, **kwargs)
         self.rebuild_reverse()
 
@@ -186,12 +158,44 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
             raise ValidationError(
                 "A registartion means nothing without it's system."
             )
+        if self.system.staticreg_set.filter(~Q(pk=self.pk), name=self.name):
+            raise ValidationError("A registartion already has this name")
         if not hasattr(self, 'domain'):
             raise ValidationError("A domain has not been set")
         self.check_A_PTR_collision()
         super(StaticReg, self).clean(  # BaseAddressRecord
             validate_glue=validate_glue, ignore_sreg=True
         )
+
+    def record_type(self):
+        return 'A/PTR'
+
+    def calc_name(self):
+        """
+        Find a suitable name for a registration if the user did not set one.
+        """
+        if not self.system:
+            return  # Someone else will notice this
+        if self.pk:
+            sregs = self.system.staticreg_set.filter(~Q(pk=self.pk))
+        else:
+            sregs = self.system.staticreg_set.all()
+
+        if not sregs.exists():
+            return 'nic0'
+
+        num = 0
+        name = ''
+        # Guess and check.
+        while True:
+            tmp_name = 'nic{num}'.format(num=num)
+            if not sregs.filter(name=tmp_name).exists():
+                name = tmp_name
+                break
+            else:
+                num += 1
+
+        return name
 
     def check_A_PTR_collision(self):
         from mozdns.ptr.models import PTR

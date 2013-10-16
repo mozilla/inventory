@@ -12,7 +12,7 @@ class StaticRegForm(BaseForm):
         model = StaticReg
         fields = (
             'label', 'domain', 'ip_str', 'ip_type', 'ttl', 'views', 'system',
-            'description'
+            'name', 'description'
         )
         widgets = {'views': forms.CheckboxSelectMultiple}
 
@@ -21,7 +21,7 @@ class StaticRegFQDNForm(BaseForm):
     class Meta:
         model = StaticReg
         fields = (
-            'fqdn', 'ip_str', 'ip_type', 'ttl', 'views', 'description'
+            'fqdn', 'ip_str', 'ip_type', 'ttl', 'views', 'name', 'description'
         )
         widgets = {'views': forms.CheckboxSelectMultiple}
 
@@ -37,7 +37,7 @@ class StaticRegAutoForm(BaseForm):
     class Meta:
         model = StaticReg
         fields = (
-            'fqdn', 'ip_str', 'views', 'description', 'system', 'ttl'
+            'fqdn', 'ip_str', 'views', 'description', 'system', 'ttl', 'name'
         )
         widgets = {
             'views': forms.CheckboxSelectMultiple,
