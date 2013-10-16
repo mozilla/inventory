@@ -26,7 +26,9 @@ class BAEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, decimal.Decimal):
             return str(o)
-        elif isinstance(o, datetime.datetime) or isinstance(o, datetime.date):
+        elif isinstance(o, datetime.datetime):
+            return o.strftime("%Y-%m-%d %H:%M")
+        elif isinstance(o, datetime.date):
             return o.isoformat()
         super(BAEncoder, self).default(o)
 
@@ -252,7 +254,17 @@ def set_field(obj, attr, value):
     if hasattr(obj.__class__, attr):
         m_attr = getattr(obj.__class__, attr)
         if isinstance(m_attr.field, ForeignKey):
-            m_value = m_attr.field.rel.to.objects.get(pk=value)
+            if value is None:
+                m_value = value
+            else:
+                try:
+                    m_value = m_attr.field.rel.to.objects.get(pk=value)
+                except m_attr.field.rel.to.DoesNotExist, e:
+                    raise BadImportData(
+                        "Using the data '{0}' to look up '{1}' and "
+                        "received the error '{2}'".format(value, attr, str(e))
+                    )
+
         else:
             raise Exception("Really bad error")
     else:
