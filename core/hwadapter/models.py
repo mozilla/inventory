@@ -72,6 +72,7 @@ class HWAdapter(models.Model, ObjectUrlMixin, KVUrlMixin):
         return d_bundles
 
     def save(self, *args, **kwargs):
+        self.full_clean()
         if not self.sreg:
             raise ValidationError(
                 "Hardware Adapters need to be associated with a static IP "

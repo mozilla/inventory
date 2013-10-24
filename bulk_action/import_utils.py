@@ -4,6 +4,7 @@ from systems.models import System
 from core.registration.static.models import StaticReg
 from core.hwadapter.models import HWAdapter
 
+from mozdns.cname.models import CNAME
 from mozdns.utils import ensure_label_domain
 
 import decimal
@@ -57,12 +58,16 @@ def make_save(obj, blob):
 
 def recurse_confirm_no_pk(blob):
     for attr, value in blob.iteritems():
-        if isinstance(value, list) and attr != 'views':
-            # the views attr is always a list of ints, no need to check for pk
-            for sub_blob in value:
+        if isinstance(value, dict) and attr != 'views':
+            # the views attr should never be touched.
+            for sub_blob in value.values():
                 recurse_confirm_no_pk(sub_blob)
         elif attr == 'pk':
-            raise BadUpdateCreate()
+            raise BadImportData(
+                bad_blob=blob,
+                msg='This object is new (it has no pk) but other objects tied '
+                'to it have pk values. This is not allowed.'
+            )
 
 
 def system_import(blob):
@@ -77,16 +82,9 @@ def system_import(blob):
                 '{0}.'.format(blob['pk'])
             )
     else:
-        try:
-            recurse_confirm_no_pk(blob)
-            system = System()
-            return system_update(system, blob)
-        except BadUpdateCreate:
-            raise BadImportData(
-                bad_blob=blob,
-                msg='This object is new (it has no pk) but other objects tied '
-                'to it have pk values. This is not allowed.'
-            )
+        recurse_confirm_no_pk(blob)
+        system = System()
+        return system_update(system, blob)
 
 
 def sreg_import(system, blob):
@@ -101,16 +99,9 @@ def sreg_import(system, blob):
                 '{0}.'.format(blob['pk'])
             )
     else:
-        try:
-            recurse_confirm_no_pk(blob)
-            sreg = StaticReg(system=system)
-            return sreg_update(sreg, blob)
-        except BadUpdateCreate:
-            raise BadImportData(
-                bad_blob=blob,
-                msg='This object is new (it has no pk) but other objects tied '
-                'to it have pk values. This is not allowed.'
-            )
+        recurse_confirm_no_pk(blob)
+        sreg = StaticReg(system=system)
+        return sreg_update(sreg, blob)
 
 
 def hw_import(sreg, blob):
@@ -125,22 +116,15 @@ def hw_import(sreg, blob):
                 '{0}.'.format(blob['pk'])
             )
     else:
-        try:
-            recurse_confirm_no_pk(blob)
-            hw = HWAdapter(sreg=sreg)
-            return hw_update(hw, blob)
-        except BadUpdateCreate:
-            raise BadImportData(
-                bad_blob=blob,
-                msg='This object is new (it has no pk) but other objects tied '
-                'to it have pk values. This is not allowed.'
-            )
+        recurse_confirm_no_pk(blob)
+        hw = HWAdapter(sreg=sreg)
+        return hw_update(hw, blob)
 
 
 def import_kv(obj, blobs):
     save_functions = []
     Klass = obj.keyvalue_set.model
-    for blob in blobs:
+    for blob in blobs.values():
         if 'pk' in blob:
             try:
                 kv = Klass.objects.get(pk=blob['pk'])
@@ -155,6 +139,50 @@ def import_kv(obj, blobs):
             kv = Klass(obj=obj)
             save_functions += update_kv(kv, blob)
     return save_functions
+
+
+def import_cname(sreg, blobs):
+    if not isinstance(blobs, list):
+        raise BadImportData(
+            bad_blob=blobs,
+            msg='The cname attribute should be a list of CNAME blobs'
+        )
+    save_functions = []
+    for blob in blobs:
+        if 'pk' in blob:
+            try:
+                cname = CNAME.objects.get(pk=blob['pk'])
+                save_functions += cname_update(cname, blob)
+            except CNAME.DoesNotExist:
+                raise BadImportData(
+                    bad_blob=blob,
+                    msg='Could not find the CNAME with primary key '
+                    '{0}.'.format(blob['pk'])
+                )
+        else:
+            recurse_confirm_no_pk(blob)
+            save_functions += cname_update(CNAME(), blob)
+    return save_functions
+
+
+def cname_update(cname, blob):
+    save_functions = []
+    for attr, value in blob.iteritems():
+        if attr == 'views':
+            continue  # We handle views in save since new objects need a pk
+        else:
+            setattr(cname, attr, value)
+
+    def save():
+        # This code runs in a transaction that is rolled back if an exception
+        # is raised.
+        cname.label, cname.domain = ensure_label_domain(cname.fqdn)
+        make_save(cname, blob)()
+        # Now save the views
+        for view in blob.get('views', []):
+            cname.views.add(view)
+
+    return [(3, save)] + save_functions
 
 
 def update_kv(kv, blob):
@@ -195,16 +223,18 @@ def sreg_update(sreg, blob):
     save_functions = []
     for attr, value in blob.iteritems():
         if attr == 'hwadapter_set':
-            if not isinstance(value, list):
+            if not isinstance(value, dict):
                 raise BadImportData(
                     bad_blob=blob,
                     msg='The Static Registration attribute hwadapter_set must '
-                    'a list of Hardware Adapter JSON blobs'
+                    'a dict of Hardware Adapter JSON blobs'
                 )
-            for hw_blob in value:
+            for hw_blob in value.values():
                 save_functions += hw_import(sreg, hw_blob)
         elif attr == 'keyvalue_set':
             save_functions += import_kv(sreg, value)
+        elif attr == 'cname':
+            save_functions += import_cname(sreg, value)
         elif attr == 'views':
             continue  # We handle views in save since new objects need a pk
         else:
@@ -220,7 +250,7 @@ def sreg_update(sreg, blob):
         sreg.system = System.objects.get(pk=sreg.system.pk)
         make_save(sreg, blob)()
         # Now save the views
-        for view in blob['views']:
+        for view in blob.get('views', []):
             sreg.views.add(view)
 
     return [(2, save)] + save_functions
@@ -230,13 +260,13 @@ def system_update(system, blob):
     save_functions = []
     for attr, value in blob.iteritems():
         if attr == 'staticreg_set':
-            if not isinstance(value, list):
+            if not isinstance(value, dict):
                 raise BadImportData(
                     bad_blob=blob,
-                    msg='The system attribute statirc_reg_set must a list of '
+                    msg='The system attribute statirc_reg_set must a dict of '
                     'Static Registration JSON blobs'
                 )
-            for sreg_blob in value:
+            for sreg_blob in value.values():
                 save_functions += sreg_import(system, sreg_blob)
         elif attr == 'keyvalue_set':
             save_functions += import_kv(system, value)

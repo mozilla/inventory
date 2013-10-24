@@ -76,7 +76,6 @@
                             <div class='hw-container new-object-border' title='NEW Hardware Adapter Object'>
                                 {% set hw, kvs = hwadapter.emit_hwadapter() %}
                                 <span class='hw-attr'>HW MAC: {{ hw['mac'] }}</span>
-                                <span class='hw-attr'>HW NAME: {{ hw['name'] }}</span>
                                 <div class='carry-over-kvs'>
                                     {% for kv in kvs %}
                                         {% if not (kv.key == 'option_hostname' and kv.value == bundle['fqdn']) %}

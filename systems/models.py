@@ -509,6 +509,8 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
                 sys_pks.append(d_bundle['pk'])
 
         sys_q = Q(system__in=sys_pks)
+
+        # Note that CNAMEs are pulled in during this call
         sreg_bundles = cls.staticreg_set.related.model.get_bulk_action_list(
             sys_q
         )

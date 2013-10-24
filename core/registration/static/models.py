@@ -14,6 +14,7 @@ from core.utils import create_key_index
 import mozdns
 from mozdns.address_record.models import BaseAddressRecord
 from mozdns.ptr.models import BasePTR
+from mozdns.cname.models import CNAME
 from mozdns.domain.models import Domain
 from mozdns.ip.utils import ip_to_dns_form
 
@@ -100,7 +101,11 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
 
         # Pull in all system blobs and tally which pks we've seen. In one swoop
         # pull in all staticreg blobs and put them with their systems.
-        sreg_t_bundles = cls.objects.filter(query).values_list(*fields)
+        sreg_q = cls.objects.filter(query)
+        sreg_t_bundles = sreg_q.values_list(*fields)
+        sreg_fqdns = sreg_q.values_list('fqdn', flat=True)
+        cname_q = Q(target__in=sreg_fqdns)
+        cname_bundles = CNAME.get_bulk_action_list(cname_q)
 
         d_bundles = {}
         for t_bundle in sreg_t_bundles:
@@ -117,6 +122,13 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
             # This shouldn't be name yet because we need to look up pk so we
             # can setup hwadapter_set
             d_bundles[d_bundle['pk']] = d_bundle
+
+            # Look up a cname and set it as the only value of 'cname' if *one*
+            # cname exists. If there are more than one set the cname as a list.
+
+            # cname_bundles is a inverted index (dict) on 'target'
+            if d_bundle['fqdn'] in cname_bundles:
+                d_bundle['cname'] = cname_bundles[d_bundle['fqdn']]
 
         return d_bundles
 
@@ -187,14 +199,19 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         else:
             sregs = self.system.staticreg_set.all()
 
+        if self.label and 'mgmt' in self.label:
+            prefix = 'mgmt'
+        else:
+            prefix = 'nic'
+
         if not sregs.exists():
-            return 'nic0'
+            return prefix + '0'
 
         num = 0
         name = ''
         # Guess and check.
         while True:
-            tmp_name = 'nic{num}'.format(num=num)
+            tmp_name = '{prefix}{num}'.format(prefix=prefix, num=num)
             if not sregs.filter(name=tmp_name).exists():
                 name = tmp_name
                 break

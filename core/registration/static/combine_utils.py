@@ -499,14 +499,14 @@ def combine(bundle, rollback=False, use_reversion=True):
         try:
             bundle['a'].delete(check_cname=False)
         except ValidationError, e:
-            transaction.rollback()
+            rollback = True
             bundle['errors'] = 'Error while deleting the A record.' + str(e)
             return
 
         try:
             bundle['ptr'].delete()
         except ValidationError, e:
-            transaction.rollback()
+            rollback = True
             bundle['errors'] = 'Error while deleting the PTR record.' + str(e)
             return
 
@@ -517,7 +517,7 @@ def combine(bundle, rollback=False, use_reversion=True):
             if use_reversion:
                 reversion.set_comment('Migrated via combine()')
         except ValidationError, e:
-            transaction.rollback()
+            rollback = True
             bundle['errors'] = 'Error while creating the SREG record.' + str(e)
             return
 
@@ -525,17 +525,18 @@ def combine(bundle, rollback=False, use_reversion=True):
             hw_info, kvs = nic.emit_hwadapter()
 
             if not hw_info['mac']:
-                transaction.rollback()
+                rollback = True
                 return
 
             try:
                 hw, _ = HWAdapter.objects.get_or_create(
                     sreg=sreg, mac=hw_info['mac']
                 )
-                hw.name = hw_info['name']
+                # HWAdapter class does this for us.
+                #hw.name = hw_info['name'].replace
                 hw.save()
             except ValidationError, e:
-                transaction.rollback()
+                rollback = True
                 bundle['errors'] = 'Error while creating HW Adapter'
                 return
 
@@ -551,6 +552,7 @@ def combine(bundle, rollback=False, use_reversion=True):
                             key = 'host_name'
                     else:
                         key = kv['key']
+
                     if HWAdapterKeyValue.objects.filter(key=key,
                                                         obj=hw).exists():
                         pass

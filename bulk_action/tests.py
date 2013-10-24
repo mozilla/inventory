@@ -1,4 +1,5 @@
 from django.db.models.fields.related import ForeignKey
+#from django.test import TransactionTestCase as TestCase
 from django.test import TestCase
 from django.test.client import RequestFactory
 
@@ -10,6 +11,7 @@ from core.registration.static.models import StaticReg
 
 from bulk_action.views import bulk_import
 
+from mozdns.cname.models import CNAME
 from mozdns.tests.utils import create_fake_zone
 from mozdns.view.models import View
 
@@ -19,6 +21,7 @@ import decimal
 class BulkActionTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
+        self.private_view = View.objects.create(name='private')
         self.operating_system = OperatingSystem.objects.create(
             name='foo', version='1.1'
         )
@@ -27,6 +30,7 @@ class BulkActionTests(TestCase):
         )
         self.allocation = Allocation.objects.create(name='something')
         self.domain = create_fake_zone('foobar.mozilla.com', suffix='')
+        self.build_domain = create_fake_zone('build.mozilla.org', suffix='')
         self.rdomain = create_fake_zone('10.in-addr.arpa', suffix='')
 
     def get_field(self, obj, attr):
@@ -41,7 +45,7 @@ class BulkActionTests(TestCase):
 
     def assertUpdated(self, hostname, data, obj):
         s_data = None
-        for d in data:
+        for d in data['systems'].values():
             if d.get('hostname', None) == hostname:
                 s_data = d
                 break
@@ -62,21 +66,24 @@ class BulkActionTests(TestCase):
     def test_single_create(self):
         hostname = 'puppet1.foobar.mozilla.com'
         data = """
-        [{{
-          "asset_tag": "7349",
-          "system_type": 4,
-          "serial": "MXQ14901XV",
-          "rack_order": "1.16",
-          "hostname": "{hostname}",
-          "patch_panel_port": "",
-          "purchase_date": null,
-          "warranty_start": null,
-          "purchase_price": "1.0",
-          "oob_ip": "10.8.0.25",
-          "allocation": {allocation_pk},
-          "warranty_end": null,
-          "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16"
-        }}]
+        {{
+            "systems": {{
+                "{hostname}": {{
+                    "asset_tag": "7349",
+                    "serial": "MXQ14901XV",
+                    "rack_order": "1.16",
+                    "hostname": "{hostname}",
+                    "patch_panel_port": "",
+                    "purchase_date": null,
+                    "warranty_start": null,
+                    "purchase_price": "1.0",
+                    "oob_ip": "10.8.0.25",
+                    "allocation": {allocation_pk},
+                    "warranty_end": null,
+                    "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16"
+                }}
+            }}
+        }}
         """.format(allocation_pk=self.allocation.pk, hostname=hostname)
         pre_count = System.objects.all().count()
         json_data, error = bulk_import(data)
@@ -89,21 +96,24 @@ class BulkActionTests(TestCase):
     def test_single_update(self):
         hostname = 'puppet2.foobar.mozilla.com'
         data = """
-        [{{
-          "asset_tag": "7349",
-          "system_type": 4,
-          "serial": "MXQ14901XV",
-          "rack_order": "1.16",
-          "hostname": "{hostname}",
-          "patch_panel_port": "",
-          "purchase_date": null,
-          "warranty_start": null,
-          "purchase_price": "1.0",
-          "oob_ip": "10.8.0.25",
-          "allocation": {allocation_pk},
-          "warranty_end": null,
-          "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16"
-        }}]
+        {{
+            "systems": {{
+                "{hostname}": {{
+                    "asset_tag": "7349",
+                    "serial": "MXQ14901XV",
+                    "rack_order": "1.16",
+                    "hostname": "{hostname}",
+                    "patch_panel_port": "",
+                    "purchase_date": null,
+                    "warranty_start": null,
+                    "purchase_price": "1.0",
+                    "oob_ip": "10.8.0.25",
+                    "allocation": {allocation_pk},
+                    "warranty_end": null,
+                    "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16"
+                }}
+            }}
+        }}
         """.format(allocation_pk=self.allocation.pk, hostname=hostname)
         pre_count = System.objects.all().count()
         json_data, error = bulk_import(data)
@@ -117,7 +127,7 @@ class BulkActionTests(TestCase):
         # We now have an object created and the blob has a 'pk'. try changing
         # the hostname.
         new_hostname = 'asdf' + hostname
-        json_data[0]['hostname'] = new_hostname
+        json_data['systems'][hostname]['hostname'] = new_hostname
 
         pre_count = System.objects.all().count()
         json_data, error = bulk_import(json_data, load_json=False)
@@ -131,34 +141,40 @@ class BulkActionTests(TestCase):
     def test_pk_in_new_objects(self):
         hostname = 'puppet3.foobar.mozilla.com'
         data = """
-        [{{
-          "asset_tag": "7349",
-          "system_type": 4,
-          "serial": "MXQ14901XV",
-          "rack_order": "1.16",
-          "hostname": "{hostname}",
-          "patch_panel_port": "",
-          "purchase_date": null,
-          "warranty_start": null,
-          "purchase_price": "1.0",
-          "oob_ip": "10.8.0.25",
-          "allocation": {allocation_pk},
-          "warranty_end": null,
-          "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
-          "staticreg_set": [
-            {{
-              "description": "Migrated SREG",
-              "views": 2,
-              "system": 5046,
-              "fqdn": "puppet1.private.phx1.mozilla.com",
-              "ttl": null,
-              "ip_type": "4",
-              "pk": 11,
-              "ip_str": "10.8.75.10"
+        {{
+            "systems": {{
+                "{hostname}": {{
+                    "asset_tag": "7349",
+                    "serial": "MXQ14901XV",
+                    "rack_order": "1.16",
+                    "hostname": "{hostname}",
+                    "patch_panel_port": "",
+                    "purchase_date": null,
+                    "warranty_start": null,
+                    "purchase_price": "1.0",
+                    "oob_ip": "10.8.0.25",
+                    "allocation": {allocation_pk},
+                    "warranty_end": null,
+                    "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
+                    "staticreg_set": {{
+                        "nic0": {{
+                            "description": "Migrated SREG",
+                            "views": [{private_view_pk}],
+                            "system": 5046,
+                            "fqdn": "puppet1.private.phx1.mozilla.com",
+                            "ttl": null,
+                            "ip_type": "4",
+                            "pk": 11,
+                            "ip_str": "10.8.75.10"
+                        }}
+                    }}
+                }}
             }}
-          ]
-        }}]
-        """.format(allocation_pk=self.allocation.pk, hostname=hostname)
+        }}
+        """.format(
+            allocation_pk=self.allocation.pk, hostname=hostname,
+            private_view_pk=self.private_view.pk
+        )
         blobs, error = bulk_import(data)
         self.assertFalse(blobs)
         self.assertTrue(error)
@@ -166,85 +182,101 @@ class BulkActionTests(TestCase):
     def test_single_sreg_create(self):
         hostname = 'puppet5.foobar.mozilla.com'
         data = """
-        [{{
-          "asset_tag": "7349",
-          "system_type": 4,
-          "serial": "MXQ14901XV",
-          "rack_order": "1.16",
-          "hostname": "{hostname}",
-          "patch_panel_port": "",
-          "purchase_date": null,
-          "warranty_start": null,
-          "purchase_price": "1.0",
-          "oob_ip": "10.8.0.25",
-          "allocation": {allocation_pk},
-          "warranty_end": null,
-          "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
-          "staticreg_set": [
-            {{
-              "description": "Migrated SREG",
-              "views": [{private_view_pk}],
-              "fqdn": "{hostname}",
-              "ttl": null,
-              "ip_type": "4",
-              "ip_str": "10.8.75.10"
+        {{
+            "systems": {{
+                "{hostname}": {{
+                    "asset_tag": "7349",
+                    "serial": "MXQ14901XV",
+                    "rack_order": "1.16",
+                    "hostname": "{hostname}",
+                    "patch_panel_port": "",
+                    "purchase_date": null,
+                    "warranty_start": null,
+                    "purchase_price": "1.0",
+                    "oob_ip": "10.8.0.25",
+                    "allocation": {allocation_pk},
+                    "warranty_end": null,
+                    "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
+                    "staticreg_set": {{
+                        "nic0": {{
+                            "description": "Migrated SREG",
+                            "views": [{private_view_pk}],
+                            "fqdn": "{hostname}",
+                            "ttl": null,
+                            "ip_type": "4",
+                            "ip_str": "10.8.75.10"
+                        }}
+                    }}
+                }}
             }}
-          ]
-        }}]
+        }}
         """.format(
             allocation_pk=self.allocation.pk, hostname=hostname,
-            private_view_pk=View.objects.get(name='private').pk
+            private_view_pk=self.private_view.pk
         )
         blobs, error = bulk_import(data)
         self.assertFalse(error)
-        self.assertTrue('pk' in blobs[0]['staticreg_set'][0])
-        sreg = StaticReg.objects.get(pk=blobs[0]['staticreg_set'][0]['pk'])
+        self.assertTrue(
+            'pk' in blobs['systems'][hostname]['staticreg_set']['nic0']
+        )
+        sreg = StaticReg.objects.get(
+            pk=blobs['systems'][hostname]['staticreg_set']['nic0']['pk']
+        )
         self.assertTrue(sreg)
         self.assertTrue(sreg.system)
+        self.assertTrue(sreg.views.filter(name='private'))
+        self.assertEqual(1, len(sreg.views.all()))
 
     def test_single_sreg_update(self):
         hostname = 'puppet12.foobar.mozilla.com'
         data = """
-        [{{
-          "asset_tag": "7349",
-          "system_type": 4,
-          "serial": "MXQ14901XV",
-          "rack_order": "1.16",
-          "hostname": "{hostname}",
-          "patch_panel_port": "",
-          "purchase_date": null,
-          "warranty_start": null,
-          "purchase_price": "1.0",
-          "oob_ip": "10.8.0.25",
-          "allocation": {allocation_pk},
-          "warranty_end": null,
-          "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
-          "staticreg_set": [
-            {{
-              "description": "Migrated SREG",
-              "views": [{private_view_pk}],
-              "fqdn": "{hostname}",
-              "ttl": null,
-              "ip_type": "4",
-              "ip_str": "10.8.75.10"
+        {{
+            "systems": {{
+                "{hostname}": {{
+                    "asset_tag": "7349",
+                    "serial": "MXQ14901XV",
+                    "rack_order": "1.16",
+                    "hostname": "{hostname}",
+                    "patch_panel_port": "",
+                    "purchase_date": null,
+                    "warranty_start": null,
+                    "purchase_price": "1.0",
+                    "oob_ip": "10.8.0.25",
+                    "allocation": {allocation_pk},
+                    "warranty_end": null,
+                    "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
+                    "staticreg_set": {{
+                        "nic1": {{
+                            "description": "Migrated SREG",
+                            "views": [{private_view_pk}],
+                            "fqdn": "{hostname}",
+                            "ttl": null,
+                            "ip_type": "4",
+                            "ip_str": "10.8.75.10"
+                        }}
+                    }}
+                }}
             }}
-          ]
-        }}]
+        }}
         """.format(
             allocation_pk=self.allocation.pk, hostname=hostname,
             private_view_pk=View.objects.get(name='private').pk
         )
         blobs, error = bulk_import(data)
         self.assertFalse(error)
-        self.assertTrue('pk' in blobs[0]['staticreg_set'][0])
-        sreg = StaticReg.objects.get(pk=blobs[0]['staticreg_set'][0]['pk'])
+        self.assertTrue(
+            'pk' in blobs['systems'][hostname]['staticreg_set']['nic1']
+        )
+        sreg = StaticReg.objects.get(
+            pk=blobs['systems'][hostname]['staticreg_set']['nic1']['pk']
+        )
         self.assertTrue(sreg)
         self.assertTrue(sreg.system)
 
         # Change the views and ip address. Make sure the updates worked.
         new_ip = "10.8.75.11"
-        blobs[0]['staticreg_set'][0]['ip_str'] = new_ip
-        blobs[0]['staticreg_set'][0]['views'] = [
+        blobs['systems'][hostname]['staticreg_set']['nic1']['ip_str'] = new_ip
+        blobs['systems'][hostname]['staticreg_set']['nic1']['views'] = [
             View.objects.get(name='public').pk,
             View.objects.get(name='private').pk
         ]
@@ -259,57 +291,64 @@ class BulkActionTests(TestCase):
     def test_single_hw_create(self):
         hostname = 'puppet6.foobar.mozilla.com'
         data = """
-        [{{
-          "asset_tag": "7349",
-          "system_type": 4,
-          "serial": "MXQ14901XV",
-          "rack_order": "1.16",
-          "hostname": "{hostname}",
-          "patch_panel_port": "",
-          "purchase_date": null,
-          "warranty_start": null,
-          "purchase_price": "1.0",
-          "oob_ip": "10.8.0.25",
-          "allocation": {allocation_pk},
-          "warranty_end": null,
-          "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
-          "staticreg_set": [
-            {{
-              "description": "Migrated SREG",
-              "views": [{private_view_pk}],
-              "fqdn": "{hostname}",
-              "ttl": null,
-              "ip_type": "4",
-              "ip_str": "10.8.75.10",
-              "hwadapter_set": [
-                {{
-                  "mac": "44:1E:A1:5C:01:B4",
-                  "name": "nic1",
-                  "enable_dhcp": true,
-                  "description": null,
-                  "keyvalue_set": [
-                    {{
-                      "key": "hostname",
-                      "value": "{hostname}"
-                    }},
-                    {{
-                      "key": "dhcp_scope",
-                      "value": "phx1-vlan80"
+        {{
+            "systems": {{
+                "{hostname}": {{
+                    "asset_tag": "7349",
+                    "serial": "MXQ14901XV",
+                    "rack_order": "1.16",
+                    "hostname": "{hostname}",
+                    "patch_panel_port": "",
+                    "purchase_date": null,
+                    "warranty_start": null,
+                    "purchase_price": "1.0",
+                    "oob_ip": "10.8.0.25",
+                    "allocation": {allocation_pk},
+                    "warranty_end": null,
+                    "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
+                    "staticreg_set": {{
+                        "nic1": {{
+                            "description": "Migrated SREG",
+                            "views": [{private_view_pk}],
+                            "fqdn": "{hostname}",
+                            "ttl": null,
+                            "ip_type": "4",
+                            "ip_str": "10.8.75.10",
+                            "hwadapter_set": {{
+                                "hw0": {{
+                                    "mac": "44:1E:A1:5C:01:B4",
+                                    "name": "hw0",
+                                    "enable_dhcp": true,
+                                    "description": null,
+                                    "keyvalue_set": {{
+                                        "{hostname}": {{
+                                          "key": "hostname",
+                                          "value": "{hostname}"
+                                        }},
+                                        "phx1-vlan80": {{
+                                          "key": "dhcp_scope",
+                                          "value": "phx1-vlan80"
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
                     }}
-                  ]
                 }}
-              ]
             }}
-          ]
-        }}]
+        }}
         """.format(
             allocation_pk=self.allocation.pk, hostname=hostname,
-            private_view_pk=View.objects.get(name='private').pk
+            private_view_pk=self.private_view.pk
         )
         blobs, error = bulk_import(data)
         self.assertFalse(error)
-        self.assertTrue('pk' in blobs[0]['staticreg_set'][0])
-        sreg = StaticReg.objects.get(pk=blobs[0]['staticreg_set'][0]['pk'])
+        self.assertTrue(
+            'pk' in blobs['systems'][hostname]['staticreg_set']['nic1']
+        )
+        sreg = StaticReg.objects.get(
+            pk=blobs['systems'][hostname]['staticreg_set']['nic1']['pk']
+        )
         self.assertTrue(sreg)
         self.assertTrue(sreg.system)
         self.assertEqual(1, sreg.hwadapter_set.all().count())
@@ -321,57 +360,64 @@ class BulkActionTests(TestCase):
     def test_single_hw_update(self):
         hostname = 'puppet99.foobar.mozilla.com'
         data = """
-        [{{
-          "asset_tag": "7349",
-          "system_type": 4,
-          "serial": "MXQ14901XV",
-          "rack_order": "1.16",
-          "hostname": "{hostname}",
-          "patch_panel_port": "",
-          "purchase_date": null,
-          "warranty_start": null,
-          "purchase_price": "1.0",
-          "oob_ip": "10.8.0.25",
-          "allocation": {allocation_pk},
-          "warranty_end": null,
-          "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
-          "staticreg_set": [
-            {{
-              "description": "Migrated SREG",
-              "views": [{private_view_pk}],
-              "fqdn": "{hostname}",
-              "ttl": null,
-              "ip_type": "4",
-              "ip_str": "10.8.75.10",
-              "hwadapter_set": [
-                {{
-                  "mac": "44:1E:A1:5C:01:B4",
-                  "name": "nic1",
-                  "enable_dhcp": true,
-                  "description": null,
-                  "keyvalue_set": [
-                    {{
-                      "key": "hostname",
-                      "value": "{hostname}"
-                    }},
-                    {{
-                      "key": "dhcp_scope",
-                      "value": "phx1-vlan80"
+        {{
+            "systems": {{
+                "{hostname}": {{
+                    "asset_tag": "7349",
+                    "serial": "MXQ14901XV",
+                    "rack_order": "1.16",
+                    "hostname": "{hostname}",
+                    "patch_panel_port": "",
+                    "purchase_date": null,
+                    "warranty_start": null,
+                    "purchase_price": "1.0",
+                    "oob_ip": "10.8.0.25",
+                    "allocation": {allocation_pk},
+                    "warranty_end": null,
+                    "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
+                    "staticreg_set": {{
+                        "nic1": {{
+                            "description": "Migrated SREG",
+                            "views": [{private_view_pk}],
+                            "fqdn": "{hostname}",
+                            "ttl": null,
+                            "ip_type": "4",
+                            "ip_str": "10.8.75.10",
+                            "hwadapter_set": {{
+                                "hw0": {{
+                                    "mac": "44:1E:A1:5C:01:B4",
+                                    "name": "hw0",
+                                    "enable_dhcp": true,
+                                    "description": null,
+                                    "keyvalue_set": {{
+                                        "{hostname}": {{
+                                          "key": "hostname",
+                                          "value": "{hostname}"
+                                        }},
+                                        "phx1-vlan80": {{
+                                          "key": "dhcp_scope",
+                                          "value": "phx1-vlan80"
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
                     }}
-                  ]
                 }}
-              ]
             }}
-          ]
-        }}]
+        }}
         """.format(
             allocation_pk=self.allocation.pk, hostname=hostname,
             private_view_pk=View.objects.get(name='private').pk
         )
         blobs, error = bulk_import(data)
         self.assertFalse(error)
-        self.assertTrue('pk' in blobs[0]['staticreg_set'][0])
-        sreg = StaticReg.objects.get(pk=blobs[0]['staticreg_set'][0]['pk'])
+        self.assertTrue(
+            'pk' in blobs['systems'][hostname]['staticreg_set']['nic1']
+        )
+        sreg = StaticReg.objects.get(
+            pk=blobs['systems'][hostname]['staticreg_set']['nic1']['pk']
+        )
         hw = sreg.hwadapter_set.get(mac="44:1E:A1:5C:01:B4")
         kv = hw.keyvalue_set.get(key='hostname')
         self.assertTrue(sreg)
@@ -381,9 +427,10 @@ class BulkActionTests(TestCase):
         # Change the mac, make things are saved
         new_hostname = 'asdfasdf' + hostname
         new_mac = "44:1E:A1:5C:01:99"
-        blobs[0]['staticreg_set'][0]['hwadapter_set'][0]['mac'] = new_mac
+        blobs['systems'][hostname]['staticreg_set']['nic1']['hwadapter_set']['hw0']['mac'] = new_mac  # noqa
         # Chage the hostname in the kv set too
-        for kv in blobs[0]['staticreg_set'][0]['hwadapter_set'][0]['keyvalue_set']:  # noqa
+        kvs = blobs['systems'][hostname]['staticreg_set']['nic1']['hwadapter_set']['hw0']['keyvalue_set'].values()  # noqa
+        for kv in kvs:
             if kv['key'] == 'hostname':
                 kv['value'] = new_hostname
 
@@ -393,3 +440,174 @@ class BulkActionTests(TestCase):
         kv = hw.keyvalue_set.get(key='hostname')
         self.assertEqual(new_mac, hw.mac)
         self.assertEqual(new_hostname, kv.value)
+
+    def test_single_cname_create(self):
+        hostname = 'puppet99.foobar.mozilla.com'
+        data = """
+        {{
+            "systems": {{
+                "{hostname}": {{
+                    "asset_tag": "7349",
+                    "serial": "MXQ14901XV",
+                    "rack_order": "1.16",
+                    "hostname": "{hostname}",
+                    "patch_panel_port": "",
+                    "purchase_date": null,
+                    "warranty_start": null,
+                    "purchase_price": "1.0",
+                    "oob_ip": "10.8.0.25",
+                    "allocation": {allocation_pk},
+                    "warranty_end": null,
+                    "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
+                    "staticreg_set": {{
+                        "nic1": {{
+                            "cname": [
+                                {{
+                                    "description": "",
+                                    "views": [{private_view_pk}],
+                                    "fqdn": "puppet99.build.mozilla.org",
+                                    "target": "{hostname}",
+                                    "ttl": null
+                                }}
+                            ],
+                            "description": "Migrated SREG",
+                            "views": [{private_view_pk}],
+                            "fqdn": "{hostname}",
+                            "ttl": null,
+                            "ip_type": "4",
+                            "ip_str": "10.8.75.10",
+                            "hwadapter_set": {{
+                                "hw0": {{
+                                    "mac": "44:1E:A1:5C:01:B4",
+                                    "name": "hw0",
+                                    "enable_dhcp": true,
+                                    "description": null,
+                                    "keyvalue_set": {{
+                                        "{hostname}": {{
+                                          "key": "hostname",
+                                          "value": "{hostname}"
+                                        }},
+                                        "phx1-vlan80": {{
+                                          "key": "dhcp_scope",
+                                          "value": "phx1-vlan80"
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        }}
+        """.format(
+            allocation_pk=self.allocation.pk, hostname=hostname,
+            private_view_pk=self.private_view.pk
+        )
+        blobs, error = bulk_import(data)
+        self.assertFalse(error)
+        self.assertTrue(
+            'pk' in blobs['systems'][hostname]['staticreg_set']['nic1']
+        )
+        self.assertEqual(
+            1, len(blobs['systems'][hostname]['staticreg_set']['nic1']['cname'])  # noqa
+        )
+        self.assertTrue(
+            'pk' in blobs['systems'][hostname]['staticreg_set']['nic1']['cname'][0]  # noqa
+        )
+        sreg = StaticReg.objects.get(
+            pk=blobs['systems'][hostname]['staticreg_set']['nic1']['pk']
+        )
+        self.assertTrue(sreg)
+        cname = CNAME.objects.get(
+            pk=blobs['systems'][hostname]['staticreg_set']['nic1']['cname'][0]['pk']  # noqa
+        )
+        self.assertTrue(cname.views.filter(name='private').exists())
+
+    def test_single_cname_update(self):
+        hostname = 'puppet101.foobar.mozilla.com'
+        data = """
+        {{
+            "systems": {{
+                "{hostname}": {{
+                    "asset_tag": "7349",
+                    "serial": "MXQ14901XV",
+                    "rack_order": "1.16",
+                    "hostname": "{hostname}",
+                    "patch_panel_port": "",
+                    "purchase_date": null,
+                    "warranty_start": null,
+                    "purchase_price": "1.0",
+                    "oob_ip": "10.8.0.25",
+                    "allocation": {allocation_pk},
+                    "warranty_end": null,
+                    "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16",
+                    "staticreg_set": {{
+                        "nic1": {{
+                            "cname": [
+                                {{
+                                    "description": "",
+                                    "views": [{private_view_pk}],
+                                    "fqdn": "puppet99.build.mozilla.org",
+                                    "target": "{hostname}",
+                                    "ttl": null
+                                }}
+                            ],
+                            "description": "Migrated SREG",
+                            "views": [{private_view_pk}],
+                            "fqdn": "{hostname}",
+                            "ttl": null,
+                            "ip_type": "4",
+                            "ip_str": "10.8.75.10",
+                            "hwadapter_set": {{
+                                "hw0": {{
+                                    "mac": "44:1E:A1:5C:01:B4",
+                                    "name": "hw0",
+                                    "enable_dhcp": true,
+                                    "description": null,
+                                    "keyvalue_set": {{
+                                        "{hostname}": {{
+                                          "key": "hostname",
+                                          "value": "{hostname}"
+                                        }},
+                                        "phx1-vlan80": {{
+                                          "key": "dhcp_scope",
+                                          "value": "phx1-vlan80"
+                                        }}
+                                    }}
+                                }}
+                            }}
+                        }}
+                    }}
+                }}
+            }}
+        }}
+        """.format(
+            allocation_pk=self.allocation.pk, hostname=hostname,
+            private_view_pk=self.private_view.pk
+        )
+        blobs, error = bulk_import(data)
+        self.assertFalse(error)
+        self.assertTrue(
+            'pk' in blobs['systems'][hostname]['staticreg_set']['nic1']
+        )
+        self.assertEqual(
+            1, len(blobs['systems'][hostname]['staticreg_set']['nic1']['cname'])  # noqa
+        )
+        self.assertTrue(
+            'pk' in blobs['systems'][hostname]['staticreg_set']['nic1']['cname'][0]  # noqa
+        )
+        sreg = StaticReg.objects.get(
+            pk=blobs['systems'][hostname]['staticreg_set']['nic1']['pk']
+        )
+        self.assertTrue(sreg)
+        cname = CNAME.objects.get(
+            pk=blobs['systems'][hostname]['staticreg_set']['nic1']['cname'][0]['pk']  # noqa
+        )
+        self.assertTrue(cname.views.filter(name='private').exists())
+
+        new_fqdn = 'asdfasdfasdf.build.mozilla.org'
+        blobs['systems'][hostname]['staticreg_set']['nic1']['cname'][0]['fqdn'] = new_fqdn  # noqa
+
+        blobs, error = bulk_import(blobs, load_json=False)
+        cname = CNAME.objects.get(pk=cname.pk)
+        self.assertEqual(new_fqdn, cname.fqdn)

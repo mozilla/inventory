@@ -20,7 +20,7 @@ class CNAME(MozdnsRecord, LabelDomainMixin):
     isn't taken by another record. Likewise, all other records must
     check that no CNAME exists with the same name before being created.
 
-    >>> CNAME(label = label, domain = domain, target = target)
+    >>> CNAME(label = label, domain = domain, target = target)  # noqa
 
     """
     # TODO cite an RFC for that ^ (it's around somewhere)
@@ -50,6 +50,27 @@ class CNAME(MozdnsRecord, LabelDomainMixin):
     @classmethod
     def get_api_fields(cls):
         return super(CNAME, cls).get_api_fields() + ['target']
+
+    @classmethod
+    def get_bulk_action_list(cls, query, fields=None):
+        if not fields:
+            fields = cls.get_api_fields() + ['pk']
+            # views is a M2M relationship and won't show up correctley in
+            # values_list
+            fields.remove('views')
+
+        cname_t_bundles = cls.objects.filter(query).values_list(*fields)
+        d_bundles = {}
+        for t_bundle in cname_t_bundles:
+            d_bundle = dict(zip(fields, t_bundle))
+            d_bundle['views'] = list(
+                cls.objects.get(pk=d_bundle['pk'])
+                .views.values_list('pk', flat=True)
+            )
+            target = d_bundle['target']
+
+            d_bundles.setdefault(target, []).append(d_bundle)
+        return d_bundles
 
     def save(self, *args, **kwargs):
         self.clean()
