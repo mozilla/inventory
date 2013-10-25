@@ -1,6 +1,6 @@
 [submodule "vendor-local/src/iscpy"]
 	path = vendor-local/src/iscpy
-	url = git://github.com/uberj/iscpy.git
+	url = https://github.com/uberj/iscpy.git
 [submodule "vendor-local/src/dnspython"]
 	path = vendor-local/src/dnspython
 	url = https://github.com/uberj/dnspython.git
@@ -9,12 +9,12 @@
 	url = https://github.com/etianen/django-reversion.git
 [submodule "vendor-local/src/django-south"]
 	path = vendor-local/src/django-south
-	url = git://github.com/lambdafu/django-south.git
+	url = https://github.com/lambdafu/django-south.git
     ignore = dirty
 [submodule "vendor-local/src/parsley"]
 	path = vendor-local/src/parsley
 	url = https://github.com/washort/parsley
 [submodule "vendor"]
 	path = vendor
-	url = git@github.com:mozilla/playdoh-lib.git
+	url = https://github.com/mozilla/playdoh-lib.git
     ignore = dirty
