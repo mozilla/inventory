@@ -126,7 +126,6 @@ AUTHENTICATION_BACKENDS = (
 AUTH_PROFILE_MODULE = "systems.UserProfile"
 PISTON_IGNORE_DUPE_MODELS = True
 
-ROOT_URLCONF = 'mozilla_inventory.urls'
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 
@@ -180,7 +179,7 @@ DEBUG_TOOLBAR_CONFIG = {
 from settings.dnsbuilds import *
 MOZDNS_BASE_URL = "/mozdns"
 CORE_BASE_URL = "/core"
-ROOT_URLCONF = 'inventory.urls'
+ROOT_URLCONF = 'urls'
 BUILD_PATH = '/home/juber/dnsbuilds/'
 
 # HACK HACK This will need to be fixed
