@@ -18,10 +18,13 @@ import MySQLdb
 import simplejson as json
 
 
-def save_kv_pairs(obj, qd, prefix):
+def save_kv_pairs(sreg, obj, qd, prefix):
     """
     Look for keyvalue pairs in a query dict that match a certain prefix and
     save them to obj's keyvalue store. This function doesn't catch exceptions.
+
+    If the key=='host_name' and value==fqdn, we don't need to save the key
+    because its the default.
     """
     def parse_kv(field, value):
         if field.startswith(prefix):
@@ -33,7 +36,7 @@ def save_kv_pairs(obj, qd, prefix):
 
     for field, value in qd.iteritems():
         key, value = parse_kv(field, value)
-        if key and value:
+        if key and value and not (key == 'host_name' and value == sreg.fqdn):
             save_kv(key, value)
 
 
@@ -53,7 +56,7 @@ def ajax_create_sreg(request):
                 return errors
             sreg = sreg_form.save()
             save_kv_pairs(
-                sreg, sreg_form.data, 'kv-{0}-'.format(sreg_form.prefix)
+                sreg, sreg, sreg_form.data, 'kv-{0}-'.format(sreg_form.prefix)
             )  # prefix thing is kind of hacky
         except ValidationError, e:
             errors['sreg'] = [('__all__', e.messages)]
@@ -64,11 +67,11 @@ def ajax_create_sreg(request):
         for hwform in filter(lambda f: f.has_changed(), hw_formset):
             hwform.initial['sreg'] = sreg
             if hwform.is_valid():
-                hwform.instance.sreg = sreg  # why doesn't initial do this?
+                hwform.instance.sreg = sreg  # refresh object cache
                 try:
                     hw = hwform.save()
                     save_kv_pairs(
-                        hw, hwform.data, 'kv-{0}-'.format(hwform.prefix)
+                        sreg, hw, hwform.data, 'kv-{0}-'.format(hwform.prefix)
                     )  # prefix thing is kind of hacky
                     dhcp_scope = hwform.cleaned_data.get('dhcp_scope', None)
                     if dhcp_scope:
@@ -107,6 +110,10 @@ def ajax_create_sreg(request):
 
 
 def combine_status_list(request):
+    """
+    This view is temporary. It can be used to convert a system using KV objects
+    for dhcp into the new Sreg and HW scheme.
+    """
     qd = request.POST or request.GET
     if qd:
         search = qd.get('search', '')

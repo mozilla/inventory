@@ -159,7 +159,6 @@
     {{ display_obj_field(sreg, 'name', sreg.name) }}
     {{ display_obj_field(sreg, 'inet4 addr' if sreg.ip_type == '4' else 'inet6 addr', sreg.ip_str) }}
     {{ display_views(sreg, 'views', sreg.views.all()) }}
-    {{ display_obj_field(sreg.range, 'range', sreg.range or 'N/A') }}
     {{ display_obj_field(sreg.network, 'network', sreg.network or 'N/A') }}
     {{ display_obj_kv(sreg) }}
 {%- endmacro %}
