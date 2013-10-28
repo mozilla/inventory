@@ -10,8 +10,8 @@ Right now, this API is not a tool that can delete objects.
 
 Goal
 ----
-This API can be used to create/update to many objects at the same time. It will allow a large change
-to happen in one transaction.
+This API can be used to create/update to many objects at the same time. It will allow a
+large change to happen in one transaction.
 
 General Usage
 -------------
@@ -29,76 +29,75 @@ Communication between client and server is done via a JSON protocol.  The Bulk
 Action API relies on a strictly structured JSON blob that is exported by
 Inventory, modified by a user, and then sent back to Inventory for processing.
 
-The API uses a JSON blob (referenced as the 'main' blob) that always consists
-of a list of system JSON blobs. Contained in each system blob is a system's
-attributes and possibly other JSON blobs representing Static Registrations
-(StaticRegs) and Hardware Adapters (HWAdapters).
+The API uses a JSON blob ('main' blob) that stores a key 'systems' that is mapped to
+another dictionary that maps hostnames to json blobs that represent systems blobs.
+Contained in each system blob is a system's attributes and possibly other JSON blobs
+representing Static Registrations (StaticRegs) and Hardware Adapters (HWAdapters) and
+somtimes CNAME DNS records.
 
 For example::
 
-    [  #### A list of system JSON blobs. This is the 'main' blob.
-        ...
-        ...
-        ...
-        {  #### A system JSON blob
-            "asset_tag": "7349",
-            "hostname": "puppet1.private.phx1.mozilla.com",
-            "rack_order": "1.16",
-            "pk": 5046,
+    {
+        "systems": { #### A list of system JSON blobs. This is the 'main' blob.
+            "hostname.mozilla.com": {  #### A system JSON blob
+                "hostname": "hostname",
+                "pk": 9550,
+                "rack_order": "7.02",
                 ...
                 ...
                 ...
-            "static_reg_set": [  #### A list of Static Registration JSON blobs
-                {  #### A StaticReg JSON blob
-                    "fqdn": "puppet1.private.phx1.mozilla.com",
-                    "ip_type": "4",
-                    "pk": 11,
-                    "ip_str": "10.8.75.10"
-                    ...
-                    ...
-                    ...
-                    "hwadapter_set": [  #### A list of HWAdapter JSON blobs
-                        {  #### A HWAdapter JSON blob
-                            "mac": "44:1E:A1:5C:01:B4",
-                            "pk": 27,
-                            "name": "nic1"
-                            ...
-                            ...
-                            ...
+                "staticreg_set": {  #### A dict of Static Regs JSON blobs indexed by SREG name
+                    "nic0": { #### A StaticReg JSON blob
+                        "fqdn": "hostname.mozilla.com",
+                        "ip_str": "10.26.56.133",
+                        "pk": 3216,
+                        ...
+                        ...
+                        ...
+                        "hwadapter_set": {  #### A list of HWAdapter JSON blobs
+                            "hw0": {
+                                "mac": "00:25:90:C2:30:D8",
+                                "name": "hw0",
+                                "pk": 3202
+                                ...
+                                ...
+                                ...
+                            }
                         },
-                    ],
+                    }
                 },
-            ]
+            }
         }
-    ]
+    }
+
 
 Here is the same example from above but with the non-relational attributes
 removed. This is meant to show you the consistent JSON structure that the
 API expects::
 
-    [  #### A list of system JSON blobs. This is the 'main' blob.
-        ...
-        ...
-        ...
-        {  #### A systems JSON blob
+    {
+        "systems": { #### A list of system JSON blobs. This is the 'main' blob.
+            "hostname.mozilla.com": {  #### A system JSON blob
                 ...
                 ...
                 ...
-            "static_reg_set": [  #### A list of Static Registration JSON blobs
-                {  #### A Static Registration JSON blob
-                    ...
-                    ...
-                    ...
-                    "hwadapter_set": [  #### A list of HWAdapter JSON blobs
-                        {  #### A HWAdapter JSON blob },
-                    ],
+                "staticreg_set": {  #### A dict of Static Regs JSON blobs indexed by SREG name
+                    "nic0": { #### A StaticReg JSON blob
+                        ...
+                        ...
+                        ...
+                        "hwadapter_set": {  #### A list of HWAdapter JSON blobs
+                            "hw0": {
+                                ...
+                                ...
+                                ...
+                            }
+                        },
+                    }
                 },
-            ]
+            }
         }
-    ]
-
-As a general rule, attributes that end in ``_set`` are a list of related JSON
-blobs that may or may not have attributes that end in ``_set``.
+    }
 
 Sending JSON blobs to Inventory
 ===============================
@@ -125,22 +124,30 @@ presence of a ``pk`` attribute in a JSON blob.
 For example here is a JSON blob that would *create* a new system with the
 hostname ``foo.mozilla.com``::
 
-    [
-        {
-            "hostname": "foo.mozilla.com",
-        }
-    ]
+    {
+        'systems': {
+            "foo.mozilla.com": {
+                "hostname": "foo.mozilla.com",
+            }
+        },
+        'commit': true
+    }
 
 For contrast, here is a JSON blob that would *update* a system with the ``pk``
 (primary key) ``5046`` to have the hostname ``foo.mozilla.com``::
 
-    [
-        {
-            "hostname": "foo.mozilla.com",
-            "pk": 5046,
-        }
-    ]
+    {
+        'systems': {
+            "foo.mozilla.com": {
+                "hostname": "foo.mozilla.com",
+                "pk": 5046,
+            }
+        },
+        'commit': true
+    }
 
-Creating/Updating Static Registrations and Hardware Adapters
-------------------------------------------------------------
-
+Rollback by default
+-------------------
+When you send a JSON blob to Inventory it will, by default, will not save the changes the
+JSON blob would cause. You need to put the key 'commit' with the value 'true' in the top
+level of the JSON blob for Inventory to save your changes.

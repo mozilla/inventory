@@ -1,3 +1,12 @@
+#  WARNING - This entire file is a temprorary hack that should not be taken
+#  srsly.... srsly guise [0]
+#
+#  This code will go away and was written over 1.5 years ago.... but it still
+#  works so its being used.
+#
+#
+#  [0] http://i1339.photobucket.com/albums/o706/schickita/guise_zps0323dbee.jpg
+
 from django.db import transaction
 from django.core.exceptions import ValidationError
 
