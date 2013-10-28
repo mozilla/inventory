@@ -7,10 +7,6 @@ from truth.models import Truth
 
 
 class HWAdapterForm(forms.ModelForm):
-    name = forms.CharField(
-        widget=forms.TextInput(attrs={'class': 'increment'})
-    )
-
     def __init__(self, *args, **kwargs):
         super(HWAdapterForm, self).__init__(*args, **kwargs)
         if not self.instance.pk:
@@ -20,7 +16,7 @@ class HWAdapterForm(forms.ModelForm):
                     list(Truth.objects.all().values_list('name', 'name'))
                 ),
                 widget=forms.Select(attrs={'class': 'dhcp-scopes'}),
-                required=True
+                required=False
             )
 
     class Meta:

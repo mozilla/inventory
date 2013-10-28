@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 
 from systems.models import System
@@ -7,10 +8,13 @@ from core.keyvalue.utils import AuxAttr
 from core.network.utils import calc_networks_str
 from core.keyvalue.base_option import DHCPKeyValue
 from core.keyvalue.mixins import KVUrlMixin
+from core.validation import validate_sreg_name
+from core.utils import create_key_index
 
 import mozdns
 from mozdns.address_record.models import BaseAddressRecord
 from mozdns.ptr.models import BasePTR
+from mozdns.cname.models import CNAME
 from mozdns.domain.models import Domain
 from mozdns.ip.utils import ip_to_dns_form
 
@@ -23,8 +27,8 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     """
     The StaticReg Class.
 
-        >>> s = StaticReg.objects.create(label=label, domain=domain,
-        ... ip_str=ip_str, ip_type=ip_type)
+        >>> s = StaticReg.objects.create(label=label, domain=domain,  # noqa
+        ... ip_str=ip_str, ip_type=ip_type)  # noqa
 
     If you want an A/AAAA, PTR, and a DHCP lease, create on of these objects
     and associate a mac address with it.
@@ -34,41 +38,6 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     from BaseAddressRecord and will call it's clean and save method. StaticReg
     also inherits from BasePTR and will call :func:`clean_reverse` which
     essentially calls the :class:`PTR` classes :func:`clean` method.
-
-
-    Using the 'attrs' attribute.
-
-    To interface with the Key Value store of a registration use the 'attrs'
-    attribute. This attribute is a direct proxy to the Keys and Values in the
-    Key Value store. When you assign an attribute of the 'attrs' attribute a
-    value, a key is create/updated. For example:
-
-    >>> sreg = <Assume this is an existing StaticReg instance>
-    >>> sreg.update_attrs()  # This updates the object with keys/values already
-    >>> # in the KeyValue store.
-    >>> sreg.attrs.baz
-    '0'
-
-    In the previous line, there was a key called 'baz' and it's value
-    would be returned when you accessed the attribute 'baz'.
-    >>> sreg.attrs.foo
-    Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-    AttributeError: 'attrs' object has no attribute 'foo'
-
-    Here 'attrs' didn't have an attribute 'foo' which means that there was no
-    KeyValue with key 'foo'. If we wanted to create that key and give it a
-    value of 'bar' we would do:
-
-    >>> sreg.attrs.bar = 'foo'
-
-    This *immediately* creates a KeyValue pair with key='bar' and value='foo'.
-
-    >>> sreg.attrs.bar = 'baz'
-
-    This *immediately* updates the KeyValue object with a value of 'baz'. It is
-    not like the Django ORM where you must call the `save()` function for any
-    changes to propagate to the database.
     """
     id = models.AutoField(primary_key=True)
     reverse_domain = models.ForeignKey(
@@ -80,13 +49,22 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         "registration with"
     )
 
+    name = models.CharField(
+        max_length=255, null=False, blank=True,
+        validators=[validate_sreg_name],
+        help_text="The name and primary number of this registration"
+    )
+
     attrs = None
 
     search_fields = ('ip_str', 'fqdn')
 
     class Meta:
         db_table = 'static_reg'
-        unique_together = ('ip_upper', 'ip_lower', 'label', 'domain')
+        unique_together = (
+            ('ip_upper', 'ip_lower', 'label', 'domain'),
+            ('system', 'name')
+        )
 
     def __repr__(self):
         return '<StaticReg: {0}>'.format(str(self))
@@ -107,6 +85,52 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     @classmethod
     def get_api_fields(cls):
         return super(StaticReg, cls).get_api_fields()
+
+    @classmethod
+    def get_bulk_action_list(cls, query, fields=None, show_related=True):
+        if not fields:
+            fields = cls.get_api_fields() + ['pk', 'name']
+            # views is a M2M relationship and won't show up correctley in
+            # values_list
+            fields.remove('views')
+
+        if show_related:
+            # StaticReg objects are serialized. All other fields
+            # are not serialized into JSON
+            fields += ['system__hostname']
+
+        # Pull in all system blobs and tally which pks we've seen. In one swoop
+        # pull in all staticreg blobs and put them with their systems.
+        sreg_q = cls.objects.filter(query)
+        sreg_t_bundles = sreg_q.values_list(*fields)
+        sreg_fqdns = sreg_q.values_list('fqdn', flat=True)
+        cname_q = Q(target__in=sreg_fqdns)
+        cname_bundles = CNAME.get_bulk_action_list(cname_q)
+
+        d_bundles = {}
+        for t_bundle in sreg_t_bundles:
+            d_bundle = dict(zip(fields, t_bundle))
+            d_bundle['keyvalue_set'] = create_key_index(
+                cls.keyvalue_set.related.model.objects.filter(
+                    obj=d_bundle['pk']
+                ).values('key', 'value', 'pk')
+            )
+            d_bundle['views'] = list(
+                cls.objects.get(pk=d_bundle['pk'])
+                .views.values_list('pk', flat=True)
+            )
+            # This shouldn't be name yet because we need to look up pk so we
+            # can setup hwadapter_set
+            d_bundles[d_bundle['pk']] = d_bundle
+
+            # Look up a cname and set it as the only value of 'cname' if *one*
+            # cname exists. If there are more than one set the cname as a list.
+
+            # cname_bundles is a inverted index (dict) on 'target'
+            if d_bundle['fqdn'] in cname_bundles:
+                d_bundle['cname'] = cname_bundles[d_bundle['fqdn']]
+
+        return d_bundles
 
     @property
     def rdtype(self):
@@ -133,9 +157,6 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         else:
             return parents[-1]
 
-    def record_type(self):
-        return 'A/PTR'
-
     def delete(self, *args, **kwargs):
         if self.reverse_domain and self.reverse_domain.soa:
             self.reverse_domain.soa.schedule_rebuild()
@@ -145,6 +166,8 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     def save(self, *args, **kwargs):
         urd = kwargs.pop('update_reverse_domain', True)
         self.clean_reverse(update_reverse_domain=urd)  # BasePTR
+        if not self.name:
+            self.name = self.calc_name()
         super(StaticReg, self).save(*args, **kwargs)
         self.rebuild_reverse()
 
@@ -153,12 +176,49 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
             raise ValidationError(
                 "A registartion means nothing without it's system."
             )
+        if self.system.staticreg_set.filter(~Q(pk=self.pk), name=self.name):
+            raise ValidationError("A registartion already has this name")
         if not hasattr(self, 'domain'):
             raise ValidationError("A domain has not been set")
         self.check_A_PTR_collision()
         super(StaticReg, self).clean(  # BaseAddressRecord
             validate_glue=validate_glue, ignore_sreg=True
         )
+
+    def record_type(self):
+        return 'A/PTR'
+
+    def calc_name(self):
+        """
+        Find a suitable name for a registration if the user did not set one.
+        """
+        if not self.system:
+            return  # Someone else will notice this
+        if self.pk:
+            sregs = self.system.staticreg_set.filter(~Q(pk=self.pk))
+        else:
+            sregs = self.system.staticreg_set.all()
+
+        if self.label and 'mgmt' in self.label:
+            prefix = 'mgmt'
+        else:
+            prefix = 'nic'
+
+        if not sregs.exists():
+            return prefix + '0'
+
+        num = 0
+        name = ''
+        # Guess and check.
+        while True:
+            tmp_name = '{prefix}{num}'.format(prefix=prefix, num=num)
+            if not sregs.filter(name=tmp_name).exists():
+                name = tmp_name
+                break
+            else:
+                num += 1
+
+        return name
 
     def check_A_PTR_collision(self):
         from mozdns.ptr.models import PTR
@@ -218,7 +278,7 @@ class StaticRegKeyValue(DHCPKeyValue):
 
     class Meta:
         db_table = 'static_key_value'
-        unique_together = ('key', 'value', 'obj')
+        unique_together = ('key', 'obj')
 
 
 reversion.register(StaticReg)

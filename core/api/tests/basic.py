@@ -136,6 +136,7 @@ class HWAdapterTest(CoreAPITests, ResourceTestCase):
     test_name = 'hwadapter'
 
     def setUp(self):
+        self.num = 0
         create_fake_zone('2.ip6.arpa', suffix="")
         self.domain = create_fake_zone('foo.mozilla.com', suffix='')
         self.s = System.objects.create(hostname='foo.mozilla.com')
@@ -156,7 +157,6 @@ class HWAdapterTest(CoreAPITests, ResourceTestCase):
     def post_data(self):
         return {
             'description': random_label(),
-            'name': 'eth0',
             'sreg': self.sreg.pk,
             'mac': '11:22:33:44:55:66'
         }

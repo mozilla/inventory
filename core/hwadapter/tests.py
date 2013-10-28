@@ -18,6 +18,6 @@ class HWAdapterTests(TestCase):
 
     def test_create(self):
         h = HWAdapter.objects.create(
-            mac='11:22:33:44:55:66', sreg=self.sreg, name='foo'
+            mac='11:22:33:44:55:66', sreg=self.sreg, name='hw0'
         )
         repr(h)

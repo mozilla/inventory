@@ -1,3 +1,12 @@
+#  WARNING - This entire file is a temprorary hack that should not be taken
+#  srsly.... srsly guise [0]
+#
+#  This code will go away and was written over 1.5 years ago.... but it still
+#  works so its being used.
+#
+#
+#  [0] http://i1339.photobucket.com/albums/o706/schickita/guise_zps0323dbee.jpg
+
 from django.db import transaction
 from django.core.exceptions import ValidationError
 
@@ -288,6 +297,7 @@ def build_nic(sub_nic):
             continue
         if is_name_key.match(nic_data.key):
             intr.name = nic_data.value
+            intr.name = intr.name.replace('nic', 'hw')
             intr.keys.add('name')
             continue
         if is_hostname_key.match(nic_data.key):
@@ -475,7 +485,7 @@ def generate_sreg_bundles(system, name):
 
 
 @transaction.commit_manually
-def combine(bundle, rollback=False):
+def combine(bundle, rollback=False, use_reversion=True):
     """
     Returns one sreg and DHCP output for that SREG.
 
@@ -498,14 +508,14 @@ def combine(bundle, rollback=False):
         try:
             bundle['a'].delete(check_cname=False)
         except ValidationError, e:
-            transaction.rollback()
+            rollback = True
             bundle['errors'] = 'Error while deleting the A record.' + str(e)
             return
 
         try:
             bundle['ptr'].delete()
         except ValidationError, e:
-            transaction.rollback()
+            rollback = True
             bundle['errors'] = 'Error while deleting the PTR record.' + str(e)
             return
 
@@ -513,9 +523,10 @@ def combine(bundle, rollback=False):
             sreg.save()
             for name in view_names:
                 sreg.views.add(View.objects.get(name=name))
-            reversion.set_comment('Migrated via combine()')
+            if use_reversion:
+                reversion.set_comment('Migrated via combine()')
         except ValidationError, e:
-            transaction.rollback()
+            rollback = True
             bundle['errors'] = 'Error while creating the SREG record.' + str(e)
             return
 
@@ -523,17 +534,18 @@ def combine(bundle, rollback=False):
             hw_info, kvs = nic.emit_hwadapter()
 
             if not hw_info['mac']:
-                transaction.rollback()
+                rollback = True
                 return
 
             try:
                 hw, _ = HWAdapter.objects.get_or_create(
                     sreg=sreg, mac=hw_info['mac']
                 )
-                hw.name = hw_info['name']
+                # HWAdapter class does this for us.
+                #hw.name = hw_info['name'].replace
                 hw.save()
             except ValidationError, e:
-                transaction.rollback()
+                rollback = True
                 bundle['errors'] = 'Error while creating HW Adapter'
                 return
 
@@ -549,6 +561,7 @@ def combine(bundle, rollback=False):
                             key = 'host_name'
                     else:
                         key = kv['key']
+
                     if HWAdapterKeyValue.objects.filter(key=key,
                                                         obj=hw).exists():
                         pass

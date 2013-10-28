@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.db.models.signals import post_save
 from django.db.models.query import QuerySet
@@ -13,6 +14,7 @@ from core.site.models import Site
 from core.keyvalue.mixins import KVUrlMixin
 from core.keyvalue.models import KeyValue as BaseKeyValue
 from core.mixins import CoreDisplayMixin
+from core.utils import create_key_index
 
 import datetime
 import re
@@ -433,14 +435,14 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
 
     @classmethod
     def get_api_fields(cls):
-        return (
+        return [
             'operating_system', 'server_model', 'allocation', 'system_rack',
             'system_type', 'system_status', 'hostname', 'serial', 'oob_ip',
             'asset_tag', 'notes', 'rack_order', 'switch_ports',
             'patch_panel_port', 'oob_switch_port', 'purchase_date',
             'purchase_price', 'change_password', 'warranty_start',
             'warranty_end',
-        )
+        ]
 
     @property
     def primary_ip(self):
@@ -475,6 +477,61 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
     @classmethod
     def field_names(cls):
         return [field.name for field in cls._meta.fields]
+
+    @classmethod
+    def get_bulk_action_list(cls, query, fields=None, show_related=True):
+        """
+        Return a list of serialized system objects and their related objects to
+        be used in the bulk_action api.
+
+        This function will serialize and export StaticReg objects and their
+        accompanying HWAdapter objects
+        """
+        if not fields:
+            fields = cls.get_api_fields() + ['pk']
+
+        # Pull in all system blobs and tally which pks we've seen. In one swoop
+        # pull in all staticreg blobs and put them with their systems.
+        sys_t_bundles = cls.objects.filter(query).values_list(*fields)
+
+        sys_d_bundles = {}
+        sys_pks = []
+        for t_bundle in sys_t_bundles:
+            d_bundle = dict(zip(fields, t_bundle))
+            system_hostname = d_bundle['hostname']
+            sys_d_bundles[system_hostname] = d_bundle
+            sys_d_bundles[system_hostname]['keyvalue_set'] = create_key_index(
+                cls.keyvalue_set.related.model.objects.filter(
+                    obj=d_bundle['pk']
+                ).values('key', 'value', 'pk')
+            )
+            if show_related:
+                sys_pks.append(d_bundle['pk'])
+
+        sys_q = Q(system__in=sys_pks)
+
+        # Note that CNAMEs are pulled in during this call
+        sreg_bundles = cls.staticreg_set.related.model.get_bulk_action_list(
+            sys_q
+        )
+
+        hw_q = Q(sreg__system__in=sys_pks)
+        hw_bundles = (
+            cls.staticreg_set.related.model.
+            hwadapter_set.related.model.get_bulk_action_list(hw_q)
+        )
+
+        # JOIN staticreg, hw_adapter ON sreg_pk
+        for sreg_pk, hw_bundle in hw_bundles.iteritems():
+            sreg_bundles[sreg_pk]['hwadapter_set'] = hw_bundle
+
+        for sreg_pk, sreg_bundle in sreg_bundles.iteritems():
+            system = sreg_bundle.pop('system__hostname')
+            sys_d_bundles[system].setdefault(
+                'staticreg_set', {}
+            )[sreg_bundle['name']] = sreg_bundle
+
+        return sys_d_bundles
 
     @property
     def rdtype(self):

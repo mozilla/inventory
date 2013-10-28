@@ -22,22 +22,34 @@ def validate_mac(mac):
     return mac
 
 
-valid_name_formats = [
-    re.compile("^(nic\d+(\.\d+)?)$"),
-    re.compile("^(eth\d+(\.\d+)?)$"),
-    re.compile("^(bond\d+(\.\d+)?)$"),
-    re.compile("^(mgmt\d+(\.\d+)?)$"),
+valid_sreg_name_formats = [
+    re.compile("^(mgmt|nic)\d+$"),
+]
+
+valid_hw_name_formats = [
+    re.compile("^hw\d+$"),
 ]
 
 
-def validate_intrerface_name(name):
-    # TODO ^ fix that regex, he was drunk.
-    for f in valid_name_formats:
+def validate_hw_name(name):
+    validate_name(
+        valid_hw_name_formats, name,
+        "Not in valid format. Try something like hw0."
+    )
+
+
+def validate_sreg_name(name):
+    validate_name(
+        valid_sreg_name_formats, name,
+        "Not in valid format. Try something like nic0 or mgmt0."
+    )
+
+
+def validate_name(formats, name, error_msg):
+    for f in formats:
         if f.match(name):
             return
-    raise ValidationError(
-        "Not in valid format. Try something like eth0 or eth1."
-    )
+    raise ValidationError(error_msg)
 
 
 def validate_site_name(name):

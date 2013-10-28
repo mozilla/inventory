@@ -156,6 +156,7 @@
 
 {% macro display_sreg(sreg) -%}
     {{ display_obj_field(sreg, 'fqdn', sreg.fqdn, top_row=True) }}
+    {{ display_obj_field(sreg, 'name', sreg.name) }}
     {{ display_obj_field(sreg, 'inet4 addr' if sreg.ip_type == '4' else 'inet6 addr', sreg.ip_str) }}
     {{ display_views(sreg, 'views', sreg.views.all()) }}
     {{ display_obj_field(sreg.range, 'range', sreg.range or 'N/A') }}
