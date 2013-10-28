@@ -8,9 +8,7 @@ Action Supported:
 
 Right now, this API is not a tool that can delete objects.
 
-Goal
-----
-This API can be used to create/update to many objects at the same time. It will allow a
+This API can be used to create/update to many objects at the same time and will allow a
 large change to happen in one transaction.
 
 General Usage
@@ -31,10 +29,6 @@ Inventory, modified by a user, and then sent back to Inventory for processing.
 
 The API uses a JSON blob ('main' blob) that stores a key 'systems' that is mapped to
 another dictionary that maps hostnames to json blobs that represent systems blobs.
-Contained in each system blob is a system's attributes and possibly other JSON blobs
-representing Static Registrations (StaticRegs) and Hardware Adapters (HWAdapters) and
-somtimes CNAME DNS records.
-
 For example::
 
     {
@@ -70,6 +64,9 @@ For example::
         }
     }
 
+Contained in each system blob is a system's attributes and possibly other JSON blobs
+representing Static Registrations (StaticRegs) and Hardware Adapters (HWAdapters) and
+somtimes CNAME DNS records.
 
 Here is the same example from above but with the non-relational attributes
 removed. This is meant to show you the consistent JSON structure that the
@@ -98,6 +95,7 @@ API expects::
             }
         }
     }
+
 
 Sending JSON blobs to Inventory
 ===============================
