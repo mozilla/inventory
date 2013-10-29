@@ -186,9 +186,9 @@
                     Hardware Adapter {{loop.index}}
                 {% endif %}
                 <span class='hwadapter-action'>
-                    <a class='delete-hwadapter' data-hwadapter-pk='{{hw.pk}}' style='cursor:pointer'>Delete</a> |
-                    <a class='edit-hwadapter' data-hwadapter-pk='{{hw.pk}}' href='{{hw.get_edit_url()}}'>Edit</a> |
-                    <a href='/core/keyvalue/{{hw.__class__.keyvalue_set.related.model.__name__.lower()}}/{{hw.pk}}/'>Key Value</a>
+                    <a class='delete-hwadapter btn btn-small' data-hwadapter-pk='{{hw.pk}}' style='cursor:pointer'>Delete</a> |
+                    <a class='edit-hwadapter btn btn-small' data-hwadapter-pk='{{hw.pk}}' href='{{hw.get_edit_url()}}'>Edit</a> |
+                    <a class='btn btn-small' href='/core/keyvalue/{{hw.__class__.keyvalue_set.related.model.__name__.lower()}}/{{hw.pk}}/'>Show Key Value Store</a>
                 </span>
             </caption>
             <thead>
@@ -217,9 +217,9 @@
                             StaticRegistration {{ loop.index }}
                         {% endif %}
                         <span class='sreg-action'>
-                            <a class='add-hwadapter' data-sreg-pk='{{sreg.pk}}'>Add Hardware Adapter</a> |
-                            <a href='{{sreg.get_edit_url()}}'>Edit</a> |
-                            <a href='/core/keyvalue/{{sreg.__class__.keyvalue_set.related.model.__name__.lower()}}/{{sreg.pk}}/'>Key Value</a>
+                            <a class='btn btn-small add-hwadapter' data-sreg-pk='{{sreg.pk}}'>Add Hardware Adapter</a> |
+                            <a class='btn btn-small' href='{{sreg.get_edit_url()}}'>Edit</a> |
+                            <a class='btn btn-small' href='/core/keyvalue/{{sreg.__class__.keyvalue_set.related.model.__name__.lower()}}/{{sreg.pk}}/'>Show Key Value Store</a>
                         </span>
                     </caption>
                     <thead>
