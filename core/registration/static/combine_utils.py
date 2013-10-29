@@ -461,25 +461,37 @@ def generate_sreg_bundles(system, name):
     bundles = {}
     for match in a_ptr_matches:
         fqdn, ip_str, a, ptr = match
-        for nic in nics:
-            if hwadapter_is_for_sreg(match, nic):
-                bundle = bundles.setdefault(fqdn + ip_str, {
-                    'system': system,
-                    'ptr_pk': ptr.pk,
-                    'hwadapters': [],
-                    'fqdn': fqdn,
-                    'ip': ip_str,
-                    'a_pk': a.pk,
-                    'ptr': ptr,
-                    'a': a
-                })
-                bundle['hwadapters'].append(nic)
-                if nic.paired:
-                    print "This nic has already been paired..."
-                    import pdb
-                    pdb.set_trace()
-                else:
-                    nic.paired = True
+        if not nics:
+            bundles.setdefault(fqdn + ip_str, {
+                'system': system,
+                'ptr_pk': ptr.pk,
+                'hwadapters': [],
+                'fqdn': fqdn,
+                'ip': ip_str,
+                'a_pk': a.pk,
+                'ptr': ptr,
+                'a': a
+            })
+        else:
+            for nic in nics:
+                if hwadapter_is_for_sreg(match, nic):
+                    bundle = bundles.setdefault(fqdn + ip_str, {
+                        'system': system,
+                        'ptr_pk': ptr.pk,
+                        'hwadapters': [],
+                        'fqdn': fqdn,
+                        'ip': ip_str,
+                        'a_pk': a.pk,
+                        'ptr': ptr,
+                        'a': a
+                    })
+                    bundle['hwadapters'].append(nic)
+                    if nic.paired:
+                        print "This nic has already been paired..."
+                        import pdb
+                        pdb.set_trace()
+                    else:
+                        nic.paired = True
     pp.pprint(bundles)
     return bundles.values()
 
