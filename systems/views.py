@@ -530,8 +530,15 @@ def system_show(request, id):
     HWAdapterFormset = formset_factory(HWAdapterForm)
     hw_formset = HWAdapterFormset(prefix='hwadapters')
 
+    object_search_str = "(/^{0}$".format(system)
+    for sreg in sregs:
+        object_search_str += " OR /^{0}$".format(sreg.fqdn)
+        object_search_str += " OR /^{0}$".format(sreg.ip_str)
+    object_search_str += " ) AND !type=:sreg AND !type=:sys"
+
     return render(request, 'systems/system_show.html', {
         'system': system,
+        'object_search_str': object_search_str,
         'sregs': sregs,
         'sreg_form': sreg_form,
         'hw_formset': hw_formset,

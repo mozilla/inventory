@@ -173,7 +173,7 @@
 
 <script>
     $(document).ready(function(){
-        display_inpage_search_results('/^{{system.hostname}}\.?$', '#system-dns-info', function (){
+        display_inpage_search_results('{{ object_search_str }}', '#system-dns-info', function (){
             var first_width = '45%';
             var last_width = '20px';  // The edit column
             var rdtype_width = '10%';  // The edit column
