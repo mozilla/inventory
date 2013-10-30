@@ -48,6 +48,7 @@ def main():
                 ).distinct('pk')
                 print render_sregs(sregs)
 
+                f.write('\n\n')
                 f.write(render_sregs(sregs))
 
                 f.close()
