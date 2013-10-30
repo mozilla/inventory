@@ -45,7 +45,7 @@ def main():
                 sregs = StaticReg.objects.filter(
                     hwadapter_set__keyvalue_set__key='dhcp_scope',
                     hwadapter_set__keyvalue_set__value=dhcp_scope
-                )
+                ).distinct('pk')
                 print render_sregs(sregs)
 
                 f.write(render_sregs(sregs))
