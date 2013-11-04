@@ -22,9 +22,8 @@ class HWAdapterForm(forms.ModelForm):
     class Meta:
         model = HWAdapter
         fields = (
-            'name',
             'mac',
-            'group',
+            'name',
             'description',
             'sreg',
         )
