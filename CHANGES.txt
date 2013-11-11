@@ -1,3 +1,6 @@
+11/11/2013
+* Static Registrations and Hardware Adapters were deployed.
+
 09/26/2013
 * Fixed minor bug in record search form that caused a bad regex to ISE
 * BUG 916776. Fixed create system link on rack display.
