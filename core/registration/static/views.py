@@ -60,6 +60,7 @@ def ajax_create_sreg(request):
             )  # prefix thing is kind of hacky
         except ValidationError, e:
             errors['sreg'] = [('__all__', e.messages)]
+            transaction.rollback()
             return errors
 
         error_list = []  # Where to keep the errors
@@ -78,6 +79,9 @@ def ajax_create_sreg(request):
                         HWAdapterKeyValue.objects.get_or_create(
                             obj=hw, key='dhcp_scope', value=dhcp_scope
                         )
+                except ValidationError, e:
+                    error = True
+                    error_list.append([('', e.messages)])
                 except IntegrityError, e:
                     # the MySQL driver is such a load of crap
                     if 'Duplicate entry' in str(e):

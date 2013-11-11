@@ -125,9 +125,7 @@ $(document).ready(function() {
                   error_list = $("<ul class='errors'></ul>");
                   $(error_list).css('color', 'red');
                   $(blocks[i]).prepend(error_list);
-                  for (var j = 0;
-                       j < result.errors.hw_adapters[i].length;
-                       j++) {
+                  for (var j = 0; j < result.errors.hw_adapters[i].length; j++) {
                     field = result.errors.hw_adapters[i][j][0];
                     error = result.errors.hw_adapters[i][j][1];
                     if (field === '') {
