@@ -1,3 +1,7 @@
+11/12/2013
+* BUG 923658. Add notification when views are not set.
+* BUG 937657. Sort DHCP scopes
+
 11/11/2013
 * Static Registrations and Hardware Adapters were deployed.
 
