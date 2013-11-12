@@ -3,6 +3,13 @@
 <script type="text/javascript" src="/static/javascripts/master_form_utils.js"></script>
 <script type="text/javascript" src="/static/javascripts/system_show.js"></script>
 <script type="text/javascript" src="/static/javascripts/dns_form_utils.js"></script>
+<link href="{{ MEDIA_URL }}css/record.css" media="screen" rel="stylesheet" type="text/css" />
+<script src="{{ MEDIA_URL }}javascripts/view_blink.js"></script>
+<script>
+    $(document).ready(function (){
+        view_blink_init('#id_sreg-views_0', '#id_sreg-views_1');
+    });
+</script>
 {% endblock %}
 
 {% block subtitle %} - {{ system.hostname }} - show{% endblock %}
