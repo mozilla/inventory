@@ -1,0 +1,114 @@
+#choose-ip-area {
+    margin-top: 2em;
+    background-color:white;
+    border-radius: 5px;
+    padding: 2em 2em 1em 2em;
+}
+#choose-ip-help-text {
+    margin-top: 3em;
+}
+#choose-ip-reset-area {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+#choose-ip-display-ranges-area {
+    width: 60%;
+}
+.range-choice {
+    text-decoration: none;
+    color: black;
+}
+.range {
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+    margin: 2px 2px 15px 2px;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #D8D8D8;
+}
+#choose-ip-errors {
+    margin-top: 3em;
+    color: red;
+}
+ul.errorlist {
+    color:red;
+}
+div.soa_status_dirty {
+    color: red;
+    display: inline;
+}
+div.soa_status_clean {
+    color: green;
+    display: inline;
+}
+div.object_meta {
+    float: right;
+    clear: both;
+    border: 2px solid gray;
+    padding: 10px;
+    border-radius: 10px;
+    background: white;
+    margin: 10px;
+    margin: 10px;
+    min-height: 100px;
+    max-width: 300px;
+}
+div.object_meta caption {
+    max-width:320px;
+}
+div.form-container {
+    float: left;
+    margin-bottom: 30px;
+}
+div.form-container ul {
+    width: 30em;
+}
+div#related-things {
+    clear: both;
+    padding: 10px;
+    padding: 20px 10px 5px 10px;
+    /*       top  rht  btm  lft */
+}
+div#related-things {
+    clear: both;
+}
+div#related {
+    margin-top: 10px;
+    clear: both;
+}
+div#related-help-text {
+    width: 100%;
+    background-color: white;
+    vertical-align: middle;
+    border-radius: 5px;
+    text-align: center;
+    vertical-align: text-middle;
+    clear: both;
+}
+.matched-ip {
+    background-color: #67ff5f;
+}
+
+
+/* Blinking stuff */
+
+@keyframes blink {
+    0% { box-shadow: 0 0 15px green; }
+    50% { box-shadow: none; }
+    100% { box-shadow: 0 0 15px green; }
+}
+
+@-webkit-keyframes blink {
+    0% { box-shadow: 0 0 15px green; }
+    50% { box-shadow: 0 0 0; }
+    100% { box-shadow: 0 0 15px green; }
+}
+
+.blink {
+    -webkit-animation: blink 1.0s linear infinite;
+    -moz-animation: blink 1.0s linear infinite;
+    -ms-animation: blink 1.0s linear infinite;
+    -o-animation: blink 1.0s linear infinite;
+    animation: blink 1.0s linear infinite;
+}
