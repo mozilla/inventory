@@ -28,6 +28,7 @@ class HWAdapterForm(forms.ModelForm):
             'name',
             'description',
             'sreg',
+            'enable_dhcp',
         )
         widgets = {
             'sreg': widgets.HiddenInput
