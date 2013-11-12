@@ -94,15 +94,15 @@ div#related-help-text {
 /* Blinking stuff */
 
 @keyframes blink {
-    0% { box-shadow: 0 0 15px green; }
+    0% { box-shadow: 0 0 15px red; }
     50% { box-shadow: none; }
-    100% { box-shadow: 0 0 15px green; }
+    100% { box-shadow: 0 0 15px red; }
 }
 
 @-webkit-keyframes blink {
-    0% { box-shadow: 0 0 15px green; }
+    0% { box-shadow: 0 0 15px red; }
     50% { box-shadow: 0 0 0; }
-    100% { box-shadow: 0 0 15px green; }
+    100% { box-shadow: 0 0 15px red; }
 }
 
 .blink {

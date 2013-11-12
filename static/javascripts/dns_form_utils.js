@@ -414,6 +414,7 @@ function bind_view_ip_type_detection(ip_str_id, views_0_id, views_1_id) {
             for(i = 0; i < prefixs.length; i++) {
                 if (ip_str.substring(0, prefixs[i].length) === prefixs[i]) {
                     $(view_el).prop('checked', true);
+                    $(view_el).change();
                     found = true;
                     break;
                 }
@@ -432,6 +433,8 @@ function bind_force_private_if_public() {
     }
     if ($(public_el).prop('checked')) {
       $(private_el).prop('checked', true);
+      $(private_el).change();
+      $(public_el).change();
     }
   }
   $('#id_views_1').on('change', function(){
