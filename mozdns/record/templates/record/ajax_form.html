@@ -6,7 +6,6 @@
 <script>
     page_js_init("/en-US{{ 'find-related' | url() }}");
     view_blink_init('#id_views_0', '#id_views_1', function (empty_views){
-        console.log("HEHRHEHREHR :" + empty_views);
         if (empty_views) {
             $('#empty-view-warning').css('display', 'block');
         } else {
