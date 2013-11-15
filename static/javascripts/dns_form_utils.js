@@ -101,7 +101,7 @@ function bind_submit(form, post_callback) {
             // he/she doesn't set their views. The logic to do this is hooked into some
             // event listeners for the view inputs. This call to change() covers the case
             // when the user never touches the views and submits the form strait away.
-            $('#id_views_0').change();
+            //$('#id_views_0').change();
             var c_dialog = $( "#commit-dialog" ).dialog({
                 title: 'Comment on this commit? (A bug number would be nice)',
                 autoShow: false,
