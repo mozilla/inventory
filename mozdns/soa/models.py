@@ -44,8 +44,8 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
                            <minimum> )
 
 
-        >>> SOA(primary=primary, contact=contact, retry=retry,
-        ... refresh=refresh, description=description)
+        >>> SOA(primary=primary, contact=contact, retry=retry,  # noqa
+        ... refresh=refresh, description=description)  # noqa
 
     Each DNS zone must have it's own SOA object. Use the description field to
     remind yourself which zone an SOA corresponds to if different SOA's have a
@@ -181,6 +181,7 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
                 "Domains exist in this SOA's zone. Delete "
                 "those domains or remove them from this zone before "
                 "deleting this SOA.")
+        Task.schedule_all_dns_rebuild(self)
         super(SOA, self).delete(*args, **kwargs)
 
     def has_record_set(self, view=None, exclude_ns=False):
@@ -191,6 +192,12 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
 
     def schedule_rebuild(self, commit=True):
         Task.schedule_zone_rebuild(self)
+        self.dirty = True
+        if commit:
+            self.save()
+
+    def schedule_full_rebuild(self, commit=True):
+        Task.schedule_all_dns_rebuild(self)
         self.dirty = True
         if commit:
             self.save()
@@ -219,7 +226,7 @@ class SOA(models.Model, ObjectUrlMixin, DisplayMixin):
 
         if new:
             # Need to call this after save because new objects won't have a pk
-            self.schedule_rebuild(commit=False)
+            self.schedule_full_rebuild(commit=False)
 
     def __str__(self):
         return self.description

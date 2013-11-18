@@ -9,11 +9,25 @@ from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
 from mozdns.nameserver.models import Nameserver
 from mozdns.tests.utils import create_fake_zone
+from mozdns.delete_zone.views import delete_zone_helper
 
 from core.registration.static.models import StaticReg
 
 from systems.tests.utils import create_fake_host
 from core.task.models import Task
+
+
+class AddRemoveSOATests(TestCase):
+    def test_new_zone(self):
+        self.assertFalse(Task.dns_incremental.all())
+        self.assertFalse(Task.dns_full.all())
+        root_domain = create_fake_zone("asdfasd.mozilla.com", suffix="")
+        self.assertEqual(1, Task.dns_full.all().count())
+        Task.dns_full.all().delete()
+
+        domain_name = root_domain.name
+        delete_zone_helper(domain_name)
+        self.assertEqual(1, Task.dns_full.all().count())
 
 
 class DirtySOATests(TestCase):
@@ -35,14 +49,15 @@ class DirtySOATests(TestCase):
 
         self.s = create_fake_host(hostname="foo.mozilla.com")
         self.s.save()
+        Task.dns_full.all().delete()
 
     def test_print_soa(self):
         self.assertTrue(self.soa.bind_render_record() not in ('', None))
         self.assertTrue(self.rsoa.bind_render_record() not in ('', None))
 
     def generic_dirty(self, Klass, create_data, update_data, local_soa,
-                      tdiff=1):
-        Task.dns.all().delete()  # Delete all tasks
+                      tdiff=1, full=False):
+        Task.dns_incremental.all().delete()  # Delete all tasks
         local_soa.dirty = False
         local_soa.save()
         rec = Klass(**create_data)
@@ -52,10 +67,15 @@ class DirtySOATests(TestCase):
         local_soa = SOA.objects.get(pk=local_soa.pk)
         self.assertTrue(local_soa.dirty)
 
-        self.assertEqual(tdiff, Task.dns.all().count())
+        self.assertEqual(tdiff, Task.dns_incremental.all().count())
+        if full:
+            self.assertTrue(Task.dns_full.all().count())
+        else:
+            self.assertFalse(Task.dns_full.all().count())
 
         # Now try updating
-        Task.dns.all().delete()  # Delete all tasks
+        Task.dns_incremental.all().delete()  # Delete all tasks
+        Task.dns_full.all().delete()  # Delete all tasks
         local_soa.dirty = False
         local_soa.save()
         local_soa = SOA.objects.get(pk=local_soa.pk)
@@ -66,10 +86,15 @@ class DirtySOATests(TestCase):
         local_soa = SOA.objects.get(pk=local_soa.pk)
         self.assertTrue(local_soa.dirty)
 
-        self.assertEqual(tdiff, Task.dns.all().count())
+        self.assertEqual(tdiff, Task.dns_incremental.all().count())
+        if full:
+            self.assertTrue(Task.dns_full.all().count())
+        else:
+            self.assertFalse(Task.dns_full.all().count())
 
         # Now delete
-        Task.dns.all().delete()  # Delete all tasks
+        Task.dns_incremental.all().delete()  # Delete all tasks
+        Task.dns_full.all().delete()  # Delete all tasks
         local_soa.dirty = False
         local_soa.save()
         local_soa = SOA.objects.get(pk=local_soa.pk)
@@ -78,7 +103,11 @@ class DirtySOATests(TestCase):
         local_soa = SOA.objects.get(pk=local_soa.pk)
         self.assertTrue(local_soa.dirty)
 
-        self.assertEqual(tdiff, Task.dns.all().count())
+        self.assertEqual(tdiff, Task.dns_incremental.all().count())
+        if full:
+            self.assertTrue(Task.dns_full.all().count())
+        else:
+            self.assertFalse(Task.dns_full.all().count())
 
     def test_dirty_a(self):
         create_data = {
@@ -149,7 +178,10 @@ class DirtySOATests(TestCase):
         update_data = {
             'label': 'asdfx4',
         }
-        self.generic_dirty(Nameserver, create_data, update_data, self.soa)
+        # We expect nameserver changes to trigger a full rebuild
+        self.generic_dirty(
+            Nameserver, create_data, update_data, self.soa, full=True
+        )
 
     def test_dirty_soa(self):
         self.soa.dirty = False

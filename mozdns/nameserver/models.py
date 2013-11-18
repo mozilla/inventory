@@ -84,6 +84,16 @@ class Nameserver(MozdnsRecord):
             ("Glue", self.get_glue()),
         )
 
+    def save(self, *args, **kwargs):
+        no_build = kwargs.pop('no_build', False)
+        super(Nameserver, self).save(*args, **kwargs)
+        # We have to full build here because changing the views on a
+        # nameserver can actually cause a zone to not be emitted, which we need
+        # to account for in the builds.
+        if not no_build:  # XXX fuck, double negative... must've been drunk
+            if self.domain.soa:
+                self.domain.soa.schedule_full_rebuild()
+
     def get_glue(self):
         if self.addr_glue:
             return self.addr_glue
@@ -119,8 +129,16 @@ class Nameserver(MozdnsRecord):
     glue = property(get_glue, set_glue, del_glue, "The Glue property.")
 
     def delete(self, *args, **kwargs):
+        no_build = kwargs.pop('no_build', False)
+        if self.domain.soa:
+            soa = self.domain.soa
+        else:
+            soa = None
         self.check_no_ns_soa_condition(self.domain)
         super(Nameserver, self).delete(*args, **kwargs)
+        if not no_build and soa:
+            # XXX fuck, double negative... must've been drunk
+            soa.schedule_full_rebuild()
 
     def clean(self):
         # We are a MozdnsRecord, our clean method is called during save()!

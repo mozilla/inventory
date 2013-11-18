@@ -10,6 +10,7 @@ import os
 import re
 import time
 import datetime
+from itertools import chain
 
 from settings.dnsbuilds import (
     STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE, NAMED_CHECKZONE_OPTS,
@@ -312,12 +313,15 @@ class DNSBuilder(SVNBuilderMixin):
             the scheduled tasks. Not checking files into SVN is indicative of a
             troubleshoot build.
         """
-        ts = [t for t in Task.dns.all()]
-        ts_len = len(ts)
+        ts_incremental = Task.dns_incremental.all()
         self.log("{0} zone{1} requested to be rebuilt".format(
-            ts_len, 's' if ts_len != 1 else '')
+            len(ts_incremental), 's' if len(ts_incremental) != 1 else '')
         )
-        return ts
+
+        ts_full = Task.dns_full.all()
+        self.log("{0} requests for a full build".format(len(ts_full)))
+
+        return ts_incremental, ts_full
 
     def log(self, msg, log_level='LOG_INFO', **kwargs):
         # Eventually log this stuff into bs
@@ -671,10 +675,158 @@ class DNSBuilder(SVNBuilderMixin):
                                                file_meta['rel_fname'])
         return file_meta
 
-    def build_zone_files(self, soa_pks_to_rebuild):
+    def build_views(self, soa, root_domain, gen_config, force_rebuild):
+        """
+        For a given soa build a zone file for every view in the database.
+        This function returns a list contaning tuples, where each tuple
+        contains:
+            * An ORM view object
+            * A dictionary containing file information about where a zone
+              should exist on the filesystem
+            * A zone file with eveything but the SOA's serial filled out.
+
+        This function also introspects a zone's existing bind file (if it
+        exists) to ensure no manual changes to the serial have been made.
+        """
+        view_bundles = []
+        self.log(
+            "SOA was seen with dirty == {0}".format(force_rebuild),
+            root_domain=root_domain
+        )
+
+        # This for loop decides which views will be canidates for
+        # rebuilding.
+        for view in View.objects.all():
+            self.log(
+                "++++++ Looking at < {0} > view ++++++".
+                format(view.name), root_domain=root_domain
+            )
+
+            t_start = time.time()  # tic
+
+            view_data = build_zone_data(
+                view, root_domain, soa, logf=self.log
+            )
+
+            build_time = time.time() - t_start  # toc
+
+            self.log(
+                "< {0} > Built {1} data in {2} seconds".format(
+                    view.name, soa, build_time),
+                root_domain=root_domain, build_time=build_time
+            )
+
+            if not view_data:
+                if gen_config:
+                    self.log(
+                        "< {0} > No data found in this view. No zone file "
+                        "will be made or included in any config for this "
+                        "view.".format(view.name), root_domain=root_domain
+                    )
+                continue
+
+            if gen_config:
+                self.log(
+                    "< {0} > Non-empty data set for this view. Its zone file "
+                    "will be included in the config.".format(view.name),
+                    root_domain=root_domain
+                )
+
+            file_meta = self.get_file_meta(view, root_domain, soa)
+
+            # Detect when someone fiddles with the serial manulally.
+            # safe_serial will be a serial that is ahead of the current serial
+            # and should be used as the SOA's new serial
+            was_bad_prev, safe_serial = self.verify_previous_build(
+                file_meta, view, root_domain, soa
+            )
+
+            if was_bad_prev:
+                soa.serial = safe_serial
+
+            view_bundles.append(
+                (view, file_meta, view_data)
+            )
+
+        view_str = ' | '.join([v.name for v, _, _ in view_bundles])
+        self.log(
+            "----- Building < {0} > ------".format(view_str),
+            root_domain=root_domain
+        )
+
+        return view_bundles
+
+    def do_build(self, zone_stmts, soa, view_contents, root_domain,
+                 gen_config, force_rebuild, next_serial):
+        for view, file_meta, view_data in view_contents:
+            if (root_domain.name, view.name) in ZONES_WITH_NO_CONFIG:
+                self.log(
+                    "!!! Not going to emit zone statements for "
+                    "{0}\n".format(root_domain.name), root_domain=root_domain
+                )
+            else:
+                view_zone_stmts = zone_stmts.setdefault(view.name, [])
+
+                # If we see a view in this loop it's going to end up in
+                # the config
+                view_zone_stmts.append(
+                    self.render_zone_stmt(soa, root_domain, file_meta)
+                )
+
+            # If it's dirty or we are rebuilding another view, rebuild
+            # the zone
+            if force_rebuild:
+                self.log(
+                    "Rebuilding < {0} > view file {1}"
+                    .format(view.name, file_meta['prod_fname']),
+                    root_domain=root_domain
+                )
+
+                prod_fname = self.build_zone(
+                    view, file_meta,
+                    # Here we finally set the serial in the zone's context
+                    view_data.format(serial=next_serial),
+                    root_domain
+                )
+
+                assert prod_fname == file_meta['prod_fname']
+            else:
+                self.log(
+                    "NO REBUILD needed for < {0} > view file {1}"
+                    .format(view.name, file_meta['prod_fname']),
+                    root_domain=root_domain
+                )
+            # run named-checkzone for good measure
+                if self.STAGE_ONLY:
+                    self.log(
+                        "Not calling named-checkconf.", root_domain=root_domain
+                    )
+                else:
+                    self.named_checkzone(
+                        file_meta['prod_fname'], root_domain
+                    )
+
+    def build_zone_files(self, soas, soa_pks_to_rebuild, gen_config=True):
+        """
+        For every soa in soas, build a views that are valid for its zone. If
+        gen_config is true, generate a config statement for a view and store it
+        in zone_stmts (returned by this function). When an soa's pk is in
+        `soa_pks_to_rebuild` calculate a new serial for the zone.
+
+        :param soas: The soa objects that will have config statments made
+            with gen_config is True
+        :param soa_pks_to_rebuild: The primary keys of soa objects that have
+            been flagged as needing to be rebuilt. These soas will have their
+            serial numbers recalculated.
+        :param gen_config: Defaults to True, this parameter decides whether
+            or not zone_statements will be be calculated for the soa objects
+            found in the `soas` parameter
+        :returns zone_stmts: A dictionary mapping zone names to config
+            statements
+        """
         zone_stmts = {}
 
-        for soa in SOA.objects.all():
+        for soa in soas:
             # If anything happens during this soa's build we need to mark
             # it as dirty so it can be rebuild
             try:
@@ -683,138 +835,47 @@ class DNSBuilder(SVNBuilderMixin):
                     # TODO, figure out how to send a nagios alert on this case.
                     self.log("No root domain found in zone {0}".format(soa))
                     fail_mail(
-                        "{0} is an orphan. It's being skipped in "
-                        "the builds".format(soa), subject="{0} is "
+                        "{0} is an orphan. It's being skipped in the "
+                        "builds".format(soa), subject="{0} is "
                         "orphaned".format(soa))
                     continue
 
-                """
-                General order of things:
-                * Find which views should have a zone file built and add them
-                  to a list.
-                * If any of the view's zone file have been tampered with or
-                  the zone is new, trigger the rebuilding of all the zone's
-                  view files. (rebuil all views in a zone keeps the serial
-                  synced across all views)
-                * Either rebuild all of a zone's view files because one view
-                  needed to be rebuilt due to tampering or the zone was dirty
-                  (again, this is to keep their serial synced) or just call
-                  named-checkzone on the existing zone files for good measure.
-                  Also generate a zone statement and add it to a dictionary for
-                  later use during BIND configuration generation.
-                """
                 force_rebuild = soa.pk in soa_pks_to_rebuild or soa.dirty
-                if force_rebuild:
+                if force_rebuild and self.PUSH_TO_PROD:
                     soa.dirty = False
                     soa.save()
 
-                self.log('====== Processing {0} {1} ======'.format(
+                self.log("====== Processing {0} {1} ======".format(
                     root_domain, soa.serial)
                 )
-                views_to_build = []
-                self.log(
-                    "SOA was seen with dirty == {0}".format(force_rebuild),
-                    root_domain=root_domain
-                )
 
-                # This for loop decides which views will be canidates for
-                # rebuilding.
-                for view in View.objects.all():
-                    self.log("++++++ Looking at < {0} > view ++++++".
-                             format(view.name), root_domain=root_domain)
-                    t_start = time.time()  # tic
-                    view_data = build_zone_data(view, root_domain, soa,
-                                                logf=self.log)
-                    build_time = time.time() - t_start  # toc
-                    self.log('< {0} > Built {1} data in {2} seconds'
-                             .format(view.name, soa, build_time),
-                             root_domain=root_domain, build_time=build_time)
-                    if not view_data:
-                        self.log('< {0} > No data found in this view. '
-                                 'No zone file will be made or included in any'
-                                 ' config for this view.'.format(view.name),
-                                 root_domain=root_domain)
-                        continue
-                    self.log('< {0} > Non-empty data set for this '
-                             'view. Its zone file will be included in the '
-                             'config.'.format(view.name),
-                             root_domain=root_domain)
-                    file_meta = self.get_file_meta(view, root_domain, soa)
-                    was_bad_prev, safe_serial = self.verify_previous_build(
-                        file_meta, view, root_domain, soa
-                    )
-
-                    if was_bad_prev:
-                        soa.serial = safe_serial
-                        force_rebuild = True
-
-                    views_to_build.append(
-                        (view, file_meta, view_data)
-                    )
-
-                self.log(
-                    '----- Building < {0} > ------'.format(
-                        ' | '.join([v.name for v, _, _ in views_to_build])
-                    ), root_domain=root_domain
+                view_contents = self.build_views(
+                    soa, root_domain, gen_config, force_rebuild
                 )
 
                 next_serial = soa.get_incremented_serial()
+
                 if force_rebuild:
                     # Bypass save so we don't have to save a possible stale
                     # 'dirty' value to the db.
                     SOA.objects.filter(pk=soa.pk).update(serial=next_serial)
-                    self.log('Zone will be rebuilt at serial {0}'
-                             .format(next_serial), root_domain=root_domain)
+                    self.log(
+                        "Zone will be rebuilt at serial {0}"
+                        .format(next_serial),
+                        root_domain=root_domain
+                    )
                 else:
-                    self.log('Zone is stable at serial {0}'
-                             .format(soa.serial), root_domain=root_domain)
+                    self.log(
+                        "Zone is stable at serial {0}".format(soa.serial),
+                        root_domain=root_domain
+                    )
 
-                for view, file_meta, view_data in views_to_build:
-                    if (root_domain.name, view.name) in ZONES_WITH_NO_CONFIG:
-                        self.log(
-                            '!!! Not going to emit zone statements for '
-                            '{0}\n'.format(root_domain.name),
-                            root_domain=root_domain
-                        )
-                    else:
-                        view_zone_stmts = zone_stmts.setdefault(view.name, [])
-
-                        # If we see a view in this loop it's going to end up in
-                        # the config
-                        view_zone_stmts.append(
-                            self.render_zone_stmt(soa, root_domain, file_meta)
-                        )
-
-                    # If it's dirty or we are rebuilding another view, rebuild
-                    # the zone
-                    if force_rebuild:
-                        self.log(
-                            'Rebuilding < {0} > view file {1}'
-                            .format(view.name, file_meta['prod_fname']),
-                            root_domain=root_domain)
-                        prod_fname = self.build_zone(
-                            view, file_meta,
-                            # Lazy string evaluation
-                            view_data.format(serial=next_serial),
-                            root_domain
-                        )
-                        assert prod_fname == file_meta['prod_fname']
-                    else:
-                        self.log(
-                            'NO REBUILD needed for < {0} > view file {1}'
-                            .format(view.name, file_meta['prod_fname']),
-                            root_domain=root_domain
-                        )
-                    # run named-checkzone for good measure
-                        if self.STAGE_ONLY:
-                            self.log("Not calling named-checkconf.",
-                                     root_domain=root_domain)
-                        else:
-                            self.named_checkzone(
-                                file_meta['prod_fname'], root_domain
-                            )
+                self.do_build(
+                    zone_stmts, soa, view_contents, root_domain,
+                    gen_config, force_rebuild, next_serial
+                )
             except Exception:
-                soa.schedule_rebuild()
+                soa.schedule_full_rebuild()
                 raise
 
         return zone_stmts
@@ -863,6 +924,45 @@ class DNSBuilder(SVNBuilderMixin):
         self.log(self.format_title("Release Mutex"))
         self.unlock()
 
+    def do_build_zones(self, dns_incremental_tasks, dns_full_tasks):
+        """
+        Look at `dns_incremental_tasks` and `dns_full_tasks` and decide what
+        type of build we are doing.
+
+        The three types of builds are:
+            * force build -- we rebuild all zones and write a complete
+                config file
+            * full build -- we rebuild only certain zones and still
+                write a complete config file
+            * incremental build -- we only rebuild certain zones and do *not*
+                write a new config file
+        """
+        write_statements = True
+        if self.FORCE_BUILD:
+            soa_pks_to_rebuild = set(
+                SOA.objects.all().values_list('pk', flat=True)
+            )
+            soas = SOA.objects.all()
+        elif dns_full_tasks:
+            soa_pks_to_rebuild = set(int(t.task) for t in chain(
+                dns_incremental_tasks, dns_full_tasks
+            ))
+            soas = SOA.objects.all()
+        else:
+            soa_pks_to_rebuild = set(
+                int(t.task) for t in dns_incremental_tasks
+            )
+            soas = SOA.objects.filter(pk__in=soa_pks_to_rebuild)
+            write_statements = False
+
+        stmts = self.build_zone_files(
+            soas,
+            soa_pks_to_rebuild, gen_config=False
+        )
+
+        if write_statements:
+            self.build_config_files(stmts)
+
     def build_dns(self):
         if self.stop_update_exists():
             return
@@ -870,9 +970,11 @@ class DNSBuilder(SVNBuilderMixin):
         if not self.lock():
             return
 
-        dns_tasks = self.get_scheduled()
+        # Collect the jobs that were collected
+        dns_incremental_tasks, dns_full_tasks = self.get_scheduled()
+        something_to_do = dns_incremental_tasks or dns_full_tasks
 
-        if not dns_tasks and not self.FORCE_BUILD:
+        if not (something_to_do or self.FORCE_BUILD):
             self.log("Nothing to do!")
             self.goto_out()
             return
@@ -884,10 +986,7 @@ class DNSBuilder(SVNBuilderMixin):
 
             # zone files
             if self.BUILD_ZONES:
-                soa_pks_to_rebuild = set(int(t.task) for t in dns_tasks)
-                self.build_config_files(
-                    self.build_zone_files(soa_pks_to_rebuild)
-                )
+                self.do_build_zones(dns_incremental_tasks, dns_full_tasks)
             else:
                 self.log("BUILD_ZONES is False. Not "
                          "building zone files.")
@@ -911,9 +1010,12 @@ class DNSBuilder(SVNBuilderMixin):
             if self.PUSH_TO_PROD and successful_checkin:
                 # Only delete the scheduled tasks we saw at the top of the
                 # function
-                # Also, if the checking was not successful, don't delete the
+                # Also, if the checking in was not successful, don't delete the
                 # tasks
-                map(lambda t: t.delete(), dns_tasks)
+                map(
+                    lambda t: t.delete(),
+                    chain(dns_incremental_tasks, dns_full_tasks)
+                )
 
         # All errors are handled by caller (this function)
         except BuildError:
