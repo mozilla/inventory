@@ -380,7 +380,7 @@ class Resolver(Generics):
     @system_related
     def system_type(self, **kwargs):
         def _system_type(s, header, value):
-            s.allocation = self.get_related(
+            s.system_type = self.get_related(
                 header, value, sys_models.SystemType
             )
             return s

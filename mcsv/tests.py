@@ -3,7 +3,8 @@ from django.test import TestCase, Client
 
 from mcsv.importer import csv_import
 from systems.models import (
-    OperatingSystem, System, SystemRack, Allocation, Location, SystemStatus
+    OperatingSystem, System, SystemRack, Allocation, Location, SystemStatus,
+    SystemType
 )
 
 import datetime
@@ -18,6 +19,7 @@ class CSVTests(TestCase):
             status='production', color='burgandy', color_code='wtf?'
         )
         Allocation.objects.create(name='something')
+        SystemType.objects.create(type_name='foobar')
         self.client = Client()
 
     def client_tst(self, test_csv, save=True, primary_attr='hostname'):
@@ -354,6 +356,19 @@ class CSVTests(TestCase):
         # The primary_attr kwarg shouldn't affect anything
         s1 = System.objects.get(hostname='foobob.mozilla.com')
         self.assertEqual(s1.switch_ports, 'sdf,asfd,asfd')
+
+    def test_system_type(self):
+        System.objects.create(
+            hostname='foobob1.mozilla.com', serial='xxx'
+        )
+        test_csv = """
+        hostname, system_type % type_name
+        foobob1.mozilla.com, foobar
+        """
+        self.client_tst(test_csv, save=True)
+        # The primary_attr kwarg shouldn't affect anything
+        s1 = System.objects.get(hostname='foobob1.mozilla.com')
+        self.assertEqual(s1.system_type.type_name, 'foobar')
 
     def test_allocation(self):
         l1 = Location.objects.create(
