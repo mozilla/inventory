@@ -99,7 +99,7 @@ def bulk_import(main_blob, load_json=True):
 
 
 def bulk_action_import(request):
-    raw_data = request._get_raw_post_data()
+    raw_data = request.raw_post_data
     if not raw_data:
         return HttpResponse(dumps({'errors': 'what do you want?'}))
     systems, errors = bulk_import(raw_data)
