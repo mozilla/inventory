@@ -118,21 +118,28 @@ def combine_status_list(request):
     This view is temporary. It can be used to convert a system using KV objects
     for dhcp into the new Sreg and HW scheme.
     """
+    def get(thing, default):
+        if thing in request.POST:
+            return request.POST.get(thing)
+        return request.GET.get(thing, default)
+
     qd = request.POST or request.GET
     if qd:
-        search = qd.get('search', '')
-        start = qd.get('start', '0')
-        end = qd.get('end', '100')
+        convert_everything = get('convert-everything', False)
+        search = get('search', '')
         records, error = search_type(search, 'SYS')
-        if not search or error or not (start.isdigit() and end.isdigit()):
+        if not search or error:
             records = []
+            total = 0
         else:
             try:
-                records = records[int(start):int(end)]
+                total = records.count()
+                records = records
             except MySQLdb.OperationalError, e:
                 if "Got error " in str(e) and " from regexp" in str(e):
                     # This is nasty. If the user is using an invalid regex
                     # patter, the db might shit a brick
+                    total = 0
                     records = []
                 else:
                     raise
@@ -142,15 +149,21 @@ def combine_status_list(request):
             for name in generate_possible_names(system.hostname):
                 bundles += generate_sreg_bundles(system, name)
 
-        combine_multiple(bundles, rollback=True)
+        if convert_everything:
+            combine_multiple(bundles, rollback=False)
+            bundles = []
+        else:
+            combine_multiple(bundles, rollback=True)
 
         return render(request, 'static_reg/combine_status_list.html', {
             'bundles': bundles,
-            'search': search
+            'search': search,
+            'total': total
         })
     else:
         return render(request, 'static_reg/combine_status_list.html', {
-            'search': ''
+            'search': '',
+            'total': 0
         })
 
 
@@ -189,6 +202,7 @@ def ajax_combine_sreg(request):
     assert bundle is not None
 
     combine(bundle)
+
     return HttpResponse(json.dumps({
         'success': not bundle['errors'],
         'redirect_url': system.get_absolute_url(),

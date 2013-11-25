@@ -11,29 +11,29 @@
     <label><input id='submit' type='submit'/></label>
 </form>
 
-        <div class='legend'>
-            <h4><u>Legend</u></h4>
-            <div>
-                <div class='new-object-border'>
-                    <i>NEW OBJECTS</i>
-                </div>
-            </div>
-            <div>
-                <div class='replaced-object-border'>
-                    <i>TO-BE-DELETED OBJECTS</i>
-                </div>
-            </div>
-            <div>
-                <div class='new-dhcp-output-border' title='NEW KV derived DHCP statement'>
-                    <i>DHCP Output after SREG and HWAdapters have been created</i>
-                </div>
-            </div>
-            <div>
-                <div class='old-dhcp-output-border' title='Old KV derived DHCP statement'>
-                    <i>Current DHCP output (Before SREG creation)</i>
-                </div>
+    <div class='legend'>
+        <h4><u>Legend</u></h4>
+        <div>
+            <div class='new-object-border'>
+                <i>NEW OBJECTS</i>
             </div>
         </div>
+        <div>
+            <div class='replaced-object-border'>
+                <i>TO-BE-DELETED OBJECTS</i>
+            </div>
+        </div>
+        <div>
+            <div class='new-dhcp-output-border' title='NEW KV derived DHCP statement'>
+                <i>DHCP Output after SREG and HWAdapters have been created</i>
+            </div>
+        </div>
+        <div>
+            <div class='old-dhcp-output-border' title='Old KV derived DHCP statement'>
+                <i>Current DHCP output (Before SREG creation)</i>
+            </div>
+        </div>
+    </div>
 
     {% for bundle in bundles %}
         <div class='sreg-container'>
@@ -113,5 +113,11 @@
             </div>
         </div>
     {% endfor %}
+    <form method='post' action=''>
+        <input type='hidden' value='true' name='convert-everything'></input>
+        <input type='hidden' value='{{ search }}' name='search'></input>
+        <input type='submit' value='Convert Everything'/>
+    </form>
+
 
 {% endblock %}
