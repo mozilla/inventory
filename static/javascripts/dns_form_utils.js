@@ -333,12 +333,12 @@ function setup_delete(){
         $.post('/en-US/mozdns/record/delete/' + record_type + '/' + record_pk + '/',
             function (data) {
                 data = $.parseJSON(data);
-                if (data['success']) {
-                    console.log('Error: ' + data['error']);
+                if (data.success) {
+                    console.log('Error: ' + data.error);
                     alert("Delete successful");
-                    window.location = "/";
+                    window.location = $('#object_redirect_url').attr('delete-redirect-url');
                 } else {
-                    alert("Error during delete: " + data['error']);
+                    alert("Error during delete: " + data.error);
                 }
             }
         ).error(function(e) {

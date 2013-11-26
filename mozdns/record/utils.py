@@ -64,10 +64,15 @@ class RecordView(object):
             form = self.DisplayForm()
         else:
             form = self.DisplayForm(instance=object_)
+        if object_:
+            delete_redirect_url = object_.get_delete_redirect_url()
+        else:
+            delete_redirect_url = '/core/search/'
 
         return render(request, self.form_template, {
             'form': form,
             'object_': object_,
+            'delete_redirect_url': delete_redirect_url,
             'record_type': record_type if record_type else '',
             'record_pk': record_pk if record_pk else '',
             'domains': json.dumps(domains),
@@ -102,10 +107,16 @@ class RecordView(object):
             return_form = self.DisplayForm(instance=new_object)
             record_pk = new_object.pk
 
+        if object_:
+            delete_redirect_url = object_.get_delete_redirect_url()
+        else:
+            delete_redirect_url = '/core/search/'
+
         basic_context = {
             'form': return_form,
             'message': message,
             'record_type': record_type,
+            'delete_redirect_url':  delete_redirect_url,
             'record_pk': record_pk,
             'object_': object_
         }

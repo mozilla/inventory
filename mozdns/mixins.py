@@ -71,6 +71,9 @@ class ObjectUrlMixin(object):
         """
         return MOZDNS_BASE_URL + "/{0}/create/".format(self._meta.db_table)
 
+    def get_delete_redirect_url(self):
+        return '/core/search/'
+
 
 class DBTableURLMixin(object):
     def get_fancy_edit_url(self):

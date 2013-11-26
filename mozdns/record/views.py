@@ -35,6 +35,7 @@ def record(request, record_type='', record_pk=''):
 def record_delete(request, record_type='', record_pk=''):
     if request.method != 'POST':
         raise Http404
+
     obj_meta = get_obj_meta(record_type)
 
     try:

@@ -188,6 +188,9 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
     def record_type(self):
         return 'A/PTR'
 
+    def get_delete_redirect_url(self):
+        return self.system.get_absolute_url()
+
     def calc_name(self):
         """
         Find a suitable name for a registration if the user did not set one.

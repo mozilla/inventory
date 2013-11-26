@@ -6,8 +6,7 @@
     The object_redirect_url is detected after the form is inserted into the web page, and if it's detected during a create it's used as a redirect target.
     -->
     {% if object_.pk %}
-    <div id='object_redirect_url' record-url='{{object_.get_fancy_edit_url()}}' style='display:none'>
-    </div>
+        <div id='object_redirect_url' delete-redirect-url="{{delete_redirect_url}}"  record-url='{{object_.get_fancy_edit_url()}}' style='display:none'></div>
     {% endif %}
     <table class='tablesorter'>
         <tr>
