@@ -427,7 +427,7 @@ def validate_srv_label(srv_label):
     """This function is the same as :func:`validate_label` expect
     :class:`SRV` records can have a ``_`` preceding its label.
     """
-    if srv_label == "":
+    if srv_label == "" or srv_label == "*":
         return
     if srv_label and srv_label[0] != '_':
         raise ValidationError("Error: SRV label must start with '_'")
@@ -438,11 +438,14 @@ def validate_srv_name(srv_name):
     """This function is the same as :func:`validate_name` expect
     :class:`SRV` records can have a ``_`` preceding is name.
     """
-    if srv_name and srv_name[0] != '_':
+    if srv_name and srv_name[0] != '_' and srv_name[0] != '*':
         raise ValidationError("Error: SRV label must start with '_'")
     if not srv_name:
         raise ValidationError("Error: SRV label must not be None")
-    mod_srv_name = srv_name[1:]  # Get rid of '_'
+    if srv_name[0] == '*':
+        mod_srv_name = srv_name  # Get rid of '_'
+    else:
+        mod_srv_name = srv_name[1:]  # Get rid of '_'
     validate_name(mod_srv_name)
 
 

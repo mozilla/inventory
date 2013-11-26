@@ -33,6 +33,10 @@ class SRVTests(TestCase):
         self.assertTrue(len(rsrv) == 0)
 
     def test_add_remove_srv(self):
+        data = {'label': '*', 'domain': self.o_e, 'target':
+                'relay.oregonstate.edu', 'priority': 2, 'weight': 2222, 'port':
+                222}
+        self.do_remove(data)
         data = {'label': '_df', 'domain': self.o_e,
                 'target': 'relay.oregonstate.edu', 'priority': 2, 'weight':
                 2222, 'port': 222}
