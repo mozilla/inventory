@@ -1,7 +1,7 @@
 // So if people paste links around.
 console.log("Form loaded: I see rdtype=: {{record_type}} and pk=:{{record_pk}}");
 function page_js_init(find_related_url) {
-    if ($('#id_ip_str') && !$('#id_ip_str').val()){
+    if ($('#id_ip_str')){
         $("<input type='button' id='ffip' value='Automatically Assign'/>").insertAfter('#id_ip_str').css('margin-left', '0.7em');
 
         // Pull in find IP stuff
@@ -19,18 +19,20 @@ function page_js_init(find_related_url) {
                   display_range_id: '#choose-ip-display-ranges-area',
                   find_related_url: find_related_url,
                   reset_callback: function (){
-                    $('#related-things').empty();
-                    $('#related-help-text').empty();
-                    $('#id_ip_str').val('');
+                    if (!$('#dns-data').attr('record_pk')) {
+                      $('#related-things').empty();
+                      $('#related-help-text').empty();
+                      $('#id_ip_str').val('');
 
-                    if ($('#id_fqdn').data('auto-name') === $('#id_fqdn').val()) {
-                        $('#id_fqdn').val('');
+                      if ($('#id_fqdn').data('auto-name') === $('#id_fqdn').val()) {
+                          $('#id_fqdn').val('');
+                      }
+                      if ($('#id_name').data('auto-name') === $('#id_name').val()) {
+                          $('#id_name').val('');
+                      }
+                      $('#id_views_0').attr('checked', false);
+                      $('#id_views_1').attr('checked', false);
                     }
-                    if ($('#id_name').data('auto-name') === $('#id_name').val()) {
-                        $('#id_name').val('');
-                    }
-                    $('#id_views_0').attr('checked', false);
-                    $('#id_views_1').attr('checked', false);
                   },
                   found_ip_callback: function (range, name_fragment){
                     if(typeof range.free_ip == 'undefined') {

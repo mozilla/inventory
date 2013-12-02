@@ -1,4 +1,5 @@
 12/02/2013
+* BUG 941686. Allow auto assign on existing objects.
 * Added monitoring for errors during DHCP builds.
 
 11/12/2013
