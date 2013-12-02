@@ -42,14 +42,26 @@ def main():
             try:
                 f = open(final_destination_file,"w")
                 f.write(output_text)
+
                 sregs = StaticReg.objects.filter(
                     hwadapter_set__keyvalue_set__key='dhcp_scope',
                     hwadapter_set__keyvalue_set__value=dhcp_scope
-                ).distinct('pk')
-                print render_sregs(sregs)
+                )
+                # Django doesn't allow DISTINCT ON so we must simulate this in
+                # python. There is probably a better way.
+                sreg_pks = set()
+                distinct_sregs = []
+                for sreg in sregs:
+                    if sreg.pk in sreg_pks:
+                        continue
+                    sreg_pks.add(sreg.pk)
+                    distinct_sregs.append(sreg)
+
+                print render_sregs(distinct_sregs)
 
                 f.write('\n\n')
-                f.write(render_sregs(sregs))
+                f.write(render_sregs(distinct_sregs))
+
 
                 f.close()
                 print "Wrote config to {0}".format(final_destination_file)
