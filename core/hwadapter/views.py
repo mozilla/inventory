@@ -16,7 +16,7 @@ def ajax_hw_adapter_create(request):
         if ('dhcp_scope' in form.cleaned_data and
                 form.cleaned_data['dhcp_scope']):
             HWAdapterKeyValue.objects.create(
-                obj=form.instance, key='dchp_scope',
+                obj=form.instance, key='dhcp_scope',
                 value=form.cleaned_data['dhcp_scope']
             )
         return HttpResponse(json.dumps({'success': True}))
