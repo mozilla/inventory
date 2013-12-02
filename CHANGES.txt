@@ -1,3 +1,6 @@
+12/02/2013
+* Added monitoring for errors during DHCP builds.
+
 11/12/2013
 * BUG 923658. Add notification when views are not set.
 * BUG 937657. Sort DHCP scopes

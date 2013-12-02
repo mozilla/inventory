@@ -2,6 +2,7 @@
 
 import sys
 import os
+import traceback
 try:
     import json
 except:
@@ -12,6 +13,7 @@ import manage
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
 
 from settings import DHCP_CONFIG_OUTPUT_DIRECTORY
+from settings.dnsbuilds import STOP_UPDATE_FILE
 from dhcp.models import DHCPFile
 always_push_svn = True
 from libs.DHCPHelper import DHCPHelper
@@ -20,6 +22,7 @@ from systems.models import ScheduledTask
 
 from core.registration.static.models import StaticReg
 from core.dhcp.render import render_sregs
+from core.utils import fail_mail
 
 def main():
     dh = DHCPHelper()
@@ -84,6 +87,20 @@ def main():
     #os.system('/usr/bin/git push origin master')
 
 
-if __name__ == '__main__':
-    main()
+def write_stop_update(error):
+    if os.path.exists(STOP_UPDATE_FILE):
+        return
+    with open(STOP_UPDATE_FILE, 'w+') as fd:
+        msg = ("This file was placed here because there was an error:\n"
+               "=============== ERROR MESSAGE ======================+\n")
+        fd.write(msg)
+        fd.write(error)
 
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception as err:
+        message = "DHCP Build Error. Error: '{0}'. The build was unsuccessful."
+        fail_mail(message.format(err))
+        error_msg = "{0}\n{1}".format(str(err), traceback.format_exc())
+        write_stop_update(error_msg)
