@@ -1,3 +1,6 @@
+12/03/2013
+* Make SREGs not show up twice in search results
+
 12/02/2013
 * BUG 941686. Allow auto assign on existing objects.
 * Added monitoring for errors during DHCP builds.

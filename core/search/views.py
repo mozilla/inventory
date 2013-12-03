@@ -78,7 +78,7 @@ def search_dns_text(request):
         for type_ in ['NET', 'SITE', 'VLAN']:
             response_str += render_rdtype(kwargs['objects'][type_])
         for type_ in [
-                'SOA', 'NS', 'MX', 'SRV', 'CNAME', 'SSHFP', 'TXT', 'A', 'SREG',
+                'SOA', 'NS', 'MX', 'SRV', 'CNAME', 'SSHFP', 'TXT', 'A',
                 'PTR', 'NET', 'SITE', 'VLAN', 'SYS', 'SREG']:
             response_str += render_rdtype(kwargs['objects'][type_])
         response_str += render_rdtype(kwargs['objects']['SREG'], reverse=True)
