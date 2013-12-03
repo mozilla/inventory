@@ -84,7 +84,7 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
 
     @classmethod
     def get_api_fields(cls):
-        return super(StaticReg, cls).get_api_fields()
+        return super(StaticReg, cls).get_api_fields() + ['name']
 
     @classmethod
     def get_bulk_action_list(cls, query, fields=None, show_related=True):
