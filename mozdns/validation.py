@@ -22,12 +22,12 @@ def do_zone_validation(domain):
     The following code is an example of how to call this function during
     *domain* introspection.
 
-        >>> do_zone_validation(self, self.master_domain)
+        >>> do_zone_validation(self, self.master_domain)  # noqa
 
     The following code is an example of how to call this function during
     *reverse_domain* introspection.
 
-        >>> do_zone_validation(self, self.master_reverse_domain)
+        >>> do_zone_validation(self, self.master_reverse_domain)  # noqa
 
     """
 
@@ -50,12 +50,12 @@ def check_for_master_delegation(domain, master_domain):
     The following code is an example of how to call this function during
     *domain* introspection.
 
-        >>> check_for_master_delegation(self, self.master_domain)
+        >>> check_for_master_delegation(self, self.master_domain)  # noqa
 
     The following code is an example of how to call this function during
     *reverse_domain* introspection.
 
-        >>> check_for_master_delegation(self, self.master_reverse_domain)
+        >>> check_for_master_delegation(self, self.master_reverse_domain)  # noqa
 
     """
     if not master_domain:
@@ -83,12 +83,12 @@ def validate_zone_soa(domain, master_domain):
     The following code is an example of how to call this function during
     *domain* introspection.
 
-        >>> validate_zone_soa('forward', self, self.master_domain)
+        >>> validate_zone_soa('forward', self, self.master_domain)  # noqa
 
     The following code is an example of how to call this function during
     *reverse_domain* introspection.
 
-        >>> validate_zone_soa('reverse', self, self.master_reverse_domain)
+        >>> validate_zone_soa('reverse', self, self.master_reverse_domain)  # noqa
 
     """
     if not domain:
@@ -139,12 +139,12 @@ def check_for_soa_partition(domain, child_domains):
     The following code is an example of how to call this function during
     *domain* introspection.
 
-        >>> check_for_soa_partition(self, self.domain_set.all())
+        >>> check_for_soa_partition(self, self.domain_set.all())  # noqa
 
     The following code is an example of how to call this function during
     *reverse_domain* introspection.
 
-        >>> check_for_soa_partition(self, self.reversedomain_set.all())
+        >>> check_for_soa_partition(self, self.reversedomain_set.all())  # noqa
 
     """
     for i_domain in child_domains:
@@ -176,12 +176,12 @@ def find_root_domain(soa):
     The following code is an example of how to call this function using
     a Domain as ``domain``.
 
-        >>> find_root_domain('forward', domain.soa)
+        >>> find_root_domain('forward', domain.soa)  # noqa
 
     The following code is an example of how to call this function using
     a ReverseDomain as ``domain``.
 
-        >>> find_root_domain('reverse', reverse_domain.soa)
+        >>> find_root_domain('reverse', reverse_domain.soa)  # noqa
 
     """
 
@@ -271,7 +271,7 @@ def validate_label(label, valid_chars=None):
                                   "multiple domains when creating records."
                                   .format(label))
         if valid_chars.find(char) < 0:
-            raise ValidationError("Ivalid name {0}. Character '{1}' is "
+            raise ValidationError("Invalid name {0}. Character '{1}' is "
                                   "invalid.".format(label, char))
     return
 
@@ -286,7 +286,7 @@ def validate_domain_name(name):
 
     for label in name.split('.'):
         if not label:
-            raise ValidationError("Error: Ivalid name {0}. Empty label."
+            raise ValidationError("Error: Invalid name {0}. Empty label."
                                   .format(name))
         valid_chars = string.ascii_letters + "0123456789" + "-_"
         validate_label(label, valid_chars=valid_chars)
@@ -336,7 +336,7 @@ def validate_name(fqdn):
 
     for label in fqdn.split('.'):
         if not label:
-            raise ValidationError("Ivalid name {0}. Empty label."
+            raise ValidationError("Invalid name {0}. Empty label."
                                   .format(fqdn))
         validate_label(label)
 
@@ -362,14 +362,16 @@ def validate_reverse_name(reverse_name, ip_type):
     for nibble in reverse_name.split('.'):
         if ip_type == '6':
             if valid_ipv6.find(nibble) < 0:
-                raise ValidationError("Error: Ivalid Ipv6 name {0}. Character "
-                                      "'{1}' is invalid."
-                                      .format(reverse_name, nibble))
+                raise ValidationError(
+                    "Error: Invalid Ipv6 name {0}. Character '{1}' is "
+                    "invalid." .format(reverse_name, nibble)
+                )
         else:
             if not(int(nibble) <= 255 and int(nibble) >= 0):
-                raise ValidationError("Error: Ivalid Ipv4 name {0}. Character "
-                                      "'{1}' is invalid."
-                                      .format(reverse_name, nibble))
+                raise ValidationError(
+                    "Error: Invalid Ipv4 name {0}. Character '{1}' is "
+                    "invalid." .format(reverse_name, nibble)
+                )
 
 
 def validate_ttl(ttl):

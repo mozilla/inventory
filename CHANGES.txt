@@ -1,5 +1,6 @@
 12/03/2013
 * Make SREGs not show up twice in search results
+* Fixed https://github.com/uberj/inv-tool/issues/10
 
 12/02/2013
 * BUG 941686. Allow auto assign on existing objects.
