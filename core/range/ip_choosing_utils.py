@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from core.site.models import Site
 from core.vlan.models import Vlan
 from core.network.models import Network
-from core.utils import overlap
+from core.utils import overlap, ip_to_int
 
 
 def pks_to_objs(pks, Klass):
@@ -310,7 +310,7 @@ def integrate_real_ranges(network, template_ranges):
         return template_ranges
 
     name_fragment = calc_name_fragment(network)
-    filtered_ranges = []
+    filtered_ranges = template_ranges
 
     for r in real_ranges:
         for tr in template_ranges:
@@ -318,8 +318,8 @@ def integrate_real_ranges(network, template_ranges):
                 (r.start_str, r.end_str), (tr['start'], tr['end']),
                 ip_type=network.ip_type, cast_to_int=True
             )
-            if not ol:
-                filtered_ranges.append(tr)
+            if ol:
+                filtered_ranges.remove(tr)
         filtered_ranges.append({
             'name': r.name,
             'rtype': r.name,
@@ -329,7 +329,9 @@ def integrate_real_ranges(network, template_ranges):
             'pk': r.pk
         })
 
-    return filtered_ranges
+    return sorted(
+        filtered_ranges, key=lambda r: ip_to_int(r['start'], network.ip_type)
+    )
 
 
 def calc_name_fragment(network, base_name=''):
