@@ -66,7 +66,9 @@ def core_index(request):
 
     tables = []
 
-    all_names = Site.objects.distinct('name').values_list('name', flat=True)
+    all_names = (
+        Site.objects.order_by('name').values_list('name', flat=True).distinct()
+    )
 
     def make_table(caption, sites):
         nets = []
