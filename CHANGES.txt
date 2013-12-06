@@ -1,3 +1,7 @@
+12/06/2013
+* Fixed regresion due to django upgrade on the /core/ page.
+* Fixed https://github.com/mozilla/inventory/issues/28
+
 12/03/2013
 * Make SREGs not show up twice in search results
 * Fixed https://github.com/uberj/inv-tool/issues/10

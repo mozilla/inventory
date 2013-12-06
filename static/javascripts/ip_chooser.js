@@ -255,8 +255,8 @@ function chosen_init(ctx){
         newDoc.close();
       }
 
-  });
-}
+    });
+  }
 
   function truncate_options(select_id){
     $(select_id + " option:not(:selected)").remove();
@@ -276,63 +276,48 @@ function chosen_init(ctx){
    *                         dc1 <--- look for a site with this name
    */
   $(ctx.hints).each(function (i, hint_location) {
-      console.log("Looking for hints");
-      var hint = $(hint_location).val();
-      if (!hint) {
-        console.log("No hint for " + hint);
-        return;
-      }
-
-      var labels = hint.split('.');
-
-      if (!labels.length) {
-         console.log("labels has no length");
-         return;
-      }
-
-      var vlan_index = false;
-      var found_vlan = false;
-      for (var index = 0; index < labels.length; index++) {
-          var label = labels[index];
-          console.log('Looking for #choose-vlan option[label="' + label + '"]');
-          var vlans = $('#choose-vlan option[label^="' + label + '"]');
-          if (vlans.length === 1) {
-            vlan_index = index;
-            found_vlan = true;
-            vlans.prop('selected', true);
-            truncate_options('#choose-vlan');
-            $('#choose-vlan').trigger("chosen:updated");
+      function parse_hints(labels) {
+        var site;
+        var remainder;
+        var search = "";
+        var j;
+        var i;
+        for (i = labels.length; i >= 0; i--) {
+          if (site) {
             break;
-          } else if (vlans.length > 1) {
-            vlan_index = index;
-            console.log("Multiple vlans for " + label);
-            var first_option = $('#choose-vlan').find(':first-child');
-            $("#choose-vlan option:gt(0)").remove();
-            $('#choose-vlan').append(vlans);
-            $('#choose-vlan').trigger("chosen:updated");
-            break;
-          } else {
-            console.log("No vlan for " + label);
           }
-      }
-      if (vlan_index === false) {
-        console.log("Giving up on vlans. Didn't find one");
-      } else {
-        console.log("Found vlan " + labels[vlan_index]);
-      }
+          for (j=i; j >= 0; j--) {
+            search = labels.slice(j, i).join('.');
+            if ($('#choose-site option[label="' + search + '"]').val()) {
+              site = $('#choose-site option[label="' + search + '"]');
+              remainder = labels.slice(0, j);
+            }
+          }
+        }
 
-      var right_labels = labels.splice(vlan_index + 1);
-      right_labels.pop();
-      right_labels.pop();
-      console.log('Looking for #choose-site option[label="' + right_labels.join('.') + '"]');
-      var found_site = false;
-      if ($('#choose-site option[label="' + right_labels.join(',') + '"]').val()) {
-        console.log("site for " + $('#choose-site option[label="' + right_labels.join('.') + '"]').val());
-        $('#choose-site option[label="' + right_labels.join('.') + '"]').attr('selected', 'selected');
-        truncate_options('#choose-site');
-        found_site = true;
-      } else {
-        console.log("No site for " + right_labels);
+        var vlans;
+        var vlan_suffix = "";
+        if (typeof(remainder) === "undefined") {
+          return {'site': site, 'vlans': vlans};
+        }
+        for (i=remainder.length; i >= 0; i--) {
+          if (vlans) {
+             break;
+          }
+          for (j=i; j >= 0; j--) {
+            search = remainder.slice(j, i).join('.') + vlan_suffix;
+            console.log("Searching for vlan: " + search);
+            if ($('#choose-vlan option[label^="' + search + ':"]').val()) {
+              vlans = $('#choose-vlan option[label^="' + search + ':"]');
+              if (vlans.length == 1){
+                  vlan_suffix = '.' + vlans.attr('label').replace(/:\d+$/, '');
+              } else {
+                  break;
+              }
+            }
+          }
+        }
+        return {'site': site, 'vlans': vlans};
       }
 
       // Only call change once if there is a change.
@@ -375,6 +360,46 @@ function chosen_init(ctx){
         }
       }
 
+      console.log("Looking for hints");
+      var hint = $(hint_location).val();
+      if (!hint) {
+        console.log("No hint for " + hint);
+        return;
+      }
+
+      var labels = hint.split('.');
+
+      if (!labels.length) {
+         console.log("labels has no length");
+         return;
+      }
+      var h = parse_hints(labels);
+      var found_vlan = false;
+      var found_site = false;
+
+      // Trigger events based on the things we parsed from the hints
+      if (h.vlans.length === 1) {
+        found_vlan = true;
+        h.vlans.prop('selected', true);
+        truncate_options('#choose-vlan');
+        $('#choose-vlan').trigger("chosen:updated");
+      } else if (h.vlans.length > 1) {
+        var first_option = $('#choose-vlan').find(':first-child');
+        $("#choose-vlan option:gt(0)").remove();
+        $('#choose-vlan').append(h.vlans);
+        $('#choose-vlan').trigger("chosen:updated");
+      } else {
+        console.log("No vlans found.");
+      }
+
+      if (h.site.length) {
+        found_site = true;
+        h.site.attr('selected', 'selected');
+        truncate_options('#choose-site');
+      } else {
+        console.log("No site found");
+      }
+
       if (found_site) {
         update_site(function () {
           var choice_option = $('#choose-vlan');
@@ -395,7 +420,5 @@ function chosen_init(ctx){
       } else if (vlan_index !== false) {
         alert_more_action_needed('#choose-vlan option', '#choose_vlan_chosen > a');
       }
-
-      console.log("Updating");
   });
 }
