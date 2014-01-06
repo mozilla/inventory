@@ -250,6 +250,9 @@ class Domain(models.Model, DBTableURLMixin):
         reassign(self.ptr_set.iterator())
         reassign(self.reverse_staticreg_set.iterator())
 
+    def get_delete_redirect_url(self):
+        return '/core/search/'
+
 
 def boot_strap_ipv6_reverse_domain(ip, soa=None):
     """

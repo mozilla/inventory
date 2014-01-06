@@ -10,10 +10,14 @@ class NameserverForm(BaseForm):
     class Meta:
         model = Nameserver
         exclude = ('addr_glue', 'sreg_glue')
+        fields = ('domain', 'server', 'ttl', 'description', 'views')
         widgets = {'views': forms.CheckboxSelectMultiple}
 
     def __init__(self, *args, **kwargs):
         super(NameserverForm, self).__init__(*args, **kwargs)
+        self.fields['domain'].choices = sorted(
+            self.fields['domain'].choices, key=lambda d: d[1]
+        )
         if not self.instance:
             return
         if not self.instance.glue:

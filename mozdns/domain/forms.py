@@ -9,6 +9,14 @@ class DomainUpdateForm(ModelForm):
 
 
 class DomainForm(ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(DomainForm, self).__init__(*args, **kwargs)
+        self.fields['soa'].choices = sorted(
+            self.fields['soa'].choices,
+            key=lambda s: '.'.join(reversed(s[1].split('.')))
+        )
+
     class Meta:
         model = Domain
         fields = ('soa', 'name', 'delegated')
