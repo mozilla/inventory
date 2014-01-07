@@ -30,3 +30,4 @@ docs/images/
 docs/man/
 scripts/populate.py
 scripts/migrate_locations_to_sites.py
+*.csv
