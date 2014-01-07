@@ -1,8 +1,10 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
+from string import Template
+
 from mozdns.soa.models import SOA
-from mozdns.mixins import DBTableURLMixin
+from mozdns.mixins import ObjectUrlMixin, DisplayMixin
 from mozdns.validation import validate_domain_name
 from mozdns.validation import do_zone_validation
 from mozdns.search_utils import smart_fqdn_exists
@@ -11,7 +13,7 @@ from mozdns.validation import validate_reverse_name
 from mozdns.domain.utils import name_to_domain
 
 
-class Domain(models.Model, DBTableURLMixin):
+class Domain(models.Model, ObjectUrlMixin, DisplayMixin):
     """
     A Domain is used as a foreign key for most DNS records.
 
@@ -91,6 +93,8 @@ class Domain(models.Model, DBTableURLMixin):
     purgeable = models.BooleanField(default=False)
     delegated = models.BooleanField(default=False, null=False, blank=True)
 
+    template = "{name:$lhs_just} DOMAIN "
+
     search_fields = ('name',)
 
     class Meta:
@@ -105,6 +109,10 @@ class Domain(models.Model, DBTableURLMixin):
     @property
     def rdtype(self):
         return 'DOMAIN'
+
+    def bind_render_record(self, pk=False, show_ttl=False):
+        template = Template(self.template).substitute(**self.justs)
+        return template.format(name=self.name)
 
     def details(self):
         return (
@@ -250,7 +258,8 @@ class Domain(models.Model, DBTableURLMixin):
         reassign(self.ptr_set.iterator())
         reassign(self.reverse_staticreg_set.iterator())
 
-    def get_delete_redirect_url(self):
+    def get_history_url(self):
+        # domains don't use reversion
         return '/core/search/'
 
 

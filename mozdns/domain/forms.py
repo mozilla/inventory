@@ -19,4 +19,4 @@ class DomainForm(ModelForm):
 
     class Meta:
         model = Domain
-        fields = ('soa', 'name', 'delegated')
+        fields = ('soa', 'name')
