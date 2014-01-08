@@ -46,7 +46,13 @@
 {% endif %}
 </div>
 {% if object_ %}
-    {% set d = object_.reverse_domain if record_type == 'PTR' else object_.domain %}
+    {% if object_.reverse_domain %}
+        {% set d = object_.reverse_domain %}
+    {% elif object_.domain %}
+        {% set d = object_.domain %}
+    {% else %}
+        {% set d = object_ %}
+    {% endif %}
 <div class='container'>
     {% block object_meta %}
     <div class='object_meta' >
@@ -59,16 +65,20 @@
         </div>
         {% endif %}
 
-        <table class='tablesorter'>
-            <tr>
-                <td style='text-align: center'>
-                    <a class='btn btn-small' href='{{ object_.get_history_url() }}'>Record History</a>
-                </td>
-            </tr>
-        </table>
+        {% if record_type != 'DOMAIN' %}
+            <table class='tablesorter'>
+                <tr>
+                    <td style='text-align: center'>
+                        <a class='btn btn-small' href='{{ object_.get_history_url() }}'>Record History</a>
+                    </td>
+                </tr>
+            </table>
+        {% endif %}
 
         <table class='tablesorter'>
-            <caption>{{object_.bind_render_record()}}</caption>
+            <caption>
+                {{object_.bind_render_record()}}
+            </caption>
             {% if d.soa  %}
             <tr>
                 <td>
