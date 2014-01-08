@@ -236,7 +236,7 @@ class DOMAIN_(RecordView):
     form = DomainForm
     DisplayForm = DomainForm
 
-    def modify_qd(self, qd):
+    def modify_qd(self, qd, object_=None):
         return qd, None
 
 
