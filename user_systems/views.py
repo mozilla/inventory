@@ -17,6 +17,7 @@ from datetime import datetime, timedelta
 from libs import ldap_lib
 import settings
 from settings.local import USER_SYSTEM_ALLOWED_DELETE, FROM_EMAIL_ADDRESS, UNAUTHORIZED_EMAIL_ADDRESS
+from settings import BUG_URL as BUG_URL
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect, get_object_or_404, render
 from libs.jinja import render_to_response as render_to_response
@@ -162,23 +163,36 @@ def license_quicksearch_ajax(request):
            },
            RequestContext(request))
 
+
 @csrf_exempt
 def user_system_quicksearch_ajax(request):
     """Returns systems sort table"""
-    from settings import BUG_URL as BUG_URL
     search = request.POST['quicksearch']
-    print request.POST
-    filters = [Q(**{"%s__icontains" % t: search})
-                    for t in models.UnmanagedSystem.search_fields]
+    filters = [
+        Q(**{"%s__icontains" % t: search})
+        for t in models.UnmanagedSystem.search_fields
+    ]
 
     systems = models.UnmanagedSystem.objects.filter(
-                reduce(operator.or_, filters))
+        reduce(operator.or_, filters)
+    )
 
-    return render_to_response('user_systems/quicksearch.html', {
-            'systems': systems,
-            'BUG_URL': BUG_URL,
-           },
-           RequestContext(request))
+    # For some reason systems are referencing server model classes that do not
+    # exist. I have no idea how this happened but it did. If accessing the
+    # server model causes and error set the server_model to None so we don't
+    # get an exception later during page loads.
+    # TOOD: Clean up defunt server model references
+    for s in systems:
+        try:
+            s.server_model
+        except:
+            s.server_model = None
+
+    return render_to_response(
+        'user_systems/quicksearch.html',
+        {'systems': systems, 'BUG_URL': BUG_URL},
+        RequestContext(request)
+    )
 
 @csrf_exempt
 def user_system_view(request, template, data, instance=None):
