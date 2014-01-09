@@ -1,5 +1,13 @@
+1/9/2013
+* Added docs for deleting a zone to the "Delete Zone" page
+* Fix BUG 958151 which was causing certain searches to ISE
+
+1/8/2013
+* Added multiple improvements to the Domain and NS UI pages to facilitate
+  fixing 951925
+
 12/06/2013
-* Fixed regresion due to django upgrade on the /core/ page.
+* Fixed regression due to django upgrade on the /core/ page.
 * Fixed https://github.com/mozilla/inventory/issues/28
 
 12/03/2013
@@ -41,7 +49,7 @@
 
 08/20/2013
 * Added API for System objects. Changed the name 'SYSTEM' in searches (i.e. type=:SYSTEM) to 'SYS'.
-  This was to align nameing conventions with other objects like NET and be more uniform with invtool.
+  This was to align naming conventions with other objects like NET and be more uniform with invtool.
 * Added system csv exporter to the mcsv module.
 * Fixed a small bug in the search parser
 * Added CSV importer keys for 'option_hostname', 'dhcp_filename',
