@@ -36,7 +36,7 @@
         {% if object_.domain.soa %}
         <tr>
             <td>
-                <a href='{{ object_.domain.soa.get_absolute_url() }}'>{{ d.soa }}</a>
+                <a href='{{ object_.domain.soa.get_absolute_url() }}'>{{ object_.domain.soa }}</a>
             </td>
             <td>
                 {% if object_.domain.soa.dirty %}
