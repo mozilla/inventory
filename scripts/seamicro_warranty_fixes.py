@@ -27,11 +27,15 @@ s_count = 0
 
 
 def set_warranty_for_chassis(chassis, warranty):
-    ss = chassis.system_rack.systems().filter(oob_ip__endswith=chassis.oob_ip)
+    ss = chassis.system_rack.systems().filter(
+        oob_ip__icontains=chassis.oob_ip.strip('ssh').strip()
+    )
     print "Systems belonging to this chassis...."
     for s in ss:
-        global s_count
-        s_count += 1
+        if not s.warranty_end:
+            global s_count
+            s_count += 1
+
         print "\t%s" % s.hostname
         s.warranty_start, s.warranty_end = warranty
         s.save()
@@ -66,7 +70,7 @@ def main():
         )
         set_warranty_for_chassis(s, [warranty_start, warranty_end])
     global s_count
-    print s_count
+    print "%s had their warranty end date set" % s_count
 
 if __name__ == '__main__':
     main()
