@@ -2,6 +2,7 @@ __import__('inventory_context')
 from systems.models import System
 import datetime
 import csv
+import sys
 
 
 def wimport(reader, lookups, date_format):
@@ -44,13 +45,13 @@ def wimport(reader, lookups, date_format):
 
 if __name__ == '__main__':
 
-    def i(fname, lookups, date_format='%d-%b-%y'):
+    def i(fname, lookups, date_format):
         print "%s Importing %s" % ('=' * 90, fname)
         with open(fname, 'r') as csvfile:
             wimport(csv.DictReader(csvfile), lookups, date_format)
 
-    i('juniper_warranty.csv', {
-        'warranty_start': 'Ship Date',
-        'warranty_end': 'Warranty End Date',
-        'serial': 'Serial #'
-    })
+    i(sys.argv[1], {
+        'warranty_start': 'start',
+        'warranty_end': 'end',
+        'serial': 'serial'
+    }, sys.argv[2])
