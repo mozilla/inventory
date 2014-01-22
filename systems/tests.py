@@ -25,6 +25,7 @@ from test_utils import setup_test_environment
 
 setup_test_environment()
 
+
 class LocalizeUtils(object):
     def localize_url(self, url):
         if 'en-US' not in url:
@@ -222,7 +223,6 @@ class SystemTest(TestCase, LocalizeUtils):
         # Hostname should be the same
         self.assertEqual(s.hostname, 'foo.mozilla.com')
 
-
     def test_quicksearch_by_hostname(self):
         resp = self.client.post(
             "/en-US/systems/quicksearch/",
@@ -286,6 +286,7 @@ class ServerModelTest(TestCase):
         self.assertEqual(models.ServerModel.objects.all()[1].model, 'test')
         self.assertEqual(models.ServerModel.objects.all()[1].vendor, 'vendor')
 
+
 class SystemAdapterTest(TestCase):
     fixtures = ['testdata.json']
 
@@ -304,6 +305,7 @@ class SystemAdapterTest(TestCase):
         system.delete_key_value_adapter_by_index(0)
         na = system.get_next_key_value_adapter()
         self.assertEqual(na['num'], 1)
+
 
 class SystemInterfaceTest(TransactionTestCase):
     fixtures = ['testdata.json']
@@ -336,10 +338,13 @@ class SystemInterfaceTest(TransactionTestCase):
             site=self.site
         )
         self.r1 = Range.objects.create(
-            start_str='10.99.99.1', end_str='10.99.99.254', network=self.network
+            start_str='10.99.99.1', end_str='10.99.99.254',
+            network=self.network
         )
         self.r2 = Range.objects.create(
             start_str='66.66.66.1', end_str='66.66.66.254',
             network=self.network2
         )
-        self.system = System.objects.create(hostname='host1.vlan.dc.mozilla.com')
+        self.system = System.objects.create(
+            hostname='host1.vlan.dc.mozilla.com'
+        )
