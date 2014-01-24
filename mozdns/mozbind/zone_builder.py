@@ -81,6 +81,7 @@ def render_forward_zone(view, mega_filter):
         order_by('pk', 'ip_type', 'fqdn', 'ip_upper', 'ip_lower'),
 
         interface_set=StaticReg.objects.
+        filter(decommissioned=False).
         filter(mega_filter).
         filter(views__name=view.name).
         order_by('pk', 'ip_type', 'fqdn', 'ip_upper', 'ip_lower'),
@@ -132,6 +133,7 @@ def render_reverse_zone(view, domain_mega_filter, rdomain_mega_filter):
         filter(views__name=view.name).order_by('id'),
 
         interface_set=StaticReg.objects.
+        filter(decommissioned=False).
         filter(rdomain_mega_filter).
         filter(views__name=view.name).
         order_by('pk', 'ip_type', 'label', 'ip_upper', 'ip_lower'),

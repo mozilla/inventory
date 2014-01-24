@@ -12,6 +12,7 @@ from core.validation import validate_sreg_name
 from core.utils import create_key_index
 
 import mozdns
+from mozdns.models import LabelMixin, FQDNMixin
 from mozdns.address_record.models import BaseAddressRecord
 from mozdns.ptr.models import BasePTR
 from mozdns.cname.models import CNAME
@@ -20,8 +21,11 @@ from mozdns.ip.utils import ip_to_dns_form
 
 import reversion
 
+import datetime
 
-class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
+
+class StaticReg(BaseAddressRecord, LabelMixin, FQDNMixin, BasePTR, KVUrlMixin,
+                models.Model):
     # Keep in mind that BaseAddressRecord will have it's methods called before
     # BasePTR
     """
@@ -44,6 +48,10 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         Domain, null=True, blank=True, related_name="reverse_staticreg_set"
     )
 
+    domain = models.ForeignKey(
+        Domain, null=True, default=None, blank=True
+    )
+
     system = models.ForeignKey(
         System, null=True, blank=True, help_text="System to associate the "
         "registration with"
@@ -53,6 +61,10 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         max_length=255, null=False, blank=True,
         validators=[validate_sreg_name],
         help_text="The name and primary number of this registration"
+    )
+
+    decommissioned = models.BooleanField(
+        blank=False, null=False, default=False
     )
 
     attrs = None
@@ -77,9 +89,9 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
 
     def details(self):
         return (
-            ("Name", self.fqdn),
-            ("DNS Type", "A/PTR"),
-            ("IP", self.ip_str),
+            ('Name', self.fqdn),
+            ('DNS Type', 'DecommSREG' if self.decommissioned else 'A/PTR'),
+            ('IP', self.ip_str),
         )
 
     @classmethod
@@ -119,8 +131,7 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
                 cls.objects.get(pk=d_bundle['pk'])
                 .views.values_list('pk', flat=True)
             )
-            # This shouldn't be name yet because we need to look up pk so we
-            # can setup hwadapter_set
+
             d_bundles[d_bundle['pk']] = d_bundle
 
             # Look up a cname and set it as the only value of 'cname' if *one*
@@ -149,6 +160,8 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         """
         Allow easy lookup of an SREG's network object if it exists
         """
+        if self.decommissioned:
+            return None
         parents, _ = calc_networks_str(
             "{0}/32".format(self.ip_str), self.ip_type
         )
@@ -163,7 +176,37 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
             # The reverse_domain field is in the Ip class.
         super(StaticReg, self).delete(*args, **kwargs)  # BaseAddressRecord
 
+    def decommission(self):
+        # These rebuilds will not be seen until our transacton is commited and
+        # by then our decommision flag will be set and we will not be included
+        # in a zone file.
+        if self.domain and self.domain.soa:
+            self.domain.soa.schedule_rebuild()
+        if self.reverse_domain and self.reverse_domain.soa:
+            self.reverse_domain.soa.schedule_rebuild()
+
+        if '[DECOMMISSIONED]' not in self.label:
+            make_decomm_label = lambda: '[DECOMMISSIONED] {0}'.format(
+                datetime.datetime.now().strftime('%Yy-%mm-%dd-%Ss-%fms')
+            )
+            decomm_label = make_decomm_label()
+            while StaticReg.objects.filter(label=decomm_label).exists():
+                decomm_label = make_decomm_label()
+            self.label, self.fqdn = decomm_label, decomm_label
+        self.domain = None
+        self.reverse_domain = None
+
+        # IP clean will not be called
+        self.ip_upper, self.ip_lower, self.ip_str = 0, 0, '--------'
+        for hw in self.hwadapter_set.all():
+            hw.enable_dhcp = False
+            hw.save()
+
     def save(self, *args, **kwargs):
+        if self.decommissioned:
+            self.decommission()
+            return models.Model.save(self, *args, **kwargs)
+
         urd = kwargs.pop('update_reverse_domain', True)
         self.clean_reverse(update_reverse_domain=urd)  # BasePTR
         if not self.name:
@@ -171,13 +214,27 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         super(StaticReg, self).save(*args, **kwargs)
         self.rebuild_reverse()
 
+    def full_clean(self, *args, **kwargs):
+        if self.decommissioned:
+            return super(StaticReg, self).full_clean(
+                *args, exclude=['label', 'fqdn']
+            )
+        else:
+            self.set_fqdn()
+            # When switching from decomm to active we end up having an invalid
+            # fqdn, calling this just recalcs the fqdn from supposedly valid
+            # label and domain.name values
+            return super(StaticReg, self).full_clean(*args, **kwargs)
+
     def clean(self, validate_glue=True):
         if not self.system:
             raise ValidationError(
-                "A registartion means nothing without it's system."
+                "A registration means nothing without it's system."
             )
+        if self.decommissioned:
+            return
         if self.system.staticreg_set.filter(~Q(pk=self.pk), name=self.name):
-            raise ValidationError("A registartion already has this name")
+            raise ValidationError("A registration already has this name")
         if not hasattr(self, 'domain'):
             raise ValidationError("A domain has not been set")
         self.check_A_PTR_collision()
@@ -186,7 +243,7 @@ class StaticReg(BaseAddressRecord, BasePTR, KVUrlMixin):
         )
 
     def record_type(self):
-        return 'A/PTR'
+        return 'DecommSREG' if self.decommissioned else 'A/PTR'
 
     def get_delete_redirect_url(self):
         return self.system.get_absolute_url()

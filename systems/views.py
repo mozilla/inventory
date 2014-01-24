@@ -533,7 +533,7 @@ def system_show(request, id):
     hw_formset = HWAdapterFormset(prefix='hwadapters')
 
     object_search_str = "(/^{0}$".format(system)
-    for sreg in sregs:
+    for sreg in filter(lambda sreg: not sreg.decommissioned, sregs):
         object_search_str += " OR /^{0}$".format(sreg.fqdn)
         object_search_str += " OR /^{0}$".format(sreg.ip_str)
     object_search_str += " ) AND !type=:sreg AND !type=:sys"

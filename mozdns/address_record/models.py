@@ -9,7 +9,7 @@ from mozdns.models import MozdnsRecord, LabelDomainMixin
 import reversion
 
 
-class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
+class BaseAddressRecord(Ip, MozdnsRecord):
     """
     AddressRecord is the class that generates A and AAAA records
 
@@ -140,7 +140,7 @@ class BaseAddressRecord(Ip, LabelDomainMixin, MozdnsRecord):
         return "<Address Record '{0}'>".format(str(self))
 
 
-class AddressRecord(BaseAddressRecord):
+class AddressRecord(BaseAddressRecord, LabelDomainMixin):
     """
     AddressRecord is the class that generates A and AAAA records
 

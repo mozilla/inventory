@@ -9,7 +9,35 @@ from mozdns.validation import validate_first_label, validate_name
 from mozdns.validation import validate_ttl
 
 
-class LabelDomainMixin(models.Model):
+class DomainMixin(models.Model):
+    domain = models.ForeignKey(Domain, null=False, help_text="FQDN of the "
+                               "domain after the short hostname. "
+                               "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
+
+    class Meta:
+        abstract = True
+
+
+class LabelMixin(models.Model):
+    # "The length of any one label is limited to between 1 and 63 octets."
+    # -- RFC218
+    label = models.CharField(max_length=63, blank=True, null=True,
+                             validators=[validate_first_label],
+                             help_text="Short name of the fqdn")
+
+    class Meta:
+        abstract = True
+
+
+class FQDNMixin(models.Model):
+    fqdn = models.CharField(max_length=255, blank=True, null=True,
+                            validators=[validate_name], db_index=True)
+
+    class Meta:
+        abstract = True
+
+
+class LabelDomainMixin(LabelMixin, DomainMixin, FQDNMixin):
     """
     This class provides common functionality that many DNS record
     classes share.  This includes a foreign key to the ``domain`` table
@@ -35,17 +63,6 @@ class LabelDomainMixin(models.Model):
     "the total number of octets that represent a name (i.e., the sum of
     all label octets and label lengths) is limited to 255" - RFC 4471
     """
-    domain = models.ForeignKey(Domain, null=False, help_text="FQDN of the "
-                               "domain after the short hostname. "
-                               "(Ex: <i>Vlan</i>.<i>DC</i>.mozilla.com)")
-    # "The length of any one label is limited to between 1 and 63 octets."
-    # -- RFC218
-    label = models.CharField(max_length=63, blank=True, null=True,
-                             validators=[validate_first_label],
-                             help_text="Short name of the fqdn")
-    fqdn = models.CharField(max_length=255, blank=True, null=True,
-                            validators=[validate_name], db_index=True)
-
     class Meta:
         abstract = True
 
@@ -68,9 +85,9 @@ class ViewMixin(models.Model):
         this function according to their specific needs.
         """
         for view in views:
-            if hasattr(self, 'domain'):
+            if hasattr(self, 'domain') and self.domain:
                 self.check_no_ns_soa_condition(self.domain, view=view)
-            if hasattr(self, 'reverse_domain'):
+            if hasattr(self, 'reverse_domain') and self.reverse_domain:
                 self.check_no_ns_soa_condition(self.reverse_domain, view=view)
 
     def check_no_ns_soa_condition(self, domain, view=None):

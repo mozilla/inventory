@@ -33,7 +33,7 @@
     </table>
     <table class='tablesorter'>
         <caption>{{object_.bind_render_record()}}</caption>
-        {% if object_.domain.soa %}
+        {% if object_.domain and object_.domain.soa %}
         <tr>
             <td>
                 <a href='{{ object_.domain.soa.get_absolute_url() }}'>{{ object_.domain.soa }}</a>
@@ -55,7 +55,7 @@
             </td>
         {% endif %}
 
-        {% if object_.reverse_domain.soa %}
+        {% if object_.reverse_domain and object_.reverse_domain.soa %}
         </tr>
             <td>
                 <a href='{{ object_.reverse_domain.soa.get_absolute_url() }}'>{{ object_.reverse_domain.soa }}</a>
