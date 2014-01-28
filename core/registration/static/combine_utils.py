@@ -498,6 +498,12 @@ def generate_sreg_bundles(system, name):
 
 @transaction.commit_manually
 def combine(bundle, rollback=False, use_reversion=True):
+    return _combine(bundle, rollback=rollback, use_reversion=use_reversion)
+
+
+# Non-transactional wrapper of combine
+def _combine(bundle, transaction_managed=False, rollback=False,
+             use_reversion=True):
     """
     Returns one sreg and DHCP output for that SREG.
 
@@ -596,10 +602,11 @@ def combine(bundle, rollback=False, use_reversion=True):
 
         return sreg
     finally:
-        if rollback:
-            transaction.rollback()
-        else:
-            transaction.commit()
+        if not transaction_managed:
+            if rollback:
+                transaction.rollback()
+            else:
+                transaction.commit()
 
 
 def combine_multiple(bundles, **kwargs):

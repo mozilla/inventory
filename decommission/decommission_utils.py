@@ -1,5 +1,9 @@
 from systems.models import System, SystemStatus
 
+from core.registration.static.combine_utils import (
+    _combine, generate_possible_names, generate_sreg_bundles
+)
+
 
 class BadData(Exception):
     def __init__(self, msg=''):
@@ -26,7 +30,12 @@ def decommission_host(hostname, opts):
             )
         )
 
-    system.status = status
+    # Attempt to conver the host so an SREG host. This will help with
+    # decomming.
+    if opts['convert_to_sreg']:
+        sreg_convert(system)
+
+    system.system_status = status
     if opts.get('decommission_sreg'):
         for sreg in system.staticreg_set.all():
             sreg.decommissioned = True
@@ -34,3 +43,16 @@ def decommission_host(hostname, opts):
             # This changes things a lot in sreg and will disable hw adapters
 
     system.save()  # validation errors caught during unwind
+
+
+def sreg_convert(system):
+    bundles = []
+    for name in generate_possible_names(system.hostname):
+        bundles += generate_sreg_bundles(system, name)
+
+    results = []
+    for bundle in bundles:
+        results.append(_combine(
+            bundle, transaction_managed=True, use_reversion=False
+        ))
+    return results

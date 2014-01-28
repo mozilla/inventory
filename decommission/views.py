@@ -29,6 +29,7 @@ def decommission_(main_blob, load_json=True):
     opts = {
         'decommission_system_status': 'decommissioned',
         'decommission_sreg': True,
+        'convert_to_sreg': True
     }
     opts.update(options)
 
