@@ -63,6 +63,8 @@ def render_sregs(sregs):
     build_str = ''
     groups = {}
     for sreg in sregs:
+        if sreg.decommissioned:
+            continue
         hws = sreg.hwadapter_set.filter(enable_dhcp=True).order_by('mac')
         for hw in hws:
             if hw.group:
