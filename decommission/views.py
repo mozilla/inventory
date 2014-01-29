@@ -44,7 +44,7 @@ def decommission_(main_blob, load_json=True):
         reversion.set_comment(comment)
         try:
             for i, hostname in enumerate(systems):
-                decommission_host(hostname, opts)
+                decommission_host(hostname, opts, comment)
         except BadData, e:
             transaction.rollback()
             return None, {

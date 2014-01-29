@@ -187,7 +187,7 @@ class StaticReg(BaseAddressRecord, LabelMixin, FQDNMixin, BasePTR, KVUrlMixin,
 
         if '[DECOMMISSIONED]' not in self.label:
             make_decomm_label = lambda: '[DECOMMISSIONED] {0}'.format(
-                datetime.datetime.now().strftime('%Yy-%mm-%dd-%Ss-%fms')
+                datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             )
             decomm_label = make_decomm_label()
             while StaticReg.objects.filter(label=decomm_label).exists():
