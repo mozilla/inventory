@@ -23,7 +23,7 @@ class StaticRegDecommissionTests(TestCase):
         sreg.decommissioned = True
         sreg.save()
         self.assertTrue(sreg.fqdn.startswith('[DECOMMISSIONED]'))
-        self.assertEqual(sreg.ip_str, '0.0.0.0')
+        self.assertTrue(sreg.ip_str != '10.0.2.1')
 
         sreg.full_clean()
         sreg.bind_render_record()
