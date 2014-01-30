@@ -4,7 +4,7 @@
 <script src="{{ MEDIA_URL }}javascripts/record.js"></script>
 <script src="{{ MEDIA_URL }}javascripts/view_blink.js"></script>
 <script>
-    page_js_init("/en-US{{ 'find-related' | url() }}");
+    record_init("/en-US{{ 'find-related' | url() }}");
     view_blink_init('#id_views_0', '#id_views_1', function (empty_views){
         if (empty_views) {
             $('#empty-view-warning').css('display', 'block');
