@@ -1,5 +1,15 @@
 {% extends "record/ajax_form.html" %}
 {% block object_meta %}
+<script>
+    $(document).ready(function () {
+        // Only for SREG records -- if a user sets the decommission flag to true. warn them about the dangers.
+        $('#id_decommissioned').click(function (){
+            if($(this).prop('checked')) {
+                alert("Decommissioning is a destructive action! This SREG will have it's FQDN/IP changed and will be removed from DNS. Any Hardware Adapters attached to this SREG will be removed from DHCP.");
+            }
+        });
+    });
+</script>
 <div class='object_meta' >
     <!--- lolol, I suck at the web!
     seriously, this all needs to be rewritten
