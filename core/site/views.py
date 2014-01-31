@@ -11,7 +11,7 @@ from core.views import CoreCreateView, CoreUpdateView
 
 class SiteView(object):
     model = Site
-    queryset = Site.objects.all()
+    queryset = Site.objects.all().order_by('name')
     form_class = SiteForm
 
 
@@ -29,7 +29,7 @@ def delete_site(request, site_pk):
 
 
 class SiteListView(SiteView, CoreListView):
-    template_name = 'core/core_list.html'
+    template_name = 'site/site_list.html'
 
 
 class SiteCreateView(SiteView, CoreCreateView):

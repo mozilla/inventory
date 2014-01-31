@@ -97,6 +97,10 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
             )
         return details
 
+    def compile_Q(self):
+        """Compile a Django Q that will match any IP inside this site."""
+        return networks_to_Q(self.network_set.all())
+
     def get_site_path(self):
         target = self
         npath = [self.name]
@@ -108,16 +112,17 @@ class Site(models.Model, ObjectUrlMixin, CoreDisplayMixin):
                 target = target.parent
         return '.'.join(npath)
 
-    def compile_Q(self):
-        """Compile a Django Q that will match any IP inside this site."""
-        return networks_to_Q(self.network_set.all())
-
     def get_systems(self):
         """Get all systems associated to racks in this site"""
         if not self.systems:
             from systems.models import System
             self.systems = System.objects.all()
         return self.systems.filter(system_rack__in=self.systemrack_set.all())
+
+    def get_allocated_networks(self):
+        """Return a list of all top level networks assocaited with this site"""
+        from core.network.utils import calc_top_level_networks
+        return calc_top_level_networks(self)
 
 
 class SiteKeyValue(KeyValue):
