@@ -169,7 +169,7 @@ class SystemTest(CoreAPITests, ResourceTestCase):
     def setUp(self):
         self.operating_system = OperatingSystem.objects.create()
         self.server_model = ServerModel.objects.create()
-        self.allocation = Allocation.objects.create()
+        self.allocation = Allocation.objects.create(name='foo')
         self.system_rack = SystemRack.objects.create()
         self.system_type = SystemType.objects.create()
         self.system_status = SystemStatus.objects.create()
