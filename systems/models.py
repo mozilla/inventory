@@ -88,6 +88,18 @@ class Allocation(models.Model):
     def get_api_fields(cls):
         return ('name',)
 
+    def clean(self):
+        # Normaliz our name
+        label_lists = self.name.split(':')
+        label_lists = [ll.split() for ll in label_lists]
+        label_lists = [map(lambda i: i.title(), ll) for ll in label_lists]
+        label_lists = [' '.join(ll) for ll in label_lists]
+        self.name = ' : '.join(label_lists)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(Allocation, self).save(*args, **kwargs)
+
 
 class ScheduledTask(models.Model):
     task = models.CharField(max_length=255, blank=False, unique=True)
