@@ -320,6 +320,7 @@ def user_system_view(request, template, data, instance=None):
     the_owner_list.append("desktop-lon1")
     the_owner_list.append("desktop-par1")
     the_owner_list.append("desktop-yvr1")
+    the_owner_list.append("Release Engineering")
     data['owner_json'] = json.dumps(the_owner_list)
 
     #data['owner_json'] = json.dumps(ldap_lib.get_all_names())
