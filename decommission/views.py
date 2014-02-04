@@ -29,7 +29,8 @@ def decommission_(main_blob, load_json=True):
     opts = {
         'decommission_system_status': 'decommissioned',
         'decommission_sreg': True,
-        'convert_to_sreg': True
+        'convert_to_sreg': True,
+        'remove_dns': True
     }
     opts.update(options)
 
@@ -41,10 +42,11 @@ def decommission_(main_blob, load_json=True):
 
     @transaction.commit_manually
     def do_decommission():
+        messages = []
         reversion.set_comment(comment)
         try:
             for i, hostname in enumerate(systems):
-                decommission_host(hostname, opts, comment)
+                messages += decommission_host(hostname, opts, comment)
         except BadData, e:
             transaction.rollback()
             return None, {
@@ -80,6 +82,7 @@ def decommission_(main_blob, load_json=True):
                 transaction.commit()
             else:
                 transaction.rollback()
+            json_blob['messages'] = messages
             return json_blob, None
 
     return do_decommission()
