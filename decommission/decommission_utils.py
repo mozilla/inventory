@@ -78,6 +78,9 @@ def decommission_host(hostname, opts, comment):
     )
 
     system.system_status = status
+    messages.append(
+        "\tSet system status to {0}".format(status)
+    )
     if opts.get('decommission_sreg'):
         bug_number = get_bug_number(comment)
         for sreg in system.staticreg_set.all():
@@ -114,6 +117,18 @@ def decommission_host(hostname, opts, comment):
                     '[DECOMMISSIONED BUG {0}]'.format(bug_number)
                 )
                 sreg.save()
+            for hw in sreg.hwadapter_set.all():
+                dhcp_key_list = hw.keyvalue_set.filter(key='dhcp_scope')
+                if not dhcp_key_list.exists():
+                    continue
+                messages.append(
+                    "\t\tDissabling mac {0} in DHCP".format(hw.mac)
+                )
+                messages.append(
+                    "\t\tDeleting dhcp_scope key(s) "
+                    "{0}".format(','.join([kv.value for kv in dhcp_key_list]))
+                )
+                dhcp_key_list.delete()
 
     system.save()  # validation errors caught during unwind
     return messages
