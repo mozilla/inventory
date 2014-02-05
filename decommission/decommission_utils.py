@@ -65,7 +65,7 @@ def decommission_host(hostname, opts, comment):
     # Attempt to conver the host so an SREG host. This will help with
     # decomming.
     if opts['convert_to_sreg']:
-        sreg_convert(system)
+        sreg_convert(system, messages)
 
     system.operating_system = None
     system.allocation = None
@@ -86,12 +86,12 @@ def decommission_host(hostname, opts, comment):
         for sreg in system.staticreg_set.all():
             if 'DECOMMISSIONED' not in sreg.fqdn:
                 messages.append(
-                    "\tDeleting: {0}".format(
-                        sreg.bind_render_record(reverse=True, rdtype='PTR'))
+                    "\tDeleting: {0}".format(sreg.bind_render_record(
+                        reverse=True, rdtype='(SREG) PTR'))
                 )
                 messages.append(
                     "\tDeleting: {0}".format(
-                        sreg.bind_render_record(rdtype='A'))
+                        sreg.bind_render_record(rdtype='(SREG) A'))
                 )
             if opts['remove_dns']:
                 for cn in CNAME.objects.filter(target=sreg.fqdn):
@@ -134,14 +134,14 @@ def decommission_host(hostname, opts, comment):
     return messages
 
 
-def sreg_convert(system):
+def sreg_convert(system, messages):
     bundles = []
     for name in generate_possible_names(system.hostname):
         bundles += generate_sreg_bundles(system, name)
 
     results = []
     for bundle in bundles:
-        results.append(_combine(
-            bundle, transaction_managed=True, use_reversion=False
-        ))
+        res = _combine(bundle, transaction_managed=True, use_reversion=False)
+        messages.append("\t(Converted A/PTR to create '{0}')".format(res))
+        results.append(res)
     return results
