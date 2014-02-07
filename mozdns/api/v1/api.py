@@ -207,6 +207,8 @@ class CommonDNSResource(ModelResource):
                 bundle.obj.save()
             do_save()
             reversion.set_comment(comment)
+            if request.user.is_authenticated():
+                reversion.set_user(request.user)
         except ValidationError, e:
             if 'domain' in bundle.data:
                 prune_tree(bundle.data['domain'])
