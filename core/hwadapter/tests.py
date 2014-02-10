@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from core.registration.static.models import StaticReg
 from core.hwadapter.models import HWAdapter
-from systems.models import System
+from systems.tests.utils import create_fake_host
 from mozdns.tests.utils import create_fake_zone
 
 
@@ -10,7 +10,7 @@ class HWAdapterTests(TestCase):
     def setUp(self):
         create_fake_zone('10.in-addr.arpa', suffix='')
         self.domain = create_fake_zone('foo.mozilla.com', suffix='')
-        self.s = System.objects.create(hostname='foo.mozilla.com')
+        self.s = create_fake_host(hostname='foo.mozilla.com')
         self.sreg = StaticReg.objects.create(
             label='', domain=self.domain, ip_str='10.0.0.1', ip_type='4',
             system=self.s

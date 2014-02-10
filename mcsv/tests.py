@@ -6,6 +6,7 @@ from systems.models import (
     OperatingSystem, System, SystemRack, Allocation, Location, SystemStatus,
     SystemType
 )
+from systems.tests.utils import create_fake_host
 
 import datetime
 
@@ -34,32 +35,32 @@ class CSVTests(TestCase):
 
     def test_get_related(self):
         test_csv = """
-        hostname,operating_system%name
-        baz.mozilla.com,foo
+        hostname,operating_system%name,serial,system_type%type_name,warranty_start,warranty_end,allocation%name
+        baz.mozilla.com,foo,asdf,foobar,2012-01-01,2013-01-01,something
         """
         self.assertRaises(Exception, self.client_tst, test_csv)
 
         test_csv = """
-        hostname,operating_system%name
-        baz.mozilla.com,foo%foo
+        hostname,operating_system%name,serial,system_type%type_name,warranty_start,warranty_end,allocation%name
+        baz.mozilla.com,foo%foo,asdf,foobar,2012-01-01,2013-01-01,something
         """
         self.assertRaises(Exception, self.client_tst, test_csv)
 
         test_csv = """
-        hostname,operating_system
-        baz.mozilla.com,foo%foo
+        hostname,operating_system,serial,system_type%type_name,warranty_start,warranty_end,allocation%name
+        baz.mozilla.com,foo%foo,asdf,foobar,2012-01-01,2013-01-01,something
         """
         self.assertRaises(Exception, self.client_tst, test_csv)
 
         test_csv = """
-        hostname,operating_system%version
-        baz.mozilla.com,foo%foo
+        hostname,operating_system%version,serial,system_type%type_name,warranty_start,warranty_end,allocation%name
+        baz.mozilla.com,foo%foo,asdf,foobar,2012-01-01,2013-01-01,something
         """
         self.assertRaises(Exception, self.client_tst, test_csv)
 
         test_csv = """
-        hostname,operating_system%name%version
-        foobob.mozilla.com,foo%1.1
+        hostname,operating_system%name%version,serial,system_type%type_name,warranty_start,warranty_end,allocation%name
+        foobob.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
         """
         ret = csv_import(test_csv)
         self.assertEqual(1, len(ret))
@@ -67,32 +68,31 @@ class CSVTests(TestCase):
 
     def test_get_related_spaces(self):
         test_csv = """
-        hostname, operating_system        %name
-        baz.mozilla.com,foo
+        hostname, operating_system %name,serial,system_type%type_name,warranty_start,warranty_end,allocation%name
+        baz.mozilla.com,foo,asdf,foobar,2012-01-01,2013-01-01,something
         """
         self.assertRaises(Exception, self.client_tst, test_csv)
 
         test_csv = """
-        hostname, operating_system % name
-        baz.mozilla.com,foo%foo
+        hostname, operating_system % name,serial,system_type%type_name,warranty_start,warranty_end,allocation%name
+        baz.mozilla.com,foo%foo,asdf,foobar,2012-01-01,2013-01-01,something
         """
         self.assertRaises(Exception, self.client_tst, test_csv)
 
         test_csv = """
-        hostname,operating_system
-        baz.mozilla.com, foo % foo
+        hostname,operating_system,serial,system_type%type_name,warranty_start,warranty_end baz.mozilla.com, foo % foo,asdf,foobar,2012-01-01,2013-01-01
         """
         self.assertRaises(Exception, self.client_tst, test_csv)
 
         test_csv = """
-        hostname,operating_system%version
-        baz.mozilla.com,    foo %foo
+        hostname,operating_system%version,serial,system_type%type_name,warranty_start,warranty_end,allocation%name
+        baz.mozilla.com,    foo %foo,asdf,foobar,2012-01-01,2013-01-01,something
         """
         self.assertRaises(Exception, self.client_tst, test_csv)
 
         test_csv = """
-        hostname,operating_system%name%version
-        foobob.mozilla.com,foo%  1.1
+        hostname,operating_system%name%version,serial,system_type%type_name,warranty_start,warranty_end,allocation%name
+        foobob.mozilla.com,foo% 1.1,asdf,foobar,2012-01-01,2013-01-01,something
         """
         ret = csv_import(test_csv)
         self.assertEqual(1, len(ret))
@@ -100,16 +100,16 @@ class CSVTests(TestCase):
 
     def test_multiple(self):
         test_csv = """
-        hostname,operating_system%name%version
-        foobob.mozilla.com,foo%1.1
-        1fooboz.mozilla.com,foo%1.1
-        2fooboz.mozilla.com,foo%1.1
-        3fooboz.mozilla.com,foo%1.1
-        4fooboz.mozilla.com,foo%1.1
-        5fooboz.mozilla.com,foo%1.1
-        6fooboz.mozilla.com,foo%1.1
-        7fooboz.mozilla.com,foo%1.1
-        8fooboz.mozilla.com,foo%1.1
+        hostname,operating_system%name%version,serial,system_type%type_name,warranty_start,warranty_end,allocation%name
+        foobob.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        1fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        2fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        3fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        4fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        5fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        6fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        7fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        8fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
         """
         before = System.objects.all().count()
         ret = csv_import(test_csv)
@@ -119,16 +119,16 @@ class CSVTests(TestCase):
 
     def test_multiple_no_save(self):
         test_csv = """
-        hostname,operating_system%name%version
-        foobob.mozilla.com,foo%1.1
-        1fooboz.mozilla.com,foo%1.1
-        2fooboz.mozilla.com,foo%1.1
-        3fooboz.mozilla.com,foo%1.1
-        4fooboz.mozilla.com,foo%1.1
-        5fooboz.mozilla.com,foo%1.1
-        6fooboz.mozilla.com,foo%1.1
-        7fooboz.mozilla.com,foo%1.1
-        8fooboz.mozilla.com,foo%1.1
+        hostname,operating_system%name%version,serial,system_type%type_name,warranty_start,warranty_end,allocation%name
+        foobob.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        1fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        2fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        3fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        4fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        5fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        6fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        7fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
+        8fooboz.mozilla.com,foo%1.1,asdf,foobar,2012-01-01,2013-01-01,something
         """
         before = System.objects.all().count()
         ret = csv_import(test_csv, save=False)
@@ -138,16 +138,16 @@ class CSVTests(TestCase):
 
     def test_keyvalue(self):
         test_csv = """
-        hostname,nic.0.mac_address.0
-        foobob.mozilla.com,keyvalue
+        hostname,nic.0.mac_address.0,serial,warranty_start,warranty_end,system_type%type_name,allocation%name
+        foobob.mozilla.com,keyvalue,asdf,2012-01-01,2013-01-01,foobar,something
         """
         ret = csv_import(test_csv, save=False)
         self.assertTrue(ret[0]['kvs'])
 
     def test_warranty_start_end(self):
         test_csv = """
-        hostname,warranty_start,warranty_end
-        foobob.mozilla.com,2011-03-01,2012-03-12
+        hostname,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,2011-03-01,2012-03-12,asdf,foobar,something
         """
         self.client_tst(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
@@ -156,8 +156,8 @@ class CSVTests(TestCase):
 
     def test_invalid_field(self):
         test_csv = """
-        hostname,warranty_start,warranty_end
-        foobob.mozilla.com,2011-03-01,20192-03-12
+        hostname,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,2011-03-01,20192-03-12,asdf,foobar,something
         """
         self.assertRaises(ValueError, csv_import, test_csv, {'save': True})
         #s = System.objects.get(hostname='foobob.mozilla.com')
@@ -166,29 +166,29 @@ class CSVTests(TestCase):
 
     def test_override(self):
         test_csv = """
-        hostname,warranty_start,warranty_end
-        foobob.mozilla.com,2011-03-01,2012-03-12
+        hostname,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,2011-03-01,2012-03-12,asdf,foobar,something
         """
-        s = System.objects.create(hostname='foobob.mozilla.com', serial='1234')
+        s = create_fake_host(hostname='foobob.mozilla.com', serial='1234')
         self.client_tst(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
         self.assertTrue(s.serial, '1234')
 
     def test_override_spaces(self):
         test_csv = """
-        hostname , warranty_start,  warranty_end
-        foobob.mozilla.com,   2011-03-01 , 2012-03-12
+        hostname , warranty_start,  warranty_end, serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,   2011-03-01 , 2012-03-12,asdf,foobar,something
         """
-        s = System.objects.create(hostname='foobob.mozilla.com', serial='1234')
+        s = create_fake_host(hostname='foobob.mozilla.com', serial='1234')
         self.client_tst(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
         self.assertTrue(s.serial, '1234')
 
     def test_multiple_save(self):
         test_csv = """
-        hostname
-        foobob.mozilla.com
-        foobob.mozilla.com
+        hostname,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,2012-01-01,2012-01-01,asdf,foobar,something
+        foobob.mozilla.com,2012-01-01,2012-01-01,asdf,foobar,something
         """
         self.client_tst(test_csv, save=True)
         self.client_tst(test_csv, save=False)
@@ -199,8 +199,8 @@ class CSVTests(TestCase):
 
     def test_invalid_mac(self):
         test_csv = """
-        hostname,nic.0.mac_address.0
-        foobob.mozilla.com,11:22:33:44:55:66:77
+        hostname,nic.0.mac_address.0,warranty_start,warranty_end,serial,allocation%name
+        foobob.mozilla.com,11:22:33:44:55:66:77,2012-01-01,2012-01-01,asdf,something
         """
         self.assertRaises(
             ValidationError, self.client_tst, test_csv, {'save': True}
@@ -208,8 +208,8 @@ class CSVTests(TestCase):
 
     def test_update_key_value(self):
         test_csv = """
-        hostname,nic.0.name.0
-        foobob.mozilla.com,nic0
+        hostname,nic.0.name.0,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,nic0,2012-01-01,2012-01-01,asdf,foobar,something
         """
         self.client_tst(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
@@ -217,8 +217,8 @@ class CSVTests(TestCase):
         self.assertEqual('nic0', s.keyvalue_set.get(key='nic.0.name.0').value)
 
         test_csv = """
-        hostname,nic.0.name.0
-        foobob.mozilla.com,nic33
+        hostname,nic.0.name.0,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,nic33,2012-01-01,2012-01-01,asdf,foobar,something
         """
         self.client_tst(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
@@ -226,8 +226,8 @@ class CSVTests(TestCase):
         self.assertEqual('nic33', s.keyvalue_set.get(key='nic.0.name.0').value)
 
         test_csv = """
-        hostname,nic.0.mac_address.0
-        foobob.mozilla.com,11:22:33:44:55:66
+        hostname,nic.0.mac_address.0,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,11:22:33:44:55:66,2012-01-01,2012-01-01,asdf,foobar,something
         """
         self.client_tst(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
@@ -239,8 +239,8 @@ class CSVTests(TestCase):
             s.keyvalue_set.get(key='nic.0.mac_address.0').value
         )
         test_csv = """
-        hostname,nic.0.mac_address.0,nic.0.name.0
-        foobob.mozilla.com,11:22:33:44:55:66,nic0
+        hostname,nic.0.mac_address.0,nic.0.name.0,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,11:22:33:44:55:66,nic0,2012-01-01,2012-01-01,asdf,foobar,something
         """
         self.client_tst(test_csv, save=False)
         self.client_tst(test_csv, save=True)
@@ -257,17 +257,17 @@ class CSVTests(TestCase):
 
     def test_get_asset_tag(self):
         test_csv = """
-        hostname,warranty_start,warranty_end,asset_tag
-        foobob.mozilla.com,2011-03-01,2012-03-12,1234
+        hostname,warranty_start,warranty_end,asset_tag,serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,2011-03-01,2012-03-12,1234,asdf,foobar,something
         """
-        s = System.objects.create(hostname='foobob.mozilla.com')
+        s = create_fake_host(hostname='foobob.mozilla.com')
         self.client_tst(test_csv, save=True)
         s = System.objects.get(hostname='foobob.mozilla.com')
         self.assertTrue(s.asset_tag, '1234')
 
         test_csv = """
-        hostname,warranty_start,warranty_end,asset_tag
-        changed-the-hostname.mozilla.com,2011-03-01,2012-03-12,1234
+        hostname,warranty_start,warranty_end,asset_tag,serial,system_type%type_name,allocation%name
+        changed-the-hostname.mozilla.com,2011-03-01,2012-03-12,1234,asdf,foobar,something
         """
         self.client_tst(test_csv, save=True, primary_attr='asset_tag')
         self.assertEqual(
@@ -279,18 +279,18 @@ class CSVTests(TestCase):
 
     def test_two_primary_attribute(self):
         test_csv = """
-        primary_attribute%hostname,primary_attribute%asset_tag
-        foobob.mozilla.com,123
+        primary_attribute%hostname,primary_attribute%asset_tag,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,123,2012-01-01,2012-01-01,asdf,foobar,something
         """
         self.assertRaises(
             ValidationError, self.client_tst, test_csv, {'save': True}
         )
 
     def test_primary_attribute(self):
-        s = System.objects.create(hostname='foobob.mozilla.com')
+        s = create_fake_host(hostname='foobob.mozilla.com')
         test_csv = """
-        primary_attribute%hostname,hostname
-        foobob.mozilla.com,foobar.mozilla.com
+        primary_attribute%hostname,hostname,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
+        foobob.mozilla.com,foobar.mozilla.com,2012-01-01,2012-01-01,asdf,foobar,something
         """
         self.client_tst(test_csv, save=True, primary_attr='asset_tag')
         # The primary_attr kwarg shouldn't affect anything
@@ -299,12 +299,12 @@ class CSVTests(TestCase):
         self.assertEqual('foobar.mozilla.com', s1.hostname)
 
     def test_primary_attribute2(self):
-        System.objects.create(
+        create_fake_host(
             hostname='foobob.mozilla.com', asset_tag='YM0090PW9G6'
         )
         test_csv = """
-        primary_attribute%asset_tag,warranty_start,warranty_end,purchase_date
-        YM0090PW9G6,2010-03-24,2013-03-24,2010-03-24
+        primary_attribute%asset_tag,warranty_start,warranty_end,purchase_date,serial,system_type%type_name,allocation%name
+        YM0090PW9G6,2010-03-24,2013-03-24,2010-03-24,asdf,foobar,something
         """
         self.client_tst(test_csv, save=True)
         # The primary_attr kwarg shouldn't affect anything
@@ -313,12 +313,12 @@ class CSVTests(TestCase):
         self.assertTrue(s1.warranty_end)
 
     def test_primary_attribute3(self):
-        System.objects.create(
+        create_fake_host(
             hostname='foobob.mozilla.com', serial='SC07HT03WDKDJ'
         )
         test_csv = """
-        primary_attribute%serial,warranty_start,warranty_end,purchase_date
-        SC07HT03WDKDJ,2012-06-06,2013-06-06,2012-06-06
+        primary_attribute%serial,warranty_start,warranty_end,purchase_date,system_type%type_name,allocation%name
+        SC07HT03WDKDJ,2012-06-06,2013-06-06,2012-06-06,foobar,something
         """
         self.client_tst(test_csv, save=True)
         # The primary_attr kwarg shouldn't affect anything
@@ -329,7 +329,7 @@ class CSVTests(TestCase):
             datetime.datetime(2013, 6, 6, 0, 0).date(), s1.warranty_end)
 
     def test_two_switches(self):
-        System.objects.create(
+        create_fake_host(
             hostname='foobob.mozilla.com', serial='xxx'
         )
         test_csv = """
@@ -345,7 +345,7 @@ class CSVTests(TestCase):
         )
 
     def test_quoted(self):
-        System.objects.create(
+        create_fake_host(
             hostname='foobob.mozilla.com', serial='xxx'
         )
         test_csv = """
@@ -358,7 +358,7 @@ class CSVTests(TestCase):
         self.assertEqual(s1.switch_ports, 'sdf,asfd,asfd')
 
     def test_system_type(self):
-        System.objects.create(
+        create_fake_host(
             hostname='foobob1.mozilla.com', serial='xxx'
         )
         test_csv = """
@@ -383,10 +383,9 @@ class CSVTests(TestCase):
         SystemRack.objects.create(
             name='rack1', location=l2
         )
-        test_csv = """hostname,system_status %status,system_rack %name,\
-                        operating_system % name % version,allocation
+        test_csv = """hostname,system_status %status,system_rack %name, operating_system % name % version,allocation,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
 
-        foobob.use1.mozilla.com,production, rack1 ,foo % 1.1,somthing
+        foobob.use1.mozilla.com,production, rack1 ,foo % 1.1,somthing,2012-01-01,2012-01-01,asdf,foobar,something
         """
         self.assertRaises(
             Exception, self.client_tst, test_csv)  # rack1 needs a location too
@@ -394,8 +393,7 @@ class CSVTests(TestCase):
             System.objects.filter(hostname='foobob.use1.mozilla.com'))
 
         test_csv = """
-        hostname,system_status %status,system_rack %name % location__name,\
-                operating_system % name % version,allocation %name
-foobob.use1.mozilla.com,production, rack1 % loc1,foo % 1.1,something
+        hostname,system_status %status,system_rack %name % location__name,operating_system % name % version,allocation %name,warranty_start,warranty_end,serial,system_type%type_name,allocation%name
+foobob.use1.mozilla.com,production, rack1 % loc1,foo % 1.1,something,2012-01-01,2012-01-01,asdf,foobar,something
         """
         self.client_tst(test_csv, save=True)

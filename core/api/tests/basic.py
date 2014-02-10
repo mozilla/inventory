@@ -9,6 +9,7 @@ from systems.models import (
     System, SystemRack, SystemStatus, OperatingSystem, Allocation,
     ServerModel, SystemType
 )
+from systems.tests.utils import create_fake_host
 
 import simplejson as json
 from datetime import datetime
@@ -139,12 +140,12 @@ class HWAdapterTest(CoreAPITests, ResourceTestCase):
         self.num = 0
         create_fake_zone('2.ip6.arpa', suffix="")
         self.domain = create_fake_zone('foo.mozilla.com', suffix='')
-        self.s = System.objects.create(hostname='foo.mozilla.com')
+        self.s = create_fake_host(hostname='foo.mozilla.com')
         self.sreg = StaticReg.objects.create(
             label='', domain=self.domain, ip_str='2222:123::', ip_type='6',
             system=self.s
         )
-        self.s = System.objects.create(hostname='foobar.mozilla.com')
+        self.s = create_fake_host(hostname='foobar.mozilla.com')
         self.g = Group.objects.create(name='foobar')
         super(HWAdapterTest, self).setUp()
 

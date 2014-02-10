@@ -4,7 +4,7 @@ from core.group.models import Group
 
 from mozdns.tests.utils import create_fake_zone
 from core.registration.static.models import StaticReg
-from systems.models import System
+from systems.tests.utils import create_fake_host
 
 
 class KVApiTests(TestCase):
@@ -13,7 +13,7 @@ class KVApiTests(TestCase):
         self.c = Client()
         create_fake_zone('10.in-addr.arpa', suffix='')
         root_domain = create_fake_zone('foobar.mozilla.com', suffix='')
-        system = System.objects.create(hostname="asdf.mozilla.com")
+        system = create_fake_host(hostname="asdf.mozilla.com")
         sreg = StaticReg.objects.create(
             label='foo', domain=root_domain, system=system,
             ip_type='4', ip_str='10.0.0.0'

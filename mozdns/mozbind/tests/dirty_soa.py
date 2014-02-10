@@ -12,7 +12,7 @@ from mozdns.tests.utils import create_fake_zone
 
 from core.registration.static.models import StaticReg
 
-from systems.models import System
+from systems.tests.utils import create_fake_host
 from core.task.models import Task
 
 
@@ -33,7 +33,7 @@ class DirtySOATests(TestCase):
         self.rsoa.dirty = False
         self.rsoa.save()
 
-        self.s = System(hostname="foo.mozilla.com")
+        self.s = create_fake_host(hostname="foo.mozilla.com")
         self.s.save()
 
     def test_print_soa(self):

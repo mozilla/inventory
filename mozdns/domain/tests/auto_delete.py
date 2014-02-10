@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from systems.models import System
+from systems.tests.utils import create_fake_host
 from mozdns.address_record.models import AddressRecord
 from core.registration.static.models import StaticReg
 from mozdns.cname.models import CNAME
@@ -156,7 +156,7 @@ class AutoDeleteTests(TestCase):
 
         fqdn = "bar.x.y.z.foo.poo"
         label, the_domain = ensure_label_domain(fqdn)
-        system = System(hostname="foo.mozilla.com")
+        system = create_fake_host(hostname="foo.mozilla.com")
         addr = StaticReg.objects.create(
             label=label, domain=the_domain, ip_type='4', ip_str="10.2.3.4",
             system=system

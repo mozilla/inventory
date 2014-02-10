@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from core.registration.static.models import StaticReg
 from core.group.models import Group
 from core.hwadapter.models import HWAdapter
-from systems.models import System
+from systems.tests.utils import create_fake_host
 from mozdns.domain.models import Domain
 from mozdns.view.models import View
 from mozdns.tests.utils import create_fake_zone
@@ -20,7 +20,7 @@ class StaticRegViewTests(TransactionTestCase):
         self.d = create_fake_zone('foo.com', suffix="")
         self.rd = create_fake_zone('10.in-addr.arpa', suffix="")
         self.client = Client()
-        self.s = System.objects.create(hostname='exists.mozilla.com')
+        self.s = create_fake_host(hostname='exists.mozilla.com')
         self.g = Group.objects.create(name='foogroup')
 
     def test_create_with_no_hwadapters(self):

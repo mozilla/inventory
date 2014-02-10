@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 
 from core.registration.static.models import StaticReg
-from systems.models import System
+from systems.tests.utils import create_fake_host
 from mozdns.domain.models import Domain
 from mozdns.ptr.models import PTR
 
@@ -34,7 +34,7 @@ class PTRStaticRegTests(TestCase):
         self.f_c.save()
         self.r1 = self.create_domain(name="10")
         self.r1.save()
-        self.n = System(hostname="foo.mozilla.com")
+        self.n = create_fake_host(hostname="foo.mozilla.com")
         self.n.clean()
         self.n.save()
 

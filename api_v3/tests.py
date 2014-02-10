@@ -10,6 +10,7 @@ from core.site.models import Site
 from mozdns.domain.models import Domain
 from core.network.models import Network
 from core.range.models import Range
+from systems.tests.utils import create_fake_host
 
 
 class Tasty1SystemTest(ResourceTestCase):
@@ -20,22 +21,7 @@ class Tasty1SystemTest(ResourceTestCase):
         super(Tasty1SystemTest, self).setUp()
 
     def create_system(self, host_dict):
-        System(**host_dict).save()
-
-    def test1_system_not_exist(self):
-        resp = self.api_client.get('/en-US/api/v3/system/1/', format='json')
-        self.assertEqual(resp.status_code, 404)
-
-    def test2_create_system(self):
-        data = {'hostname': self.test_hostname}
-        resp = self.api_client.post(
-            '/en-US/tasty/v3/system/', format='json', data=data)
-        self.assertEqual(resp.status_code, 201)
-
-    def test3_get_system_by_id(self):
-        self.create_system({'hostname': self.test_hostname})
-        resp = self.api_client.get('/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
-        self.assertEqual(resp.status_code, 200)
+        create_fake_host(**host_dict)
 
     def test4_get_system_by_hostname(self):
         self.create_system({'hostname': self.test_hostname})

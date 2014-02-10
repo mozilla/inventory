@@ -5,7 +5,7 @@ from mozdns.domain.models import Domain
 from core.network.models import Network
 from core.range.models import Range
 from core.registration.static.models import StaticReg
-from systems.models import System
+from systems.tests.utils import create_fake_host
 
 
 class V4RangeTests(TestCase):
@@ -396,7 +396,7 @@ class V4RangeTests(TestCase):
         network = self.s
         rtype = 's'
         ip_type = '4'
-        system = System(hostname="foo.mozilla.com")
+        system = create_fake_host(hostname="foo.mozilla.com")
 
         kwargs = {
             'start_str': start_str, 'end_str': end_str,

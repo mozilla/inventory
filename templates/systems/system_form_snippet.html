@@ -30,7 +30,7 @@
 
         <div class="formline" id="status_formline">
             <label for="id_system_status">System Status:</label>
-            {{ form.system_status }} <span class="create_new"> or <a href="" id="new_status">(Create New)</a></span>
+            {{ form.system_status }}
         </div>
 
         <div class="formline">
@@ -79,8 +79,7 @@
 
 
         <div style='height: 25px;' id="allocation_formline" class="formline">
-            <label for="id_allocation">Allocated To:</label>
-            {{ form.allocation }} <span class="create_new"> or <a href="" id="new_allocation"> or (Create New)</a></span>
+            <label for="id_allocation">Allocated To:</label> {{ form.allocation }}
         </div>
         <br />
 <div id='system-tabs'>
