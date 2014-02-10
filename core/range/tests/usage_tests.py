@@ -4,7 +4,7 @@ from mozdns.domain.models import Domain
 from mozdns.ptr.models import PTR
 from mozdns.address_record.models import AddressRecord
 
-from systems.models import System
+from systems.tests.utils import create_fake_host
 
 import ipaddr
 from core.registration.static.models import StaticReg
@@ -44,7 +44,7 @@ class UsageTests(TestCase):
             start_str=start_str, end_str=end_str, network=self.network_v4,
             ip_type='4'
         )
-        self.s = System(hostname="foo1.mozilla.com")
+        self.s = create_fake_host(hostname="foo1.mozilla.com")
 
     def test0(self):
         ip_start = "10.0.0.0"
@@ -113,7 +113,7 @@ class UsageTests(TestCase):
         a.full_clean()
         a.save()
 
-        s = System(hostname="foo.mozilla.com")
+        s = create_fake_host(hostname="foo.mozilla.com")
         s.save()
         sreg = StaticReg.objects.create(
             label="foo", domain=self.domain, ip_str="10.0.1.4",

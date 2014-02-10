@@ -4,7 +4,7 @@ from mozdns.view.models import View
 from mozdns.domain.models import Domain
 from mozdns.ptr.models import PTR
 from mozdns.address_record.models import AddressRecord
-from systems.models import System
+from systems.tests.utils import create_fake_host
 from core.registration.static.models import StaticReg
 
 
@@ -26,7 +26,7 @@ class ViewTests(TestCase):
         self.o.save()
         self.f_o = Domain(name="foo.org")
         self.f_o.save()
-        self.s = System(hostname="foo.mozilla.com")
+        self.s = create_fake_host(hostname="foo.mozilla.com")
 
         Domain.objects.get_or_create(name="arpa")
         Domain.objects.get_or_create(name="in-addr.arpa")

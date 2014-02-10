@@ -11,7 +11,7 @@ from mozdns.soa.models import SOA
 
 from core.registration.static.models import StaticReg
 
-from systems.models import System
+from systems.tests.utils import create_fake_host
 
 import ipaddr
 
@@ -58,7 +58,7 @@ class ReverseDomainTests(TestCase):
         self.i6_arpa.save()
 
         self.domain = create_fake_zone('foo.mozilla.com', suffix='')
-        self.s = System.objects.create(hostname='mozilla.com')
+        self.s = create_fake_host(hostname='mozilla.com')
 
     # Reverse Domain test functions
     def test_soa_validators(self):

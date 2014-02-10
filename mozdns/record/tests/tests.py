@@ -15,7 +15,7 @@ from mozdns.txt.models import TXT
 from mozdns.sshfp.models import SSHFP
 from mozdns.view.models import View
 from core.registration.static.models import StaticReg
-from systems.models import System
+from systems.tests.utils import create_fake_host
 
 from mozdns.tests.utils import create_fake_zone
 
@@ -38,7 +38,7 @@ class BaseRecordTestCase(object):
         )
         self.public_view = View.objects.get_or_create(name='public')[0]
         self.private_view = View.objects.get_or_create(name='private')[0]
-        self.system = System(hostname="foo.bar.com")
+        self.system = create_fake_host(hostname="foo.bar.com")
         self.system.save()
 
     # Add an rdtype to the dict

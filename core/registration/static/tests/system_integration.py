@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from core.registration.static.models import StaticReg
 from core.registration.static.models import StaticRegKeyValue
-from systems.models import System
+from systems.tests.utils import create_fake_host
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 
@@ -34,12 +34,11 @@ class SystemIntegrationTests(TestCase):
         self.f_c.save()
         self.r1 = self.create_domain(name="10")
         self.r1.save()
-        self.n = System(hostname="foo.mozilla.com")
+        self.n = create_fake_host(hostname="foo.mozilla.com")
         self.n.clean()
         self.n.save()
 
     def do_add(self, label, domain, ip_str, ip_type='4'):
-        self.n = System(hostname="foo.mozilla.com")
         r = StaticReg(
             label=label, domain=domain, ip_str=ip_str, ip_type=ip_type,
             system=self.n

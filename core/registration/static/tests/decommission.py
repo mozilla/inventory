@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 
 from core.registration.static.models import StaticReg
-from systems.models import System
+from systems.tests.utils import create_fake_host
 from mozdns.view.models import View
 
 from mozdns.tests.utils import create_fake_zone
@@ -10,7 +10,7 @@ from mozdns.tests.utils import create_fake_zone
 
 class StaticRegDecommissionTests(TestCase):
     def setUp(self):
-        self.s = System.objects.create(hostname='asdf.mozilla.com')
+        self.s = create_fake_host(hostname='asdf.mozilla.com')
         self.domain = create_fake_zone("foobar.mozilla.com", suffix="")
         create_fake_zone("10.in-addr.arpa", suffix="")
         View.objects.get_or_create(name="private")

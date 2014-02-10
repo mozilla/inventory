@@ -10,7 +10,7 @@ from mozdns.soa.models import SOA
 from mozdns.ip.utils import ip_to_domain_name
 
 from core.registration.static.models import StaticReg
-from systems.models import System
+from systems.tests.utils import create_fake_host
 
 from mozdns.tests.utils import create_fake_zone
 
@@ -50,8 +50,7 @@ class NSTestsModels(TestCase):
         self._128 = self.create_domain(name='128', ip_type='4')
         self._128.save()
 
-        self.s = System(hostname="foo.mozilla.com")
-        self.s.save()
+        self.s = create_fake_host(hostname="foo.mozilla.com")
 
     def do_add(self, domain, server):
         ns = Nameserver(domain=domain, server=server)

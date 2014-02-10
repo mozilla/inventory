@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 
 from systems.models import (
-    OperatingSystem, Allocation, SystemStatus, System
+    OperatingSystem, Allocation, SystemStatus, System, SystemType
 )
 
 from core.registration.static.models import StaticReg
@@ -29,6 +29,9 @@ class BulkActionTests(TestCase):
             status='production', color='burgandy', color_code='wtf?'
         )
         self.allocation = Allocation.objects.create(name='something')
+        self.system_type = SystemType.objects.create(
+            type_name='Virtual Server'
+        )
         self.domain = create_fake_zone('foobar.mozilla.com', suffix='')
         self.build_domain = create_fake_zone('build.mozilla.org', suffix='')
         self.rdomain = create_fake_zone('10.in-addr.arpa', suffix='')
@@ -71,6 +74,7 @@ class BulkActionTests(TestCase):
                 "{hostname}": {{
                     "asset_tag": "7349",
                     "serial": "MXQ14901XV",
+                    "system_type": {system_type},
                     "rack_order": "1.16",
                     "hostname": "{hostname}",
                     "patch_panel_port": "",
@@ -84,7 +88,8 @@ class BulkActionTests(TestCase):
                 }}
             }}
         }}
-        """.format(allocation_pk=self.allocation.pk, hostname=hostname)
+        """.format(allocation_pk=self.allocation.pk, hostname=hostname,
+                   system_type=self.system_type.pk)
         pre_count = System.objects.all().count()
         json_data, error = bulk_import(data)
         self.assertFalse(error)
@@ -107,6 +112,7 @@ class BulkActionTests(TestCase):
                     "purchase_date": null,
                     "warranty_start": null,
                     "purchase_price": "1.0",
+                    "system_type": {system_type},
                     "oob_ip": "10.8.0.25",
                     "allocation": {allocation_pk},
                     "warranty_end": null,
@@ -114,7 +120,8 @@ class BulkActionTests(TestCase):
                 }}
             }}
         }}
-        """.format(allocation_pk=self.allocation.pk, hostname=hostname)
+        """.format(allocation_pk=self.allocation.pk, hostname=hostname,
+                   system_type=self.system_type.pk)
         pre_count = System.objects.all().count()
         json_data, error = bulk_import(data)
         self.assertFalse(error)
@@ -173,7 +180,8 @@ class BulkActionTests(TestCase):
         }}
         """.format(
             allocation_pk=self.allocation.pk, hostname=hostname,
-            private_view_pk=self.private_view.pk
+            private_view_pk=self.private_view.pk,
+            system_type=self.system_type.pk
         )
         blobs, error = bulk_import(data)
         self.assertFalse(blobs)
@@ -185,6 +193,7 @@ class BulkActionTests(TestCase):
         {{
             "systems": {{
                 "{hostname}": {{
+                    "system_type": {system_type},
                     "asset_tag": "7349",
                     "serial": "MXQ14901XV",
                     "rack_order": "1.16",
@@ -212,6 +221,7 @@ class BulkActionTests(TestCase):
         }}
         """.format(
             allocation_pk=self.allocation.pk, hostname=hostname,
+            system_type=self.system_type.pk,
             private_view_pk=self.private_view.pk
         )
         blobs, error = bulk_import(data)
@@ -233,6 +243,7 @@ class BulkActionTests(TestCase):
         {{
             "systems": {{
                 "{hostname}": {{
+                    "system_type": {system_type},
                     "asset_tag": "7349",
                     "serial": "MXQ14901XV",
                     "rack_order": "1.16",
@@ -259,6 +270,7 @@ class BulkActionTests(TestCase):
             }}
         }}
         """.format(
+            system_type=self.system_type.pk,
             allocation_pk=self.allocation.pk, hostname=hostname,
             private_view_pk=View.objects.get(name='private').pk
         )
@@ -294,6 +306,7 @@ class BulkActionTests(TestCase):
         {{
             "systems": {{
                 "{hostname}": {{
+                    "system_type": {system_type},
                     "asset_tag": "7349",
                     "serial": "MXQ14901XV",
                     "rack_order": "1.16",
@@ -338,6 +351,7 @@ class BulkActionTests(TestCase):
             }}
         }}
         """.format(
+            system_type=self.system_type.pk,
             allocation_pk=self.allocation.pk, hostname=hostname,
             private_view_pk=self.private_view.pk
         )
@@ -363,6 +377,7 @@ class BulkActionTests(TestCase):
         {{
             "systems": {{
                 "{hostname}": {{
+                    "system_type": {system_type},
                     "asset_tag": "7349",
                     "serial": "MXQ14901XV",
                     "rack_order": "1.16",
@@ -407,6 +422,7 @@ class BulkActionTests(TestCase):
             }}
         }}
         """.format(
+            system_type=self.system_type.pk,
             allocation_pk=self.allocation.pk, hostname=hostname,
             private_view_pk=View.objects.get(name='private').pk
         )
@@ -447,6 +463,7 @@ class BulkActionTests(TestCase):
         {{
             "systems": {{
                 "{hostname}": {{
+                    "system_type": {system_type},
                     "asset_tag": "7349",
                     "serial": "MXQ14901XV",
                     "rack_order": "1.16",
@@ -500,6 +517,7 @@ class BulkActionTests(TestCase):
             }}
         }}
         """.format(
+            system_type=self.system_type.pk,
             allocation_pk=self.allocation.pk, hostname=hostname,
             private_view_pk=self.private_view.pk
         )
@@ -529,6 +547,7 @@ class BulkActionTests(TestCase):
         {{
             "systems": {{
                 "{hostname}": {{
+                    "system_type": {system_type},
                     "asset_tag": "7349",
                     "serial": "MXQ14901XV",
                     "rack_order": "1.16",
@@ -582,6 +601,7 @@ class BulkActionTests(TestCase):
             }}
         }}
         """.format(
+            system_type=self.system_type.pk,
             allocation_pk=self.allocation.pk, hostname=hostname,
             private_view_pk=self.private_view.pk
         )

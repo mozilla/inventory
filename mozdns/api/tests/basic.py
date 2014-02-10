@@ -1,7 +1,7 @@
 from gettext import gettext as gt
 from tastypie.test import ResourceTestCase
 
-from systems.models import System
+from systems.tests.utils import create_fake_host
 from core.registration.static.models import StaticReg
 from mozdns.cname.models import CNAME
 from mozdns.address_record.models import AddressRecord
@@ -671,7 +671,7 @@ class StaticSregV4APITests(MozdnsAPITests, ResourceTestCase):
     def setUp(self):
         create_fake_zone('11.in-addr.arpa', suffix="")
         super(StaticSregV4APITests, self).setUp()
-        self.s = System(hostname="foobar")
+        self.s = create_fake_host(hostname="foobar")
         self.s.save()
 
     def compare_data(self, old_data, new_obj_data):
@@ -718,7 +718,7 @@ class StaticSregV6APITests(MozdnsAPITests, ResourceTestCase):
     def setUp(self):
         create_fake_zone('2.ip6.arpa', suffix="")
         super(StaticSregV6APITests, self).setUp()
-        self.s = System(hostname="foobar")
+        self.s = create_fake_host(hostname="foobar")
         self.s.save()
 
     def compare_data(self, old_data, new_obj_data):

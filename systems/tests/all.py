@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
 
-from models import System
+from systems.models import System
 from mozdns.domain.models import Domain
 from mozdns.view.models import View
 from mozdns.tests.utils import create_fake_zone
@@ -21,6 +21,7 @@ from core.site.models import Site
 from core.group.models import Group
 
 from systems import models
+from systems.tests.utils import create_fake_host
 from test_utils import setup_test_environment
 
 setup_test_environment()
@@ -190,7 +191,7 @@ class SystemTest(TestCase, LocalizeUtils):
         self.client.post('/system/new/', self.system_post)
 
     def test_system_update(self):
-        s = System.objects.create(hostname='foo.mozilla.com')
+        s = create_fake_host(hostname='foo.mozilla.com')
         new_hostname = 'foo1.mozilla.com'
         post_data = {
             'hostname': new_hostname
@@ -205,7 +206,7 @@ class SystemTest(TestCase, LocalizeUtils):
     def test_failed_validation(self):
         # Make sure that if a ValidationError is raised that we get a 200 and
         # not an ISE
-        s = System.objects.create(hostname='foo.mozilla.com')
+        s = create_fake_host(hostname='foo.mozilla.com')
         # Bad warranty dates should cause a VE
         post_data = {
             'warrant_start_year': '2013',
@@ -248,10 +249,10 @@ class SystemTest(TestCase, LocalizeUtils):
         self.assertEqual(resp.status_code, 200)
 
     def test_create(self):
-        System.objects.create(hostname='foo.mozilla.com')
+        create_fake_host(hostname='foo.mozilla.com')
 
     def test_bad_warranty(self):
-        s = System.objects.create(hostname='foo.mozilla.com')
+        s = create_fake_host(hostname='foo.mozilla.com')
         earlier = datetime.date.fromtimestamp(time.time() - 60 * 60 * 24 * 7)
         now = datetime.datetime.now()
         s.warranty_start = now
@@ -345,6 +346,6 @@ class SystemInterfaceTest(TransactionTestCase):
             start_str='66.66.66.1', end_str='66.66.66.254',
             network=self.network2
         )
-        self.system = System.objects.create(
+        self.system = create_fake_host(
             hostname='host1.vlan.dc.mozilla.com'
         )

@@ -13,7 +13,7 @@ from mozdns.address_record.models import AddressRecord
 from core.registration.static.models import StaticReg
 from mozdns.ip.utils import ip_to_domain_name
 
-from systems.models import System
+from systems.tests.utils import create_fake_host
 from mozdns.tests.utils import create_fake_zone
 
 
@@ -39,7 +39,7 @@ class CNAMETests(TestCase):
         self.r1 = create_fake_zone("10.in-addr.arpa", suffix="")
         self.r1.save()
 
-        self.s = System(hostname="foo.mozilla.com")
+        self.s = create_fake_host(hostname="foo.mozilla.com")
         self.s.save()
 
     def do_add(self, label, domain, data):

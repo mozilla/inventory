@@ -302,7 +302,7 @@ class ServerModel(models.Model):
         ordering = ['vendor', 'model']
 
     def __unicode__(self):
-        return "%s - %s" % (self.vendor, self.model)
+        return u"vendor: %s model: %s" % (self.vendor, self.model)
 
     @classmethod
     def get_api_fields(cls):
@@ -387,11 +387,11 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
     # Related Objects
     operating_system = models.ForeignKey(
         'OperatingSystem', blank=True, null=True)
-    server_model = models.ForeignKey('ServerModel', blank=True, null=True)
     allocation = models.ForeignKey('Allocation', blank=True, null=True)
-    system_rack = models.ForeignKey('SystemRack', blank=True, null=True)
     system_type = models.ForeignKey('SystemType', blank=True, null=True)
     system_status = models.ForeignKey('SystemStatus', blank=True, null=True)
+    server_model = models.ForeignKey('ServerModel', blank=True, null=True)
+    system_rack = models.ForeignKey('SystemRack', blank=True, null=True)
 
     hostname = models.CharField(
         unique=True, max_length=255, validators=[validate_name]
@@ -563,15 +563,57 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
         super(System, self).save(*args, **kwargs)
 
     def clean(self):
-        self.validate_warranty()
+        # Only do this validation on new systems. Current data is so poor that
+        # requireing existing systems to have this data is impossible
+        if self.pk:
+            return
+
+        if not self.is_vm():
+            self.validate_warranty()
+            self.validate_serial()
+
+        if not self.system_status:
+            self.system_status, _ = SystemStatus.objects.get_or_create(
+                status='building'
+            )
+
+    def is_vm(self):
+        if not self.system_type:
+            return False
+
+        return (
+            False if self.system_type.type_name.find('Virtual Server') == -1
+            else True
+        )
+
+    def validate_system_type(self):
+        if not self.system_type:
+            raise ValidationError(
+                "Server Type is a required field"
+            )
+
+    def validate_serial(self):
+        if not self.serial:
+            raise ValidationError(
+                "Serial numbers are reruied for non VM systems"
+            )
 
     def validate_warranty(self):
+        # If pk is None we are a new system. New systems are required to have
+        # their warranty data set
+        if self.pk is None and not bool(self.warranty_end):
+            raise ValidationError(
+                "Warranty Data is required for non virtual systems"
+            )
+
         if bool(self.warranty_start) ^ bool(self.warranty_end):
             raise ValidationError(
                 "Warranty must have a start and end date"
             )
+
         if not self.warranty_start:
             return
+
         if self.warranty_start.timetuple() > self.warranty_end.timetuple():
             raise ValidationError(
                 "warranty start date should be before the end date"
@@ -612,8 +654,9 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
         except Exception:
             pass
 
-        if not self.id:
+        if not self.pk:
             self.created_on = datetime.datetime.now()
+
         self.updated_on = datetime.datetime.now()
 
     def get_edit_url(self):
