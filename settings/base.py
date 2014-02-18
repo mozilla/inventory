@@ -34,6 +34,7 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'django_nose',
     'piston',
     'south',
+    'slurpee',
     'systems',
     'oncall',
     'migrate_dns',

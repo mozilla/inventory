@@ -30,7 +30,57 @@ function do_redirect(e) {
   }
 }
 
+
+var s,
+    SyncExternalSystemData = {
+  settings: {
+    sync_url: '/en-US/systems/sync_external_data/',
+  },
+
+  init: function (){
+    $('.sync-external-data-button').click(SyncExternalSystemData.sync);
+    s = this.settings;
+  },
+
+  sync: function (){
+    var $sync_button = $(this);
+    var attr = $sync_button.data('attr');
+    var source = $sync_button.data('source');
+    var system_pk = $sync_button.data('system-pk');
+    console.log("Attempting to sync '" + attr + "' with data found in '" + source + "'");
+    console.log("Url: " + s.sync_url);
+    $.ajax({
+      url: s.sync_url,
+      type: "POST",
+      data: {attr: attr, source: source, system_pk:system_pk}
+    }).done(function (resp){
+      var data = $.parseJSON(resp);
+      console.log(resp);
+      console.log("Success!");
+      // Remove conflicted data from the UI
+      $sync_button.parents('.system-data').find('.system-passive-native-data').css('display', 'none');
+
+      var $external_data = $sync_button.parents('.system-external-data');
+
+      $external_data.find('.system-external-data-point')
+                    .removeClass('conflict')
+                    .addClass('no-conflict');
+
+      $external_data.find('.system-external-data-point').html(data['new-value']);
+
+      $external_data.find('.tooltip').html('Inventory data overwritten with external data.');
+    }).error(function (e){
+      var newDoc = document.open("text/html", "replace");
+      newDoc.write(e.responseText);
+      newDoc.close();
+    });
+  }
+};
+
 $(document).ready(function() {
+  // Init sync exteranl data button
+  SyncExternalSystemData.init();
+
   // Pull in find IP stuff
   $('#ffip').click(function () {
     $('#choose-ip-area').css('display', 'block');
@@ -77,6 +127,7 @@ $(document).ready(function() {
           $('#choose-ip-area').css('transition', 'height 0.5s linear 0s');
     });
   });
+
   var system_id = $('#meta-data').attr('data-system-id');
 
   $('a.goto_range').click(function() {
@@ -317,3 +368,42 @@ $(document).ready(function() {
     return false;
   });
 });
+
+$.fn.myTooltip = function ( options ) {
+  // credit https://forum.jquery.com/topic/clickable-tooltips-possible
+  var defaults = {
+    speed: 60,
+    closeOnClick: true,
+    tooltipClass: 'tooltip'
+  };
+
+  var settings = $.extend( {}, defaults, options );
+
+  var $this = $(this),
+      $tooltip = $this.find('.'+settings.tooltipClass);
+
+
+  setPosition();
+  $(window).resize(function () {
+    setPosition();
+  });
+
+
+  $this.mouseenter(function () {
+    $('.'+settings.tooltipClass, this).fadeIn(settings.speed);
+  }).mouseleave(function () {
+    $('.'+settings.tooltipClass, this).stop(true, true).fadeOut(settings.speed);
+  });
+
+  if(settings.closeOnClick) {
+    $tooltip.click(function () {
+      $(this).stop(true, true).fadeOut(settings.speed);
+    });
+  }
+
+
+  function setPosition() {
+    $tooltip.css({top: $this.height(), left: 10});
+  }
+
+};

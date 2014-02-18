@@ -1,6 +1,7 @@
 settings_local.py
 settings/local.py
 settings/dnsbuilds.py
+settings/scrape.py
 *.py[co]
 *.sw[po]
 .coverage

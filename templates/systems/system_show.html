@@ -4,9 +4,12 @@
 <script type="text/javascript" src="/static/javascripts/system_show.js"></script>
 <script type="text/javascript" src="/static/javascripts/dns_form_utils.js"></script>
 <link href="{{ MEDIA_URL }}css/record.css" media="screen" rel="stylesheet" type="text/css" />
+<link href="{{ MEDIA_URL }}css/system.css" media="screen" rel="stylesheet" type="text/css" />
 <script src="{{ MEDIA_URL }}javascripts/view_blink.js"></script>
 <script>
     $(document).ready(function (){
+        $('.system-external-data').myTooltip();
+        $('.system-passive-native-data').myTooltip();
         view_blink_init('#id_sreg-views_0', '#id_sreg-views_1');
     });
 </script>
@@ -16,6 +19,18 @@
 {% block content %}
 
 <div id='meta-data' data-system-id='{{system.id}}'></div>
+
+{% if system.externaldata_set.exists() %}
+    <div class='external-sources'>
+        <div id='sources-title'>Active External Data Sources</div>
+        {% for source in system.externaldata_set.all().values_list('source', flat=True).distinct() %}
+            <div class='external-source {{ source }}'>
+                <a href='{{external_config[source]['host-url'].format(hostname=system.hostname) }}'>{{ source }}</a>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% import 'slurpee/macros.html' as slurpee %}
 
 <div>
 <dl class="show">
@@ -28,7 +43,7 @@
 <div style="clear:both;"></div>
 
 <dt>Serial:</dt>
-<dd>{{ system.serial }}</dd>
+<dd>{{ slurpee.display_overlay_attr(system, 'serial', system.serial) }}</dd>
 <div style="clear:both;"></div>
 
 <dt>Switch Ports:</dd>
@@ -38,15 +53,14 @@
 <dt>Patch Panel Port:</dd>
 <dd>{{ system.patch_panel_port }}</dd>
 <div style="clear:both;"></div>
-{% if not read_only %}
 <dt>OOB Ip:</dt>
-<dd>
-        {% if system.oob_ip %}
-            <a href="http://{{ system.oob_ip }}/">{{ system.oob_ip }}</a>
-        {% endif %}
-</dd>
-<div style="clear:both;"></div>
+{% set oob_link = "<a href='http://{0}'>{0}</a>" %}
+{% if 'ssh' in system.oob_ip %}
+    <dd>{{ slurpee.display_overlay_attr(system, 'oob_ip', system.oob_ip) }}</dd>
+{% else %}
+    <dd>{{ slurpee.display_overlay_attr(system, 'oob_ip', oob_link.format(system.oob_ip), format_display=oob_link) }}</dd>
 {% endif %}
+<div style="clear:both;"></div>
 
 <dt>OOB switch &amp; port:</dt>
 <dd>{{ system.oob_switch_port }}</dd>
@@ -108,16 +122,32 @@
 {% endif %}
 
 <dt>Operating System:</dt>
-<dd>{{ system.operating_system }}</dd>
+<dd>{{ slurpee.display_overlay_attrs(system, ['osfamily', 'operatingsystemrelease'], system.operating_system ) }}</dd>
 <div style="clear:both;"></div>
 
 <dt>Server Model:</dt>
-<dd>{{ system.server_model }}</dd>
+<dd>{{ slurpee.display_overlay_attrs(system, ['manufacturer', 'productname'], system.server_model ) }}</dd>
 <div style="clear:both;"></div>
 
 <dt>Allocated to:</dt>
 <dd>{{ system.allocation }}</dd>
 <div style="clear:both;"></div>
+
+{# Display P_EXTRA facts about this machine #}
+{% for ed in extra_externaldata %}
+    {% if ed.data != 'Not Specified' %}
+        {% if ed.source == 'infra-puppet-facts' %}
+            <dt class='infra-puppet-facts'>{{ ed.name }}:</dt>
+        {% elif ed.source == 'releng-puppet-facts' %}
+            <dt class='releng-puppet-facts'>{{ ed.name }}:</dt>
+        {% else %}
+            <dt style='color: red;'>{{ ed.name }}:</dt>
+        {% endif %}
+        <dd>{{ slurpee.display_extra_attr(ed, system) -}}</dd>
+        <div style="clear:both;"></div>
+    {% endif %}
+{% endfor %}
+
 
 {% if is_release %}
 	<dt>Releng Distro:</dt>

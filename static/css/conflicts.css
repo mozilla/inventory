@@ -1,0 +1,17 @@
+.out-of-sync-object {
+  background: white;
+  padding: 1em;
+}
+
+.system-hostname {
+  padding-left: 1.5em;
+}
+
+.system-conflict-data {
+  padding-left: 5em;
+}
+
+.conflict-data {
+  background: white;
+  padding: 1em;
+}

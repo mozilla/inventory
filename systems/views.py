@@ -40,6 +40,9 @@ from core.hwadapter.forms import HWAdapterForm
 from core.range.utils import ip_to_range
 from core.site.models import Site
 
+from slurpee.constants import P_EXTRA
+from settings.scrape import config as external_config
+
 
 # Import resources
 from api_v2.dhcp_handler import DHCPHandler
@@ -493,6 +496,49 @@ def save_network_adapter(request, id):
     return HttpResponseRedirect('/systems/get_network_adapters/' + id)
 
 
+def sync_external_data_ajax(request):
+    attr, source, system_pk = (
+        request.POST.get('attr', None),
+        request.POST.get('source', None),
+        request.POST.get('system_pk', None)
+    )
+
+    if not (attr and source and system_pk):
+        return HttpResponse(json.dumps({
+            'error': "attr, source, and system_pk are required"
+        }), status=400)
+
+    system = get_object_or_404(models.System, pk=system_pk)
+
+    if not hasattr(system, attr):
+        return HttpResponse(json.dumps({
+            'error': "System has no attribute {0}".format(attr)
+        }), status=400)
+
+    try:
+        ed = system.externaldata_set.get(source=source, name=attr)
+    except system.externaldata_set.model.DoesNotExist:
+        return HttpResponse(json.dumps({
+            'error': "System {0} has no external attribute '{1}' for source "
+            "'{2}'".format(system.hostname, attr, source)
+        }), status=400)
+
+    conflict_seen = system.external_data_conflict(attr)
+    cur_value = getattr(system, attr)
+    if attr == 'oob_ip' and cur_value.strip().startswith('ssh'):
+        new_value = 'ssh ' + ed.data
+    else:
+        new_value = ed.data
+
+    setattr(system, attr, new_value)
+    system.save()
+
+    return HttpResponse(json.dumps({
+        'conflict-seen': conflict_seen,
+        'new-value': new_value
+    }))
+
+
 @allow_anyone
 def system_show(request, id):
     system = get_object_or_404(models.System, pk=id)
@@ -550,6 +596,8 @@ def system_show(request, id):
         'adapters': adapters,
         'key_values': key_values,
         'is_release': is_release,
+        'extra_externaldata': system.externaldata_set.filter(policy=P_EXTRA),
+        'external_config': external_config,
         'read_only': getattr(request, 'read_only', False),
     })
 

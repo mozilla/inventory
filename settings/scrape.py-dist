@@ -1,0 +1,54 @@
+"""
+Puppet-to-Inventory fact policies
+---------------------------------
+
+overlay - Display the puppet fact in place of a value in Inventory. The underlying data
+stored in Inventory's database is left alone and is still editable, it just displayed as
+second class information.
+
+(not supported yet) overwrite - Data pulled in from puppet overwrites fields on Inventory
+objects and becomes the single source of truth.
+
+managed - Just pull the data in. Something else will deal with how to
+display it.
+
+extra - Data pull pulled in from puppet is displayed on an objects page as extra puppet
+data.
+
+The default policy is 'extra'.
+"""
+from slurpee.constants import (  # noqa
+    P_OVERLAY, P_OVERWRITE, P_EXTRA,
+    RAW_TEXT, JSON_TEXT, P_MANAGED
+)
+
+# When you add a new source. The sources 'name' will be added as a CSS class to
+# any data coming from that source. Use it to set the color.
+
+config = {
+    'infra-puppet-facts': {
+        'user': '',
+        'pass': '',
+        'type': 'puppet-dashboard',
+        # If Inventory finds there are facts coming from this source, it will
+        # format the link passing in the keywork 'hostname'
+        # (i.e. host-url.format(hostname=system.hostname)
+        'host-url': 'https://puppetdashboard/hosts/{hostname}',
+        'api-version': 'v1',
+        'source-url': 'https://puppetdashboard/api/fact_values',
+        'facts': [
+            {'fact_name': 'sku_number'},
+            {'fact_name': 'is_virtual'},
+            {
+                'name': 'serial',
+                'fact_name': 'serialnumber',
+                'policy': P_OVERLAY,
+            },
+            {
+                'name': 'oob_ip',
+                'fact_name': 'hp_oob_ip',
+                'policy': P_OVERLAY,
+            },
+        ]
+    },
+}

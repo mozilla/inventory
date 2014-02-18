@@ -1,0 +1,129 @@
+/*
+ * Add colors for the different sources here.
+ */
+
+.infra-puppet-facts {
+  color: purple;
+}
+
+.releng-puppet-facts {
+  color: green;
+}
+
+/*
+ * External Data sources header
+ */
+
+.external-sources {
+  margin-bottom: -20px;
+}
+
+.external-source {
+  display: inline;
+  background-color: #FFFFFF;
+  border: 1px solid #777;
+}
+
+.external-source a {
+  text-decoration: none;
+  color: inherit;
+  display: inline;
+  margin: 2.4em;
+}
+
+/*
+ * Individual external data points
+ */
+
+.system-data  a {
+  text-decoration: none;
+  color: inherit;
+  display: inline;
+}
+
+.system-passive-native-data-point {
+  display: inline;
+  text-shadow: 0px 0px 0.03em rgba(0, 0, 0, 0.3)
+}
+
+.system-external-data {
+  display: inline;
+}
+
+/* If there is not conflict, draw a little green checkbox */
+.no-conflict:after {
+  display:inline-block;
+  vertical-align: top;
+  line-height: 1em;
+  width: 1em;
+  height:1em;
+  margin-left: 0.2em;
+  margin-top: 0.25em;
+  text-align: center;
+  content:'✔';
+  color: green;
+}
+
+.conflict:before {
+  display:inline-block;
+  vertical-align: top;
+  line-height: 1em;
+  width: 1em;
+  height:1em;
+  margin-left: 2.2em;
+  margin-right: -0.3em;
+  margin-top: 0.25em;
+  text-align: center;
+  content:'✗';
+  color: red;
+}
+
+.extra-system-external-data {
+  display: inline;
+}
+
+.system-passive-native-data {
+  display: inline;
+  float: left;
+  margin-right: 0.3em;
+}
+
+.system-native-data-point {
+  display: inline;
+}
+
+.system-external-data-point {
+  display: inline;
+}
+
+/*
+ * Tool tip stuff
+ */
+
+.content {
+  position: relative;
+  display: inline;
+}
+
+.system-passive-native-data .content .tooltip span {
+  margin-left: 40px;
+}
+
+.content .tooltip {
+  background-color: #F8F8F8;
+  border: 1px solid #777;
+  border-radius: 2px;
+  padding: 9px;
+  position: absolute;
+  width: 400px;
+  z-Index: 99999;
+  display: none;
+}
+
+/*
+ * Sync data button
+ */
+
+.sync-external-data-button {
+  margin-top: 0.3em;
+}

@@ -702,6 +702,23 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
         self.keyvalue_set.filter(key__startswith='nic.%i' % index).delete()
         return True
 
+    def external_data_conflict(self, attr):
+        if not hasattr(self, attr):
+            return False
+
+        val = getattr(self, attr)
+        if not val:
+            return False
+
+        for ed in self.externaldata_set.filter(name=attr):
+            if (attr == 'oob_ip' and
+                    ed.data == val.strip().lstrip('ssh').strip()):
+                return False
+            elif ed.data.upper() != val.upper():
+                return True
+
+        return False
+
     def get_updated_fqdn(self):
         allowed_domains = [
             'mozilla.com',

@@ -1,0 +1,92 @@
+{% macro build_attr(ed, s, attr, s_value, conflict, format_display=None, is_extra=False) -%}
+        <div class='system-external-data'>
+            <div class='content'>
+                <div class='tooltip'>
+                    '{{ ed.source_name }}' pulled in from {{ ed.source }}. Last updated {{ ed.atime }}.
+                    {% if is_extra %}
+                    This data doesn't correspond to an existing system field -- it is auxiliary.
+                    {% elif conflict %}
+                    <i>The data found in {{ ed.source }} differs from the data found in Inventory</i>.
+                    You can overwrite current Inventory data with this external
+                    data by clicking this button.
+                    <button
+                        data-attr='{{ attr }}'
+                        data-source='{{ ed.source }}'
+                        data-system-pk='{{ s.pk }}'
+                        class='btn btn-small sync-external-data-button'>
+                        Overwrite 
+                    </button>
+                    {% else %}
+                    This data aligns with current system data.
+                    {% endif %}
+                </div>
+            </div>
+            {% if is_extra %}
+                <div class='system-external-data-point {{ ed.source }}'>
+            {% elif conflict%}
+                <div class='system-external-data-point {{ ed.source }} conflict'>
+            {% else %}
+                <div class='system-external-data-point {{ ed.source }} no-conflict'>
+            {% endif %}
+                {% if not conflict  and s_value %}
+                    {% set display_value = s_value %}
+                {% else %}
+                    {% set display_value = ed.data %}
+                {% endif %}
+
+                {% if format_display %}
+                    {{ format_display.format(display_value) }}
+                {% else %}
+                    {{ display_value }}
+                {% endif %}
+            </div>
+        </div>
+{% endmacro -%}
+
+{% macro display_extra_attr(ed, s) -%}
+    <div class='system-data'>
+        {{ build_attr(ed, system, ed.name, ed.data, format_display=None, is_extra=True) -}}
+    </div>
+{% endmacro %}
+
+{% macro display_overlay_attrs(s, attrs, s_value, format_display=None) -%}
+    <div class='system-data'>
+        {% set found_external = False %}
+        {% for attr in attrs %}
+            {% if s.externaldata_set.filter(name=attr).exists() %}
+                {% set found_external = True %}
+                {% for ed in s.externaldata_set.filter(name=attr)  %}
+                    {% if s.external_data_conflict(attr)  %}
+                        {{ build_attr(ed, s, attr, s_value, True, format_display=format_display) }}
+                    {% else %}
+                        {{ build_attr(ed, s, attr, s_value, False, format_display=format_display) }}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            {% if loop.last and s.external_data_conflict(attr) %}
+                {% if found_external %}
+                    <div class='system-passive-native-data'>
+                        <div class='content'>
+                            <div class='tooltip'>
+                                This data originates from Inventory but
+                                conflicts with data from exterior sources.
+                            </div>
+                        </div>
+                        <div class='system-passive-native-data-point'>
+                            {{ s_value }}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class='system-native-data-point'>
+                        {{ s_value }}
+                    </div>
+                {% endif %}
+            {% endif %}
+       {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro display_overlay_attr(s, attr, s_value, format_display=None) -%}
+    {{ display_overlay_attrs(s, [attr], s_value, format_display=None) }}
+{% endmacro %}

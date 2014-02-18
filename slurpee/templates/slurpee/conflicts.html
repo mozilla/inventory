@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block head %}
+<link href="{{ MEDIA_URL }}css/system.css" media="screen" rel="stylesheet" type="text/css" />
+<link href="{{ MEDIA_URL }}css/conflicts.css" media="screen" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="{{ MEDIA_URL }}javascripts/master_form_utils.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascripts/system_show.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascripts/dns_form_utils.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascripts/conflicts.js"></script>
+{% endblock %}
+
+{% block content %}
+    <div class='conflict-data'>
+        <form method='get'>
+            <label>Search: <input id='search' type='text' value='{{search}}' name='search'></input></label>
+            <label><input id='submit' type='submit'/></label>
+        </form>
+    {% if not search %}
+        <span>Search for conflicts by specifying a hostname pattern</span>
+    {% elif total == 0 %}
+        <span>No hosts matched</span>
+    {% else %}
+        <span>Conflicting external data found on systems matching the pattern <code>'{{ search }}'</code></span>
+        {% import 'slurpee/macros.html' as slurpee %}
+        {% for s in records %}
+            {% set ed_conflicts = get_conflicts(s) %}
+            {% if ed_conflicts %}
+                <div class='out-of-sync-object'>
+                    <div class='system-hostname'>
+                        <span><a href='{{ s.get_absolute_url() }}'>{{ s.hostname }}</a></span>
+                    </div>
+                    {% for ed in get_conflicts(s) %}
+                        <div class='system-conflict-data'>
+                            {% if ed.name == 'oob_ip' and 'ssh' in s.oob_ip %}
+                                {% set oob_link = "<a href='http://{0}'>{0}</a>" %}
+                                {{ slurpee.display_overlay_attr(s, 'oob_ip', oob_link.format(s.oob_ip), format_display=oob_link) }}
+                            {% else %}
+                                {{ slurpee.display_overlay_attr(s, ed.name, getattr(s, ed.name)) }}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    </div>
+{% endblock %}

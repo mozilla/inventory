@@ -10,3 +10,4 @@ from core.tests.all import *  # noqa
 from oncall.tests import *  # noqa
 from mcsv.tests import *  # noqa
 from bulk_action.tests import *  # noqa
+from slurpee.tests import *  # noqa

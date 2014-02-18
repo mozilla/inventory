@@ -29,6 +29,7 @@ urlpatterns = patterns('systems',
     (r'^ajax_check_dupe_nic/(?P<system_id>\d+)/(?P<adapter_number>\d+)[/]$', 'views.check_dupe_nic'),
     (r'^system_auto_complete_ajax[/]$', 'views.system_auto_complete_ajax'),
     (r'^ajax_check_dupe_nic_name/(?P<system_id>\d+)/(?P<adapter_name>.*)[/]$', 'views.check_dupe_nic_name'),
+    (r'^sync_external_data/$', 'views.sync_external_data_ajax'),
 
     # TODO, Depricate these
     url(r'^oncall/$', oncall),
