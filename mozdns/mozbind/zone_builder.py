@@ -56,7 +56,7 @@ def _render_forward_zone(default_ttl, nameserver_set, mx_set,
     BUILD_STR += render_rdtype(sshfp_set)
     BUILD_STR += render_rdtype(srv_set)
     BUILD_STR += render_rdtype(cname_set)
-    BUILD_STR += render_rdtype(interface_set, rdtype='A')
+    BUILD_STR += render_rdtype(interface_set, rdtype='A/AAAA')
     BUILD_STR += render_rdtype(addressrecord_set)
     return BUILD_STR
 

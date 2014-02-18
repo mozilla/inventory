@@ -322,12 +322,21 @@ class StaticReg(BaseAddressRecord, LabelMixin, FQDNMixin, BasePTR, KVUrlMixin,
     )
 
     def bind_render_record(self, pk=False, **kwargs):
-        self.rdtype_clob = kwargs.pop('rdtype', 'SREG')
+        rdtype = kwargs.pop('rdtype', 'SREG')
+        if rdtype == 'A/AAAA':
+            if self.ip_type == '6':
+                self.rdtype_clob = 'AAAA'
+            else:
+                self.rdtype_clob = 'A'
+        else:
+            self.rdtype_clob = rdtype
+
         if kwargs.pop('reverse', False):
             self.template = self.PTR_template
             self.ip_name = ip_to_dns_form(self.ip_str)
         else:
             self.template = self.A_template
+
         return super(StaticReg, self).bind_render_record(pk=pk, **kwargs)
 
 
