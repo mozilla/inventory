@@ -15,6 +15,23 @@ def wimport(reader, lookups, date_format):
             row[lookups['warranty_start']], row[lookups['warranty_end']],
             row[lookups['serial']]
         )
+        if not (warranty_start and warranty_end):
+            print "No warranty info in line: {0}".format(row)
+            continue
+
+        if '/' in warranty_start:
+            SP = '/'
+        elif '-' in warranty_start:
+            SP = '-'
+        else:
+            raise Exception("Cand determine date delimiter")
+
+        warranty_start = SP.join(map(
+            lambda s: s if len(s) != 1 else '0' + s, warranty_start.split(SP)
+        ))
+        warranty_end = SP.join(map(
+            lambda s: s if len(s) != 1 else '0' + s, warranty_end.split(SP)
+        ))
         serial = serial.strip("'")  # Not sure why there is a ' mark
 
         try:
@@ -33,9 +50,16 @@ def wimport(reader, lookups, date_format):
 
         if not s.warranty_end:
             updated += 1
-        s.warranty_start = datetime.datetime.strptime(
-            warranty_start, date_format)
-        s.warranty_end = datetime.datetime.strptime(warranty_end, date_format)
+        try:
+            s.warranty_start = datetime.datetime.strptime(
+                warranty_start, date_format
+            )
+            s.warranty_end = datetime.datetime.strptime(
+                warranty_end, date_format
+            )
+        except ValueError, e:
+            print "Error: {0} in line: {1}".format(e, row)
+            continue
         s.save()
 
     print "Total number of records in spreadsheet: %s" % total_records
