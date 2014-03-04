@@ -531,7 +531,7 @@ def sync_external_data_ajax(request):
         new_value = ed.data
 
     setattr(system, attr, new_value)
-    system.save()
+    system.save(request=request)
 
     return HttpResponse(json.dumps({
         'conflict-seen': conflict_seen,
