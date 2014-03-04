@@ -8,8 +8,7 @@ from systems.models import System
 from django.db import transaction
 
 from slurpee.constants import P_EXTRA, P_MANAGED
-
-MAX_RETRY = 10
+from settings.scrape import RETRY as MAX_RETRY
 
 
 class NoDataReturned(Exception):

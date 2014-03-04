@@ -54,3 +54,5 @@ config = {
 }
 
 ALERT_FILE = 'nagios.json'
+
+RETRY = 10

@@ -23,7 +23,7 @@ def clear_alerts():
         if not contents.strip():
             contents = "{}"
         alerts = json.loads(contents)
-        alerts['slurp'] = ''
+        alerts.pop('slurp', None)
         fd.write(json.dumps(alerts))
 
 
