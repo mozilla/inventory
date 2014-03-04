@@ -12,6 +12,10 @@ from slurpee.constants import P_EXTRA, P_MANAGED
 MAX_RETRY = 10
 
 
+class NoDataReturned(Exception):
+    pass
+
+
 class ForemanFactSlurp(object):
     def __init__(self, session, source, url, fact, ssl_verify,
                  extra_get_params={}):
@@ -75,7 +79,11 @@ class ForemanFactSlurp(object):
             time.sleep(1)
 
         if not success:
-            raise Exception("Issues connecting to {0}".format(self.fact_url))
+            raise Exception(
+                "Issues connecting to {0}. Retry is {1}.".format(
+                    self.fact_url, MAX_RETRY
+                )
+            )
 
         print "[{0} {1}] {2} hosts covered".format(
             self.fact['fact_name'], self.fact_url, len(self.data)
@@ -118,8 +126,11 @@ class ForemanFactSlurp(object):
                 print "Couldn't find system {0}".format(hostname)
 
         if not orm_data:
-            # TODO, what to do if empty data is returned
-            return
+            # If no data was returned raise an exception. This should cause the
+            # transaction to rollback.
+            raise NoDataReturned(
+                "No data returned from {0} {1}".format(self.source, self.url)
+            )
         ExternalData.objects.bulk_create(orm_data)
 
         print "Created {0} new datum".format(len(orm_data))
@@ -156,11 +167,7 @@ def slurp_puppet_facts(source=None, source_url=None, auth=None, facts=None,
         )
 
         for fact in futures.as_completed(facts):
-            try:
-                fact.result()
-            except:
-                # TODO, handle errors
-                print fact.result()
-                continue
-            ff = facts[fact]
-            ff.process()
+            # This will can an exception and rollback our delete()
+            fact.result()
+
+            facts[fact].process()
