@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 import simplejson as json
 
@@ -24,14 +25,16 @@ def main():
                 return WARNING
 
             if not alerts:
+                print "All is well"
                 return OKAY
 
             for alert, msg in alerts.iteritems():
                 print "{0}: {1} ".format(alert, msg)
             return CRITICAL
     except IOError:
-        print "Misconfigured alert. Couldn't fine {0}".format(NAGIOS_FILE)
+        print "Misconfigured alert. Couldn't find {0}".format(NAGIOS_FILE)
         return WARNING
+
 
 if __name__ == '__main__':
     sys.exit(main())
