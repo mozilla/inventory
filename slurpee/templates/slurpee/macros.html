@@ -62,26 +62,30 @@
                         {{ build_attr(ed, s, attr, s_value, False, format_display=format_display) }}
                     {% endif %}
                 {% endfor %}
-            {% endif %}
 
-            {% if loop.last and s.external_data_conflict(attr) %}
-                {% if found_external %}
-                    <div class='system-passive-native-data'>
-                        <div class='content'>
-                            <div class='tooltip'>
-                                This data originates from Inventory but
-                                conflicts with data from exterior sources.
+                {% if loop.last and s.external_data_conflict(attr) %}
+                    {% if found_external %}
+                        <div class='system-passive-native-data'>
+                            <div class='content'>
+                                <div class='tooltip'>
+                                    This data originates from Inventory but
+                                    conflicts with data from exterior sources.
+                                </div>
+                            </div>
+                            <div class='system-passive-native-data-point'>
+                                {{ s_value }}
                             </div>
                         </div>
-                        <div class='system-passive-native-data-point'>
+                    {% else %}
+                        <div class='system-native-data-point'>
                             {{ s_value }}
                         </div>
-                    </div>
-                {% else %}
-                    <div class='system-native-data-point'>
-                        {{ s_value }}
-                    </div>
+                    {% endif %}
                 {% endif %}
+            {% else %}
+                <div class='system-native-data-point'>
+                    {{ s_value }}
+                </div>
             {% endif %}
        {% endfor %}
     </div>
