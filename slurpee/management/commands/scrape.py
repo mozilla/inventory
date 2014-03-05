@@ -60,7 +60,9 @@ class Command(BaseCommand):
                         "Invalid config for {0}. {1}".format(source_name, e)
                     )
                 except Exception, e:
-                    write_alert(str(e))
+                    write_alert(
+                        "Exception type: {0}. Error: ".format(type(e), str(e))
+                    )
                     logging.error(
                         "Halting external data import due to: "
                         "{0}".format(str(e))
