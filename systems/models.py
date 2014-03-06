@@ -302,7 +302,7 @@ class ServerModel(models.Model):
         ordering = ['vendor', 'model']
 
     def __unicode__(self):
-        return u"vendor: %s model: %s" % (self.vendor, self.model)
+        return u"%s - %s" % (self.vendor, self.model)
 
     @classmethod
     def get_api_fields(cls):

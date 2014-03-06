@@ -122,11 +122,11 @@
 {% endif %}
 
 <dt>Operating System:</dt>
-<dd>{{ slurpee.display_overlay_attrs(system, ['osfamily', 'operatingsystemrelease'], system.operating_system ) }}</dd>
+<dd>{{ system.operating_system }}</dd>
 <div style="clear:both;"></div>
 
 <dt>Server Model:</dt>
-<dd>{{ slurpee.display_overlay_attrs(system, ['manufacturer', 'productname'], system.server_model ) }}</dd>
+<dd>{{ system.server_model }}</dd>
 <div style="clear:both;"></div>
 
 <dt>Allocated to:</dt>
