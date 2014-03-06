@@ -61,7 +61,8 @@ class Command(BaseCommand):
                     )
                 except Exception, e:
                     write_alert(
-                        "Exception type: {0}. Error: ".format(type(e), str(e))
+                        "Exception type: {0}. Error: {1} ".format(
+                            type(e), str(e))
                     )
                     logging.error(
                         "Halting external data import due to: "

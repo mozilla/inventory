@@ -66,9 +66,15 @@ class ForemanFactSlurp(object):
         success = False
         # We have tried retry times
         while retry < MAX_RETRY:
-            self.resp = self.session.get(
-                self.fact_url, params=self.params, verify=self.ssl_verify
-            )
+            try:
+                self.resp = self.session.get(
+                    self.fact_url, params=self.params, verify=self.ssl_verify
+                )
+            except requests.exceptions.Timeout:
+                time.sleep(1)
+                retry += 1
+                continue
+
             if self.resp.status_code == 200:
                 self.data = json.loads(self.resp.content)
                 success = True
