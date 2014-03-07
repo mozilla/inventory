@@ -55,7 +55,7 @@
 <div style="clear:both;"></div>
 <dt>OOB Ip:</dt>
 {% set oob_link = "<a href='http://{0}'>{0}</a>" %}
-{% if 'ssh' in system.oob_ip %}
+{% if system.oob_ip and 'ssh' in system.oob_ip %}
     <dd>{{ slurpee.display_overlay_attr(system, 'oob_ip', system.oob_ip) }}</dd>
 {% else %}
     <dd>{{ slurpee.display_overlay_attr(system, 'oob_ip', oob_link.format(system.oob_ip), format_display=oob_link) }}</dd>
