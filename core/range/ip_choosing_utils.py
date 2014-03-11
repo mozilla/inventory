@@ -310,16 +310,23 @@ def integrate_real_ranges(network, template_ranges):
         return template_ranges
 
     name_fragment = calc_name_fragment(network)
-    filtered_ranges = template_ranges
+    filtered_ranges = []
+    no_ovlp_templates = []
 
-    for r in real_ranges:
-        for tr in template_ranges:
+    for tr in template_ranges:
+        ol = False
+        for r in real_ranges:
             ol = overlap(
                 (r.start_str, r.end_str), (tr['start'], tr['end']),
                 ip_type=network.ip_type, cast_to_int=True
             )
             if ol:
-                filtered_ranges.remove(tr)
+                break
+
+        if not ol:
+            no_ovlp_templates.append(tr)
+
+    for r in real_ranges:
         filtered_ranges.append({
             'name': r.name,
             'rtype': r.name,
@@ -328,6 +335,8 @@ def integrate_real_ranges(network, template_ranges):
             'name_fragment': name_fragment,
             'pk': r.pk
         })
+
+    filtered_ranges += no_ovlp_templates
 
     return sorted(
         filtered_ranges, key=lambda r: ip_to_int(r['start'], network.ip_type)

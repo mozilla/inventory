@@ -188,27 +188,27 @@ def _overlap(r1, r2):
     if r1_start > r2_end or r1_end < r2_start:  # no overlap
         return None
 
-    if r1_end == r2_end and r1_start == r2_start:
-        # Low                   High
-        # r1    |---------|
-        # r2    |---------|
-        # rx    |---------|
-        return r1
-
-    if r1_start < r2_start and r1_end > r2_end:
-        # r2 is subset of r1
+    if r1_start <= r2_start and r1_end >= r2_end:
+        # r2 is subset of r1 or equal
         # Low                   High
         # r1    |---------|
         # r2     |-------|
         # rx    |---------|
+        # OR
+        # Low                   High
+        # r1    |---------|
+        # r2    |---------|
+        # rx    |---------|
         return r2
-    if r1_start > r2_start and r1_end > r2_end:
+
+    if r1_start >= r2_start and r1_end >= r2_end:
         # Low                   High
         # r1    |-----------|
         # r2 |---------|
         # rx    |------|
         return r1_start, r2_end
-    if r1_start < r2_start and r1_end < r2_end:
+
+    if r1_start <= r2_start and r1_end <= r2_end:
         # Low                   High
         # r1 |-----------|
         # r2      |---------|

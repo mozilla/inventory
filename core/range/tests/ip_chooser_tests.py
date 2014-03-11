@@ -60,9 +60,10 @@ class ChooserOverlapTests(TestCase):
         )
 
         trs = calc_template_ranges(self.n1)
+        n_trs = len(trs)
         rs = integrate_real_ranges(self.n1, trs)
         # We should have lost one range
-        self.assertEqual(len(trs) - 1, len(rs))
+        self.assertEqual(n_trs - 1, len(rs))
         rs = sorted(rs, key=lambda r: int(ipaddr.IPv4Address(r['start'])))
 
         self.assertEqual(r1.start_str, rs[0]['start'])
