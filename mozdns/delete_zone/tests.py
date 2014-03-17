@@ -3,7 +3,7 @@ from django.test import TestCase
 from mozdns.domain.models import Domain
 from mozdns.soa.models import SOA
 from mozdns.tests.utils import create_fake_zone
-from mozdns.delete_zone.views import delete_zone_helper
+from mozdns.delete_zone.utils import delete_zone_helper
 
 
 class DeleteZoneTests(TestCase):

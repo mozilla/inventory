@@ -9,8 +9,8 @@ from mozdns.soa.models import SOA
 
 
 class DomainTests(TestCase):
-
     def setUp(self):
+        Domain.objects.all().delete()
         Domain.objects.get_or_create(name="arpa")
         Domain.objects.get_or_create(name="in-addr.arpa")
         Domain.objects.get_or_create(name="128.in-addr.arpa")

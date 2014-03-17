@@ -15,6 +15,9 @@ from mozdns.tests.utils import create_fake_zone
 
 class FullNameTests(TestCase):
 
+    def setUp(self):
+        Domain.objects.all().delete()
+
     def test_basic_add_remove1(self):
         c = Domain(name='com')
         c.save()

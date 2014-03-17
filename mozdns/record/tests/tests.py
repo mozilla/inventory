@@ -24,6 +24,7 @@ class BaseRecordTestCase(object):
     record_base_url = "/mozdns/record"
 
     def setUp(self):
+        self.test_type.objects.all().delete()
         self.rdtype = self.test_type().rdtype
         self.create_url = "{0}/create/{1}/".format(self.record_base_url,
                                                    self.rdtype)

@@ -11,6 +11,8 @@ class AutoCreateTests(TestCase):
     These tests should cover zone insurance and delegation blocking.
     Purgeable Domains
     """
+    def setUp(self):
+        Domain.objects.all().delete()
 
     def test_delegation_block(self):
         s, _ = SOA.objects.get_or_create(primary="foo", contact="Foo",

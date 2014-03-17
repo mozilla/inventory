@@ -11,11 +11,10 @@ from systems.tests.utils import create_fake_host
 class V4RangeTests(TestCase):
 
     def setUp(self):
-        self.d = Domain(name="com")
-        self.d.save()
-        Domain(name="arpa").save()
-        Domain(name="in-addr.arpa").save()
-        Domain(name="10.in-addr.arpa").save()
+        self.d, _ = Domain.objects.get_or_create(name="com")
+        Domain.objects.get_or_create(name="arpa")
+        Domain.objects.get_or_create(name="in-addr.arpa")
+        Domain.objects.get_or_create(name="10.in-addr.arpa")
         self.s = Network(network_str="10.0.0.0/16", ip_type='4')
         self.s.update_network()
         self.s.save()
@@ -396,7 +395,7 @@ class V4RangeTests(TestCase):
         network = self.s
         rtype = 's'
         ip_type = '4'
-        system = create_fake_host(hostname="foo.mozilla.com")
+        system = create_fake_host(hostname="fooasdf.mozilla.com")
 
         kwargs = {
             'start_str': start_str, 'end_str': end_str,
@@ -406,17 +405,17 @@ class V4RangeTests(TestCase):
         self.assertEqual(str(r.get_next_ip()), "10.0.33.1")
         self.assertEqual(str(r.get_next_ip()), "10.0.33.1")
         StaticReg.objects.create(
-            label="foo", domain=self.d, ip_type='4',
+            label="foobar", domain=self.d, ip_type='4',
             ip_str=str(r.get_next_ip()), system=system
         )
         self.assertEqual(str(r.get_next_ip()), "10.0.33.2")
         StaticReg.objects.create(
-            label="foo", domain=self.d, ip_type='4',
+            label="foobar", domain=self.d, ip_type='4',
             ip_str=str(r.get_next_ip()), system=system
         )
         self.assertEqual(str(r.get_next_ip()), "10.0.33.3")
         StaticReg.objects.create(
-            label="foo", domain=self.d, ip_type='4',
+            label="foobar", domain=self.d, ip_type='4',
             ip_str=str(r.get_next_ip()), system=system
         )
         self.assertEqual(r.get_next_ip(), None)

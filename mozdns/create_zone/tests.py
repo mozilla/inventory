@@ -16,11 +16,12 @@ def localize(url):
 class CreateZoneTests(TestCase):
 
     def setUp(self):
+        Domain.objects.all().delete()
         self.c = Client()
         Domain(name="com").save()
         Domain(name="mozilla.com").save()
-        self.private_view = View.objects.create(name='private')
-        self.public_view = View.objects.create(name='public')
+        self.private_view, _ = View.objects.get_or_create(name='private')
+        self.public_view, _ = View.objects.get_or_create(name='public')
 
     def get_post_data(self):
         """Return a valid set of data"""

@@ -1,0 +1,22 @@
+STAGE_DIR = "./dns_stage/"
+PROD_DIR = "./dns_prod/invzones/"
+BIND_PREFIX = PROD_DIR
+LOCK_FILE = "./lock_file"
+NAMED_CHECKZONE_OPTS = ""
+MAX_ALLOWED_LINES_CHANGED = 500
+NAMED_CHECKZONE = "/usr/sbin/named-checkzone"  # path to named-checkzone
+NAMED_CHECKCONF = "/usr/sbin/named-checkconf"  # path to named-checkconf
+
+# Only one zone at a time should be removed from public and private
+MAX_ALLOWED_CONFIG_LINES_REMOVED = 10
+
+STOP_UPDATE_FILE = "./stop.update"
+LAST_RUN_FILE = "./last.run"
+
+
+## Needed for migration
+ZONE_PATH = ""
+
+ZONES_WITH_NO_CONFIG = []
+
+TEST_PREFIX = '/home/travis/build/uberj/inventory/build/'

@@ -21,7 +21,7 @@ import decimal
 class BulkActionTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
-        self.private_view = View.objects.create(name='private')
+        self.private_view, _ = View.objects.get_or_create(name='private')
         self.operating_system = OperatingSystem.objects.create(
             name='foo', version='1.1'
         )

@@ -1,5 +1,4 @@
 # Random functions that get used in different places.
-from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db.models import Q, F
 
@@ -66,17 +65,6 @@ def slim_form(domain_pk=None, form=None):
     I know the second one (the widget) removes the choices. The third
     line removes the default u'--------' choice from the drop down.
     """
-    if not form:
-        raise Http404
-    if domain_pk:
-        query_set = Domain.objects.filter(id=domain_pk)
-        if not query_set:
-            raise Http404
-        if not form.fields.get('domain', False):
-            raise Http404
-        form.fields['domain']._queryset = query_set
-        form.fields['domain'].widget.choices.queryset = query_set
-        form.fields['domain'].empty_label = None
     return form
 
 

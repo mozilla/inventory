@@ -16,6 +16,7 @@ from core.network.models import Network
 
 class UsageTests(TestCase):
     def setUp(self):
+        Domain.objects.all().delete()
         Domain.objects.create(name="com")
         self.domain = Domain.objects.create(name="foo.com")
         Domain.objects.create(name="arpa")

@@ -43,19 +43,15 @@ class ReverseDomainTests(TestCase):
             pass
         else:
             name = ip_to_domain_name(name, ip_type=ip_type)
-        d = Domain(name=name, delegated=delegated)
-        d.clean()
+        d = Domain.objects.create(name=name, delegated=delegated)
         self.assertTrue(d.is_reverse)
         return d
 
     def setUp(self):
+        Domain.objects.all().delete()
         self.arpa = self.create_domain(name='arpa')
-        self.arpa.save()
         self.i_arpa = self.create_domain(name='in-addr.arpa')
-        self.i_arpa.save()
-
         self.i6_arpa = self.create_domain(name='ip6.arpa')
-        self.i6_arpa.save()
 
         self.domain = create_fake_zone('foo.mozilla.com', suffix='')
         self.s = create_fake_host(hostname='mozilla.com')
@@ -252,22 +248,19 @@ class ReverseDomainTests(TestCase):
         self.assertEqual(rd1.master_domain, self.i_arpa)
 
     def test_add_reverse_domains(self):
-        try:
-            self.create_domain(name='192.168', ip_type='4').save()
-        except ValidationError, e:
-            pass
-        self.assertEqual(ValidationError, type(e))
-        e = None
+        self.assertRaises(
+            ValidationError, self.create_domain,
+            **{'name': '192.168', 'ip_type': '4'}
+        )
         rdx = self.create_domain(name='192', ip_type='4')
         rdx.save()
         rdy = self.create_domain(name='192.168', ip_type='4')
         rdy.save()
-        try:
-            self.create_domain(name='192.168', ip_type='4').save()
-        except ValidationError, e:
-            pass
-        self.assertEqual(ValidationError, type(e))
-        e = None
+
+        self.assertRaises(
+            ValidationError, self.create_domain,
+            **{'name': '192.168', 'ip_type': '4'}
+        )
 
         self.create_domain(name='128', ip_type='4').save()
         rd0 = self.create_domain(name='128.193', ip_type='4')
@@ -312,40 +305,28 @@ class ReverseDomainTests(TestCase):
         osu_block = "2.6.2.1.1.0.5.F.0.0.0"
         test_dname = osu_block + ".d.e.a.d.b.e.e.f"
         boot_strap_ipv6_reverse_domain(test_dname)
-        try:
-            self.create_domain(
-                name='2.6.2.1.1.0.5.f.0.0.0', ip_type='6').save()
-        except ValidationError, e:
-            pass
-        self.assertEqual(ValidationError, type(e))
-        e = None
-        try:
-            self.create_domain(name='2.6.2.1', ip_type='6').save()
-        except ValidationError, e:
-            pass
-        self.assertEqual(ValidationError, type(e))
-        e = None
-        try:
-            self.create_domain(
-                name='2.6.2.1.1.0.5.F.0.0.0.d.e.a.d', ip_type='6').save()
-        except ValidationError, e:
-            pass
-        self.assertEqual(ValidationError, type(e))
-        e = None
-        try:
-            self.create_domain(
-                name='2.6.2.1.1.0.5.F.0.0.0.d.e.a.d.b.e.e.f',
-                ip_type='6').save()
-        except ValidationError, e:
-            pass
-        self.assertEqual(ValidationError, type(e))
-        e = None
-        try:
-            self.create_domain(name=test_dname, ip_type='6').save()
-        except ValidationError, e:
-            pass
-        self.assertEqual(ValidationError, type(e))
-        e = None
+        self.assertRaises(
+            self.create_domain,
+            **{'name': '2.6.2.1.1.0.5.f.0.0.0', 'ip_type': '6'}
+        )
+        self.assertRaises(
+            ValidationError, self.create_domain,
+            **{'name': '2.6.2.1', 'ip_type': '6'}
+        )
+        self.assertRaises(
+            self.create_domain,
+            **{'name': '2.6.2.1.1.0.5.F.0.0.0.d.e.a.d', 'ip_type': '6'}
+        )
+        self.assertRaises(
+            self.create_domain,
+            **{'name': '2.6.2.1.1.0.5.F.0.0.0.d.e.a.d.b.e.e.f',
+               'ip_type': '6'}
+        )
+        self.assertRaises(
+            ValidationError, self.create_domain,
+            **{'name': test_dname, 'ip_type': '6'}
+        )
+
         # These should pass
         boot_strap_ipv6_reverse_domain('7.6.2.4')
         boot_strap_ipv6_reverse_domain('6.6.2.5.1')

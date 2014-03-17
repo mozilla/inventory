@@ -247,7 +247,7 @@ class KeyValueHandler(BaseHandler):
                         m = MacroExpansion(matches.group(1))
                         row.value = m.output()
                 for r in base:
-                    key_name = 'host:%s:%s' % (r.system.hostname, r.key)
+                    key_name = 'host:%s:%s' % (r.obj.hostname, r.key)
                     tmp_list[key_name] = r.value
             if 'key' not in request.GET:
                 tree = KeyValueTree(request.GET['keystore']).final
@@ -274,7 +274,7 @@ class KeyValueHandler(BaseHandler):
                 #Iterate through the list and get all of the key/value pairs
                 tmp_list = []
                 for row in keyvalue_pairs:
-                    keyvalue = KeyValue.objects.filter(obj=row.system)
+                    keyvalue = KeyValue.objects.filter(obj=row.obj)
                     tmp_dict = {}
                     for kv in keyvalue:
                         tmp_dict[kv.key] = kv.value
@@ -295,7 +295,7 @@ class KeyValueHandler(BaseHandler):
                 #Iterate through the list and get all of the key/value pairs
                 tmp_list = []
                 for row in keyvalue_pairs:
-                    keyvalue = KeyValue.objects.filter(obj=row.system)
+                    keyvalue = KeyValue.objects.filter(obj=row.obj)
                     tmp_dict = {}
                     for kv in keyvalue:
                         tmp_dict[kv.key] = kv.value

@@ -23,29 +23,21 @@ class NSTestsModels(TestCase):
             pass
         else:
             name = ip_to_domain_name(name, ip_type=ip_type)
-        d = Domain(name=name, delegated=delegated)
-        d.clean()
+        d, _ = Domain.objects.get_or_create(name=name, delegated=delegated)
         self.assertTrue(d.is_reverse)
         return d
 
     def setUp(self):
         self.factory = RequestFactory()
         self.arpa = self.create_domain(name='arpa')
-        self.arpa.save()
         self.i_arpa = self.create_domain(name='in-addr.arpa')
-        self.i_arpa.save()
         self.i6_arpa = self.create_domain(name='ip6.arpa')
-        self.i6_arpa.save()
 
-        self.r = Domain(name="ru")
-        self.r.save()
-        self.f_r = Domain(name="foo.ru")
-        self.f_r.save()
-        self.b_f_r = Domain(name="bar.foo.ru")
-        self.b_f_r.save()
+        self.r, _ = Domain.objects.get_or_create(name="ru")
+        self.f_r, _ = Domain.objects.get_or_create(name="foo.ru")
+        self.b_f_r, _ = Domain.objects.get_or_create(name="bar.foo.ru")
 
-        self.f = Domain(name="fam")
-        self.f.save()
+        self.f, _ = Domain.objects.get_or_create(name="fam")
 
         self._128 = self.create_domain(name='128', ip_type='4')
         self._128.save()

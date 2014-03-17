@@ -1,0 +1,23 @@
+from slurpee.constants import (  # noqa
+    P_OVERLAY, P_OVERWRITE, P_EXTRA,
+    RAW_TEXT, JSON_TEXT, P_MANAGED
+)
+
+config = {
+    'infra-puppet-facts': {
+        'user': '',
+        'pass': '',
+        'type': '-dashboard',
+        # If Inventory finds there are facts coming from this source, it will
+        # format the link passing in the keywork 'hostname'
+        # (i.e. host-url.format(hostname=system.hostname)
+        'host-url': '',
+        'api-version': 'v1',
+        'source-url': '',
+        'facts': []
+    },
+}
+
+ALERT_FILE = "/tmp/nagios_alert.json"
+
+RETRY = 10

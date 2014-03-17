@@ -7,7 +7,7 @@ from mozdns.domain.models import Domain
 
 class SOATests(TestCase):
     def setUp(self):
-        pass
+        Domain.objects.all().delete()
 
     def do_generic_add(self, primary, contact, retry, refresh, description):
         soa = SOA(primary=primary, contact=contact,

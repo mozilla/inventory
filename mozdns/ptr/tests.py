@@ -12,22 +12,17 @@ from mozdns.ptr.models import PTR
 class PTRTests(TestCase):
     def setUp(self):
         self.arpa = self.create_domain(name='arpa')
-        self.arpa.save()
         self.i_arpa = self.create_domain(name='in-addr.arpa')
-        self.i_arpa.save()
         self.i6_arpa = self.create_domain(name='ip6.arpa')
-        self.i6_arpa.save()
 
         self._128 = self.create_domain(name='128', ip_type='4')
         self._128.save()
         boot_strap_ipv6_reverse_domain("8.6.2.0")
         self.osu_block = "8620:105:F000:"
-        self.o = Domain(name="edu")
-        self.o.save()
-        self.o_e = Domain(name="oregonstate.edu")
-        self.o_e.save()
-        self.b_o_e = Domain(name="bar.oregonstate.edu")
-        self.b_o_e.save()
+        self.o, _ = Domain.objects.get_or_create(name="edu")
+        self.o_e, _ = Domain.objects.get_or_create(name="oregonstate.edu")
+        self.b_o_e, _ = Domain.objects.get_or_create(
+            name="bar.oregonstate.edu")
 
     def create_domain(self, name, ip_type=None, delegated=False):
         if ip_type is None:
@@ -36,8 +31,7 @@ class PTRTests(TestCase):
             pass
         else:
             name = ip_to_domain_name(name, ip_type=ip_type)
-        d = Domain(name=name, delegated=delegated)
-        d.clean()
+        d, _ = Domain.objects.get_or_create(name=name, delegated=delegated)
         self.assertTrue(d.is_reverse)
         return d
 

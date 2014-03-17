@@ -40,3 +40,5 @@ ZONE_PATH = ""
 # net/mozilla.net.private *will* be generated and written to disk.
 ZONES_WITH_NO_CONFIG = [
 ]
+
+TEST_PREFIX = '/tmp/fake'

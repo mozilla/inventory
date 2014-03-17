@@ -23,6 +23,7 @@ class AStaticRegTests(TestCase):
         return d
 
     def setUp(self):
+        Domain.objects.all().delete()
         self.arpa = self.create_domain(name='arpa')
         self.arpa.save()
         self.i_arpa = self.create_domain(name='in-addr.arpa')

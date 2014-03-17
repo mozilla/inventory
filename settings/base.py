@@ -86,6 +86,8 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'reversion_compare',
 ]
 
+INSTALLED_APPS.remove('product_details')
+
 
 # Because Jinja2 is the default template loader, add any non-Jinja templated
 # apps here:

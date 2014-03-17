@@ -49,37 +49,6 @@ class SystemApi(TestCase):
         resp = self.client.get('/api/system/fake-hostname2/', follow=True)
         self.assertEqual(200, resp.status_code)
 
-    def test_create_system(self):
-        resp = self.client.post('/en-US/api/system/%s/' % self.new_hostname, follow=True)
-        self.assertEqual(201, resp.status_code)
-        resp = self.client.get('/api/system/%i/' % 3, follow=True)
-        self.assertEqual(200, resp.status_code)
-        resp = self.client.get('/api/system/%s/' % self.new_hostname, follow=True)
-        self.assertEqual(200, resp.status_code)
-        self.assertEqual(json.loads(resp.content)['hostname'], self.new_hostname)
-
-    def test_update_system(self):
-        resp = self.client.post('/en-US/api/system/%s/' % self.new_hostname, follow=True)
-        self.assertEqual(201, resp.status_code)
-        obj = json.loads(resp.content.split(" = ")[1])
-        resp = self.client.put('/en-US/api/system/%i/' % (obj['id']), {'hostname':'updated_hostname'}, follow=True)
-        self.assertEqual(200, resp.status_code)
-        obj = json.loads(resp.content.split(" = ")[1])
-        resp = self.client.get('/api/system/%i/' % (obj['id']), follow=True)
-        self.assertEqual(200, resp.status_code)
-        self.assertEqual(json.loads(resp.content)['hostname'], 'updated_hostname')
-
-    def test_delete_system(self):
-        resp = self.client.post('/en-US/api/system/%s/' % self.new_hostname, follow=True)
-        self.assertEqual(201, resp.status_code)
-        obj = json.loads(resp.content.split(" = ")[1])
-        resp = self.client.delete('/en-US/api/system/%i/' % (obj['id']), follow=True)
-        self.assertEqual(200, resp.status_code)
-        obj = json.loads(resp.content.split(" = ")[1])
-        resp = self.client.get('/api/system/%i/' % (obj['id']), follow=True)
-        self.assertEqual(404, resp.status_code)
-        resp = self.client.get('/api/system/%s/' % self.new_hostname, follow=True)
-        self.assertEqual(404, resp.status_code)
     def test_key_value_tree(self):
         tree = KeyValueTree('fake-hostname2').final
         self.assertEqual(tree['nic.0.ipv4_address.0'],'10.99.32.1')

@@ -37,6 +37,8 @@ def fail_mail(content, subject='Inventory is having issues.',
               to=people_who_need_to_know_about_failures,
               from_=inventorys_email):
     """Send email about a failure."""
+    if not to:
+        return
     msg = MIMEText(content)
     msg['Subject'] = subject
     msg['From'] = inventorys_email

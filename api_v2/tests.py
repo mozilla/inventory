@@ -83,13 +83,6 @@ class TestOnCall(TestCase):
         self.assertEqual(len(obj), 3)
         self.assertEqual('user3', obj[2]['user'])
 
-    def test_get_all_desktop_oncall(self):
-        resp = self.client.get('/api/v2/oncall/desktop/all/', follow=True)
-        self.assertEqual(200, resp.status_code)
-        obj = json.loads(resp.content)
-        self.assertEqual(len(obj), 3)
-        self.assertEqual('user4', obj[2]['user'])
-
     def test_set_services_oncall(self):
         resp = self.client.get('/api/v2/oncall/services/email/', follow=True)
         self.assertEqual(200, resp.status_code)
@@ -182,38 +175,6 @@ class SystemApi(TestCase):
         self.assertEqual(404, resp.status_code)
         resp = self.client.get('/api/v2/system/fake-hostname2/', follow=True)
         self.assertEqual(200, resp.status_code)
-
-    def test_create_system(self):
-        resp = self.client.post('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
-        self.assertEqual(201, resp.status_code)
-        obj = json.loads(resp.content.split(" = ")[1])
-        resp = self.client.get('/api/v2/system/%i/' % obj['id'], follow=True)
-        self.assertEqual(200, resp.status_code)
-        resp = self.client.get('/api/v2/system/%s/' % self.new_hostname, follow=True)
-        self.assertEqual(200, resp.status_code)
-        self.assertEqual(json.loads(resp.content)['hostname'], self.new_hostname)
-
-    def test_update_system(self):
-        resp = self.client.post('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
-        obj = json.loads(resp.content.split(" = ")[1])
-        self.assertEqual(201, resp.status_code)
-        resp = self.client.put('/en-US/api/v2/system/%i/' % (obj['id']), {'hostname':'updated_hostname'}, follow=True)
-        self.assertEqual(200, resp.status_code)
-        resp = self.client.get('/api/v2/system/%i/' % (obj['id']), follow=True)
-        self.assertEqual(200, resp.status_code)
-        self.assertEqual(json.loads(resp.content)['hostname'], 'updated_hostname')
-
-    def test_delete_system(self):
-        resp = self.client.post('/en-US/api/v2/system/%s/' % self.new_hostname, follow=True)
-        self.assertEqual(201, resp.status_code)
-        obj = json.loads(resp.content.split(" = ")[1])
-        resp = self.client.delete('/en-US/api/v2/system/%i/' % (obj['id']), follow=True)
-        self.assertEqual(200, resp.status_code)
-        obj = json.loads(resp.content.split(" = ")[1])
-        resp = self.client.get('/api/v2/system/%i/' % (obj['id']), follow=True)
-        self.assertEqual(404, resp.status_code)
-        resp = self.client.get('/api/v2/system/%s/' % self.new_hostname, follow=True)
-        self.assertEqual(404, resp.status_code)
 
     def test_key_value_tree(self):
         tree = KeyValueTree('fake-hostname2').final

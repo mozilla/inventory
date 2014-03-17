@@ -29,25 +29,6 @@ class Tasty1SystemTest(ResourceTestCase):
             '/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
         self.assertEqual(resp.status_code, 200)
 
-    def test5_delete_system_by_id(self):
-        self.create_system({'hostname': self.test_hostname})
-        self.assertEqual(len(System.objects.all()), 1)
-        resp = self.api_client.get(
-            '/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
-        system_id = self.deserialize(resp)['id']
-        resp = self.api_client.delete(
-            '/en-US/tasty/v3/system/%i/' % system_id, format='json')
-        self.assertEqual(resp.status_code, 204)
-        self.assertEqual(len(System.objects.all()), 0)
-
-    def test6_delete_system_by_hostname(self):
-        self.create_system({'hostname': self.test_hostname})
-        self.assertEqual(len(System.objects.all()), 1)
-        resp = self.api_client.delete(
-            '/en-US/tasty/v3/system/%s/' % self.test_hostname, format='json')
-        self.assertEqual(resp.status_code, 204)
-        self.assertEqual(len(System.objects.all()), 0)
-
     def test9_test_default_format(self):
         request = HttpRequest()
         request.method = 'GET'

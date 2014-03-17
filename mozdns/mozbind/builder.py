@@ -36,7 +36,7 @@ class BuildError(Exception):
 
 class SVNBuilderMixin(object):
     svn_ignore = [re.compile("---\s.+\s+\(revision\s\d+\)"),
-                  re.compile("\+\+\+\s.+\s+\(working copy\)")]
+                  re.compile("\+\+\+\s.+\s+\((working copy|revision \d+)\)")]
 
     svn_conflict = [re.compile("C\s.*")]
 

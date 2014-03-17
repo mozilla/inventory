@@ -1,12 +1,9 @@
 from django.test import TransactionTestCase
 from django.test.client import Client
-from django.core.exceptions import ValidationError
 
 from core.registration.static.models import StaticReg
-from core.group.models import Group
 from core.hwadapter.models import HWAdapter
 from systems.tests.utils import create_fake_host
-from mozdns.domain.models import Domain
 from mozdns.view.models import View
 from mozdns.tests.utils import create_fake_zone
 
@@ -21,12 +18,11 @@ class StaticRegViewTests(TransactionTestCase):
         self.rd = create_fake_zone('10.in-addr.arpa', suffix="")
         self.client = Client()
         self.s = create_fake_host(hostname='exists.mozilla.com')
-        self.g = Group.objects.create(name='foogroup')
 
     def test_create_with_no_hwadapters(self):
         # Get test data by snooping request.POST in the sreg creation view
         test_data = json.loads("""{{
-            "hwadapters-TOTAL_FORMS": ["1"],
+            "hwadapters-TOTAL_FORMS": ["0"],
             "hwadapters-MAX_NUM_FORMS": [""],
             "hwadapters-INITIAL_FORMS": ["0"],
             "sreg-views": ["2"],
@@ -52,14 +48,8 @@ class StaticRegViewTests(TransactionTestCase):
         self.assertEqual('foobar', kv.value)
 
     def test_create_with_multiple_hwadapters(self):
-        # Notice how TOTAL_FORMS is 5? Django requires that the number of
-        # TOTAL_FORMS to be greater than or equal to the highest number found
-        # in the formset's prefix list. So in this case the highest number is 3
-        # since 'hwadapters-3-' is the highest prefix. If TOTAL_FORMS is below
-        # the actual form count some forms will note be processed. Django
-        # allows missing forms by default.
         test_data = json.loads("""{{
-            "hwadapters-TOTAL_FORMS": ["5"],
+            "hwadapters-TOTAL_FORMS": ["3"],
             "hwadapters-MAX_NUM_FORMS": [""],
             "hwadapters-INITIAL_FORMS": ["0"],
             "sreg-views": ["2"],
@@ -67,19 +57,16 @@ class StaticRegViewTests(TransactionTestCase):
             "sreg-ip_str": ["10.8.0.3"],
             "override-fqdn": ["on"],
             "sreg-system": ["{system_pk}"],
-            "hwadapters-0-group": [],
-            "hwadapters-0-name": ["nic0"],
+            "hwadapters-0-name": ["hw0"],
             "hwadapters-0-mac": ["11:22:33:44:55:66"],
             "kv-hwadapters-0-hostname": ["valid.mozilla.com"],
-            "hwadapters-1-group": [],
-            "hwadapters-1-name": ["nic1"],
+            "hwadapters-1-name": ["hw1"],
             "hwadapters-1-mac": ["12:22:33:44:55:66"],
             "kv-hwadapters-1-hostname": ["valid.mozilla.com"],
-            "hwadapters-3-group": [],
-            "hwadapters-3-name": ["nic2"],
-            "hwadapters-3-mac": ["13:22:33:44:55:66"],
-            "kv-hwadapters-3-hostname": ["valid.mozilla.com"]}}
-        """.format(system_pk=self.s.pk, group_pk=self.g.pk))
+            "hwadapters-2-name": ["hw2"],
+            "hwadapters-2-mac": ["13:22:33:44:55:66"],
+            "kv-hwadapters-2-hostname": ["valid.mozilla.com"]}}
+        """.format(system_pk=self.s.pk))
         sreg_count_before = StaticReg.objects.all().count()
         resp = self.client.post(
             '/en-US/core/registration/static/create/', test_data
@@ -106,11 +93,10 @@ class StaticRegViewTests(TransactionTestCase):
             "sreg-ip_str": ["10.8.0.3"],
             "override-fqdn": ["on"],
             "sreg-system": ["{system_pk}"],
-            "hwadapters-0-group": ["{group_pk}"],
-            "hwadapters-0-name": ["nic0"],
+            "hwadapters-0-name": ["hw0"],
             "hwadapters-0-mac": ["11:22:33:44:55:66"],
             "kv-hwadapters-0-hostname": ["valid.mozilla.com"]}}
-        """.format(system_pk=self.s.pk, group_pk=self.g.pk))
+        """.format(system_pk=self.s.pk))
         count_before = StaticReg.objects.all().count()
         resp = self.client.post(
             '/en-US/core/registration/static/create/', test_data
@@ -127,9 +113,8 @@ class StaticRegViewTests(TransactionTestCase):
         # check the hwadapter
         self.assertEqual(1, sreg.hwadapter_set.all().count())
         hw = sreg.hwadapter_set.all()[0]
-        self.assertEqual(self.g, hw.group)
         self.assertEqual('11:22:33:44:55:66', hw.mac)
-        self.assertEqual('nic0', hw.name)
+        self.assertEqual('hw0', hw.name)
 
         # check the hwadapter keyvalue store
         self.assertEqual(1, hw.keyvalue_set.all().count())
@@ -148,7 +133,6 @@ class StaticRegViewTests(TransactionTestCase):
             "kv-sreg-name": ["foo"],
             "override-fqdn": ["on"],
             "sreg-system": ["6112"],
-            "hwadapters-0-group": ["1"],
             "hwadapters-0-name": ["nic0"],
             "hwadapters-0-mac": ["11:22:33:44:55:66"],
             "kv-hwadapters-0-hostname": ["valid.mozilla.com"]}
@@ -180,11 +164,10 @@ class StaticRegViewTests(TransactionTestCase):
             "sreg-ip_str": ["10.8.0.3"],
             "override-fqdn": ["on"],
             "sreg-system": ["{system_pk}"],
-            "hwadapters-0-group": ["{group_pk}"],
             "hwadapters-0-name": ["nic0"],
             "hwadapters-0-mac": ["11:22:33:44:55:66:bogus"],
             "kv-hwadapters-0-hostname": ["valid.mozilla.com"]}}
-        """.format(system_pk=self.s.pk, group_pk=self.g.pk))
+        """.format(system_pk=self.s.pk))
         sreg_count_before = StaticReg.objects.all().count()
         hw_count_before = HWAdapter.objects.all().count()
         resp = self.client.post(

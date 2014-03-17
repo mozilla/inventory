@@ -3,6 +3,19 @@ python:
   - "2.6"
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: git submodule update --init --recursive
+install:
+    - git submodule update --init --recursive
+    - sudo apt-get install bind9utils libmysqlclient-dev subversion
+    - cp settings/dnsbuilds.py-travis settings/dnsbuilds.py
+    - cp settings/scrape.py-travis settings/scrape.py
+    - cp settings/local.py-travis settings/local.py
+    - pip install -r requirements/travis.txt
+
+before_script:
+    - mysql -e 'create database inventory;'
+
+notifications:
+  irc: "irc.mozilla.org#mozinventory"
+
 # command to run tests, e.g. python setup.py test
-script:  python manage.py test tests.tests
+script:  python manage.py test

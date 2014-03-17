@@ -21,18 +21,14 @@ class AddressRecordTests(TestCase):
             pass
         else:
             name = ip_to_domain_name(name, ip_type=ip_type)
-        d = Domain(name=name, delegated=delegated)
-        d.clean()
+        d, _ = Domain.objects.get_or_create(name=name, delegated=delegated)
         self.assertTrue(d.is_reverse)
         return d
 
     def setUp(self):
         self.arpa = self.create_domain(name='arpa')
-        self.arpa.save()
         self.i_arpa = self.create_domain(name='in-addr.arpa')
-        self.i_arpa.save()
         self.i6_arpa = self.create_domain(name='ip6.arpa')
-        self.i6_arpa.save()
 
         self.osu_block = "633:105:F000:"
         boot_strap_ipv6_reverse_domain("0.6.3")

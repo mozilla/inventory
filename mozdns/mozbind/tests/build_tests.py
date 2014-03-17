@@ -1,6 +1,8 @@
-# These tests are similar to the ones in the scripts directory. They not ran on
-# real data so the testing db needs to be filled with info.
 import os
+import subprocess
+import shutil
+import shlex
+
 from django.test.client import Client
 from django.test import TestCase
 
@@ -10,24 +12,64 @@ from mozdns.address_record.models import AddressRecord
 from mozdns.view.models import View
 from mozdns.tests.utils import random_label, random_byte
 from mozdns.mozbind.builder import DNSBuilder, BuildError
+from mozdns.delete_zone.utils import delete_zone_helper
 from mozdns.tests.utils import create_fake_zone
 
 from core.task.models import Task
 
 
-from scripts.dnsbuilds.tests.build_tests import BuildScriptTests
+from settings.dnsbuilds import TEST_PREFIX
+TEST_PREFIX = TEST_PREFIX.rstrip('/')
 
 
-class MockBuildScriptTests(BuildScriptTests, TestCase):
+class MockBuildScriptTests(TestCase):
     def setUp(self):
+        for soa in SOA.objects.all():
+            delete_zone_helper(soa.root_domain.name)
         Domain.objects.get_or_create(name="arpa")
         Domain.objects.get_or_create(name="in-addr.arpa")
         self.r1, _ = Domain.objects.get_or_create(name="10.in-addr.arpa")
         Domain.objects.get_or_create(name="com")
         Domain.objects.get_or_create(name="mozilla.com")
         self.cleint = Client()
-        super(MockBuildScriptTests, self).setUp()
-        self.stop_update_file = '/tmp/fake/stop.update'
+
+        # Build file system assets
+        self.stage_dir = '{0}/stage/inv_zones/'.format(TEST_PREFIX)
+        self.svn_dir = '{0}/dnsconfig/'.format(TEST_PREFIX)
+        self.prod_dir = '{0}/dnsconfig/inv_zones/'.format(TEST_PREFIX)
+        self.prod_dir2 = '{0}/dnsconfig/inv_zones2/'.format(TEST_PREFIX)
+        self.svn_repo = '{0}/svn_repo'.format(TEST_PREFIX)
+        self.lock_file = '{0}/lock.fake'.format(TEST_PREFIX)
+        self.stop_update = '{0}/stop.update'.format(TEST_PREFIX)
+
+        #os.chdir(os.path.join(TEST_PREFIX, ".."))
+        if os.path.isdir(TEST_PREFIX):
+            shutil.rmtree(TEST_PREFIX)
+        os.makedirs(TEST_PREFIX)
+        #os.makedirs(self.svn_repo)
+
+        command_str = "svnadmin create {0}".format(self.svn_repo)
+        rets = subprocess.Popen(shlex.split(command_str),
+                                stderr=subprocess.PIPE,
+                                stdout=subprocess.PIPE)
+        stdout, stderr = rets.communicate()
+        self.assertEqual(0, rets.returncode, stderr)
+
+        command_str = "svn co file://{0} {1}".format(self.svn_repo,
+                                                     self.prod_dir)
+        rets = subprocess.Popen(shlex.split(command_str),
+                                stderr=subprocess.PIPE,
+                                stdout=subprocess.PIPE)
+        stdout, stderr = rets.communicate()
+        self.assertEqual(0, rets.returncode, stderr)
+
+        command_str = "svn co file://{0} {1}".format(self.svn_repo,
+                                                     self.prod_dir2)
+        rets = subprocess.Popen(shlex.split(command_str),
+                                stderr=subprocess.PIPE,
+                                stdout=subprocess.PIPE)
+        stdout, stderr = rets.communicate()
+        self.assertEqual(0, rets.returncode, stderr)
 
     def get_post_data(self, random_str):
         """Return a valid set of data"""
@@ -49,7 +91,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                        FIRST_RUN=True, PUSH_TO_PROD=False,
-                       STOP_UPDATE_FILE=self.stop_update_file)
+                       STOP_UPDATE_FILE=self.stop_update)
         b.build_dns()
         create_fake_zone('asdf2')
         b.build_dns()
@@ -60,11 +102,15 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b.build_dns()
 
     def test_change_a_record(self):
-        root_domain = create_fake_zone('asdfz1')
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                        FIRST_RUN=True, PUSH_TO_PROD=False,
-                       STOP_UPDATE_FILE=self.stop_update_file)
+                       STOP_UPDATE_FILE=self.stop_update)
+
+        b.svn_lines_changed(b.PROD_DIR)
+        b.PUSH_TO_PROD = False
+
+        root_domain = create_fake_zone('asdfz1')
 
         b.build_dns()  # This won't check anything in since PUSH_TO_PROD==False
         self.assertEqual((28, 0), b.svn_lines_changed(b.PROD_DIR))
@@ -126,25 +172,25 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                        FIRST_RUN=True, PUSH_TO_PROD=False,
-                       STOP_UPDATE_FILE=self.stop_update_file)
+                       STOP_UPDATE_FILE=self.stop_update)
         test_file = os.path.join(self.prod_dir, 'test')
         with open(test_file, 'w+') as fd:
             fd.write('line 1\n')
-        lc = b.svn_lines_changed(b.PROD_DIR)
+        lc = b.svn_lines_changed(self.prod_dir)
         self.assertEqual((1, 0), lc)
         b.svn_checkin(lc)
 
         with open(test_file, 'w+') as fd:
             fd.write('line 1\nline 2\n')
 
-        lc = b.svn_lines_changed(b.PROD_DIR)
+        lc = b.svn_lines_changed(self.prod_dir)
         self.assertEqual((1, 0), lc)
         b.svn_checkin(lc)
 
         with open(test_file, 'w+') as fd:
             fd.write('line 1\n')
 
-        lc = b.svn_lines_changed(b.PROD_DIR)
+        lc = b.svn_lines_changed(self.prod_dir)
         self.assertEqual((0, 1), lc)
         b.svn_checkin(lc)
 
@@ -156,7 +202,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                        FIRST_RUN=True, PUSH_TO_PROD=True,
-                       STOP_UPDATE_FILE=self.stop_update_file)
+                       STOP_UPDATE_FILE=self.stop_update)
         b.build_dns()
         for ns in root_domain1.nameserver_set.all():
             ns.delete()
@@ -175,7 +221,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                        LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                        FIRST_RUN=True, PUSH_TO_PROD=False,
-                       STOP_UPDATE_FILE=self.stop_update_file)
+                       STOP_UPDATE_FILE=self.stop_update)
         test1_file = os.path.join(self.prod_dir, 'test1')
         test2_file = os.path.join(self.prod_dir, 'test2')
         with open(test1_file, 'w+') as fd:
@@ -219,7 +265,7 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b1 = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                         LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                         FIRST_RUN=True, PUSH_TO_PROD=True,
-                        STOP_UPDATE_FILE=self.stop_update_file)
+                        STOP_UPDATE_FILE=self.stop_update)
 
         b1.build_dns()  # This checked stuff in
 
@@ -276,5 +322,97 @@ class MockBuildScriptTests(BuildScriptTests, TestCase):
         b1 = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
                         LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
                         FIRST_RUN=True, PUSH_TO_PROD=True,
-                        STOP_UPDATE_FILE=self.stop_update_file)
+                        STOP_UPDATE_FILE=self.stop_update)
         b1.build_dns()
+
+    def svn_info(self):
+        command_str = "svn info {0}".format(self.prod_dir)
+        rets = subprocess.Popen(shlex.split(command_str),
+                                stderr=subprocess.PIPE,
+                                stdout=subprocess.PIPE)
+        stdout, stderr = rets.communicate()
+        self.assertEqual(0, rets.returncode)
+
+    def test_build_svn(self):
+        print "This will take a while, be patient..."
+        b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                       LOCK_FILE=self.lock_file, LOG_SYSLOG=False,
+                       FIRST_RUN=True, PUSH_TO_PROD=True)
+        b.build_dns()
+        #self.svn_info()
+        s = SOA.objects.all()
+        if len(s) > 0:
+            s[0].dirty = True
+            s[0].save()
+        b.build_dns()
+        #self.svn_info()
+        b.build_dns()
+        #self.svn_info()
+
+    def test_svn_lines_changed(self):
+        pass
+
+    def test_build_staging(self):
+        if os.path.isdir(self.stage_dir):
+            shutil.rmtree(self.stage_dir)
+        b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                       LOCK_FILE=self.lock_file)
+        b.build_staging()
+        # Make sure it made the staging dir
+        self.assertTrue(os.path.isdir(self.stage_dir))
+        # Ensure if fails if the directory exists
+        self.assertRaises(BuildError, b.build_staging)
+        # There shouldn't be errors because force=True
+        b.build_staging(force=True)
+
+        self.assertTrue(os.path.isdir(self.stage_dir))
+        b.clear_staging()
+        self.assertFalse(os.path.isdir(self.stage_dir))
+        self.assertRaises(BuildError, b.clear_staging)
+        b.clear_staging(force=True)
+        self.assertFalse(os.path.isdir(self.stage_dir))
+
+    def test_lock_unlock(self):
+        if os.path.exists(self.lock_file):
+            os.remove(self.lock_file)
+        b1 = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                        LOCK_FILE=self.lock_file)
+        b2 = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                        LOCK_FILE=self.lock_file)
+        b3 = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                        LOCK_FILE=self.lock_file)
+        self.assertFalse(os.path.exists(self.lock_file))
+        self.assertTrue(b1.lock())
+        self.assertTrue(os.path.exists(self.lock_file))
+        self.assertTrue(b1.unlock())
+
+        self.assertTrue(b1.lock())
+        self.assertFalse(b2.lock())
+        self.assertFalse(b2.lock())
+        self.assertTrue(b1.unlock())
+
+        self.assertTrue(b2.lock())
+        self.assertFalse(b1.lock())
+        self.assertTrue(b2.unlock())
+
+        self.assertTrue(b3.lock())
+        self.assertFalse(b1.lock())
+        self.assertFalse(b2.lock())
+        self.assertFalse(b1.unlock())
+        self.assertFalse(b2.unlock())
+        self.assertTrue(b3.unlock())
+
+        self.assertTrue(b1.lock())
+        self.assertTrue(b1.unlock())
+
+    def test_stop_update(self):
+        if os.path.exists(self.stop_update):
+            os.remove(self.stop_update)
+        b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                       LOCK_FILE=self.lock_file,
+                       STOP_UPDATE_FILE=self.stop_update)
+        open(self.stop_update, 'w+').close()
+        try:
+            self.assertTrue(b.stop_update_exists())
+        finally:
+            os.remove(self.stop_update)
