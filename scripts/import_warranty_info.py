@@ -1,5 +1,6 @@
 __import__('inventory_context')
 from systems.models import System
+from slurpee.models import ExternalData
 import datetime
 import csv
 import sys
@@ -9,6 +10,7 @@ def wimport(reader, lookups, date_format):
     total_records = 0
     updated = 0
     missing = 0
+    external = 0
     for row in reader:
         total_records += 1
         warranty_start, warranty_end, serial = (
@@ -37,9 +39,13 @@ def wimport(reader, lookups, date_format):
         try:
             s = System.objects.get(serial=serial)
         except System.DoesNotExist:
-            print "No system in Inventory with serial '%s'" % serial
-            missing += 1
-            continue
+            try:
+                s = ExternalData.objects.get(name='serial', data=serial).system
+                external += 1
+            except ExternalData.DoesNotExist:
+                print "No system in Inventory with serial '%s'" % serial
+                missing += 1
+                continue
         except System.MultipleObjectsReturned:
             print "Multiple system in Inventory with serial '%s'" % serial
             for s in System.objects.filter(serial=serial):
@@ -66,6 +72,7 @@ def wimport(reader, lookups, date_format):
     print "Total number of records that were not in Inventory: %s" % missing  # noqa
     print "Matched %s records" % (total_records - missing)  # noqa
     print "\nUpdated %s records who previously didn't have warranty info" % (updated)  # noqa
+    print "\nUpdated %s records using external data for serial lookup" % (external)  # noqa
 
 if __name__ == '__main__':
 
