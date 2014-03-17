@@ -387,7 +387,7 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
     # Related Objects
     operating_system = models.ForeignKey(
         'OperatingSystem', blank=True, null=True)
-    allocation = models.ForeignKey('Allocation', blank=True, null=True)
+    allocation = models.ForeignKey('Allocation', blank=False, null=True)
     system_type = models.ForeignKey('SystemType', blank=True, null=True)
     system_status = models.ForeignKey('SystemStatus', blank=True, null=True)
     server_model = models.ForeignKey('ServerModel', blank=True, null=True)
