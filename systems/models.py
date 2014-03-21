@@ -387,7 +387,7 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
     # Related Objects
     operating_system = models.ForeignKey(
         'OperatingSystem', blank=True, null=True)
-    allocation = models.ForeignKey('Allocation', blank=False, null=True)
+    allocation = models.ForeignKey('Allocation', blank=True, null=True)
     system_type = models.ForeignKey('SystemType', blank=True, null=True)
     system_status = models.ForeignKey('SystemStatus', blank=True, null=True)
     server_model = models.ForeignKey('ServerModel', blank=True, null=True)
@@ -576,6 +576,7 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
             self.system_status, _ = SystemStatus.objects.get_or_create(
                 status='building'
             )
+        self.validate_allocation()
 
     def is_vm(self):
         if not self.system_type:
@@ -590,6 +591,13 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
         if not self.system_type:
             raise ValidationError(
                 "Server Type is a required field"
+            )
+
+    def validate_allocation(self):
+        if (not self.allocation and self.system_status and
+                self.system_status.status == 'decommissioned'):
+            raise ValidationError(
+                "Systems that are not decommissioned require an allocation"
             )
 
     def validate_serial(self):

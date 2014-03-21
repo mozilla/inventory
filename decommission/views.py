@@ -43,7 +43,8 @@ def decommission_(main_blob, load_json=True):
     @transaction.commit_manually
     def do_decommission():
         messages = []
-        reversion.set_comment(comment)
+        if reversion.revision_context_manager.is_active():
+            reversion.set_comment(comment)
         try:
             for i, hostname in enumerate(systems):
                 messages += decommission_host(hostname, opts, comment)

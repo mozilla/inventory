@@ -43,7 +43,9 @@ def create_fake_host(**kwargs):
         while System.objects.filter(serial=serial).exists():
             type_name = random_str()
 
-    return System.objects.create(
+    save = kwargs.pop('save', True)
+
+    s = System(
         allocation=allocation,
         serial=serial,
         system_type=system_type,
@@ -51,3 +53,7 @@ def create_fake_host(**kwargs):
         warranty_end=datetime.datetime.now(),
         **kwargs
     )
+
+    if save:
+        s.save()
+    return s

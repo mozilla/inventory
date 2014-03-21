@@ -23,6 +23,7 @@ from core.group.models import Group
 from systems import models
 from systems.tests.utils import create_fake_host
 from test_utils import setup_test_environment
+from decommission.views import decommission_
 
 setup_test_environment()
 
@@ -252,7 +253,7 @@ class SystemTest(TestCase, LocalizeUtils):
         create_fake_host(hostname='foo.mozilla.com')
 
     def test_bad_warranty(self):
-        s = create_fake_host(hostname='foo.mozilla.com')
+        s = create_fake_host(hostname='foo.mozilla.com', save=False)
         earlier = datetime.date.fromtimestamp(time.time() - 60 * 60 * 24 * 7)
         now = datetime.datetime.now()
         s.warranty_start = now
@@ -349,3 +350,22 @@ class SystemInterfaceTest(TransactionTestCase):
         self.system = create_fake_host(
             hostname='host1.vlan.dc.mozilla.com'
         )
+
+
+class SystemDecommission(TestCase):
+    def setUp(self):
+        self.client = Client()
+        models.SystemStatus.objects.create(status='decommissioned')
+
+    def tearDown(self):
+        models.SystemStatus.objects.all().delete()
+
+    def test_allocation(self):
+        s = create_fake_host(hostname='fooasdfasdf.mozilla.com')
+        self.assertNotEqual('decommissioned', s.system_status.status)
+        self.assertTrue(s.allocation)
+        decommission_({'systems': [s.hostname]}, load_json=False)
+
+        s = System.objects.get(pk=s.pk)
+        self.assertEqual('decommissioned', s.system_status.status)
+        self.assertFalse(s.allocation)
