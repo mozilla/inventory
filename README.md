@@ -2,6 +2,6 @@
 
 Inventory keeps inventory of all the things.
 
-Also checkout [Invtool][0]
+Also checkout [Invtool][0], a command line interface to Inventory.
 
 [0]:https://github.com/uberj/inv-tool
