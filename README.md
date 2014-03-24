@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/uberj/inventory.svg?branch=master)](https://travis-ci.org/uberj/inventory)
+[![Build Status](https://travis-ci.org/mozilla/inventory.svg?branch=master)](https://travis-ci.org/mozilla/inventory)
 
 Inventory keeps inventory of all the things.
 
