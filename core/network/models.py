@@ -10,6 +10,7 @@ from core.site.models import Site
 from core.mixins import ObjectUrlMixin, CoreDisplayMixin
 from core.keyvalue.base_option import CommonOption, DHCPKeyValue
 from core.keyvalue.mixins import KVUrlMixin
+from truth.models import Truth
 
 import ipaddr
 
@@ -86,7 +87,7 @@ class Network(models.Model, ObjectUrlMixin, CoreDisplayMixin, KVUrlMixin):
     def details(self):
         details = [
             ('Network', self.network_str),
-            ('Reserved', str(self.is_reserved)),
+            ('Reserved', self.is_reserved),
         ]
         if self.vlan:
             details.append(
@@ -101,7 +102,43 @@ class Network(models.Model, ObjectUrlMixin, CoreDisplayMixin, KVUrlMixin):
         else:
             details.append(('Site', 'None'))
 
+        details.append((
+            'DHCP Scope Name',
+            self.calc_dhcp_scope_name() or 'No Valid Scope'
+        ))
+
         return details
+
+    def calc_dhcp_scope_name(self):
+        """
+        Introspect our vlan and site to see if we can calculate the DHCP scope
+        name used to represent our "Truth Store". This is highly Mozilla
+        specific.
+
+        There are two ways in which a dhcp_scope can be found:
+            1) Introspecting our keyvalue set for a dhcp_scope key
+            2) Using a heuristic that uses the naming convention of dhcp_scope
+                values and the site/vlan of this network
+        The first method takes precedence over the second
+        """
+        try:
+            return self.keyvalue_set.get(key='dhcp_scope').value
+        except NetworkKeyValue.DoesNotExist:
+            pass
+
+        if self.vlan and self.site:
+            # Grab the end of the full site name (usually the dc)
+            scope_name = self.site.full_name.split('.')[-1]
+            # If releng is in the site name, we need to add that to the scope
+            if 'releng' in self.site.full_name:
+                scope_name += '-releng'
+
+            scope_name += "-vlan{0}".format(self.vlan.number)
+
+            if Truth.objects.filter(name=scope_name).exists():
+                return scope_name
+
+        return None
 
     def delete(self, *args, **kwargs):
         if self.range_set.all().exists():
@@ -213,6 +250,17 @@ class NetworkKeyValue(DHCPKeyValue, CommonOption):
         A descrition of this network
         """
         pass
+
+    def _aa_dhcp_scope(self):
+        """
+        The DHCP Scope associated with this network. Please reference
+        https://inventory.mozilla.org/en-US/dhcp/show/ for a full list of valid
+        DHCP Scopes.
+        """
+        if not Truth.objects.filter(name=self.value).exists():
+            raise ValidationError(
+                "The value {0} isn't a valid DHCP scope.".format(self.value)
+            )
 
     def _aa_security_zone(self):
         """

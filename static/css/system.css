@@ -127,3 +127,11 @@
 .sync-external-data-button {
   margin-top: 0.3em;
 }
+
+/*
+ * Style to apply to tr that contains a mismatched dhcp scope
+ */
+
+table.tablesorter tbody td.mismatched-dhcp-scope {
+  color: red;
+}

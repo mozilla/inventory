@@ -9,6 +9,7 @@
                     <th>Vlan</th>
                     {% endif %}
                     <th>Site</th>
+                    <th>DHCP Scope name</th>
             </tr>
             </thead>
             {% for network in networks %}
@@ -26,6 +27,7 @@
                 {% else %}
                     <td>None</td>
                 {% endif %}
+                <td>{{ network.calc_dhcp_scope_name() }}</td>
             {% endfor %}
             </tr>
         </table>
@@ -160,16 +162,17 @@
     {{ display_obj_field(sreg, 'inet4 addr' if sreg.ip_type == '4' else 'inet6 addr', sreg.ip_str) }}
     {{ display_views(sreg, 'views', sreg.views.all()) }}
     {{ display_obj_field(sreg.network, 'network', sreg.network or 'N/A') }}
-    {{ display_obj_kv(sreg) }}
+    <div class='sreg-data' style='display: none;' data-network-dhcp-scope-name='{{ sreg.network.calc_dhcp_scope_name() }}'></div>
+    {{ display_obj_kv(sreg, sreg.keyvalue_set.all()) }}
 {%- endmacro %}
 
-{% macro display_obj_kv(obj) -%}
-    {% for kv in obj.keyvalue_set.all().order_by('key') %}
+{% macro display_obj_kv(obj, keyvalue_set, value_class='') -%}
+    {% for kv in keyvalue_set.order_by('key') %}
         <tr>
             <td class='field-name'>
                 <a class='field-link' href='{{obj.get_kv_url()}}'>{{kv.key}}</a>(kv)
             </td>
-            <td class='field-value'>
+            <td class='{{ value_class }} field-value'>
                 {{kv.value}}
             </td>
         </tr>
@@ -198,7 +201,13 @@
             {{ display_obj_field(hw, 'name', hw.name) }}
             {{ display_obj_field(hw, 'DHCP Enabled', 'Yes' if hw.enable_dhcp else 'No') }}
             {# display_obj_field(hw, 'group', hw.group or 'None') #}
-            {{ display_obj_kv(hw) }}
+            {{ display_obj_kv(hw, hw.keyvalue_set.exclude(key='dhcp_scope')) }}
+            {% if hw.keyvalue_set.filter(key='dhcp_scope').exists() and
+                hw.sreg.network.calc_dhcp_scope_name() != hw.keyvalue_set.get(key='dhcp_scope').value %}
+                {{ display_obj_kv(hw, hw.keyvalue_set.filter(key='dhcp_scope'), value_class='mismatched-dhcp-scope') }}
+            {% else %}
+                {{ display_obj_kv(hw, hw.keyvalue_set.filter(key='dhcp_scope')) }}
+            {% endif %}
             </tbody>
         </table>
     {% endfor %}

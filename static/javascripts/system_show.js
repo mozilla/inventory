@@ -81,6 +81,10 @@ $(document).ready(function() {
   // Init sync exteranl data button
   SyncExternalSystemData.init();
 
+  function set_dhcp_scope(dhcp_scope) {
+    $('.dhcp-scopes').val(dhcp_scope);
+  }
+
   // Pull in find IP stuff
   $('#ffip').click(function () {
     $('#choose-ip-area').css('display', 'block');
@@ -103,7 +107,7 @@ $(document).ready(function() {
               $('#id_sreg-views_0').attr('checked', false);
               $('#id_sreg-views_1').attr('checked', false);
             },
-            found_ip_callback: function (range, name_fragment){
+            found_ip_callback: function (range_info, name_fragment, range){
               function suggest_name(target) {
                   if (name_fragment.length && !$(target).val()) {
                     var auto_name = '.' + name_fragment + '.mozilla.com';
@@ -112,14 +116,15 @@ $(document).ready(function() {
                     $(target).data('auto-name', auto_name);
                   }
               }
-              if(typeof range.free_ip == 'undefined') {
+              if(typeof range_info.free_ip == 'undefined') {
                 $('#id_sreg-ip_str').val('');
               } else {
                 if ($('#id_sreg-fqdn').val() === '') {
                   suggest_name('#id_sreg-fqdn');
                 }
-                $('#id_sreg-ip_str').val(range.free_ip).change();
+                $('#id_sreg-ip_str').val(range_info.free_ip).change();
               }
+              set_dhcp_scope(range.dhcp_scope);
             }
           });
           $('#choose-ip-area').css('transition', 'visibility 0.5s linear 0s');
@@ -171,7 +176,6 @@ $(document).ready(function() {
                  * the hw adapters that were submited.
                  */
                 var blocks = $('#hwadapter-tables').find('.hwadapter-table');
-                console.log(result.errors.hw_adapters);
                 for (var i = 0; i < result.errors.hw_adapters.length; i++) {
                   error_list = $("<ul class='errors'></ul>");
                   $(error_list).css('color', 'red');

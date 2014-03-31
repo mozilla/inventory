@@ -130,6 +130,7 @@ def calc_template_ranges(network):
     # allocation templates
 
     network.update_network()
+    dhcp_scope = network.calc_dhcp_scope_name()
     nbase = network.network.network
     name_fragment = calc_name_fragment(network)
 
@@ -142,6 +143,7 @@ def calc_template_ranges(network):
                     'rtype': 'special purpose',
                     'start': str(nbase + 1),
                     'end': str(nbase + 15),
+                    'dhcp_scope': dhcp_scope,
                     'name_fragment': name_fragment
                 },
                 {
@@ -149,6 +151,7 @@ def calc_template_ranges(network):
                     'rtype': 'multi-host pools',
                     'start': str(nbase + 16),
                     'end': str(nbase + 127),
+                    'dhcp_scope': dhcp_scope,
                     'name_fragment': name_fragment
                 },
                 {
@@ -156,6 +159,7 @@ def calc_template_ranges(network):
                     'rtype': '/32 allocations',
                     'start': str(nbase + 128),
                     'end': str(nbase + 207),
+                    'dhcp_scope': dhcp_scope,
                     'name_fragment': name_fragment
                 },
                 {
@@ -163,6 +167,7 @@ def calc_template_ranges(network):
                     'rtype': 'load balancers',
                     'start': str(nbase + 208),
                     'end': str(nbase + 223),
+                    'dhcp_scope': dhcp_scope,
                     'name_fragment': name_fragment
                 },
                 {
@@ -170,6 +175,7 @@ def calc_template_ranges(network):
                     'rtype': 'dynamic',
                     'start': str(nbase + 224),
                     'end': str(nbase + 247),
+                    'dhcp_scope': dhcp_scope,
                     'name_fragment': name_fragment
                 },
                 {
@@ -177,6 +183,7 @@ def calc_template_ranges(network):
                     'rtype': 'reserved',
                     'start': str(nbase + 248),
                     'end': str(nbase + 255),
+                    'dhcp_scope': dhcp_scope,
                     'name_fragment': name_fragment
                 }
             ]
@@ -186,6 +193,7 @@ def calc_template_ranges(network):
                     'rtype': 'general purpose',
                     'start': str(nbase + 256),
                     'end': str(network.network.broadcast - 1),
+                    'dhcp_scope': dhcp_scope,
                     'name_fragment': name_fragment
                 })
         elif network.prefixlen > 24 and network.prefixlen < 31:
@@ -195,6 +203,7 @@ def calc_template_ranges(network):
                 'rtype': 'reserved',
                 'start': str(nbase + 0),
                 'end': str(nbase + 3),
+                'dhcp_scope': dhcp_scope,
                 'name_fragment': name_fragment
             }]
 
@@ -204,6 +213,7 @@ def calc_template_ranges(network):
                     'rtype': 'general purpose',
                     'start': str(nbase + 5),
                     'end': str(network.network.broadcast - 1),
+                    'dhcp_scope': dhcp_scope,
                     'name_fragment': name_fragment
                 })
         else:
@@ -221,6 +231,7 @@ def calc_template_ranges(network):
                 'rtype': 'reserved (netops)',
                 'start': str(nbase + 1),
                 'end': str(nbase + int('ffff', 16)),
+                'dhcp_scope': dhcp_scope,
                 'name_fragment': name_fragment
             },
             {
@@ -228,6 +239,7 @@ def calc_template_ranges(network):
                 'rtype': 'general purpose',
                 'start': str(nbase + int('10001', 16)),
                 'end': str(nbase + int('1ffff', 16)),
+                'dhcp_scope': dhcp_scope,
                 'name_fragment': name_fragment
             },
             {
@@ -235,6 +247,7 @@ def calc_template_ranges(network):
                 'rtype': 'vips',
                 'start': str(nbase + int('20001', 16)),
                 'end': str(nbase + int('2ffff', 16)),
+                'dhcp_scope': dhcp_scope,
                 'name_fragment': name_fragment
             }
         ]
@@ -310,6 +323,7 @@ def integrate_real_ranges(network, template_ranges):
         return template_ranges
 
     name_fragment = calc_name_fragment(network)
+    dhcp_scope = network.calc_dhcp_scope_name()
     filtered_ranges = []
     no_ovlp_templates = []
 
@@ -332,6 +346,7 @@ def integrate_real_ranges(network, template_ranges):
             'rtype': r.name,
             'start': r.start_str,
             'end': r.end_str,
+            'dhcp_scope': dhcp_scope,
             'name_fragment': name_fragment,
             'pk': r.pk
         })

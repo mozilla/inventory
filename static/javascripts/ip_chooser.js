@@ -132,7 +132,7 @@ function chosen_init(ctx){
                   $(that).css('transition', 'background-color 0.2s linear 0s');
                   $(that).css('background-color', '#00CC33');
                 }
-                ctx.found_ip_callback(range_info, name_fragment);
+                ctx.found_ip_callback(range_info, name_fragment, range);
               });
             }
           )
@@ -326,7 +326,6 @@ function chosen_init(ctx){
         var choice_type = 'site';
         var choice_pk = choice_option.find('option:selected').val();
         console.log("Update site with: " + choice_type + " " + choice_pk);
-        console.log(callback);
         process_current_state(choice_option, choice_type, choice_pk, callback);
       }
 

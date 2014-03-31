@@ -33,3 +33,11 @@ class HWAdapterForm(forms.ModelForm):
         widgets = {
             'sreg': widgets.HiddenInput
         }
+
+    def has_changed(self):
+        if self.changed_data == ['dhcp_scope']:
+            # This is automatically set by the UI sometimes. If this is the
+            # only thing that has changed the user probably didn't want a
+            # hardware adapter created
+            return False
+        return bool(self.has_changed)
