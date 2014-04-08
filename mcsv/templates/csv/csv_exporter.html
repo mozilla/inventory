@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+    <script src="{{ MEDIA_URL }}javascripts/csv_exporter.js" type="text/javascript"></script>
+    <script src="{{ MEDIA_URL }}javascripts/chosen/chosen.jquery.js" type="text/javascript"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/csv_loading.css">
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/csv_exporter.css">
+    <link rel='stylesheet' href="{{ MEDIA_URL }}javascripts/chosen/chosen.css" type="text/css" />
+
+    <div id='ui-area'>
+        <div id='choose-class'>
+            <select class='export-class chosen-select'>
+                {% for name, _ in export_classes %}
+                    <option value='{{ name }}'>{{ name }}</option>
+                {% endfor %}
+            <select>
+        </div>
+        <div id='do-export'>
+            <button id='export'>Export</button>
+        </div>
+    </div>
+    <div id='id_waiting' class="waiting" style='display:none;'>
+        <div class="bar">
+            <i class="sphere"></i>
+        </div>
+    </div>
+    <textarea id='csv-results' style='display:none;' onclick='this.select()'>
+    </textarea>
+{% endblock %}

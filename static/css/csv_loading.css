@@ -1,0 +1,76 @@
+div.controls {
+  margin-bottom: 1em;
+}
+#csv-data {
+  width: 98%;
+}
+#csv-results {
+  margin-top: 20px;
+}
+.new { /* http://www.colorzilla.com/gradient-editor/ */
+  color: green;
+  background: #f8ffe8; /* Old browsers */
+  background: -moz-linear-gradient(top, #f8ffe8 0%, #e3f5ab 100%, #b7df2d 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f8ffe8), color-stop(100%,#e3f5ab), color-stop(100%,#b7df2d)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, #f8ffe8 0%,#e3f5ab 100%,#b7df2d 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, #f8ffe8 0%,#e3f5ab 100%,#b7df2d 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, #f8ffe8 0%,#e3f5ab 100%,#b7df2d 100%); /* IE10+ */
+  background: linear-gradient(to bottom, #f8ffe8 0%,#e3f5ab 100%,#b7df2d 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f8ffe8', endColorstr='#b7df2d',GradientType=0 ); /* IE6-9 */
+}
+/*
+    Credit for waiting bar stuff goes to Hugo Giraudel
+    http://tympanus.net/codrops/2012/11/14/creative-css-loading-animations/
+ */
+.waiting .bar {
+  /* Size and position */
+  font-size: 20px; /* 1em */
+  width: 10em;
+  height: 1em;
+  position: relative;
+  margin: 100px auto;
+
+  /* Styles */
+  border-radius: .5em; /* Height/2 */
+  background: white; /* Fallback */
+  background: rgba(255,255,255,0.6);
+  box-shadow:
+    0 0 0 .05em rgba(100,100,100,0.075), /* Subtle border */
+    0 0 0 .25em rgba(0,0,0,0.1),           /* Outter border */
+    inset 0 .1em .05em rgba(0,0,0,0.1),   /* Inset shadow */
+    0 .05em rgba(255,255,255,0.7);     /* Slight reflection */
+}
+.waiting .bar:after {
+  /* Content and position */
+  content: "Processing CSV. Please Wait.";
+  position: absolute;
+  left: 15%;
+  top: 150%;
+
+  /* Font styles */
+  font-family: 'Carrois Gothic', sans-serif;
+  font-size: 0.5em;
+  color: #555;
+  text-shadow: 0 .05em rgba(255,255,255,0.7);
+}
+.waiting .sphere {
+  /* Size */
+  display: block;
+  width: 1em;
+  height: 100%;
+
+  /* Styles */
+  border-radius: 50%;
+  background: linear-gradient(#eee, #ddd);
+  box-shadow:
+    inset 0 .15em .1em rgba(255,255,255,0.3), /* Top light */
+    inset 0 -.1em .15em rgba(0,0,0,0.15),      /* Bottom shadow */
+    0 0 .25em rgba(0,0,0,0.3);             /* Outter shadow */
+
+  /* Animation */
+  animation: move 1.75s ease-in-out infinite alternate;
+}
+
+@keyframes move {
+  to { margin-left: 90%; }
+}

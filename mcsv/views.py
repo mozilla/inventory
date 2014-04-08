@@ -4,8 +4,8 @@ from django.db.utils import DatabaseError
 from django.shortcuts import render
 from django.http import HttpResponse
 
-from mcsv.importer import Resolver, Generator
-from mcsv.importer import csv_import
+from mcsv.importer import csv_import, Resolver, Generator
+from mcsv.exporter import csv_export, export_classes
 
 from systems.models import System
 
@@ -109,3 +109,36 @@ def ajax_csv_exporter(request):
 
     queue.seek(0)
     return HttpResponse(json.dumps({'csv_content': queue.readlines()}))
+
+
+def full_csv_exporter(request):
+    return render(request, 'csv/csv_exporter.html', {
+        'export_classes': export_classes.iteritems(),
+    })
+
+
+def ajax_full_csv_exporter(request):
+    class_name = request.GET.get("class_name", None)
+    if not class_name:
+        return HttpResponse(
+            "No class name provided",
+            status=400
+        )
+
+    klass = export_classes.get(class_name, None)
+
+    if not klass:
+        return HttpResponse(
+            "No class names '{0}'".format(class_name),
+            status=400
+        )
+
+    output, errors = csv_export(klass)
+    if errors:
+        return HttpResponse(errors, status=400)
+
+    return HttpResponse(output.readlines(), status=200)
+
+
+def ajax_csv_export_classes(request):
+    return HttpResponse(json.dumps(export_classes.keys()), status=200)

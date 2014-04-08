@@ -1,0 +1,17 @@
+#choose-class {
+  display: inline;
+}
+
+#do-export {
+  display: inline;
+}
+
+#ui-area {
+  margin-bottom: 4em;
+    text-align: center;
+}
+
+#csv-results {
+  background-color: white;
+  width: 98%;
+}
