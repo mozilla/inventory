@@ -14,6 +14,11 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'settings.base'
 from django.test.client import Client
 from systems.models import ScheduledTask
 always_push_svn = True
+
+# XXX Getting import errors on this model only. No clue. This script is pretty broken.
+import user_systems
+import user_systems.models
+
 def main():
     client = Client()
     dhcp_scopes = []
