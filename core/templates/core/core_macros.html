@@ -162,7 +162,7 @@
     {{ display_obj_field(sreg, 'inet4 addr' if sreg.ip_type == '4' else 'inet6 addr', sreg.ip_str) }}
     {{ display_views(sreg, 'views', sreg.views.all()) }}
     {{ display_obj_field(sreg.network, 'network', sreg.network or 'N/A') }}
-    <div class='sreg-data' style='display: none;' data-network-dhcp-scope-name='{{ sreg.network.calc_dhcp_scope_name() }}'></div>
+    <div class='sreg-data' style='display: none;' data-network-dhcp-scope-name='{{ sreg.network and sreg.network.calc_dhcp_scope_name() }}'></div>
     {{ display_obj_kv(sreg, sreg.keyvalue_set.all()) }}
 {%- endmacro %}
 
