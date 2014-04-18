@@ -289,12 +289,11 @@ def set_field(obj, attr, value):
             else:
                 try:
                     m_value = m_attr.field.rel.to.objects.get(pk=value)
-                except m_attr.field.rel.to.DoesNotExist, e:
+                except (ValueError, m_attr.field.rel.to.DoesNotExist), e:
                     raise BadImportData(
                         "Using the data '{0}' to look up '{1}' and "
                         "received the error '{2}'".format(value, attr, str(e))
                     )
-
         else:
             raise Exception("Really bad error")
     else:
