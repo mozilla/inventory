@@ -1,5 +1,4 @@
 from django.db.models.fields.related import ForeignKey
-#from django.test import TransactionTestCase as TestCase
 from django.test import TestCase
 from django.test.client import RequestFactory
 
@@ -97,6 +96,76 @@ class BulkActionTests(TestCase):
         post_count = System.objects.all().count()
         self.assertTrue(pre_count == post_count - 1)
         self.assertUpdated(hostname, json_data, s)
+
+    def test_clone_system(self):
+        """Make sure the system's history is copied over. Also, check the
+        created_on field to make sure it is coppied correctly"""
+        old_hostname = 'puppet678.foobar.mozilla.com'
+        data = """
+        {{
+            "systems": {{
+                "{hostname}": {{
+                    "asset_tag": "7349",
+                    "serial": "MXQ14901XV",
+                    "system_type": {system_type},
+                    "rack_order": "1.16",
+                    "hostname": "{hostname}",
+                    "patch_panel_port": "",
+                    "purchase_date": null,
+                    "warranty_start": null,
+                    "purchase_price": "1.0",
+                    "oob_ip": "10.8.0.25",
+                    "allocation": {allocation_pk},
+                    "warranty_end": null,
+                    "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16"
+                }}
+            }}
+        }}
+        """.format(allocation_pk=self.allocation.pk, hostname=old_hostname,
+                   system_type=self.system_type.pk)
+
+        _, error = bulk_import(data)
+        self.assertFalse(error)
+
+        s = System.objects.get(hostname=old_hostname)
+        s.serial = "asdf"
+        s.save()
+        System.objects.filter(pk=s.pk).update(created_on=None)
+
+        self.assertEqual(1, s.systemchangelog_set.all().count())
+
+        hostname = 'puppet679.foobar.mozilla.com'
+        data = """
+        {{
+            "systems": {{
+                "{hostname}": {{
+                    "asset_tag": "7349",
+                    "clone": "{clone_hostname}",
+                    "serial": "MXQ14901XV",
+                    "system_type": {system_type},
+                    "rack_order": "1.16",
+                    "hostname": "{hostname}",
+                    "patch_panel_port": "",
+                    "purchase_date": null,
+                    "warranty_start": null,
+                    "purchase_price": "1.0",
+                    "oob_ip": "10.8.0.25",
+                    "allocation": {allocation_pk},
+                    "warranty_end": null,
+                    "switch_ports": "    bsx-b09: Gi1/0/16, Gi2/0/16"
+                }}
+            }}
+        }}
+        """.format(allocation_pk=self.allocation.pk, hostname=hostname,
+                   system_type=self.system_type.pk,
+                   clone_hostname=old_hostname)
+
+        _, error = bulk_import(data)
+        self.assertFalse(error)
+
+        new_s = System.objects.get(hostname=hostname)
+        self.assertEqual(2, new_s.systemchangelog_set.all().count())
+        self.assertEqual(None, new_s.created_on)
 
     def test_single_update(self):
         hostname = 'puppet2.foobar.mozilla.com'

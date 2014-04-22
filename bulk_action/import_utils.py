@@ -12,6 +12,21 @@ import datetime
 import simplejson as json
 
 
+# Objects are created/updated at during different phases. The need for this
+# comes from the necessity of certain objects existing before other objects
+# exist. For example, a KeyValue pair needs its object to exist before it can
+# be saved. Also, SREG objects need system objects before they are saved --
+# likewise HWAdapter objects need SREG objects.
+
+# As functions are built up to save a JSON blob they are paired with a PHASE
+# number to ensure an order that will allow things to work.
+
+PHASE_1 = 1
+PHASE_2 = 2
+PHASE_3 = 3
+PHASE_4 = 4
+
+
 class BadImportData(Exception):
     def __init__(self, bad_blob=None, msg=''):
         self.bad_blob = bad_blob
@@ -182,7 +197,7 @@ def cname_update(cname, blob):
         for view in blob.get('views', []):
             cname.views.add(view)
 
-    return [(3, save)] + save_functions
+    return [(PHASE_3, save)] + save_functions
 
 
 def update_kv(kv, blob):
@@ -200,7 +215,7 @@ def update_kv(kv, blob):
         kv.obj = kv.obj.__class__.objects.get(pk=kv.obj.pk)
         make_save(kv, blob)()
 
-    return [(4, save)]
+    return [(PHASE_4, save)]
 
 
 def hw_update(hw, blob):
@@ -216,7 +231,7 @@ def hw_update(hw, blob):
         hw.sreg = StaticReg.objects.get(pk=hw.sreg.pk)
         make_save(hw, blob)()
 
-    return [(3, save)] + save_functions
+    return [(PHASE_3, save)] + save_functions
 
 
 def sreg_update(sreg, blob):
@@ -253,11 +268,60 @@ def sreg_update(sreg, blob):
         for view in blob.get('views', []):
             sreg.views.add(view)
 
-    return [(2, save)] + save_functions
+    return [(PHASE_2, save)] + save_functions
+
+
+def clone_system_extras(system, other_hostname):
+    # XXX if ever SystemChangeLog is swapped out this function will need to be
+    # changed
+    """
+    Copy all SystemChangeLog over from the system named "other_hostname" to
+    system's SystemChangeLog store.
+
+    This function is called after the system's save() is called, so if the
+    object is new we will need to refresh the object before using it.
+    """
+    other_system = System.objects.get(hostname=other_hostname)
+
+    def _clone_system_extras():
+        s = System.objects.get(pk=system.pk)
+        for cl in other_system.systemchangelog_set.all():
+            cl.pk = None
+            cl.system = s
+            cl.save()
+
+        # if the new system didn't have a created_on date it was set to
+        # now()-ish. Set the new system's created_on to also be None
+        if not other_system.created_on:
+            s.created_on = None
+            s.save()
+
+    return _clone_system_extras
 
 
 def system_update(system, blob):
+    """
+    If there is a key 'clone' with "truish" value we must look for that and
+    possibly copy history from an existing object. The history will be taken
+    from the system who's "hostname" is the value of the "clone" key. If no
+    system exists for cloning a BadImportData exception will be raised.
+    """
     save_functions = []
+
+    mother_hostname = blob.get('clone', None)
+
+    if mother_hostname and isinstance(mother_hostname, str):
+        try:
+            save_functions += [
+                (PHASE_2, clone_system_extras(system, mother_hostname))
+            ]
+        except System.DoesNotExist:
+            raise BadImportData(
+                bad_blob=blob,
+                msg="Tried to clone the host {0} but a host with that "
+                "hostname didn't exist".format(mother_hostname)
+            )
+
     for attr, value in blob.iteritems():
         if attr == 'staticreg_set':
             if not isinstance(value, dict):
@@ -273,7 +337,7 @@ def system_update(system, blob):
         else:
             set_field(system, attr, value)
 
-    return [(1, make_save(system, blob))] + save_functions
+    return [(PHASE_1, make_save(system, blob))] + save_functions
 
 
 def set_field(obj, attr, value):
