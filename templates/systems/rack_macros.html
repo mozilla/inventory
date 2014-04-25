@@ -23,9 +23,12 @@
                 <td style="width: 7em;">ILO</td>
             {% endif %}
         </tr>
-        {% for system in systems %}
-            {% include "systems/rack_row_partial.html" %}
-        {% endfor %}
+
+        {% if systems %}
+            {% for system in systems[0].__class__.rack_ordering(systems) %}
+                {% include "systems/rack_row_partial.html" %}
+            {% endfor %}
+        {% endif %}
         {% if not read_only %}
         <tr><td style="text-align: center" colspan="6"><a class="new-system" href="">Add New System To Rack</a></td></tr>
         {% endif %}

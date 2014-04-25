@@ -19,6 +19,7 @@ from core.utils import create_key_index
 import datetime
 import re
 import socket
+import math
 
 
 class QuerySetManager(models.Manager):
@@ -489,6 +490,64 @@ class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
     @classmethod
     def field_names(cls):
         return [field.name for field in cls._meta.fields]
+
+    @classmethod
+    def rack_ordering(cls, systems):
+        """
+        A generator that sorts the systems by whole rack_order value (in
+        descending order) and then sub sorts the decimal part of rack_order in
+        ascending order.
+
+        I.e.
+        45.00
+        44.00
+        43.00
+        31.00
+        31.01
+        31.02
+        21.00
+        11.01
+        11.02
+        11.03
+        11.04
+        1.00
+
+        (See bug 999204)
+        """
+        if isinstance(systems, QuerySet):
+            systems = list(systems)
+
+        systems = list(reversed(sorted(systems, key=lambda s: s.rack_order)))
+        i = 0
+        cur_integer = None
+
+        while True:
+            if i >= len(systems):
+                break
+
+            if systems[i].rack_order is None:
+                yield systems[i]
+                i += 1
+                continue
+
+            cur_integer = math.floor(systems[i].rack_order)
+
+            j = i
+
+            while (
+                (j + 1) < len(systems) and
+                systems[j + 1].rack_order is not None and
+                math.floor(systems[j + 1].rack_order) == cur_integer
+            ):
+                j += 1
+
+            new_i = j + 1
+
+            while j >= i:
+                yield systems[j]
+                j -= 1
+
+            i = new_i
 
     @classmethod
     def get_bulk_action_list(cls, query, fields=None, show_related=True):
