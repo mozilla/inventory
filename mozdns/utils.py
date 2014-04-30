@@ -71,7 +71,7 @@ def get_clobbered(domain_name):
     clobber_querysets = []  # Objects that have the same name as a domain
     for Klass in classes:
         objs = Klass.objects.select_for_update().filter(fqdn=domain_name)
-        if objs:
+        if objs.exists():
             clobber_querysets.append(objs)
     return clobber_querysets
 
