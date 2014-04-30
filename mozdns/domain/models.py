@@ -133,7 +133,9 @@ class Domain(models.Model, ObjectUrlMixin, DisplayMixin):
         super(Domain, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
-        self.full_clean()
+        if kwargs.pop('do_full_clean', True):
+            self.full_clean()
+
         if not self.pk:
             new_domain = True
         else:
@@ -168,7 +170,7 @@ class Domain(models.Model, ObjectUrlMixin, DisplayMixin):
         else:
             return None
 
-    def clean(self):
+    def clean(self, ignore_conflicts=False):
         if self.name.endswith('arpa'):
             self.is_reverse = True
         self.master_domain = name_to_master_domain(self.name)
@@ -185,7 +187,7 @@ class Domain(models.Model, ObjectUrlMixin, DisplayMixin):
 
         do_zone_validation(self)
         # TODO, can we remove this?
-        if self.pk is None:
+        if self.pk is None and not ignore_conflicts:
             # The object doesn't exist in the db yet. Make sure we don't
             # conflict with existing objects. We may want to move to a more
             # automatic solution where the creation of a new domain will
@@ -196,7 +198,7 @@ class Domain(models.Model, ObjectUrlMixin, DisplayMixin):
                 objects = qset.all()
                 raise ValidationError("Objects with this name already "
                                       "exist {0}".format(objects))
-        else:
+        elif self.pk is not None:
             db_self = Domain.objects.get(pk=self.pk)
             if db_self.name != self.name and self.domain_set.exists():
                 raise ValidationError("Child domains rely on this domain's "

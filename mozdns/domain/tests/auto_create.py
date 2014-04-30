@@ -4,6 +4,8 @@ from django.test import TestCase
 from mozdns.domain.models import Domain
 from mozdns.utils import ensure_label_domain
 from mozdns.soa.models import SOA
+from mozdns.tests.utils import create_fake_zone
+from mozdns.address_record.models import AddressRecord
 
 
 class AutoCreateTests(TestCase):
@@ -55,3 +57,48 @@ class AutoCreateTests(TestCase):
         f_c.save()
 
         self.assertRaises(ValidationError, ensure_label_domain, "baz.moo")
+
+    def test_extend_doesnt_touch(self):
+        # When we create a new domain, ensure that things are not touched
+        root_domain = create_fake_zone("foo.mozilla.com", suffix="")
+        shouldnt_be_touched = AddressRecord.objects.create(
+            label='', domain=root_domain, ip_str='10.0.0.1', ip_type='4'
+        )
+        # Extend the tree
+        label, baz_domain = ensure_label_domain('bar.baz.foo.mozilla.com')
+
+        AddressRecord.objects.create(
+            label=label, domain=baz_domain, ip_str='10.0.0.1', ip_type='4'
+        )
+
+        # The update() call will bypass the save/clean method of AddressRecord
+        # so the fqdn of the A will remain unchanged. If our tree extender
+        # function is touching this record its label will be changed to ''.
+        AddressRecord.objects.filter(pk=shouldnt_be_touched.pk).update(
+            label='shouldnt be touched'
+        )
+
+        ensure_label_domain('wee.boo.bar.baz.foo.mozilla.com')
+
+        self.assertEqual(
+            'shouldnt be touched',
+            AddressRecord.objects.get(pk=shouldnt_be_touched.pk).label
+        )
+
+    def test_extend_does_touch(self):
+        # When we create a new domain, ensure that things are updated
+        root_domain = create_fake_zone("foo.mozilla.com", suffix="")
+        shouldnt_be_touched = AddressRecord.objects.create(
+            label='baz', domain=root_domain, ip_str='10.0.0.1', ip_type='4'
+        )
+
+        AddressRecord.objects.filter(pk=shouldnt_be_touched.pk).update(
+            label='shouldnt be touched'
+        )
+        # Extend the tree
+        ensure_label_domain('bar.baz.foo.mozilla.com')
+
+        self.assertEqual(
+            '',
+            AddressRecord.objects.get(pk=shouldnt_be_touched.pk).label
+        )

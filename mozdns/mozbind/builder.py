@@ -12,6 +12,8 @@ import time
 import datetime
 from itertools import chain
 
+from django.db import transaction
+
 from settings.dnsbuilds import (
     STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE, NAMED_CHECKZONE_OPTS,
     MAX_ALLOWED_LINES_CHANGED, MAX_ALLOWED_CONFIG_LINES_REMOVED,
@@ -963,6 +965,8 @@ class DNSBuilder(SVNBuilderMixin):
         if write_statements:
             self.build_config_files(stmts)
 
+    # force the build to run in a transaction
+    @transaction.commit_on_success
     def build_dns(self):
         if self.stop_update_exists():
             return

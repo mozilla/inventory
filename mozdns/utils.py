@@ -9,11 +9,9 @@ from mozdns.txt.models import TXT
 from mozdns.srv.models import SRV
 from mozdns.address_record.models import AddressRecord
 from mozdns.cname.models import CNAME
-from mozdns.view.models import View
 from core.registration.static.models import StaticReg
 
 from copy import deepcopy
-import pdb
 
 
 def tablefy(objects, views=True):
@@ -70,25 +68,12 @@ def slim_form(domain_pk=None, form=None):
 
 def get_clobbered(domain_name):
     classes = [MX, AddressRecord, CNAME, TXT, SRV, StaticReg, SSHFP]
-    clobber_objects = []  # Objects that have the same name as a domain
+    clobber_querysets = []  # Objects that have the same name as a domain
     for Klass in classes:
-        objs = Klass.objects.filter(fqdn=domain_name)
-        for obj in objs:
-            obj_views = [view.name for view in obj.views.all()]
-            new_obj = deepcopy(obj)
-            new_obj.id = None
-            new_obj.label = ""
-            clobber_objects.append((new_obj, obj_views))
-            if Klass == AddressRecord:
-                kwargs = {"check_cname": False, "call_prune_tree": False}
-            else:
-                kwargs = {"call_prune_tree": False}
-            # We have to be careful here to not delete any domains due to them
-            # being pruneable and not having any records or child domains. We
-            # set the call_prune_tree flag to tell the object's delete function
-            # to skip calling prune_tree
-            obj.delete(**kwargs)
-    return clobber_objects
+        objs = Klass.objects.select_for_update().filter(fqdn=domain_name)
+        if objs:
+            clobber_querysets.append(objs)
+    return clobber_querysets
 
 
 def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
@@ -138,33 +123,45 @@ def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
                 "DNS zone.")
 
     domain_name = ''
+    # We know the end domain doesn't exist, so we build it up incrementally
+    # starting at the very right most parent domain. If we find that a parent
+    # domain already exists we continue until we find the domain that doesn't
+    # exist.
     for i in range(len(parts)):
         domain_name = parts[i] + '.' + domain_name
         domain_name = domain_name.strip('.')
-        clobber_objects = get_clobbered(domain_name)
-        # need to be deleted and then recreated
-        domain, created = Domain.objects.get_or_create(name=domain_name)
-        if purgeable and created:
-            domain.purgeable = True
-            domain.save()
+        if Domain.objects.filter(name=domain_name).exists():
+            continue
 
-        if (inherit_soa and created and domain.master_domain and
+        # We are about to create a domain that previously didn't exist!
+        clobber_querysets = get_clobbered(domain_name)
+        # Don't use get_or_create here because we need to pass certain kwargs
+        # to clean()
+        domain = Domain(name=domain_name)
+        # we know the clobber_querysets may conflict, but we will handle
+        # resolving the conflict later in this function
+
+        if purgeable:
+            domain.purgeable = True
+
+        domain.clean(ignore_conflicts=True)  # master domain is set here
+
+        if (inherit_soa and domain.master_domain and
                 domain.master_domain.soa is not None):
             domain.soa = domain.master_domain.soa
-            domain.save()
-        for object_, views in clobber_objects:
-            try:
-                object_.domain = domain
-                object_.clean()
-                object_.save()
-                for view_name in views:
-                    view = View.objects.get(name=view_name)
-                    object_.views.add(view)
-                    object_.save()
-            except ValidationError:
-                # this is bad
-                pdb.set_trace()
-                pass
+
+        # get the domain in the db so we can save the clobbered objects
+        domain.save(do_full_clean=False)
+
+        # update the objects that initially conflicted with this domain
+        for qs in clobber_querysets:
+            qs.update(domain=domain, label='')
+
+        # full_clean() wasn't called on this domain but clean() was. Calling
+        # clean_feilds() will ensure we have done the equivalent of a
+        # full_clean() on the domain.
+        domain.clean_fields()
+
     return domain
 
 
