@@ -20,3 +20,4 @@ ZONE_PATH = ""
 ZONES_WITH_NO_CONFIG = []
 
 TEST_PREFIX = '/home/travis/build/uberj/inventory/build/'
+SANITY_CHECKS = []

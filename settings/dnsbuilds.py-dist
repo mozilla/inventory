@@ -41,4 +41,16 @@ ZONE_PATH = ""
 ZONES_WITH_NO_CONFIG = [
 ]
 
+SANITY_CHECKS = []
+# An example of what SANITY_CHECKS would look like. The build script ensures
+# the expressions are found in the files mentioned.
+#
+#    SANITY_CHECKS = [
+#        (os.path.join(PROD_DIR, 'com/mozilla/mozilla.com.public'), (
+#            (r'^mozilla\.com\.\s+(\d+\s+)?IN\s+A\s+'),
+#            (r'^mozilla\.com\.\s+(\d+\s+)?IN\s+AAAA\s+'),
+#            (r'^mozilla\.com\.\s+(\d+\s+)?IN\s+MX\s+'),
+#        )),
+#    ]
+
 TEST_PREFIX = '/tmp/fake'

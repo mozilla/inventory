@@ -42,6 +42,7 @@ class MockBuildScriptTests(TestCase):
         self.svn_repo = '{0}/svn_repo'.format(TEST_PREFIX)
         self.lock_file = '{0}/lock.fake'.format(TEST_PREFIX)
         self.stop_update = '{0}/stop.update'.format(TEST_PREFIX)
+        self.re_test_file = '{0}/re_test'.format(TEST_PREFIX)
 
         #os.chdir(os.path.join(TEST_PREFIX, ".."))
         if os.path.isdir(TEST_PREFIX):
@@ -453,3 +454,22 @@ class MockBuildScriptTests(TestCase):
             self.assertTrue(b.stop_update_exists())
         finally:
             os.remove(self.stop_update)
+
+    def test_sanity_checks(self):
+        b = DNSBuilder(STAGE_DIR=self.stage_dir, PROD_DIR=self.prod_dir,
+                       LOCK_FILE=self.lock_file,
+                       STOP_UPDATE_FILE=self.stop_update)
+        with open(self.re_test_file, 'w+') as fd:
+            fd.write("mozilla.com.   IN  A   120.1.1.1")
+
+        SANITY_CHECKS = [
+            (self.re_test_file, (
+                (r'^mozilla\.com\.\s+(\d+\s+)?IN\s+A\s+'),
+            )),
+        ]
+        b.re_sanity_check(SANITY_CHECKS)
+
+        with open(self.re_test_file, 'w+') as fd:
+            fd.write("foo.com.   IN  A   120.1.1.1")
+
+        self.assertRaises(BuildError, b.re_sanity_check, SANITY_CHECKS)

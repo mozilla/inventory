@@ -17,7 +17,8 @@ from django.db import transaction
 from settings.dnsbuilds import (
     STAGE_DIR, PROD_DIR, LOCK_FILE, STOP_UPDATE_FILE, NAMED_CHECKZONE_OPTS,
     MAX_ALLOWED_LINES_CHANGED, MAX_ALLOWED_CONFIG_LINES_REMOVED,
-    NAMED_CHECKZONE, NAMED_CHECKCONF, LAST_RUN_FILE, BIND_PREFIX
+    NAMED_CHECKZONE, NAMED_CHECKCONF, LAST_RUN_FILE, BIND_PREFIX,
+    SANITY_CHECKS
 )
 
 from settings.dnsbuilds import ZONES_WITH_NO_CONFIG
@@ -965,6 +966,32 @@ class DNSBuilder(SVNBuilderMixin):
         if write_statements:
             self.build_config_files(stmts)
 
+    def re_sanity_check(self, sanity_checks):
+        """
+        SANITY_CHECKS contains regular expressions and the files those
+        expressions should be seen in. Loop over the expressions and verify
+        that the expressions are present in their respective files.
+        """
+        for file_path, exprs in sanity_checks:
+            exprs = set(exprs)
+            found_exprs = set()
+
+            with open(file_path, 'r') as fd:
+                for line in fd:
+                    for expr in exprs:
+                        if re.match(expr, line):
+                            found_exprs.add(expr)
+
+                missing = exprs - found_exprs
+
+                if missing:
+                    raise BuildError(
+                        "The expression(s) '{0}' were not found in {1}. The "
+                        "build has been aborted".format(
+                            ', '.join(missing), file_path
+                        )
+                    )
+
     # force the build to run in a transaction
     @transaction.commit_on_success
     def build_dns(self):
@@ -997,6 +1024,7 @@ class DNSBuilder(SVNBuilderMixin):
 
             self.log(self.format_title("VCS Checkin"))
             successful_checkin = False
+            self.re_sanity_check(SANITY_CHECKS)
             if self.BUILD_ZONES and self.PUSH_TO_PROD:
                 successful_checkin = self.vcs_checkin()
             else:
