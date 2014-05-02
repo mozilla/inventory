@@ -40,4 +40,4 @@ class HWAdapterForm(forms.ModelForm):
             # only thing that has changed the user probably didn't want a
             # hardware adapter created
             return False
-        return bool(self.has_changed)
+        return super(HWAdapterForm, self).has_changed()
