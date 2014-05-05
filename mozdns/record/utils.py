@@ -3,6 +3,7 @@ import simplejson as json
 from gettext import gettext as _
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.db import transaction
 from django.forms.util import ErrorList, ErrorDict
 from django.shortcuts import render
 from django.http import Http404
@@ -85,9 +86,15 @@ class RecordView(object):
             # We will try to create an object
             object_ = None
 
-        new_object, errors = self.post_handler(
-            object_, record_type, request.POST.copy()
-        )
+        with transaction.commit_manually():
+            new_object, errors = self.post_handler(
+                object_, record_type, request.POST.copy()
+            )
+            if errors:
+                # rollback any changes that may have occured in post_handler()
+                transaction.rollback()
+            # django wants this commit here
+            transaction.commit()
 
         if object_:
             verb = "update"
@@ -96,16 +103,17 @@ class RecordView(object):
             object_ = new_object
 
         if errors:
-            # Reload the object.
+            # reload the version of the object we have in memory in case it was
+            # changed in post_handler()
             if object_:
                 object_ = self.Klass.objects.get(pk=object_.pk)
             return_form = self.DisplayForm(request.POST)
             return_form._errors = errors
             message = "Errors during {0}. Commit Aborted.".format(verb)
         else:
-            message = "Succesful {0}".format(verb)
             return_form = self.DisplayForm(instance=new_object)
             record_pk = new_object.pk
+            message = "Succesful {0}".format(verb)
 
         if object_:
             delete_redirect_url = object_.get_delete_redirect_url()
