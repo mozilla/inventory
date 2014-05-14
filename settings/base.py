@@ -39,7 +39,6 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'oncall',
     'migrate_dns',
     'user_systems',
-    'build',
     'dhcp',
     'truth',
     'api',
