@@ -1,5 +1,4 @@
 from gettext import gettext as gt
-from tastypie.test import ResourceTestCase
 
 from systems.tests.utils import create_fake_host
 from core.registration.static.models import StaticReg
@@ -14,6 +13,7 @@ from mozdns.txt.models import TXT
 from mozdns.sshfp.models import SSHFP
 from mozdns.view.models import View
 from mozdns.tests.utils import create_fake_zone, random_label, random_byte
+from mozdns.api.tests.utils import ResourceTransactionTestCase
 
 import simplejson as json
 
@@ -104,6 +104,10 @@ class MozdnsAPITests(NoNameserverViewTests, TestCaseUtils):
     object_url = "/en-US/mozdns/api/v{0}_dns/{1}/{2}/"
 
     def setUp(self):
+        from reversion.models import Version, Revision
+        Version.objects.all().delete()
+        Revision.objects.all().delete()
+
         super(MozdnsAPITests, self).setUp()
         self.domain = create_fake_zone(self.__class__.__name__.lower())
         self.public_view = View.objects.get_or_create(name='public')[0]
@@ -256,7 +260,7 @@ class MozdnsAPITests(NoNameserverViewTests, TestCaseUtils):
             self.assertTrue(view_name in views)
 
 
-class MangleTests(ResourceTestCase, TestCaseUtils):
+class MangleTests(ResourceTransactionTestCase, TestCaseUtils):
     test_type = CNAME
     object_list_url = "/en-US/mozdns/api/v{0}_dns/{1}/"
     object_url = "/en-US/mozdns/api/v{0}_dns/{1}/{2}/"
@@ -328,7 +332,7 @@ class MangleTests(ResourceTestCase, TestCaseUtils):
         }
 
 
-class DomainLeakTests(ResourceTestCase, TestCaseUtils):
+class DomainLeakTests(ResourceTransactionTestCase, TestCaseUtils):
     test_type = CNAME
     object_list_url = "/en-US/mozdns/api/v{0}_dns/{1}/"
     object_url = "/en-US/mozdns/api/v{0}_dns/{1}/{2}/"
@@ -347,7 +351,7 @@ class DomainLeakTests(ResourceTestCase, TestCaseUtils):
         post_data = self.post_data()
         resp = self.api_client.post(create_url, format='json', data=post_data)
         self.assertHttpBadRequest(resp)
-        # Verify a new one has been added.
+        # Verify a new one hasnt been added.
         self.assertEqual(Domain.objects.count(), domain_count)
         self.assertTrue(Domain.objects.get(pk=self.domain.pk))  # paranoia
         return resp, post_data
@@ -361,7 +365,7 @@ class DomainLeakTests(ResourceTestCase, TestCaseUtils):
         }
 
 
-class CNAMEAPITests(MozdnsAPITests, ResourceTestCase):
+class CNAMEAPITests(MozdnsAPITests, ResourceTransactionTestCase):
     test_type = CNAME
 
     def post_data(self):
@@ -373,7 +377,7 @@ class CNAMEAPITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class MXAPITests(MozdnsAPITests, ResourceTestCase):
+class MXAPITests(MozdnsAPITests, ResourceTransactionTestCase):
     test_type = MX
 
     def post_data(self):
@@ -387,7 +391,7 @@ class MXAPITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class SRVAPITests(MozdnsAPITests, ResourceTestCase):
+class SRVAPITests(MozdnsAPITests, ResourceTransactionTestCase):
     test_type = SRV
 
     def post_data(self):
@@ -402,7 +406,7 @@ class SRVAPITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class TXTAPITests(MozdnsAPITests, ResourceTestCase):
+class TXTAPITests(MozdnsAPITests, ResourceTransactionTestCase):
     test_type = TXT
 
     def post_data(self):
@@ -414,7 +418,7 @@ class TXTAPITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class NameserverAPITests(MozdnsAPITests, ResourceTestCase):
+class NameserverAPITests(MozdnsAPITests, ResourceTransactionTestCase):
     test_type = Nameserver
 
     def test_fqdn_create(self):
@@ -547,7 +551,7 @@ class NameserverAPITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class SSHFPAPITests(MozdnsAPITests, ResourceTestCase):
+class SSHFPAPITests(MozdnsAPITests, ResourceTransactionTestCase):
     test_type = SSHFP
 
     def post_data(self):
@@ -561,7 +565,7 @@ class SSHFPAPITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class AdderessRecordV4APITests(MozdnsAPITests, ResourceTestCase):
+class AdderessRecordV4APITests(MozdnsAPITests, ResourceTransactionTestCase):
     test_type = AddressRecord
 
     def setUp(self):
@@ -578,7 +582,7 @@ class AdderessRecordV4APITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class AdderessRecordV6APITests(MozdnsAPITests, ResourceTestCase):
+class AdderessRecordV6APITests(MozdnsAPITests, ResourceTransactionTestCase):
     test_type = AddressRecord
 
     def setUp(self):
@@ -598,7 +602,7 @@ class AdderessRecordV6APITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class PTRV6APITests(MozdnsAPITests, ResourceTestCase):
+class PTRV6APITests(MozdnsAPITests, ResourceTransactionTestCase):
     test_type = PTR
 
     def setUp(self):
@@ -631,7 +635,7 @@ class PTRV6APITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class PTRV4APITests(MozdnsAPITests, ResourceTestCase):
+class PTRV4APITests(MozdnsAPITests, ResourceTransactionTestCase):
     test_type = PTR
 
     def setUp(self):
@@ -663,7 +667,7 @@ class PTRV4APITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class StaticSregV4APITests(MozdnsAPITests, ResourceTestCase):
+class StaticSregV4APITests(MozdnsAPITests, ResourceTransactionTestCase):
     object_list_url = "/en-US/core/api/v{0}_core/{1}/"
     object_url = "/en-US/core/api/v{0}_core/{1}/{2}/"
     test_type = StaticReg
@@ -710,7 +714,7 @@ class StaticSregV4APITests(MozdnsAPITests, ResourceTestCase):
         }
 
 
-class StaticSregV6APITests(MozdnsAPITests, ResourceTestCase):
+class StaticSregV6APITests(MozdnsAPITests, ResourceTransactionTestCase):
     object_list_url = "/en-US/core/api/v{0}_core/{1}/"
     object_url = "/en-US/core/api/v{0}_core/{1}/{2}/"
     test_type = StaticReg
