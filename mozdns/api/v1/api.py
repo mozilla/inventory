@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.db import transaction
 
 from tastypie import fields
 from tastypie.resources import ModelResource
@@ -6,7 +7,7 @@ from tastypie.authorization import Authorization
 from tastypie.api import Api
 
 from core.utils import locked_function
-from mozdns.utils import ensure_label_domain, prune_tree
+from mozdns.utils import ensure_label_domain
 from mozdns.domain.models import Domain
 from mozdns.address_record.models import AddressRecord
 from mozdns.txt.models import TXT
@@ -20,8 +21,9 @@ from mozdns.view.models import View
 
 
 import reversion
-
 import simplejson as json
+
+import traceback
 
 
 class CommonDNSResource(ModelResource):
@@ -74,6 +76,7 @@ class CommonDNSResource(ModelResource):
 
         return bundle
 
+    @transaction.commit_on_success
     def obj_update(self, bundle, request=None, skip_errors=False, **kwargs):
         """
         When an object is being updated it is possible to update the label
@@ -84,23 +87,26 @@ class CommonDNSResource(ModelResource):
         in bundle.data. If the 'fqdn' keyword exists the keys 'label' and
         'domain' will be removed from the bundle before hydrate is called.
         """
-        obj = bundle.obj
-        kv = self.extract_kv(bundle)
+        # Note, error_response() raises an ImmediateHttpResponse exception.
+        # This should trigger transaction.commit_on_success to rollback what
+        # happens in this function
+
         # KV pairs should be saved after the object has been created
+        kv = self.extract_kv(bundle)
+
         if bundle.errors:
             self.error_response(bundle.errors, request)
 
         views = bundle.data.pop('views', [])
         comment = bundle.data.pop('comment', '')
-        if bundle.errors:
-            self.error_response(bundle.errors, request)
+
         bundle = self.full_hydrate(bundle)
 
         if bundle.errors:
             self.error_response(bundle.errors, request)
-        # bundle should only have valid data.
-        # If it doesn't errors will be thrown
-        self.apply_commit(obj, bundle.data)
+
+        self.apply_commit(bundle.obj, bundle.data)
+
         return self.save_commit(request, bundle, views, comment, kv)
 
     def update_views(self, obj, views):
@@ -139,13 +145,18 @@ class CommonDNSResource(ModelResource):
             setattr(obj, k, v)
         return obj
 
+    @transaction.commit_on_success
     def obj_create(self, bundle, request=None, **kwargs):
         """
         A generic version of creating a dns object. The strategy is simple: get
         bundle.data to the point where we call Class(**bundle.data) which
         creates an object. We then clean it and then save it. Finally we save
-        any views that were in bundle.
+        any views that were in the bundle.
         """
+        # Note, error_response() raises an ImmediateHttpResponse exception.
+        # This should trigger transaction.commit_on_success to rollback what
+        # happens in this function
+
         kv = self.extract_kv(bundle)
         # KV pairs should be saved after the object has been created
         if bundle.errors:
@@ -164,81 +175,47 @@ class CommonDNSResource(ModelResource):
         # Create the Object
         try:
             self.apply_commit(bundle.obj, bundle.data)
-        except ValueError, e:
-            if 'domain' in bundle.data:
-                prune_tree(bundle.data['domain'])
-            bundle.errors['error_messages'] = e.message
-            self.error_response(bundle.errors, request)
-        except TypeError, e:
-            if 'domain' in bundle.data:
-                prune_tree(bundle.data['domain'])
+        except (ValueError, TypeError), e:
             bundle.errors['error_messages'] = e.message
             self.error_response(bundle.errors, request)
 
         return self.save_commit(request, bundle, views, comment, kv)
 
+    @locked_function('inventory.record_lock')
     def save_commit(self, request, bundle, views, comment, kv):
-        # Q: Why is update_views called in two different places?!?
-        # A: Due to many-to-many objects neeeding both objects to exist in the
-        # db before any relationships can be made, we call update_views
-        # *before* changing the object if the object is being *updated* (it has
-        # a primary key), and we call update_views *after* save is called if
-        # the object is new. If the object was new and we find invalid views
-        # after it was created, we delete the object and raise a 400.
-
-        # TODO, use db transaction and rollback() for a cleaner implementation
-
-        # This all get's really complicated when the record is a glue record...
-        # fuck
+        verb = "updated" if bundle.obj.pk else "created"
+        error = None
         try:
-            if bundle.obj.pk:
-                verb = 'updated'
-                self.update_views(bundle.obj, views)
-            else:
-                verb = 'created'
+            # obj's save() method should be calling full_clean()
+            bundle.obj.save()
         except ValidationError, e:
-            bundle.errors['error_messages'] = {'views': json.dumps(e.messages)}
-            self.error_response(bundle.errors, request)
-
-        try:
-            @locked_function('inventory.record_lock')
-            def do_save():
-                bundle.obj.full_clean()
-                bundle.obj.save()
-            do_save()
-            reversion.set_comment(comment)
-            if request.user.is_authenticated():
-                reversion.set_user(request.user)
-        except ValidationError, e:
-            if 'domain' in bundle.data:
-                prune_tree(bundle.data['domain'])
-            bundle.errors['error_messages'] = json.dumps(e.message_dict)
-            self.error_response(bundle.errors, request)
+            error = json.dumps(e.message_dict)
         except Exception, e:
-            if 'domain' in bundle.data:
-                prune_tree(bundle.data['domain'])
-            bundle.errors['error_messages'] = "Very bad error."
+            error = "Please report this error: {0}".format(
+                traceback.format_exc()
+            )
+
+        if error:
+            bundle.errors['error_messages'] = error
             self.error_response(bundle.errors, request)
 
-        # If we are creating an object, delete the object and error out.
-        if verb == 'created':
-            try:
-                self.update_views(bundle.obj, views)
-            except ValidationError, e:
-                msg = ("Some views failed validation with the message: {0}. "
-                       "The object was not {1}".format(e.messages[0], verb))
-                bundle.obj.delete()
-                bundle.data['error_messages'] = {'views': msg}
-                self.error_response(bundle.errors, request)
-
-        # Hey everything worked!
         reversion.set_comment(comment)
+        if request.user.is_authenticated():
+            reversion.set_user(request.user)
 
-        # Now do the kv magic
-        if kv:
-            bundle.obj.update_attrs()
-            for k, v in kv:
-                setattr(bundle.obj.attrs, k, v)
+        try:
+            self.update_views(bundle.obj, views)
+            # Now do the kv magic
+            if kv:
+                bundle.obj.update_attrs()
+                for k, v in kv:
+                    setattr(bundle.obj.attrs, k, v)
+        except ValidationError, e:
+            bundle.data['error_messages'] = {'views': (
+                "Some views failed validation with the message: {0}. "
+                "The object was not" "{1}".format(e.messages[0], verb)
+            )}
+            self.error_response(bundle.errors, request)
 
         return bundle
 
