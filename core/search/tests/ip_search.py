@@ -53,3 +53,7 @@ class IPTests(TestCase):
         self.assertEqual(len(res['NET']), 1)
         self.assertEqual(len(res['SITE']), 1)
         self.assertEqual(len(res['VLAN']), 1)
+
+    def test_bad_equality(self):
+        res, error = compile_to_django("ip~10.0.0.1")
+        self.assertTrue(error)

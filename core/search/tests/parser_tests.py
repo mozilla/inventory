@@ -108,32 +108,32 @@ class BoolEXPRTest(T):
 
     def test1(self):
         t = '8 AND 8'
-        out = '(' + t + ')'
+        out = ('AND', '8', '8')
         self.assertEqual(out, self.parse(t))
 
     def test2(self):
         t = '8 8'
-        out = '(8 AND 8)'
+        out = ('AND', '8', '8')
         self.assertEqual(out, self.parse(t))
 
     def test3(self):
         t = '8 8 8'
-        out = '((8 AND 8) AND 8)'
+        out = ('AND', ('AND', '8', '8'), '8')
         self.assertEqual(out, self.parse(t))
 
     def test4(self):
         t = '8 OR 8 OR 8'
-        out = '((8 OR 8) OR 8)'
+        out = ('OR', ('OR', '8', '8'), '8')
         self.assertEqual(out, self.parse(t))
 
     def test5(self):
         t = '8 8 OR 8'
-        out = '((8 AND 8) OR 8)'
+        out = ('OR', ('AND', '8', '8'), '8')
         self.assertEqual(out, self.parse(t))
 
     def test6(self):
         t = '8 OR 8 8'
-        out = '(8 OR (8 AND 8))'
+        out = ('OR', '8', ('AND', '8', '8'))
         self.assertEqual(out, self.parse(t))
 
 
@@ -142,7 +142,7 @@ class BareNOTTests(T):
 
     def test1(self):
         t = '!a'
-        out = '(NOT a)'
+        out = ('NOT', 'a')
         self.assertEqual(out, self.parse(t))
 
     def test2(self):
@@ -156,7 +156,7 @@ class EXPRTests(T):
 
     def test1(self):
         t = '!(a b)'
-        out = '(NOT (a AND b))'
+        out = ('NOT', ('AND', 'a', 'b'))
         self.assertEqual(out, self.parse(t))
 
     def test2(self):
@@ -166,57 +166,63 @@ class EXPRTests(T):
 
     def test15(self):
         t = "(!c)"
-        out = '(NOT c)'
+        out = ('NOT', 'c')
         self.assertEqual(out, self.parse(t))
 
     def test16(self):
         t = "(!a c)"
-        out = '((NOT a) AND c)'
+        out = ('AND', ('NOT', 'a'), 'c')
         self.assertEqual(out, self.parse(t))
 
     def test17(self):
         t = "(!(a c))"
-        out = '(NOT (a AND c))'
+        out = ('NOT', ('AND', 'a', 'c'))
         self.assertEqual(out, self.parse(t))
 
     def test18(self):
         t = "a !c"
-        out = '(a AND (NOT c))'
+        out = ('AND', 'a', ('NOT', 'c'))
         self.assertEqual(out, self.parse(t))
 
     def test19(self):
         t = "a !(c OR b)"
-        out = '(a AND (NOT (c OR b)))'
+        out = ('AND', 'a', ('NOT', ('OR', 'c', 'b')))
         self.assertEqual(out, self.parse(t))
 
     def test20(self):
         t = "a ! c"
-        out = '(a AND (NOT c))'
+        out = ('AND', 'a', ('NOT', 'c'))
         self.assertEqual(out, self.parse(t))
 
     def test22(self):
         t = "type=:a !(c OR !b)"
-        out = "(('type', 'a') AND (NOT (c OR (NOT b))))"
+        out = ('AND', ('type', 'a'), ('NOT', ('OR', 'c', ('NOT', 'b'))))
         self.assertEqual(out, self.parse(t))
 
     def test23(self):
         t = "a b d OR c f g"
-        out = '(((a AND b) AND d) OR ((c AND f) AND g))'
+        out = ('OR', ('AND', ('AND', 'a', 'b'), 'd'), ('AND', ('AND', 'c', 'f'), 'g'))  # noqa
         self.assertEqual(out, self.parse(t))
 
     def test25(self):
         t = "foo-bar baz"
-        out = '(foo-bar AND baz)'
+        out = ('AND', 'foo-bar', 'baz')
         self.assertEqual(out, self.parse(t))
 
     def test26(self):
         t = "type=:foo.bar !type=:baz"
-        out = "(('type', 'foo.bar') AND (NOT ('type', 'baz')))"
+        out = ('AND', ('type', 'foo.bar'), ('NOT', ('=', ('type', 'baz'))))
+        self.assertEqual(out, self.parse(t))
+
+    def test26_no_colons(self):
+        # like 26 but without the colons
+        t = "type=foo.bar !type=baz"
+        out = ('AND', ((('=', 'type', None)), 'foo.bar'), ('NOT', (('=', ('type', None)), 'baz')))  # noqa
         self.assertEqual(out, self.parse(t))
 
     def test27(self):
         t = "mozillaecuador.org OR mozillaecuador.org"
-        out = "(mozillaecuador.org OR mozillaecuador.org)"
+        out = ('OR', 'mozillaecuador.org', 'mozillaecuador.org')
         self.assertEqual(out, self.parse(t))
 
     def test28(self):
@@ -226,10 +232,45 @@ class EXPRTests(T):
 
     def test29(self):
         t = 'a AND b AND c AND d AND e'
-        out = '(a AND (b AND (c AND (d AND e))))'
+        out = ('AND', 'a', ('AND', 'b', ('AND', 'c', ('AND', 'd', 'e'))))
         self.assertEqual(out, self.parse(t))
 
     def test30(self):
         t = 'a OR b OR c OR d OR e'
-        out = '((((a OR b) OR c) OR d) OR e)'
+        out = ('OR', ('OR', ('OR', ('OR', 'a', 'b'), 'c'), 'd'), 'e')
+        self.assertEqual(out, self.parse(t))
+
+    def test31(self):
+        t = 'systems.serial=1234'
+        out = (('=', ('systems', 'serial')), '1234')
+        self.assertEqual(out, self.parse(t))
+
+    def test32(self):
+        t = 'systems.serial~1234'
+        out = (('~', ('systems', 'serial')), '1234')
+        self.assertEqual(out, self.parse(t))
+
+    def test33(self):
+        t = 'systems.serial~"1234 567"'
+        out = (('~', ('systems', 'serial')), '1234 567')
+        self.assertEqual(out, self.parse(t))
+
+    def test34(self):
+        t = 'systems.serial="/1234 567"'
+        out = (('~', ('systems', 'serial')), '1234 567')
+        self.assertEqual(out, self.parse(t))
+
+    def test34_single_quotes(self):
+        t = "systems.serial='/1234 567'"
+        out = (('~', ('systems', 'serial')), '1234 567')
+        self.assertEqual(out, self.parse(t))
+
+    def test35(self):
+        t = 'sys.oob_ip=10.9.3.68'
+        out = (('=', ('sys', 'oob_ip')), '10.9.3.68')
+        self.assertEqual(out, self.parse(t))
+
+    def test36(self):
+        t = 'sys.oob_ip=/^asdf'
+        out = (('=', ('sys', 'oob_ip')), '/^asdf')
         self.assertEqual(out, self.parse(t))

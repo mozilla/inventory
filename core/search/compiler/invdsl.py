@@ -35,8 +35,8 @@ class ICompiler(B):
 
 
 class DebugCompiler(ICompiler):
-    def directive(self, d, v):
-        return d, v
+    def directive(self, e, d, v):
+        return (e, (d, v))
 
     def regexpr(self, r):
         return r
@@ -51,13 +51,13 @@ class DebugCompiler(ICompiler):
         return ret
 
     def OR_op(self):
-        return lambda a, b: '({0} {1} {2})'.format(a, 'OR', b)
+        return lambda a, b: ('OR', a, b)
 
     def AND_op(self):
-        return lambda a, b: '({0} {1} {2})'.format(a, 'AND', b)
+        return lambda a, b: ('AND', a, b)
 
     def NOT_op(self):
-        return lambda a: '({0} {1})'.format('NOT', a)
+        return lambda a: ('NOT', a)
 
 
 def make_debug_compiler():
