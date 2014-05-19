@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
 from django.db.utils import DatabaseError
+from django.core.exceptions import ValidationError
 
 from mozdns.utils import get_zones
 
@@ -93,16 +94,24 @@ def _search(request, response):
     if errors:
         return errors
 
-    obj_map, error_resp = compile_to_django(search)
+    try:
+        obj_map, error_resp = compile_to_django(search)
+    except ValidationError as why:
+        return HttpResponse(response(**{'error_messages': str(why)}))
+
     if not obj_map:
         return HttpResponse(response(**{'error_messages': error_resp}))
+
     obj_counts = {}
     total_objects = 0
     try:  # We might have to catch shitty regular expressions
+          # or other things MySQL doesn't like
         for type_, q in obj_map.iteritems():
             obj_counts[type_] = q.count() if q else 0
             total_objects += obj_counts[type_]
     except DatabaseError as why:
+        return HttpResponse(response(**{'error_messages': str(why)}))
+    except Warning as why:
         return HttpResponse(response(**{'error_messages': str(why)}))
 
     format = request.GET.get('format', '')
