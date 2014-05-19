@@ -11,11 +11,13 @@ grammar = """
 #   - NOT_op
 #   - compile
 
-ws = ' '*
-wss = ' '+
+space = ' '
+ws = space*
+wss = space+
 not_ws = :c ?(c not in (' ', '\t')) -> c
 letter = :c ?('a' <= c <= 'z' or 'A' <= c <= 'Z') -> c
 special = '_' | '.' | '-' | ':' | ',' | '/'
+reg_expr = <(not_ws)+>:r -> r
 
 # Lexical Operators
 NOT = '!'
@@ -23,13 +25,25 @@ AND = <letter+>:and_ ?(and_ == 'AND') -> self.AND_op()
 OR = <letter+>:or_ ?(or_ == 'OR') -> self.OR_op()
 
 # Directive
-EQ = '=:'
-d_lhs = letter | '_'
-d_rhs = letterOrDigit | special | '/'
-DRCT = <d_lhs+>:d EQ <d_rhs+>:v -> self.directive(d, v)
+# =: and = are strictly equal.
+# ~ stands for fuzzy
+EQ = '=:' | '=' | '~' | '<' | '<=' | '>' | '>='
+
+d_lhs = <letter+>:directive '.' <(letter | '_')+>:attr -> (directive, attr)
+        | <letter+>:directive -> (directive, None)
+
+d_rhs_value = letterOrDigit | special | '/'
+d_rhs_value_with_ws = d_rhs_value | space
+d_rhs = '"' <d_rhs_value_with_ws+>:v '"' -> v
+        | "'" <d_rhs_value_with_ws+>:v "'" -> v
+        # Match regular exprs. No spaces or quotes allowed
+        | '/' reg_expr:v -> '/' + v
+        | <d_rhs_value+>:v -> v
+
+DRCT = d_lhs:d EQ:e d_rhs:v -> self.directive(e, d, v)
 
 # Regular Expression
-RE = '/' <(not_ws)+>:r -> self.regexpr(r)
+RE = '/' reg_expr:r -> self.regexpr(r)
 
 # Regular text
 text = (~OR ~AND ~NOT <(letterOrDigit | special )+>:t) -> t
