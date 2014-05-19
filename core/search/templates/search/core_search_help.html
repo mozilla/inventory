@@ -75,12 +75,36 @@ td {
             </p>
         </td>
     </tr>
+    <tr>
+        <td>
+            '='
+        </td>
+        <td>
+            <p>
+            This will help you search for things exactly. For example, searching for
+            <code>sys.hostname=foo.mozilla.com</code> will look for systems with the
+            hostname 'foo.mozilla.com'.
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            '~'
+        </td>
+        <td>
+            <p>
+            The 'fuzzy' operator will match things that contain the left hand value of
+            the operator. For example, searching for <code>sys.hostname~foo</code> will
+            search for systems who's hostnames contain the term 'foo'.
+            </p>
+        </td>
+    </tr>
 </table>
 <table border="1">
     <caption>Directives</caption>
     <tr>
         <td>
-            type=:
+            type=
         </td>
         <td>
             <p>
@@ -88,23 +112,23 @@ td {
             insensitive.  <i>Important: A search query contaning the type directive with no other
             filter will return all objects of that type and might take a while to complete
             depending on how many objects exist.</i> </p>
-            <p><code>[ type=:CNAME web ]</code></p>
+            <p><code>[ type=CNAME web ]</code></p>
         </td>
     </tr>
     <tr>
         <td>
-            zone=:
+            zone=
         </td>
         <td>
             <p>
             The 'zone' directive filters DNS records by <b>DNS zone</b>
             </p>
-            <p><code>[ zone=:phx1.mozilla.com ]</code></p>
+            <p><code>[ zone=phx1.mozilla.com ]</code></p>
         </td>
     </tr>
     <tr>
         <td>
-            site=:
+            site=
         </td>
         <td>
             <p>
@@ -112,12 +136,12 @@ td {
             into one of the <b>networks associated with a site</b> (datacenter or business unit).
             <a href=/core/site/>A list of all Sites</a>
             </p>
-            <p><code>[ site=:scl2 ]</code></p>
+            <p><code>[ site=scl2 ]</code></p>
         </td>
     </tr>
     <tr>
         <td style='avertical-align:text-top;'>
-            vlan=:
+            vlan=
         </td>
         <td>
             <p>
@@ -125,29 +149,29 @@ td {
             of the <b>networks associated with a specific vlan</b>. <i>Note that vlans can exist in
             multiple data centers</i>. <a href=/core/vlan/>A list of all Vlans</a>
             </p>
-            <p><code>[ vlan=:db ]</code></p>
+            <p><code>[ vlan=db ]</code></p>
         </td>
     </tr>
     <tr>
         <td>
-            network=:
+            network=
         </td>
         <td>
             <p>
             The 'network' directive can be used to search for objects that have <b>IP addresses within
             a network</b>.
             </p>
-            <p><code>[ network=:10.22.3.0/23 ]</code></p>
+            <p><code>[ network=10.22.3.0/23 ]</code></p>
         </td>
     </tr>
         <td>
-            range=:
+            range=
         </td>
         <td>
             <p>
             The 'range' directive can be used to search for objects that have IP addresses within
             a specific range. For example: To see all objects have an IP greater than 10.8.2.0 and
-            less than 10.8.2.30, search <code>range=:10.8.2.0,10.8.2.30</code>.
+            less than 10.8.2.30, search <code>range=10.8.2.0,10.8.2.30</code>.
             </p>
         </td>
     </tr>
@@ -162,17 +186,18 @@ td {
     <tr>
         <td>
             <p>
-            <code>puppet site=:scl3 type=:A</code>
+            <code>sys.hostname~puppet site=scl3 sys.server_model__vendor~HP</code>
             </p>
             <p>
-            Find all A records in scl3 that have the string 'puppet' in their name.
+            Find all systems in scl3 that have "puppet" in their hostname that
+            also have a vendor that has "HP" in its name.
             </p>
         </td>
     </tr>
     <tr>
         <td>
             <p>
-            <code>/^node[1-9]\.seamicro (type=:A OR type=:PTR) network=:10.8.32.0/24</code>
+            <code>/^node[1-9]\.seamicro (type=A OR type=PTR) network=10.8.32.0/24</code>
             </p>
             <p>
             Find all A and PTR records who's name match the regex '^node[1-9]\.seamicro' that are also in
