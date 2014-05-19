@@ -12,7 +12,7 @@ B = OMeta.makeGrammar(grammar, name=name).createParserClass(
 
 
 class ICompiler(B):
-    def directive(self, d, v):
+    def directive(self, e, d, v):
         raise NotImplemented()
 
     def regexpr(self, r):

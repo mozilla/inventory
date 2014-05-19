@@ -4,9 +4,10 @@ import ipaddr
 
 from itertools import izip
 
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db.models.fields import FieldDoesNotExist
 from django.db.models import Q
+from django.db.models.related import RelatedObject
 
 from mozdns.address_record.models import AddressRecord
 from mozdns.cname.models import CNAME
@@ -128,28 +129,170 @@ class REFilter(TextFilter):
         return result
 
 
+def verify_dattribute(base_class, dattribute, dvalue):
+    """
+    We have to make sure that this field the user is specifying makes sense to
+    send down to django. For example, if the user searches for
+    sys.operating_system__wat, we should make sure a 'wat' field exists on the
+    operation_system class.
+
+    We are preemptively looking for these types of errors, as opposed to
+    waiting for django to raise a FeildError, because this way we can more
+    easily send helpful compiler errors to the user.
+    """
+    # split on relational boundaries
+    field_path = dattribute.split('__')
+    cur_class = base_class
+    prev_field_name = ''
+    should_end = False  # becomes True when a non-relational field is seen
+
+    for field_name in field_path:
+        if should_end:
+            # On the last iteration we saw a non-relational field. Any more
+            # field lookups after are going to fail, so raise an error.
+            raise BadDirective(
+                "The '{0}' in '{1}' is invalid because '{2}' isn't a "
+                "relational field so has not field called '{0}'"
+                .format(field_name, dattribute, prev_field_name)
+            )
+
+        try:
+            field = cur_class._meta.get_field_by_name(field_name)[0]
+        except FieldDoesNotExist:
+            possible_fields = cur_class._meta.get_all_field_names()
+            raise BadDirective(
+                "The field '{0}' isn't a field on the {1} class. Possible "
+                "fields are {2}".format(
+                    field_name, cur_class.__name__, ', '.join(possible_fields)
+                )
+            )
+
+        if hasattr(field, 'rel') and bool(field.rel):
+            # the field is relational
+            cur_class = field.rel.to
+        elif hasattr(field, 'model') and isinstance(field, RelatedObject):
+            # its a related set
+            cur_class = field.model
+        else:
+            # If we re-enter this loop a BadDirective error will be raised
+            should_end = True
+
+        prev_field_name = field_name
+
+    # Note: If it is a relational set field the user _can_ ask whether or not
+    # the field is "NULL"
+    if not should_end and dvalue.upper() != "NULL":
+        # The for loop above left off looking at a relational field. The user
+        # did not specify a field on the class, so raise an error.
+        possible_fields = cur_class._meta.get_all_field_names()
+
+        raise BadDirective(
+            "You need to specify a field to search on the {0} class. Your "
+            "choices are {1}. For example: {2}".format(
+                cur_class.__name__,
+                ', '.join(possible_fields),
+                "{0}__{1}".format(dattribute, possible_fields[0])
+            )
+        )
+
+
+def build_dattribute_qsets(directive, eq, dattribute, dvalue):
+    dclass = dsearchables[directive]  # our caller should have checked this
+
+    verify_dattribute(dclass, dattribute, dvalue)
+
+    if dvalue.startswith('/'):
+        regex = True
+        dvalue = dvalue[1:]
+    else:
+        regex = False
+
+    if eq == "~":
+        if regex:
+            raise BadDirective(
+                "Combining the fuzzy search (~) with a regex patter (/) makes "
+                "no sense!"
+            )
+        search = {"{0}{1}".format(dattribute, "__icontains"): dvalue}
+    elif eq == '>':
+        search = {"{0}__gt".format(dattribute): dvalue}
+    elif eq == '>=':
+        search = {"{0}__gte".format(dattribute): dvalue}
+    elif eq == '<':
+        search = {"{0}__lt".format(dattribute): dvalue}
+    elif eq == '<=':
+        search = {"{0}__lte".format(dattribute): dvalue}
+    elif regex:
+        search = {"{0}__regex".format(dattribute): dvalue}
+    else:
+        # If dvalue is the string "NULL" tack on "__isnull" to dattribute and
+        # make dvalue=True. This will allow the user to search for NULL values.
+        # If they want to actually search for the string null (which is
+        # unlikely, they can use a regex match)
+        if dvalue.upper() == "NULL":
+            search = {"{0}__isnull".format(dattribute): True}
+        else:
+            search = {dattribute: dvalue}
+
+    result = []
+    for name, Klass in searchables:
+        if Klass == dclass:
+            result.append(Q(**search))
+        else:
+            result.append(None)
+
+    return result
+
+
 class DirectiveFilter(_Filter):
-    def __init__(self, directive, dvalue):
-        self.directive = directive
+    def __init__(self, eq, directive, dvalue):
+        self.eq = eq
+        self.directive, self.dattribute = directive
         self.dvalue = dvalue
 
+    def strict_equality_gaurd(self):
+        if self.eq != '=' and self.eq != '=:':
+            raise BadDirective(
+                "The {0} directive only supports the strict equality operator "
+                "(i.e. '=').".format(self.directive)
+            )
+
     def compile_Q(self):
+        # The way self.strict_equality_gaurd() is being called can be improved
+        # by moving all the build_* methods into DirectiveFilter class and
+        # using a @strict_equality_gaurd decorator. Right now its a bit
+        # redundant.
         if self.directive == 'view':
+            self.strict_equality_gaurd()
             return build_view_qsets(self.dvalue)
         elif self.directive == 'network':
+            self.strict_equality_gaurd()
             return build_network_qsets(self.dvalue)
         elif self.directive == 'vlan':
+            self.strict_equality_gaurd()
             return build_vlan_qsets(self.dvalue)
         elif self.directive == 'zone':
+            self.strict_equality_gaurd()
             return build_zone_qsets(self.dvalue)
         elif self.directive == 'range':
+            self.strict_equality_gaurd()
             return build_range_qsets(self.dvalue)
         elif self.directive == 'type':
+            self.strict_equality_gaurd()
             return build_rdtype_qsets(self.dvalue)
         elif self.directive == 'site':
+            self.strict_equality_gaurd()
             return build_site_qsets(self.dvalue)
         elif self.directive == 'ip':
+            self.strict_equality_gaurd()
             return build_ip_qsets(self.dvalue)
+        # If we haven't already hit a hardcoded directive, try searching
+        # searchables to see if we can introspect one of the tables using
+        # dattribute
+        elif self.dattribute and self.directive.upper() in dsearchables:
+            return build_dattribute_qsets(
+                self.directive.upper(), self.eq, self.dattribute, self.dvalue
+            )
         else:
             raise BadDirective(
                 "Unknown Directive '{0}'".format(self.directive)

@@ -69,8 +69,8 @@ def compile_q_objects(search):
 
 class DjangoCompiler(ICompiler):
     # directive, regexpr, and text all return a list of Qsets
-    def directive(self, directive, value):
-        return DirectiveFilter(directive, value).compile_Q()
+    def directive(self, eq, directive, value):
+        return DirectiveFilter(eq, directive, value).compile_Q()
 
     def regexpr(self, reg_expr):
         return REFilter(reg_expr).compile_Q()
