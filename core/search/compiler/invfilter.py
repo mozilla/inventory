@@ -59,17 +59,18 @@ searchables = (
     ('VLAN', Vlan),
 )
 
+dsearchables = dict(searchables)
+
 
 class _Filter(object):
-    """The Base class of different filters. Implement these methods
-    """
+    """The Base class of different filters. Implement these methods"""
     ntype = "FILTER"
 
     def __str__(self):
         return self.value
 
     def __repr__(self):
-        return "<{1}>".format(self.__class__, self)
+        return "<{0}>".format(self)
 
     def compile_Q(self):
         pass
@@ -94,7 +95,8 @@ class TextFilter(_Filter):
         result = []
         for name, Klass in searchables:
             result.append(
-                build_filter(self.value, Klass.search_fields, 'icontains'))
+                build_filter(self.value, Klass.search_fields, 'icontains')
+            )
         return result
 
 
