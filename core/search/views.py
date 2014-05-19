@@ -6,6 +6,7 @@ from mozdns.utils import get_zones
 
 from core.search.compiler.django_compile import compile_to_django
 from core.search.compiler.django_compile import search_type
+from core.search.compiler.invschema import SEARCH_SCHEMA
 
 import simplejson as json
 from gettext import gettext as _
@@ -153,3 +154,7 @@ def ajax_type_search(request):
 
 def get_zones_json(request):
     return HttpResponse(json.dumps([z.name for z in get_zones()]))
+
+
+def search_schema_ajax(request):
+    return HttpResponse(json.dumps(SEARCH_SCHEMA))

@@ -1,5 +1,17 @@
 <script>
     $(document).ready(function (){
+        $.ajax(
+            '/en-US/core/search/search_schema/'
+        ).success(
+            function (resp) {
+                var schema = $.parseJSON(resp);
+                var schema_div = $('#schema');
+                $.each(schema.SYS, function (i, el) {
+                    schema_div.append('<tr><td>' + el + '</td></tr>');
+                });
+            }
+        );
+
         $('#help_button').click(function (){
             var s_dialog = $("#help-text").dialog({
                         title: 'How to use this search.',  // Click the selected record
@@ -139,6 +151,11 @@ td {
             </p>
         </td>
     </tr>
+</table>
+<table border="1">
+    <caption>Search Fields</caption>
+    <tbody id='schema'>
+    <tbody>
 </table>
 <table border="1">
     <caption>Examples</caption>
