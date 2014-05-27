@@ -3,7 +3,7 @@ from django.test import TestCase
 from systems.tests.utils import create_fake_host
 from systems.models import System
 from core.search.compiler.django_compile import compile_to_django
-from core.search.compiler.invschema import discover
+from core.search.compiler.invschema import discover_all
 
 
 class SystemTests(TestCase):
@@ -68,4 +68,11 @@ class SystemTests(TestCase):
         self.assertEqual(self.hostname, res['SYS'][0].hostname)
 
     def test_system_search_schema(self):
-        self.assertTrue('sys.system_rack__site__name' in discover()['SYS'])
+        self.assertTrue('sys.system_rack__site__name' in discover_all()['SYS'])
+
+    def test_system_compile_inequality_search(self):
+        res, error = compile_to_django(
+            #'sys.warranty_end<2014-01-01 AND sys.warranty_start>=2014-01-01'
+            'sys.warranty_end<2014-01-01 AND sys.warranty_start>2014-01-01'
+        )
+        self.assertFalse(error)
