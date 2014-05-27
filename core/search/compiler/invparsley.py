@@ -27,7 +27,7 @@ OR = <letter+>:or_ ?(or_ == 'OR') -> self.OR_op()
 # Directive
 # =: and = are strictly equal.
 # ~ stands for fuzzy
-EQ = '=:' | '=' | '~' | '<' | '<=' | '>' | '>='
+EQ = '~' | '<=' | '<' |'>=' | '>' | '=:' | '='
 
 d_lhs = <letter+>:directive '.' <(letter | '_')+>:attr -> (directive, attr)
         | <letter+>:directive -> (directive, None)
