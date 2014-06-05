@@ -15,6 +15,7 @@ from core.keyvalue.mixins import KVUrlMixin
 from core.keyvalue.models import KeyValue as BaseKeyValue
 from core.mixins import CoreDisplayMixin
 from core.utils import create_key_index
+from core.tests.utils import Refresher
 
 import datetime
 import re
@@ -378,7 +379,7 @@ class SystemStatus(models.Model):
         return ('status',)
 
 
-class System(DirtyFieldsMixin, CoreDisplayMixin, models.Model):
+class System(Refresher, DirtyFieldsMixin, CoreDisplayMixin, models.Model):
 
     YES_NO_CHOICES = (
         (0, 'No'),
