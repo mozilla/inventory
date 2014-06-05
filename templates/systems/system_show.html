@@ -38,6 +38,14 @@
 <dd id='hostname_dd'>{{ system.hostname }}</dd>
 <div style="clear:both;"></div>
 
+<dt>Services:</dt>
+<dd>
+{% for service in system.service_set.all() %}
+    <a href='{{ service.get_absolute_url() }}'>{{ service.name }}</a>{% if not loop.last %}, {% endif %}
+{% endfor %}
+</dd>
+<div style="clear:both;"></div>
+
 <dt>Created On:</dt>
 <dd>{{ system.created_on }}</dd>
 <div style="clear:both;"></div>
