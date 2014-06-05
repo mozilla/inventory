@@ -6,7 +6,12 @@
             function (resp) {
                 var schema = $.parseJSON(resp);
                 var schema_div = $('#schema');
+                schema_div.append('<tr><td><b>System</b></td></tr>');
                 $.each(schema.SYS, function (i, el) {
+                    schema_div.append('<tr><td>' + el + '</td></tr>');
+                });
+                schema_div.append('<tr><td><b>Service</b></td></tr>');
+                $.each(schema.SERVICE, function (i, el) {
                     schema_div.append('<tr><td>' + el + '</td></tr>');
                 });
             }

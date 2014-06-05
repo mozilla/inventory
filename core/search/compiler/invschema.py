@@ -56,8 +56,11 @@ def discover_help():
         system_search_fields
     )
 
+    service_search_fields = discover_for_class(dsearchables['SERVICE'])
+
     return {
-        'SYS': prepend_dtype(system_search_fields, 'sys')
+        'SYS': prepend_dtype(system_search_fields, 'sys'),
+        'SERVICE': prepend_dtype(service_search_fields, 'service')
     }
 
 
