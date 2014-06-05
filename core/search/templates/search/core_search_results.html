@@ -2,6 +2,9 @@
 <div id="ajax_results" width="100%">
 <div id='overflow-info' data-objs='{{overflow_results}}' data-max-obj-num='{{MAX_NUM_OBJECTS}}'></div>
 <div id="meta">
+    {% if meta['counts']['SERVICE'] -%}
+        {{ meta['counts']['SERVICE'] }} <a href="#q={{meta['search']}}&Service">Services</a> |
+    {% endif -%}
     {% if meta['counts']['ALLOCATION'] -%}
         {{ meta['counts']['ALLOCATION'] }} <a href="#q={{meta['search']}}&Service">Allocations</a> |
     {% endif -%}
@@ -50,6 +53,13 @@
 </div>
 <div id='search-time' style='margin-top: 2px;' ></div>
 {% endif -%}
+
+{% import 'record/draw_record_table.html' as drawer -%}
+{% if objects['SERVICE'] -%}
+    <h4><a class='plane-link' name="q={{meta['search']}}&Service">Service</a></h4>
+    {{ drawer.draw_record_table('SERVICE', objects['SERVICE'], table_class='tablesorter record-table', table_id='service-table') }}
+{% endif -%}
+
 {% if objects['ALLOCATION'] -%}
     <h4><a class='plane-link' name="q={{meta['search']}}&Allocation">Allocation</a></h4>
     {{ drawer.draw_record_table('ALLOCATION', objects['ALLOCATION'], table_class='tablesorter record-table', table_id='allocation-table') }}
@@ -193,7 +203,6 @@
         </tbody>
     </table>
 {% endif -%}
-{% import 'record/draw_record_table.html' as drawer -%}
 {% if objects['SOA'] -%}
     <h4><a class='plane-link' name="q={{meta['search']}}&SOA">SOA</a></h4>
     {{ drawer.draw_record_table('SOA', objects['SOA'], table_class='tablesorter record-table', table_id='soa-table') }}

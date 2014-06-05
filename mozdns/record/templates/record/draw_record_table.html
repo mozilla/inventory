@@ -23,6 +23,40 @@
         </tr>
         {% endfor %}
         </tbody>
+{% elif record_type == "SERVICE" %}
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Used By</th>
+            <th>Impact</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for service in objs %}
+        <tr>
+            <td>
+                <a href="{{ service.get_absolute_url() }}">{{ service.name }}</a>
+            </td>
+            <td>{{ service.used_by }}</td>
+            <td>{{ service.impact }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+{% elif record_type == "ALLOCATION" %}
+        <thead>
+        <tr>
+            <th>Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for allocation in objs %}
+        <tr>
+            <td>
+                {{ allocation.name }}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
 {% elif record_type == "DOMAIN" %}
         <thead>
         <tr>
