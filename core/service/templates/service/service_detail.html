@@ -1,0 +1,90 @@
+{% extends "core/core_detail.html" %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/service.css" type="text/css" />
+    <link rel="stylesheet" href="{{ MEDIA_URL }}javascript/service-detail.js" type="text/css" />
+{% endblock %}
+
+{% block content %}
+    <div class='core-title'>
+        <h3>
+        {{ service }}
+        {% if service.parent_service %}
+            (a subservice of <a href='{{ service.parent_service.get_absolute_url() }}'>{{ service.parent_service.name }}</a>)
+        {% endif%}
+        </h3>
+    </div>
+
+    {% block action_bar %}
+        {% if service.get_edit_url %}
+            <a class="btn" href="{{ service.get_edit_url() }}">Edit</a>
+        {% endif %}
+
+        {% block mid_action_bar %}
+        {% endblock %}
+
+        {% if service.get_delete_url %}
+            <a class="btn" href="{{ service.get_delete_url() }}">Delete</a>
+        {% endif %}
+    {% endblock %}
+
+    <div class='service-attributes'>
+    {% from 'core/core_macros.html' import display_details %}
+    {{ display_details(service.details(), caption="Service Attributes", obj=service) }}
+    </div>
+
+    {% if service.subservices.exists() %}
+    <div class='sub-services'>
+        <table class='tablesorter'>
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Site</th>
+                <tr>
+            </thead>
+            <tbody>
+                {% for sub_service in service.subservices.all() %}
+                    <tr>
+                        <td><a href='{{ sub_service.get_absolute_url() }}'>{{ sub_service.name }}</a></td>
+                        <td>
+                            {% if sub_service.site %}
+                                <a href='{{ sub_service.site.get_absolute_url() }}'>{{ sub_service.site.full_name }}</a>
+                            {% else  %}
+                                Not homed in any site
+                            {% endif  %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if service.systems.exists() %}
+    <div class='service-systems'>
+        <table class='tablesorter'>
+            <thead>
+                <tr>
+                    <th>Systems involved with this Service</th>
+                    <th>Location</th>
+                <tr>
+            </thead>
+            <tbody>
+                {% for system in service.systems.all() %}
+                    <tr>
+                        <td><a href='{{ system.get_absolute_url() }}'>{{ system.hostname }}</a></td>
+                        <td>
+                            {% if system.system_rack and system.system_rack.site %}
+                                <a href='{{ system.system_rack.site.get_absolute_url() }}'>{{ system.system_rack.site.full_name }}</a>
+                            {% else  %}
+                                N/A
+                            {% endif  %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+{% endblock %}
