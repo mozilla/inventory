@@ -13,11 +13,11 @@ class BaseListView(ListView):
     """
     Inherit ListView to specify our pagination.
     """
-    template_name = 'list.html'
+    template_name = 'base/list.html'
 
 
 class BaseDetailView(DetailView):
-    template_name = 'detail.html'
+    template_name = 'base/detail.html'
     extra_context = None
 
     def get_context_data(self, **kwargs):
@@ -34,7 +34,7 @@ class BaseDetailView(DetailView):
 
 
 class BaseCreateView(CreateView):
-    template_name = "form.html"
+    template_name = "base/form.html"
     extra_context = None
 
     def post(self, request, *args, **kwargs):
@@ -64,7 +64,7 @@ class BaseCreateView(CreateView):
 
 
 class BaseUpdateView(UpdateView):
-    template_name = "form.html"
+    template_name = "base/form.html"
     extra_context = None
 
     def __init__(self, *args, **kwargs):
@@ -104,7 +104,7 @@ class BaseUpdateView(UpdateView):
 
 
 class BaseDeleteView(DeleteView):
-    template_name = 'confirm_delete.html'
+    template_name = 'base/confirm_delete.html'
     success_url = '/'
 
     def get_object(self, queryset=None):
@@ -129,4 +129,4 @@ class BaseDeleteView(DeleteView):
 
 class Base(DetailView):
     def get(self, request, *args, **kwargs):
-        return render(request, "base.html")
+        return render(request, "base/base.html")

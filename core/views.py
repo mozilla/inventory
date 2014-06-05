@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.db.models import Q
 
-from base.base.views import BaseListView, BaseDetailView, BaseCreateView
-from base.base.views import BaseUpdateView, BaseDeleteView
+from base.views import BaseListView, BaseDetailView, BaseCreateView
+from base.views import BaseUpdateView, BaseDeleteView
 from core.site.models import Site
 from core.utils import to_a
 

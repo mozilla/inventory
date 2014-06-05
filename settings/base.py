@@ -47,7 +47,6 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
     'mcsv',
     'mozdns',
     'base',
-    'base.base',
     'core',
     'core.task',
     'core.site',
