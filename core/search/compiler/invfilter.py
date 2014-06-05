@@ -23,6 +23,7 @@ from mozdns.view.models import View
 
 from core.registration.static.models import StaticReg
 from core.site.models import Site
+from core.service.models import Service
 from core.network.models import Network
 from core.network.utils import calc_networks_str
 from core.utils import IPFilter, one_to_two
@@ -58,6 +59,7 @@ searchables = (
     ('NET', Network),
     ('SITE', Site),
     ('VLAN', Vlan),
+    ('SERVICE', Service),
     ('ALLOCATION', Allocation),
 )
 
@@ -197,8 +199,13 @@ def verify_dattribute(base_class, dattribute, dvalue):
         )
 
 
-def build_dattribute_qsets(directive, eq, dattribute, dvalue):
-    dclass = dsearchables[directive]  # our caller should have checked this
+def build_dattribute_qset(dclass, eq, dattribute, dvalue, r_opts=set()):
+    # r_opts = restricted operators. Operators that should not be supported.
+    if eq in r_opts:
+        raise BadDirective(
+            "The {0} operator is not supported when searching the {1} "
+            "attribute".format(eq, dattribute)
+        )
 
     verify_dattribute(dclass, dattribute, dvalue)
 
@@ -234,11 +241,19 @@ def build_dattribute_qsets(directive, eq, dattribute, dvalue):
             search = {"{0}__isnull".format(dattribute): True}
         else:
             search = {dattribute: dvalue}
+    return Q(**search)
 
+
+def build_dattribute_qsets(directive, eq, dattribute, dvalue):
+    dclass = dsearchables[directive]  # our caller should have checked this
+
+    search_q = build_dattribute_qset(
+        dclass, eq, dattribute, dvalue
+    )
     result = []
     for name, Klass in searchables:
         if Klass == dclass:
-            result.append(Q(**search))
+            result.append(search_q)
         else:
             result.append(None)
 
@@ -287,6 +302,8 @@ class DirectiveFilter(_Filter):
         elif self.directive == 'ip':
             self.strict_equality_guard()
             return build_ip_qsets(self.dvalue)
+        elif self.directive == 'service' and not self.dattribute:
+            return build_service_qsets(self.eq, self.dattribute, self.dvalue)
         # If we haven't already hit a hardcoded directive, try searching
         # searchables to see if we can introspect one of the tables using
         # dattribute
@@ -319,6 +336,72 @@ def build_rdtype_qsets(rdtype):
             result.append(no_select)
     if not found_type:
         raise BadType("Type '{0}' does not exist!".format(rdtype))
+    return result
+
+
+def _get_deps(service, seen, depth=-1):
+    if not depth:
+        return []
+    providers = []
+    for dep in service.providers.all():
+        if dep.provider in seen:
+            continue
+        providers.append(dep.provider)
+        seen.append(dep.provider)
+        providers += _get_deps(dep.provider, seen)
+    return providers
+
+
+def build_service_qsets(eq, dattribute, dvalue):
+    if not dattribute:  # no introspection
+        service_q = Q(name=dvalue)
+    else:
+        # TODO: why is my linter is complaining about {x, y, ..} being invalid
+        # set syntax?
+        r_opts = set(['>', '>=', '<', '<='])
+        service_q = build_dattribute_qset(
+            Service, eq, dattribute, dvalue, r_opts
+        )
+
+    services = Service.objects.filter(service_q)
+
+    if not services.exists():
+        raise BadDirective(
+            "There no services found when searching for '{0}'.".format(dvalue)
+        )
+    service_qs = map(build_service_single_qset, services)
+    return reduce(_combine, service_qs)
+
+
+def build_service_single_qset(service):
+    """
+    Filter and return the objects associated with a service. Pull in all
+    objects the service depends upon.
+    """
+    dependancies = _get_deps(service, [service])
+    dependancies.append(service)
+
+    service_q = objects_to_Q(dependancies)
+
+    system_q = Q(pk__lte=-1)  # by default match nothing
+    for s in dependancies:
+        system_q = system_q | objects_to_Q(s.systems.all())
+
+    allocation_q = Q(pk__lte=-1)  # by default match nothing
+    for s in dependancies:
+        allocation_q = allocation_q | objects_to_Q(s.allocations.all())
+
+    # Get necessary services
+    result = []
+    for name, Klass in searchables:
+        if name == 'SERVICE':
+            result.append(service_q)
+        elif name == 'SYS':
+            result.append(system_q)
+        elif name == 'ALLOCATION':
+            result.append(allocation_q)
+        else:
+            result.append(None)
     return result
 
 
@@ -465,6 +548,21 @@ def build_site_single_qset(site):
     return q_sets
 
 
+def _combine(q1, q2):
+    """
+    Given two lists of Q objects, return one list of ORed Q objects
+    """
+    q_sets = []
+    for x, y in izip(q1, q2):
+        # q1 and q2 should have symmetry with regards to where None values
+        # exist
+        if not (x and y):
+            q_sets.append(None)
+        else:
+            q_sets.append(x | y)
+    return q_sets
+
+
 def build_site_qsets(site_name):
     # Look for a more specific results first
     sites = Site.objects.filter(full_name=site_name)
@@ -475,18 +573,8 @@ def build_site_qsets(site_name):
             "{0} isn't a valid site.".format(site_name)
         )
 
-    def combine(q1, q2):
-        q_sets = []
-        for x, y in izip(q1, q2):
-            if not (x and y):
-                q_sets.append(None)
-            else:
-                q_sets.append(x | y)
-        return q_sets
-
     site_qs = map(build_site_single_qset, sites)
-    x = reduce(combine, site_qs)
-    return x
+    return reduce(_combine, site_qs)
 
 
 def resolve_vlans(vlan_str):
