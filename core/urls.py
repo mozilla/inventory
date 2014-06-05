@@ -19,5 +19,6 @@ urlpatterns = patterns(
     url(r'^registration/', include('core.registration.urls')),
     url(r'^site/', include('core.site.urls')),
     url(r'^search/', include('core.search.urls')),
+    url(r'^service/', include('core.service.urls')),
     url(r'^vlan/', include('core.vlan.urls')),
 )
