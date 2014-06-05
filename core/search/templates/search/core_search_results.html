@@ -2,6 +2,9 @@
 <div id="ajax_results" width="100%">
 <div id='overflow-info' data-objs='{{overflow_results}}' data-max-obj-num='{{MAX_NUM_OBJECTS}}'></div>
 <div id="meta">
+    {% if meta['counts']['ALLOCATION'] -%}
+        {{ meta['counts']['ALLOCATION'] }} <a href="#q={{meta['search']}}&Service">Allocations</a> |
+    {% endif -%}
     {% if meta['counts']['SITE'] -%}
         {{ meta['counts']['SITE'] }} <a href="#q={{meta['search']}}&Site">Sites</a> |
     {% endif -%}
@@ -47,6 +50,11 @@
 </div>
 <div id='search-time' style='margin-top: 2px;' ></div>
 {% endif -%}
+{% if objects['ALLOCATION'] -%}
+    <h4><a class='plane-link' name="q={{meta['search']}}&Allocation">Allocation</a></h4>
+    {{ drawer.draw_record_table('ALLOCATION', objects['ALLOCATION'], table_class='tablesorter record-table', table_id='allocation-table') }}
+{% endif -%}
+
 {% if objects['SITE'] -%}
     <h4><a class='plane-link' name="q={{meta['search']}}&SITE">Site</a></h4>
     <table class="tablesorter">

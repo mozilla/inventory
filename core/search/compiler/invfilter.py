@@ -30,7 +30,7 @@ from core.vlan.models import Vlan
 from core.utils import start_end_filter, resolve_ip_type
 from core.search.utils import objects_to_Q
 
-from systems.models import System, SystemRack
+from systems.models import System, SystemRack, Allocation
 
 
 class BadDirective(Exception):
@@ -58,6 +58,7 @@ searchables = (
     ('NET', Network),
     ('SITE', Site),
     ('VLAN', Vlan),
+    ('ALLOCATION', Allocation),
 )
 
 dsearchables = dict(searchables)
