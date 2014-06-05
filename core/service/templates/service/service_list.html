@@ -1,0 +1,51 @@
+{% extends "core/core_list.html" %}
+{% block head %}
+    {{ super() }}
+    <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $(".tablesorter").tablesorter();
+            var timerHandle;
+            var timeOutInterval = 200; // 2 seconds
+            function do_rtype_search(){
+                var query = $('#search-query').val();
+                if (query === "") {
+                    // If query is nothing, return everything
+                    query = "/.*";
+                }
+                $.ajax({
+                  url: '/en-US/core/search/search_ajax/',
+                  data: {search: 'type=:SERVICE AND ' + query, format: 'table'},
+                  type: 'GET'
+                }).success(function (resp) {
+                    //console.log(resp);
+                    $('#list-serivces-content').html(resp);
+                    $(".tablesorter").tablesorter({
+                        sortList: [[2,1]]
+                    });
+                });
+            }
+            $('#search-query').keyup(function(){
+                clearTimeout(timerHandle);
+                if ($('#search-query').val()){
+                    timerHandle = setTimeout(do_rtype_search, timeOutInterval);
+                }
+            });
+            do_rtype_search();
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    {% block action_bar %}
+        {{ super() }}
+    {% endblock %}
+
+
+    <div class='list-search'>
+        <label>Search: <input id='search-query'></input></label>
+    </div>
+    <!-- Basic bootstrap table -->
+    <div id='list-serivces-content'>
+    </div>
+{% endblock %}
