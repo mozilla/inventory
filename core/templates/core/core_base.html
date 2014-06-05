@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
-{% block header %}{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/core.css" type="text/css"/>
+    <script src="{{ MEDIA_URL }}javascripts/jquery.tablesorter/jquery.tablesorter.js" type="text/javascript"></script>
+
+{% endblock %}
 
 {% block content %} {% endblock %}

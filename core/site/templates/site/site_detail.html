@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class='dns-title'><h3>{{ site.full_name }}</h3></div>
+    <div class='inv-title'><h3>{{ site.full_name }}</h3></div>
     <div>
     {% if site.parent %}
         Parent site: <a href='{{ site.parent.get_absolute_url() }}'>{{ site.parent.full_name }}</a>

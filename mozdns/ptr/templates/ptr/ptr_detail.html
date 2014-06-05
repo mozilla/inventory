@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class='dns-title'>PTR {{ object.name }}</div>
+<div class='inv-title'>PTR {{ object.name }}</div>
     {% if object.reverse_domain %}
         <a class="btn" href="{{ object.reverse_domain.get_absolute_url() }}">View Reverse Domain</a>
     {% endif %}

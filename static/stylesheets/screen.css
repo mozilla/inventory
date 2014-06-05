@@ -446,3 +446,8 @@ span.helptext {
 ul.errorlist {
     color: red;
 }
+
+.inv-title {
+  font-size: large;
+  margin-bottom: 1em;
+}

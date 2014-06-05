@@ -4,11 +4,17 @@
     {{ form_title }}
 {% endblock %}
 
-{% block header %}
+{% block head %}
+    {{ super() }}
     {{ form_title }}
 {% endblock %}
 
 {% block content %}
+    <script src="{{ MEDIA_URL }}javascripts/chosen/chosen.jquery.js" type="text/javascript"></script>
+    <link rel='stylesheet' href="{{ MEDIA_URL }}javascripts/chosen/chosen.css" type="text/css" />
+
+    <script src="{{ MEDIA_URL }}javascripts/core.js" type="text/javascript"></script>
+
     <form class="well form-horizontal" method="post" action="">
         {{ form.as_p() }}
         <input type="submit" value="Submit" />

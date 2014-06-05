@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<div class='dns-title'>CNAME{{ object.fqdn }}</div>
+<div class='inv-title'>CNAME{{ object.fqdn }}</div>
     {% if object.domain %}
         <a class="btn" href="{{ object.domain.get_absolute_url() }}">View Domain</a>
     {% endif %}

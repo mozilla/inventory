@@ -10,9 +10,9 @@
 
 {% block content %}
         {% if found_exact %}
-            <div class='dns-title'>Results for <a href='{{ search_ip.get_absolute_url() }}'>{{ search_ip }}</a></div>
+            <div class='inv-title'>Results for <a href='{{ search_ip.get_absolute_url() }}'>{{ search_ip }}</a></div>
         {% else %}
-            <div class='dns-title'>Results for {{ search_ip }}</div>
+            <div class='inv-title'>Results for {{ search_ip }}</div>
         {% endif %}
 
         {% if parent %}
