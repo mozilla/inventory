@@ -67,3 +67,30 @@ def service_export(request):
     return HttpResponse(json.dumps({
         'services': Service.export_services(services)
     }))
+
+
+def service_import(request):
+    if request.method == 'GET':
+        return HttpResponse(status=405)  # Method Not Allowed
+
+    try:
+        services_data = json.loads(request.raw_post_data)
+    except ValueError, e:
+        return HttpResponse(json.dumps({'errors': str(e)}), status=400)
+
+    if 'services' not in services_data:
+        return HttpResponse(json.dumps({
+            'errors': "A dictionary containing the 'services' key is required"
+        }), status=400)
+
+    with transaction.commit_manually():
+        try:
+            Service.import_services(services_data['services'])
+        except (ValueError, System.DoesNotExist, Service.DoesNotExist), e:
+            transaction.rollback()
+            return HttpResponse(json.dumps({'errors': str(e)}), status=400)
+
+        transaction.commit()
+
+    # return a 200 and something that will parse as valid json
+    return HttpResponse('{}')
