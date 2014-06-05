@@ -7,6 +7,7 @@ from settings.local import inventorys_email
 from email.mime.text import MIMEText
 import ipaddr
 import smtplib
+import re
 
 
 # http://dev.mysql.com/doc/refman/5.0/en/miscellaneous-functions.html
@@ -294,3 +295,13 @@ def create_key_index(kvs):
     for kv in kvs:
         index[kv['key']] = kv
     return index
+
+
+def mozillian(name):
+    return "https://mozillians.org/en-US/search/?q={0}".format(
+        name.replace('\ ', '+')
+    )
+
+
+def mozillian_a(name):
+    return "<a href='{0}'>{1}</a>".format(mozillian(re.escape(name)), name)
