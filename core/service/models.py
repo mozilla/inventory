@@ -198,3 +198,63 @@ class Service(models.Model, ObjectUrlMixin):
 
     def __repr__(self):
         return "<Service {0}>".format(self)
+
+    @classmethod
+    def export_services(cls, services, fields=None):
+        ret = []
+        # site is relational and needs to be handled specially
+        fields = fields or cls.get_api_fields()
+
+        if 'site' in fields:
+            fields.remove('site')
+
+        for service in services:
+            # create a service dict
+            sd = dict((field, getattr(service, field)) for field in fields)
+            # TODO, why the f*** do I need to cast this to a string? I'm
+            # getting encoding errors when I try to case the export generated
+            # by this function to JSON. i.e:
+            # TypeError: [u'foobar1.mozilla.com', u'foobar2.mozilla.com',
+            # u'foobar3.mozilla.com'] is not JSON serializable
+            sd['systems'] = map(str, service.systems.all().values_list(
+                'hostname', flat=True
+            ))
+            sd['site'] = service.site.full_name if service.site else 'None'
+
+            sd['parent_service'] = (
+                service.parent_service.iql_stmt()
+                if service.parent_service else 'None'
+            )
+
+            for ds in service.providers.all():
+                # Append an IQL statement that uniqly identifies a service
+                sd.setdefault('depends_on', []).append(ds.provider.iql_stmt())
+
+            ret.append(sd)
+        return ret
+
+    @classmethod
+    def iql_to_service(cls, iql_stmt, bad_iql_error=None,
+                       no_services_error=None, ambiguous_error=None):
+        # Note: there is an import loop in the global scope
+        from core.search.compiler.django_compile import search_type
+        services, error = search_type(iql_stmt, 'SERVICE')
+        if error:
+            raise bad_iql_error or ValueError(
+                "When resolving IQL '{0}' got error "
+                "'{1}'".format(iql_stmt, error)
+            )
+
+        if not services:
+            raise no_services_error or ValueError(
+                "When resolving IQL '{0}' no services were found"
+                .format(iql_stmt)
+            )
+
+        if len(services) > 1:
+            raise ambiguous_error or ValueError(
+                "When resolving IQL '{0}' multiple services were returned"
+                .format(iql_stmt)
+            )
+
+        return services[0]

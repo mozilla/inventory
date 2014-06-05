@@ -43,3 +43,27 @@ def service_detail(request, pk):
     return render(request, 'service/service_detail.html', {
         'service': service
     })
+
+
+def service_export(request):
+    if request.method == 'POST':
+        return HttpResponse(status=405)  # Method Not Allowed
+
+    search = request.GET.get('search', '')
+
+    if not search:
+        return HttpResponse(
+            {'errors': "Please query about a service to export"},
+            status=400
+        )
+
+    services, error = search_type(search, 'SERVICE')
+
+    if error:
+        return HttpResponse(
+            json.dumps({'errors': str(error)}), status=400
+        )
+
+    return HttpResponse(json.dumps({
+        'services': Service.export_services(services)
+    }))
