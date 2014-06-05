@@ -1,0 +1,25 @@
+.core-list-item {
+  display: inline-block;
+}
+
+.top-attributes {
+  display: inline-block;
+}
+
+.top-attributes-left {
+  display: inline-block;
+  margin-left: 3em;
+}
+
+.core-choose-circuits {
+  width: 70px;
+}
+
+#id_allocations_chosen {
+  width: 40% !important;
+}
+
+.list-search {
+  margin-bottom: 2em;
+  margin-top: 2em;
+}
