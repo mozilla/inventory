@@ -13,8 +13,7 @@ def localize(url):
     return '/en-US' + url
 
 
-class CreateZoneTests(TestCase):
-
+class BaseZoneTests(object):
     def setUp(self):
         Domain.objects.all().delete()
         self.c = Client()
@@ -47,12 +46,12 @@ class CreateZoneTests(TestCase):
         # NS2 has private and no public
         # NS3 has no private and public
 
-    def _ensure_no_change(self, post_data):
+    def _ensure_no_change(self, post_data, http_status=200):
         soa_count = SOA.objects.all().count()
         domain_count = Domain.objects.all().count()
         ns_count = Nameserver.objects.all().count()
         resp = self.c.post(localize(reverse('create-zone-ajax')), post_data)
-        self.assertEqual(200, resp.status_code)
+        self.assertEqual(http_status, resp.status_code)
         new_soa_count = SOA.objects.all().count()
         new_domain_count = Domain.objects.all().count()
         new_ns_count = Nameserver.objects.all().count()
@@ -61,15 +60,21 @@ class CreateZoneTests(TestCase):
         self.assertEqual(new_ns_count, ns_count)
 
     def _check_domain_tree(self, root_domain_name):
+        # make sure domain exists
         self.assertTrue(Domain.objects.filter(name=root_domain_name))
+
         root_domain = Domain.objects.get(name=root_domain_name)
+        # make sure the created domain isn't purgeable
         self.assertFalse(root_domain.purgeable)
 
+        # make sure the soa doesn't trickle down further than it should
         p_domain = root_domain.master_domain
         while p_domain:
-            self.assertEqual(None, p_domain.soa)
+            self.assertNotEqual(root_domain.soa, p_domain.soa)
             p_domain = p_domain.master_domain
 
+
+class CreateZoneTests(BaseZoneTests, TestCase):
     def test_create_zone(self):
         soa_count = SOA.objects.all().count()
         domain_count = Domain.objects.all().count()
@@ -102,17 +107,19 @@ class CreateZoneTests(TestCase):
         self._check_domain_tree(post_data['root_domain'])
 
     def test_more_realistic_creation(self):
+        # create a zone
         post_data = self.get_post_data()
         resp = self.c.post(localize(reverse('create-zone-ajax')), post_data)
         self.assertEqual(200, resp.status_code)
         first_root_domain = post_data['root_domain']
         self._check_domain_tree(first_root_domain)
 
-        # Now create a new zone under the created zone. Make sure the tree
-        # under the new zone is preserved.
+        # Now create a new zone under the created zone.
+        # Make sure the tree under the new zone is preserved.
 
         second_root_domain = "{0}.{1}".format(
-            random_label(), first_root_domain)
+            random_label(), first_root_domain
+        )
         post_data['root_domain'] = second_root_domain
         resp = self.c.post(localize(reverse('create-zone-ajax')), post_data)
         self.assertEqual(200, resp.status_code)
@@ -128,40 +135,29 @@ class CreateZoneTests(TestCase):
     def test_create_zone_bad_soa(self):
         post_data = self.get_post_data()
         post_data['root_domain'] = ''
-        self._ensure_no_change(post_data)
+        self._ensure_no_change(post_data, http_status=400)
 
         # Try a bad primary
         post_data = self.get_post_data()
         post_data['soa_primary'] = 'adsf..afds'
-        self._ensure_no_change(post_data)
+        self._ensure_no_change(post_data, http_status=400)
 
         # Try a bad contact
         post_data = self.get_post_data()
         post_data['soa_contact'] = 'adsf.#afds'
-        self._ensure_no_change(post_data)
+        self._ensure_no_change(post_data, http_status=400)
 
         # Try a missing contact
         post_data = self.get_post_data()
         del post_data['soa_contact']
-        self._ensure_no_change(post_data)
-
-    def test_create_zone_bad_ns(self):
-        # Bad ns server
-        post_data = self.get_post_data()
-        post_data['nameserver_1'] = '..'
-        self._ensure_no_change(post_data)
-
-        # No glue
-        post_data = self.get_post_data()
-        post_data['nameserver_3'] = 'ns1.' + post_data['root_domain']
-        self._ensure_no_change(post_data)
+        self._ensure_no_change(post_data, http_status=400)
 
     def test_create_tld(self):
         # Try a bad primary
         post_data = self.get_post_data()
         post_data['root_domain'] = 'asdf'
         post_data['soa_primary'] = 'adsf..'
-        self._ensure_no_change(post_data)
+        self._ensure_no_change(post_data, http_status=400)
 
     def test_create_validate_views(self):
         # Try a bad primary
