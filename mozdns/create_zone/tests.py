@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 
@@ -182,3 +182,48 @@ class CreateZoneTests(BaseZoneTests, TestCase):
         ns3 = d.nameserver_set.get(server=post_data['nameserver_3'])
         self.assertTrue(self.private_view not in ns3.views.all())
         self.assertTrue(self.public_view in ns3.views.all())
+
+    def test_zone_stack(self):
+        # create a zone like f.e.mozilla.com and then create above that zone
+        # like e.mozilla.com
+        # create a zone
+        post_data = self.get_post_data()
+        shorter_domain_name = 'e.mozilla.com'
+        longer_domain_name = 'f.' + shorter_domain_name
+
+        self.assertTrue(len(shorter_domain_name) < len(longer_domain_name))
+
+        # create the longer of the two
+        post_data['root_domain'] = longer_domain_name
+        resp = self.c.post(localize(reverse('create-zone-ajax')), post_data)
+        self.assertEqual(200, resp.status_code)
+        self._check_domain_tree(longer_domain_name)
+        longer_soa = Domain.objects.get(name=longer_domain_name)
+
+        pre_soa_count = SOA.objects.all().count()
+        # re-use post_data but change the root-domain name to the shorter one
+        post_data['root_domain'] = shorter_domain_name
+        resp = self.c.post(localize(reverse('create-zone-ajax')), post_data)
+        self.assertEqual(200, resp.status_code)
+
+        # Make sure a new SOA was created
+        post_soa_count = SOA.objects.all().count()
+        self.assertEqual(pre_soa_count + 1, post_soa_count)
+
+        self._check_domain_tree(shorter_domain_name)
+        shorter_soa = Domain.objects.get(name=shorter_domain_name)
+
+        self.assertTrue(longer_soa != shorter_soa)
+
+
+class TransactionCreateZoneTests(BaseZoneTests, TransactionTestCase):
+    def test_create_zone_bad_ns(self):
+        # Bad ns server
+        post_data = self.get_post_data()
+        post_data['nameserver_1'] = '..'
+        self._ensure_no_change(post_data, http_status=400)
+
+        # No glue
+        post_data = self.get_post_data()
+        post_data['nameserver_3'] = 'ns1.' + post_data['root_domain']
+        self._ensure_no_change(post_data, http_status=400)
