@@ -80,8 +80,8 @@ def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
     """This function will take ``domain_name`` and make sure that a domain with
     that name exists. If this function creates a domain it will set the
     domain's purgeable flag to the value of the named arguement ``purgeable``.
-    See the doc page about Labels and Domains for more information about this
-    function
+    See the doc page about Labels and Domains for other information about this
+    function.
 
     This function will attempt to prevent you from:
         * creating a new TLD
@@ -96,6 +96,10 @@ def ensure_domain(name, purgeable=False, inherit_soa=False, force=False):
     that SOA. You can cause the domain to inherit the SOA by passing the named
     argument ``inherit_soa`` as ``True``. For example, the function
     :func:`ensure_label_domain` passes ``inherit_soa=True``.
+
+    If a domain already exists with a name equal to ``name`` it is immediately
+    returned. It is up to the caller to ensure that ``purgeable`` is set if it
+    is needed.
     """
     try:
         domain = Domain.objects.get(name=name)
