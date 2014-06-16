@@ -232,17 +232,19 @@ class MockBuildScriptTests(TestCase):
                        FIRST_RUN=True, PUSH_TO_PROD=True,
                        STOP_UPDATE_FILE=self.stop_update)
         self.assertTrue(Task.dns_full.all())
-        self.assertFalse(Task.dns_incremental.all())
+        # Each new zone creates 2 incremental tasks for their nameservers
+        self.assertEqual(10, Task.dns_incremental.all().count())
         b.build_dns()
 
         self.assertFalse(Task.dns_full.all())
         self.assertFalse(Task.dns_incremental.all())
 
+        # deleting one ns
         for ns in root_domain1.nameserver_set.all():
             ns.delete()
 
         self.assertTrue(Task.dns_full.all())
-        self.assertTrue(Task.dns_incremental.all())
+        self.assertEqual(1, Task.dns_incremental.all().count())
 
         b.build_dns()  # One zone removed should be okay
 
