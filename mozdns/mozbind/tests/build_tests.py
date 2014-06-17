@@ -232,8 +232,7 @@ class MockBuildScriptTests(TestCase):
                        FIRST_RUN=True, PUSH_TO_PROD=True,
                        STOP_UPDATE_FILE=self.stop_update)
         self.assertTrue(Task.dns_full.all())
-        # Each new zone creates 2 incremental tasks for their nameservers
-        self.assertEqual(10, Task.dns_incremental.all().count())
+        self.assertFalse(Task.dns_incremental.all().count())
         b.build_dns()
 
         self.assertFalse(Task.dns_full.all())

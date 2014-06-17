@@ -51,12 +51,12 @@ def _create_zone(root_domain, primary, contact, nss):
     domain = ensure_domain(
         root_domain, purgeable=False, inherit_soa=False, force=True
     )
+    _save_nss(nss, domain)
     domain.soa = soa
     # ensure_domain doesn't ensure it created the domain with purgeable equal
     # to True.
     domain.purgeable = False
     domain.save()
-    _save_nss(nss, domain)
     return domain
 
 
