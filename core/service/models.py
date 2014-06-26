@@ -65,9 +65,9 @@ class Service(models.Model, ObjectUrlMixin):
 
     # Autocompleted fields
     category = models.CharField(max_length=255, blank=True)
-    business_owner = models.CharField(max_length=255, default='')
-    tech_owner = models.CharField(max_length=255, default='')
-    used_by = models.CharField(max_length=255, default='')
+    business_owner = models.CharField(max_length=255, default='', blank=True)
+    tech_owner = models.CharField(max_length=255, default='', blank=True)
+    used_by = models.CharField(max_length=255, default='', blank=True)
 
     # Choice fields
     usage_frequency = models.CharField(
