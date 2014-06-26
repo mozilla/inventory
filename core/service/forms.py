@@ -60,6 +60,7 @@ class ServiceForm(forms.ModelForm):
         fields = (
             # Plain
             'name',
+            'alias',
             'description',
 
             # Autocompleted fields

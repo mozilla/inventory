@@ -60,6 +60,7 @@ class Service(models.Model, ObjectUrlMixin):
     name = models.CharField(
         max_length=255, blank=False, validators=[service_name_validator]
     )
+    alias = models.CharField(max_length=511, blank=True)
     description = models.CharField(max_length=511, blank=True)
 
     # Autocompleted fields
@@ -82,15 +83,16 @@ class Service(models.Model, ObjectUrlMixin):
     notes = models.TextField(blank=True)
 
     search_fields = (
-        'name', 'site__full_name', 'description', 'category', 'tech_owner',
-        'used_by'
+        'name', 'alias', 'site__full_name', 'description', 'category',
+        'tech_owner', 'used_by'
     )
 
     @classmethod
     def get_api_fields(cls):
         return [
-            'name', 'site', 'description', 'category', 'business_owner',
-            'tech_owner', 'used_by', 'usage_frequency', 'impact', 'notes'
+            'name', 'alias', 'site', 'description', 'category',
+            'business_owner', 'tech_owner', 'used_by', 'usage_frequency',
+            'impact', 'notes'
         ]
 
     @property
@@ -148,6 +150,8 @@ class Service(models.Model, ObjectUrlMixin):
                 if self.site else "No site"
             )
         ]
+        if self.alias:
+            r.append(('Alias', self.alias))
         if self.used_by:
             r.append(('Used By', self.used_by))
         if self.category:

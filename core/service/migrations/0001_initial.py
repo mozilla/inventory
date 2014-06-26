@@ -22,6 +22,7 @@ class Migration(SchemaMigration):
             ('parent_service', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='subservices', null=True, to=orm['service.Service'])),
             ('site', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['site.Site'], null=True, blank=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
+            ('alias', self.gf('django.db.models.fields.CharField')(max_length=511, blank=True)),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=511, blank=True)),
             ('category', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
             ('business_owner', self.gf('django.db.models.fields.CharField')(default='', max_length=255)),
@@ -75,6 +76,7 @@ class Migration(SchemaMigration):
         },
         'service.service': {
             'Meta': {'object_name': 'Service', 'db_table': "'service'"},
+            'alias': ('django.db.models.fields.CharField', [], {'max_length': '511', 'blank': 'True'}),
             'allocations': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['systems.Allocation']", 'symmetrical': 'False', 'blank': 'True'}),
             'business_owner': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255'}),
             'category': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
