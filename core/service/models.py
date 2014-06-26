@@ -32,10 +32,10 @@ def service_name_validator(name):
 class Service(models.Model, ObjectUrlMixin):
     """
     A service object is used to track a service or to represent a "parent
-    service". A service is unique identified by its name and site (where having
-    'NULL' for a site is considered a unique value.) By convention, two
+    service". A service is uniquely identified by its name and site (where
+    having 'NULL' for a site is considered a unique value.) By convention, two
     services that have the same name but different sites should be considered
-    siblings and should most likely share a common parent site.
+    siblings and should most likely share a common parent service.
 
     Services can depend on other services. Dependant services are called
     'dependants' and the service being depended on is known as the 'provider'
