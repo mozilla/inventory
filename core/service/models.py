@@ -103,11 +103,16 @@ class Service(models.Model, ObjectUrlMixin):
         db_table = 'service'
 
     def __str__(self):
-        return "{0} {1}-- Used {2} by {3}".format(
-            self.name, '' if not self.site else ' in ' + self.site.full_name,
-            constants.USAGE_FREQUENCY[self.usage_frequency.lower()],
-            ', '.join(map(str, self.allocations.all()))
+        s = "{0}{1} ".format(
+            self.name, '' if not self.site else ' in ' + self.site.full_name
         )
+        s += "-- Used {0}".format(
+            constants.USAGE_FREQUENCY[self.usage_frequency.lower()]
+        )
+        a_str = self.get_allocations_str()
+        if a_str:
+            s += " by " + a_str
+        return s
 
     def save(self, *args, **kwargs):
         self.validate_unique()
@@ -140,6 +145,18 @@ class Service(models.Model, ObjectUrlMixin):
                 "exists".format(self.name, self.site)
             )
 
+    def get_attr(self, attr_name):
+        if (
+            not getattr(self, attr_name) and
+            self.parent_service and
+            getattr(self.parent_service, attr_name)
+        ):
+            return "{0} (inherited from parent service)".format(
+                getattr(self.parent_service, attr_name)
+            )
+        else:
+            return getattr(self, attr_name)
+
     def details(self):
         r = [
             # Name and site are always present
@@ -151,17 +168,20 @@ class Service(models.Model, ObjectUrlMixin):
             )
         ]
         if self.alias:
-            r.append(('Alias', self.alias))
+            r.append(('Alias', self.get_attr('alias')))
         if self.used_by:
-            r.append(('Used By', self.used_by))
+            r.append(('Used By', self.get_attr('used_by')))
         if self.category:
-            r.append(('Category', self.category))
+            r.append(('Category', self.get_attr('category')))
         if self.tech_owner:
-            r.append(('Tech Owner', mozillian_a(self.tech_owner)))
+            r.append(('Tech Owner', mozillian_a(self.get_attr('tech_owner'))))
         if self.business_owner:
-            r.append(('Business Owner', mozillian_a(self.business_owner)))
+            r.append((
+                'Business Owner',
+                mozillian_a(self.get_attr('business_owner'))
+            ))
         if self.description:
-            r.append(('Description', self.description))
+            r.append(('Description', self.get_attr('description')))
         if self.parent_service:
             r.append((
                 'Parent Service',
@@ -183,11 +203,12 @@ class Service(models.Model, ObjectUrlMixin):
             r.append(('Depended on by', dependants))
 
         if self.allocations.exists():
-            r.append((
-                'IT Owners', ', '.join(map(str, self.allocations.all()))
-            ))
+            r.append(('IT Owners', self.get_allocations_str()))
 
         return r
+
+    def get_allocations_str(self):
+        return ', '.join(map(str, self.allocations.all()))
 
     def iql_stmt(self):
         iql_stmt = 'service.name="{0}"'.format(self.name)

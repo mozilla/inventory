@@ -27,7 +27,9 @@
         <thead>
         <tr>
             <th>Name</th>
+            <th>Allocation</th>
             <th>Used By</th>
+            <th>Site</th>
             <th>Impact</th>
         </tr>
         </thead>
@@ -37,8 +39,14 @@
             <td>
                 <a href="{{ service.get_absolute_url() }}">{{ service.name }}</a>
             </td>
-            <td>{{ service.used_by }}</td>
-            <td>{{ service.impact }}</td>
+            <td>{{ service.get_allocations_str() }}</td>
+            <td>{{ service.get_attr('used_by') }}</td>
+            {% if service.site %}
+                <td><a href='{{ service.site.get_absolute_url() }}'>{{ service.site.full_name}}</a></td>
+            {% else %}
+                <td>None</td>
+            {% endif %}
+            <td>{{ service.get_attr('impact') }}</td>
         </tr>
         {% endfor %}
         </tbody>
