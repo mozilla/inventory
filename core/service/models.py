@@ -211,9 +211,9 @@ class Service(models.Model, ObjectUrlMixin):
         return ', '.join(map(str, self.allocations.all()))
 
     def iql_stmt(self):
-        iql_stmt = 'service.name="{0}"'.format(self.name)
+        iql_stmt = "service.name='{0}'".format(self.name)
         if self.site:
-            iql_stmt += ' service.site__full_name="{0}"'.format(
+            iql_stmt += " service.site__full_name='{0}'".format(
                 self.site.full_name
             )
         else:
