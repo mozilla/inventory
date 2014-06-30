@@ -236,12 +236,7 @@ class Service(models.Model, ObjectUrlMixin):
         for service in services:
             # create a service dict
             sd = dict((field, getattr(service, field)) for field in fields)
-            # TODO, why the f*** do I need to cast this to a string? I'm
-            # getting encoding errors when I try to case the export generated
-            # by this function to JSON. i.e:
-            # TypeError: [u'foobar1.mozilla.com', u'foobar2.mozilla.com',
-            # u'foobar3.mozilla.com'] is not JSON serializable
-            sd['systems'] = map(str, service.systems.all().values_list(
+            sd['systems'] = list(service.systems.all().values_list(
                 'hostname', flat=True
             ))
             sd['site'] = service.site.full_name if service.site else 'None'
