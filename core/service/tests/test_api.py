@@ -263,7 +263,7 @@ class ServiceAPITests(BaseServiceTests, TestCase):
             self.s3.iql_stmt() in sblob['services'][0]['depends_on']
         )
 
-        # Make sure we only deleteed one dep
+        # Make sure we only deleted one dep
         new_dep_count = Dependency.objects.count()
         self.assertEqual(
             old_dep_count - 1, new_dep_count,
