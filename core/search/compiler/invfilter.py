@@ -378,17 +378,17 @@ def build_service_single_qset(service):
     Filter and return the objects associated with a service. Pull in all
     objects the service depends upon.
     """
-    dependancies = _get_deps(service, [service])
-    dependancies.append(service)
+    dependencies = _get_deps(service, [service])
+    dependencies.append(service)
 
-    service_q = objects_to_Q(dependancies)
+    service_q = objects_to_Q(dependencies)
 
     system_q = Q(pk__lte=-1)  # by default match nothing
-    for s in dependancies:
+    for s in dependencies:
         system_q = system_q | objects_to_Q(s.systems.all())
 
     allocation_q = Q(pk__lte=-1)  # by default match nothing
-    for s in dependancies:
+    for s in dependencies:
         allocation_q = allocation_q | objects_to_Q(s.allocations.all())
 
     # Get necessary services

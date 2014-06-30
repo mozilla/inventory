@@ -297,12 +297,12 @@ class Service(models.Model, ObjectUrlMixin):
                 )
             self.systems.add(system)
 
-    def service_import_set_depends_on(self, dependancies):
+    def service_import_set_depends_on(self, dependencies):
         # Note: Make sure to call save() after calling this function
-        # XXX: does clear() actually delete the dependancies?
+        # XXX: does clear() actually delete the dependencies?
         # Either it needs to or we need to do that manually...
         self.depends_on.clear()
-        for dep in dependancies:
+        for dep in dependencies:
             dep_service = Service.iql_to_service(
                 dep,
                 no_services_error=ValueError(
