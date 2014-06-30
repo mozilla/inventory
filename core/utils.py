@@ -8,6 +8,7 @@ from email.mime.text import MIMEText
 import ipaddr
 import smtplib
 import re
+import urllib
 
 
 # http://dev.mysql.com/doc/refman/5.0/en/miscellaneous-functions.html
@@ -299,7 +300,7 @@ def create_key_index(kvs):
 
 def mozillian(name):
     return "https://mozillians.org/en-US/search/?q={0}".format(
-        name.replace('\ ', '+')
+        urllib.quote_plus(name)
     )
 
 
