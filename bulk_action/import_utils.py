@@ -362,4 +362,11 @@ def set_field(obj, attr, value):
             raise Exception("Really bad error")
     else:
         m_value = value
+
+    if attr == 'rack_order':
+        # The serialization here makes this a float which cannot be converted
+        # to a decimal. Casting to a string makes this acceptible to the django
+        # field validators.
+        m_value = str(m_value)
+
     setattr(obj, attr, m_value)
