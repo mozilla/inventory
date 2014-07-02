@@ -25,9 +25,9 @@ class Migration(SchemaMigration):
             ('alias', self.gf('django.db.models.fields.CharField')(max_length=511, blank=True)),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=511, blank=True)),
             ('category', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
-            ('business_owner', self.gf('django.db.models.fields.CharField')(default='', max_length=255)),
-            ('tech_owner', self.gf('django.db.models.fields.CharField')(default='', max_length=255)),
-            ('used_by', self.gf('django.db.models.fields.CharField')(default='', max_length=255)),
+            ('business_owner', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
+            ('tech_owner', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
+            ('used_by', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
             ('usage_frequency', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
             ('impact', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
             ('notes', self.gf('django.db.models.fields.TextField')(blank=True)),
@@ -78,7 +78,7 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Service', 'db_table': "'service'"},
             'alias': ('django.db.models.fields.CharField', [], {'max_length': '511', 'blank': 'True'}),
             'allocations': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['systems.Allocation']", 'symmetrical': 'False', 'blank': 'True'}),
-            'business_owner': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255'}),
+            'business_owner': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'category': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
             'depends_on': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['service.Service']", 'symmetrical': 'False', 'through': "orm['service.Dependency']", 'blank': 'True'}),
             'description': ('django.db.models.fields.CharField', [], {'max_length': '511', 'blank': 'True'}),
@@ -89,9 +89,9 @@ class Migration(SchemaMigration):
             'parent_service': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'subservices'", 'null': 'True', 'to': "orm['service.Service']"}),
             'site': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['site.Site']", 'null': 'True', 'blank': 'True'}),
             'systems': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['systems.System']", 'symmetrical': 'False', 'blank': 'True'}),
-            'tech_owner': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255'}),
+            'tech_owner': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
             'usage_frequency': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'}),
-            'used_by': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255'})
+            'used_by': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255', 'blank': 'True'})
         },
         'site.site': {
             'Meta': {'unique_together': "(('full_name',),)", 'object_name': 'Site', 'db_table': "'site'"},
