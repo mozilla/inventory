@@ -42,8 +42,24 @@
                 },
                 function (){
                     if ($('#object_redirect_url').attr('record-url')) {
-                        alert("Creation Successful!");
-                        window.location = data.attr('creation_redirect') || '/core/';
+                        $("#dialog-success").dialog({
+                          modal: true,
+                          buttons: {
+                            "Return to search page": function() {
+                              window.location = data.attr('search_redirect') || '/core/';
+                            },
+                            "Create another": function() {
+                              $('.object_meta').remove();
+                              $('#related').remove();
+                              $('#record_pk').remove();
+                              data.attr('record_pk', '');
+                              $(this).dialog("close");
+                            },
+                            "Edit the record that was just created": function() {
+                              window.location = $('#object_redirect_url').attr('record-url');
+                            }
+                          }
+                        });
                     }
                 }
             );

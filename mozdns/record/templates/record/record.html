@@ -50,7 +50,14 @@
         </div>
     </div>
 
-    <div id='dns-data' record_type="{{record_type}}" record_pk="{{record_pk}}" creation_redirect='/mozdns/record/search/{{record_type}}/'></div>
+    <div id='dns-data' record_type="{{record_type}}" record_pk="{{record_pk}}"
+      search_redirect='/mozdns/record/search/{{record_type}}/'
+      create_redirect='/mozdns/record/create/{{record_type}}/'></div>
+    <div id='dialog-success' style='display: none;'>
+      <p><span>You have successfully created a(n) {{ record_type }} record.
+        What would you like to do next?</span>
+      </p>
+    </div>
 
     <div id="form-area">
         <div id="commit-dialog" style='display: none;'>
