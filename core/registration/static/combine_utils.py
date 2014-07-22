@@ -524,7 +524,7 @@ def _combine(bundle, transaction_managed=False, rollback=False,
         )
         view_names = [v.name for v in bundle['a'].views.all()]
         try:
-            bundle['a'].delete(check_cname=False)
+            bundle['a'].delete(check_cname=False, call_prune_tree=False)
         except ValidationError, e:
             rollback = True
             bundle['errors'] = 'Error while deleting the A record.' + str(e)
