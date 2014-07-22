@@ -208,7 +208,7 @@ function make_smart_name(element, domains, append){
         },
         autoFocus: false,
         source: function (li, callback) {
-            labels = li.term.split('.');
+            var labels = li.term.split('.');
 
             var suggested_domains = [];
             var domain_name = '';
@@ -216,7 +216,7 @@ function make_smart_name(element, domains, append){
             function compare (a, b) {
                 return (a.length < b.length) ? 0 : 1;
             }
-            while (labels) {
+            while (labels.length > 0) {
                 search_name = labels.join('.');
                 for (var domain in domains.sort(compare)){
                     domain_name = domains[domain];
