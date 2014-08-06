@@ -89,6 +89,9 @@ def service_import(request):
         except (ValueError, System.DoesNotExist, Service.DoesNotExist), e:
             transaction.rollback()
             return HttpResponse(json.dumps({'errors': str(e)}), status=400)
+        except Exception, e:
+            transaction.rollback()
+            return HttpResponse(json.dumps({'errors': str(e)}), status=500)
 
         transaction.commit()
 

@@ -379,11 +379,25 @@ class Service(models.Model, ObjectUrlMixin):
         """
         for service_blob in services:
             try:
-                service = Service.objects.get(name=service_blob['name'])
+                site = service_blob.get('site', None)
+                if site:
+                    site = Site.objects.get(name=site)
+                service = Service.objects.get(
+                    name=service_blob.get('name', ''),
+                    site=site
+                )
             except Service.DoesNotExist:
                 raise System.DoesNotExist(
                     "The service with name '{0}' does not "
                     "exist".format(service_blob['name'])
+                )
+            except Site.DoesNotExist:
+                raise System.DoesNotExist(
+                    "The service with name '{0}' is asking for a site '{1}' "
+                    "that does not exist".format(
+                        service_blob.get('name', 'None'),
+                        service_blob.get('site', 'None')
+                    )
                 )
 
             # set all the fields on the service we are importing
