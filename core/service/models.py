@@ -23,9 +23,11 @@ class Dependency(models.Model):
 
 
 def service_name_validator(name):
+    if not name:
+        raise ValidationError("A services name cannot be empty")
     if name.lower == 'none':
         raise ValidationError(
-            "The name '{0}' is a reserved service name. You can't user it."
+            "The name '{0}' is a reserved service name. You can't use it."
         )
 
 
@@ -381,8 +383,8 @@ class Service(models.Model, ObjectUrlMixin):
             try:
                 site = service_blob.get('site', None)
                 if site:
-                    site = Site.objects.get(name=site)
-                service = Service.objects.get(
+                    site = Site.objects.get(full_name=site)
+                service, created = Service.objects.get_or_create(
                     name=service_blob.get('name', ''),
                     site=site
                 )

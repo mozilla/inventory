@@ -15,13 +15,13 @@ class BaseServiceTests(object):
         self.client = Client()
         self.site = Site.objects.create(full_name='foo')
         self.s1 = Service.objects.create(name='ldap', site=self.site)
-        sys1 = create_fake_host(hostname='foobar1.mozilla.com')
-        sys2 = create_fake_host(hostname='foobar2.mozilla.com')
-        sys3 = create_fake_host(hostname='foobar3.mozilla.com')
+        self.sys1 = create_fake_host(hostname='foobar1.mozilla.com')
+        self.sys2 = create_fake_host(hostname='foobar2.mozilla.com')
+        self.sys3 = create_fake_host(hostname='foobar3.mozilla.com')
 
-        self.s1.systems.add(sys1)
-        self.s1.systems.add(sys2)
-        self.s1.systems.add(sys3)
+        self.s1.systems.add(self.sys1)
+        self.s1.systems.add(self.sys2)
+        self.s1.systems.add(self.sys3)
         self.s1.save()
 
         self.s2 = Service.objects.create(name='dns and stuff')
@@ -81,6 +81,56 @@ class ServiceAPITests(BaseServiceTests, TestCase):
             ['foobar4.mozilla.com', 'foobar5.mozilla.com',
              'foobar6.mozilla.com']
         )
+
+    def test_import_new_service(self):
+        # Make sure importing a new service works
+        services_blob = json.loads("""
+        {{
+            "http_status": 200,
+            "services": [
+                {{
+                    "alias": "",
+                    "business_owner": "",
+                    "category": "",
+                    "description": "",
+                    "impact": "",
+                    "name": "a.dns",
+                    "notes": "",
+                    "parent_service": "{0}",
+                    "site": "{1}",
+                    "systems": [
+                        "{2}"
+                    ],
+                    "tech_owner": "",
+                    "usage_frequency": "",
+                    "used_by": ""
+                }},
+                {{
+                    "alias": "",
+                    "business_owner": "",
+                    "category": "",
+                    "description": "",
+                    "impact": "",
+                    "name": "b.dns",
+                    "notes": "",
+                    "parent_service": "",
+                    "site": "{1}",
+                    "systems": [
+                        "{2}"
+                    ],
+                    "tech_owner": "",
+                    "usage_frequency": "",
+                    "used_by": ""
+                }}
+            ]
+        }}
+        """.strip().format(self.s1.iql_stmt(), self.site.full_name, self.sys1))
+        _, resp = self.import_services(services_blob)
+        self.assertEqual(resp.status_code, 200, resp.content)
+        a = Service.objects.get(name='a.dns')
+        b = Service.objects.get(name='b.dns')
+        self.assertEqual(a.parent_service, self.s1)
+        self.assertFalse(b.parent_service)
 
     def test_import_create_delete_create(self):
         # export, delete, import, ensure things are the same
