@@ -238,6 +238,7 @@ class Service(models.Model, ObjectUrlMixin):
         for service in services:
             # create a service dict
             sd = dict((field, getattr(service, field)) for field in fields)
+            sd['pk'] = service.pk
             sd['systems'] = list(service.systems.all().values_list(
                 'hostname', flat=True
             ))
@@ -384,14 +385,17 @@ class Service(models.Model, ObjectUrlMixin):
                 site = service_blob.get('site', None)
                 if site:
                     site = Site.objects.get(full_name=site)
-                service, created = Service.objects.get_or_create(
-                    name=service_blob.get('name', ''),
-                    site=site
-                )
+                if 'pk' in service_blob:
+                    service = Service.objects.get(pk=service_blob['pk'])
+                else:
+                    service, created = Service.objects.get_or_create(
+                        name=service_blob.get('name', ''),
+                        site=site
+                    )
             except Service.DoesNotExist:
-                raise System.DoesNotExist(
-                    "The service with name '{0}' does not "
-                    "exist".format(service_blob['name'])
+                raise Service.DoesNotExist(
+                    "The service with pk '{0}' does not "
+                    "exist".format(service_blob['pk'])
                 )
             except Site.DoesNotExist:
                 raise System.DoesNotExist(

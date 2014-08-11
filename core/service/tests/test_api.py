@@ -151,6 +151,7 @@ class ServiceAPITests(BaseServiceTests, TestCase):
 
         # set some extra stuff to make sure it is saved properly
         original['services'][0]['tech_owner'] = 'wesley'
+        original['services'][0]['pk'] = self.s1.pk
         _, resp = self.import_services(original)
         self.assertEqual(resp.status_code, 200, resp.content)
 
@@ -356,7 +357,7 @@ class ServiceAPITests(BaseServiceTests, TestCase):
             'errors' in resp_json, "expected to see an 'errors' key"
         )
 
-    def test_non_existant_service(self):
+    def test_create_duplicate_service(self):
         sblob, resp = self.export_services(
             'service.name="{0}"'.format(self.s1.name)
         )
@@ -365,17 +366,44 @@ class ServiceAPITests(BaseServiceTests, TestCase):
             1, len(sblob['services']), "Should have seen only one service"
         )
 
-        sblob['services'][0]['name'] = 'crap as a service'
+        del sblob['services'][0]['pk']
 
         resp_json, resp = self.import_services(sblob)
+        self.assertEqual(200, resp.status_code, resp.content)
+
+    def test_implicit_update(self):
+        # Make sure updating works when the pk isn't present causing the
+        # service to be looked up by name/site pair
+        sblob, resp = self.export_services(
+            'service.name="{0}"'.format(self.s1.name)
+        )
+        self.assertEqual(200, resp.status_code, resp.content)
         self.assertEqual(
-            resp.status_code, 400, "Expected error but got: "
-            "{0}".format(resp.content)
+            1, len(sblob['services']), "Should have seen only one service"
         )
 
-        self.assertTrue(
-            'errors' in resp_json, "expected to see an 'errors' key"
+        del sblob['services'][0]['pk']
+        sblob['services'][0]['notes'] = 'foobar'
+
+        resp_json, resp = self.import_services(sblob)
+        self.assertEqual(200, resp.status_code, resp.content)
+        self.assertEqual('foobar', Service.objects.get(pk=self.s1.pk).notes)
+
+    def test_explicit_update(self):
+        # Make sure updating works using the pk
+        sblob, resp = self.export_services(
+            'service.name="{0}"'.format(self.s1.name)
         )
+        self.assertEqual(200, resp.status_code, resp.content)
+        self.assertEqual(
+            1, len(sblob['services']), "Should have seen only one service"
+        )
+
+        sblob['services'][0]['name'] = 'foobar'
+
+        resp_json, resp = self.import_services(sblob)
+        self.assertEqual(200, resp.status_code, resp.content)
+        self.assertEqual('foobar', Service.objects.get(pk=self.s1.pk).name)
 
     def test_non_existant_parent_service(self):
         sblob, resp = self.export_services(

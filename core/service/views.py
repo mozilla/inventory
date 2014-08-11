@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -86,7 +87,12 @@ def service_import(request):
     with transaction.commit_manually():
         try:
             Service.import_services(services_data['services'])
-        except (ValueError, System.DoesNotExist, Service.DoesNotExist), e:
+        except (
+            ValidationError,
+            ValueError,
+            System.DoesNotExist,
+            Service.DoesNotExist
+        ), e:
             transaction.rollback()
             return HttpResponse(json.dumps({'errors': str(e)}), status=400)
         except Exception, e:
