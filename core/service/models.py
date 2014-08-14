@@ -171,6 +171,8 @@ class Service(models.Model, ObjectUrlMixin):
         ]
         if self.alias:
             r.append(('Alias', self.get_attr('alias')))
+        if self.impact:
+            r.append(('Impact', self.get_attr('impact')))
         if self.used_by:
             r.append(('Used By', self.get_attr('used_by')))
         if self.category:
