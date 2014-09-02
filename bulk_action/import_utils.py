@@ -151,7 +151,13 @@ def import_kv(obj, blobs):
                 )
             save_functions += update_kv(kv, blob)
         else:
-            kv = Klass(obj=obj)
+            if obj.pk:
+                try:
+                    kv = Klass.objects.get(obj=obj, key=blob.get('key', None))
+                except Klass.DoesNotExist:
+                    kv = Klass(obj=obj)
+            else:
+                kv = Klass(obj=obj)
             save_functions += update_kv(kv, blob)
     return save_functions
 
@@ -213,6 +219,13 @@ def update_kv(kv, blob):
     def save():
         # Refresh the cash with an actual object
         kv.obj = kv.obj.__class__.objects.get(pk=kv.obj.pk)
+        try:
+            kv.clean()
+        except Exception, e:
+            raise type(e)(
+                "Failed to clean() <{0}>. Error was '{1}'".format(kv, e)
+            )
+
         make_save(kv, blob)()
 
     return [(PHASE_4, save)]

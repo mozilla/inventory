@@ -13,12 +13,14 @@ from bulk_action.views import bulk_import
 from mozdns.cname.models import CNAME
 from mozdns.tests.utils import create_fake_zone
 from mozdns.view.models import View
+from truth.models import Truth
 
 import decimal
 
 
 class BulkActionTests(TestCase):
     def setUp(self):
+        Truth.objects.get_or_create(name='phx1-vlan80')
         self.factory = RequestFactory()
         self.private_view, _ = View.objects.get_or_create(name='private')
         self.operating_system = OperatingSystem.objects.create(

@@ -48,5 +48,11 @@ class HWAdapterMixin(object):
         """
         DHCP option filename
         """
+        self.is_statement = True
+        self.has_validator = True
         if not self.value:
             raise ValidationError("Filename Required")
+        self.value = self.value.strip('"')
+        self.value.replace('"', '\\"')
+        if not (self.value.startswith('"') and self.value.endswith('"')):
+            self.value = '"' + self.value + '"'
