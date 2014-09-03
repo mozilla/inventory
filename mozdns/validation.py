@@ -278,7 +278,7 @@ def validate_label(label, valid_chars=None):
 
     if (
         label and
-        label[-1] not in end_chars or
+        not label.endswith(tuple(end_chars)) or
         # SRV records can start with '_'
         not label.startswith(tuple(end_chars + '_'))
     ):
