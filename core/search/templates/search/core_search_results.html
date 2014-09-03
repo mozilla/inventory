@@ -175,7 +175,7 @@
         <tbody>
         {% for r in objects['RACK'] -%}
         <tr>
-            {% if r.location %}
+            {% if r.site %}
                 <td><a href='{{ r.site.get_absolute_url() }}'>{{ r.site.name }}</a></td>
             {% else %}
                 <td></td>

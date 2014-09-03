@@ -273,6 +273,19 @@ def validate_label(label, valid_chars=None):
         if valid_chars.find(char) < 0:
             raise ValidationError("Invalid name {0}. Character '{1}' is "
                                   "invalid.".format(label, char))
+
+    end_chars = string.ascii_letters + "0123456789"
+
+    if (
+        label and
+        label[-1] not in end_chars or
+        # SRV records can start with '_'
+        not label.startswith(tuple(end_chars + '_'))
+    ):
+        raise ValidationError(
+            "Labels must end and begin only with a letter or digit"
+        )
+
     return
 
 

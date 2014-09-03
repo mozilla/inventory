@@ -254,6 +254,15 @@ class AddressRecordTests(TestCase):
         self.assertRaises(ValidationError, self.do_update_A_record,
                           **{'record': rec0, 'new_name': "asdf.", "new_ip":
                           None})
+        self.assertRaises(ValidationError, self.do_update_A_record,
+                          **{'record': rec0, 'new_name': "asdf-",
+                          "new_ip": None})
+        self.assertRaises(ValidationError, self.do_update_A_record,
+                          **{'record': rec0, 'new_name': "-asdf",
+                          "new_ip": None})
+        self.assertRaises(ValidationError, self.do_update_A_record,
+                          **{'record': rec0, 'new_name': "asdf_",
+                          "new_ip": None})
 
         # BAD IPs
         self.assertRaises(ValidationError, self.do_update_A_record, **{
