@@ -38,7 +38,7 @@ class StaticReg(BaseAddressRecord, LabelMixin, FQDNMixin, BasePTR, KVUrlMixin,
     and associate a mac address with it.
 
     In terms of DNS, a static registration represents a PTR and A record and
-    must adhear to the requirements of those classes. StaticReg inherits
+    must adhere to the requirements of those classes. StaticReg inherits
     from BaseAddressRecord and will call it's clean and save method. StaticReg
     also inherits from BasePTR and will call :func:`clean_reverse` which
     essentially calls the :class:`PTR` classes :func:`clean` method.
