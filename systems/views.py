@@ -790,7 +790,7 @@ def racks(request):
             has_query = True
         filter_status = filter_form.cleaned_data['status']
         if filter_status:
-            #system_query &= Q(system_status=filter_form.cleaned_data['status'])
+            system_query &= Q(system_status=filter_form.cleaned_data['status'])
             has_query = True
         if not filter_form.cleaned_data['show_decommissioned']:
             decommissioned = models.SystemStatus.objects.get(status='decommissioned')
