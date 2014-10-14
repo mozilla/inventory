@@ -82,6 +82,7 @@ TEMPLATE_DIRS = (
     site_root + '/templates'
 )
 MEDIA_URL = '/static/'
+STATIC_URL = '/'
 DEV = True
 people_who_need_to_know_about_failures = []
 inventorys_email = "travis@inventory.mozilla.com"
