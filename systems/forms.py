@@ -90,7 +90,7 @@ class SystemForm(forms.ModelForm):
 
     purchase_date = forms.DateField(
         required=False,
-        widget=SelectDateWidget(years=range(1999,datetime.today().year + 2)),
+        widget=SelectDateWidget(years=range(1999, datetime.today().year + 2)),
         initial=datetime.now()
     )
 
@@ -101,12 +101,12 @@ class SystemForm(forms.ModelForm):
 
     warranty_start = forms.DateField(
         required=False,
-        widget=SelectDateWidget(years=range(1999,datetime.today().year + 5)),
+        widget=SelectDateWidget(years=range(1999, datetime.today().year + 5)),
     )
 
     warranty_end = forms.DateField(
         required=False,
-        widget=SelectDateWidget(years=range(1999,datetime.today().year + 50)),
+        widget=SelectDateWidget(years=range(1999, datetime.today().year + 50)),
     )
 
     class Meta:
