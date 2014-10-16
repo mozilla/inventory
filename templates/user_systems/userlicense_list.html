@@ -48,6 +48,7 @@
             <th>Username</th>
             <th>Version</th>
             <th>Belongs To</th>
+            <th>Purchase Date</th>
             <th colspan="3">Actions</th>
         </tr>
 	</thead>
@@ -64,6 +65,7 @@
             {% else %}
                 <td>&nbsp;</td>
             {% endif %}
+            <td>{{ license.purchase_date if license.purchase_date else 'N/A' }}</td>
 	
             <td><a href="{{ 'license-show'|url(license.id) }}">Show</a></td>
             <td><a href="{{ 'license-edit'|url(license.id) }}">Edit</a></td>

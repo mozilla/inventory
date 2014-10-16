@@ -59,6 +59,14 @@ class OwnerForm(forms.ModelForm):
         fields = ['name', 'user_location', 'email', 'note']
 
 class UserLicenseForm(forms.ModelForm):
+    purchase_date = forms.DateField(
+        required=False,
+        widget=SelectDateWidget(
+            years=range(1999, datetime.today().year + 2),
+        ),
+        initial=datetime.now()
+    )
+
     @return_data_if_true
     def clean_owner(self):
         name = self.data.get('js_owner_name')
@@ -74,4 +82,5 @@ class UserLicenseForm(forms.ModelForm):
             return owner
     class Meta:
         model = UserLicense
-        fields = ['username', 'version', 'license_type', 'license_key', 'owner', 'user_operating_system']
+        fields = ['username', 'version', 'license_type', 'license_key',
+                'owner', 'user_operating_system', 'purchase_date']

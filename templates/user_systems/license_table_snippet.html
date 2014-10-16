@@ -7,6 +7,7 @@
                 <td>{{ license.username }}</td>
                 <td>{{ license.version }}</td>
                 <td>{{ license.owner }}</td>
+                <td>{{ license.purchase_date if license.purchase_date else 'N/A' }}</td>
                 <td><a href="{{ 'license-show'| url(license.id) }}">Show</a></td>
                 <td><a href="{{ 'license-edit'| url(license.id) }}">Edit</a></td>
                 <td><a href="{{ 'license-delete'| url(license.id) }}">Delete</a></td>

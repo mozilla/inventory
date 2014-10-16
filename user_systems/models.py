@@ -164,6 +164,7 @@ class UserLicense(models.Model):
     license_type = models.CharField(max_length=255, blank=True)
     license_key = models.CharField(max_length=255, blank=False)
     owner = models.ForeignKey('Owner', blank=True, null=True)
+    purchase_date = models.DateField(blank=True, null=True, default=None)
     #user_operating_system = models.IntegerField(choices=OS_CHOICES, blank=True, null=True)
     user_operating_system = models.ForeignKey('UserOperatingSystem', blank=True, null=True)
     search_fields = (
