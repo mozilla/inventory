@@ -903,6 +903,7 @@ class UserProfile(models.Model):
     is_mysqldba_oncall = models.BooleanField()
     is_pgsqldba_oncall = models.BooleanField()
     is_netop_oncall = models.BooleanField()
+    is_metrics_oncall = models.BooleanField()
 
     current_desktop_oncall = models.BooleanField()
     current_sysadmin_oncall = models.BooleanField()
@@ -910,6 +911,7 @@ class UserProfile(models.Model):
     current_mysqldba_oncall = models.BooleanField()
     current_pgsqldba_oncall = models.BooleanField()
     current_netop_oncall = models.BooleanField()
+    current_metrics_oncall = models.BooleanField()
 
     irc_nick = models.CharField(max_length=128, null=True, blank=True)
     api_key = models.CharField(max_length=255, null=True, blank=True)
@@ -947,3 +949,9 @@ class UserProfile(models.Model):
 
         def get_current_sysadmin_oncall(self):
             self.filter(current_sysadmin_oncall=1).select_related()
+
+        def get_all_metrics_oncall(self):
+            self.filter(is_metrics_oncall=1)
+
+        def get_current_metrics_oncall(self):
+            self.filter(current_metrics_oncall=1).select_related()
