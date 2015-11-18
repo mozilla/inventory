@@ -5,4 +5,5 @@ ONCALL_TYPES = (
     'pgsqldba',
     'desktop',
     'netop',
+    'metrics',
 )
