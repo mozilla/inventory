@@ -1,7 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 import csv
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
 
 from django.db.models import Q
@@ -129,8 +129,8 @@ def system_auto_complete_ajax(request):
 @allow_anyone
 def list_all_systems_ajax(request):
 #iSortCol_0 = which column is sorted
-#sSortDir_0 = which direction   
-    
+#sSortDir_0 = which direction
+
     cols = ['hostname','serial','asset_tag','server_model','system_rack', 'oob_ip', 'system_status']
     sort_col = cols[0]
     if 'iSortCol_0' in request.GET:
@@ -190,7 +190,7 @@ def list_all_systems_ajax(request):
             )[iDisplayStart:end_display]
             the_data = build_json(request, systems, sEcho, total_count, iDisplayLength, sort_col, sort_dir)
         except:
-            the_data = '{"sEcho": %s, "iTotalRecords":0, "iTotalDisplayRecords":0, "aaData":[]}' % (sEcho) 
+            the_data = '{"sEcho": %s, "iTotalRecords":0, "iTotalDisplayRecords":0, "aaData":[]}' % (sEcho)
     return HttpResponse(the_data)
 
 def build_json(request, systems, sEcho, total_records, display_count, sort_col, sort_dir):
@@ -259,8 +259,8 @@ def build_json(request, systems, sEcho, total_records, display_count, sort_col, 
         the_data += ']}'
     #except:
         pass
-    
-    return the_data 
+
+    return the_data
 
 
 #@ldap_group_required('build')
@@ -334,7 +334,7 @@ def save_key_value(request, id):
         print e
         pass
 
-        
+
     acl = KeyValueACL(request)
     if post_key == 'shouldfailvalidation':
         resp['success'] = False
@@ -364,13 +364,13 @@ def save_key_value(request, id):
                 existing_dhcp_scope = models.KeyValue.objects.filter(obj=kv.system).filter(key='nic.%s.dhcp_scope.0' % matches.group(1))[0].value
                 if existing_dhcp_scope is not None:
                     models.ScheduledTask(task=existing_dhcp_scope, type='dhcp').save()
-            except Exception, e: 
+            except Exception, e:
                 pass
             try:
                 existing_reverse_dns_zone = models.KeyValue.objects.filter(obj=kv.system).filter(key='nic.%s.reverse_dns_zone.0' % matches.group(1))[0].value
                 if existing_reverse_dns_zone is not None:
                     models.ScheduledTask(task=existing_reverse_dns_zone, type='reverse_dns_zone').save()
-            except Exception, e: 
+            except Exception, e:
                 pass
         try:
             kv.key = request.POST.get('key').strip()
@@ -667,7 +667,36 @@ def system_edit(request, id):
 
 def system_delete(request, id):
     system = get_object_or_404(models.System, pk=id)
-    system.delete()
+    try:
+        kv_length = len(system.keyvalue_set.all())
+    except AttributeError:
+        kv_length = 0
+
+    if kv_length == 0:
+        try:
+            system.delete()
+        except IntegrityError, e:
+            e_str = "Key/Value store exists"
+            content = "Unable to Delete system: {message}".format(message=e)
+            return render_to_response(
+                'systems/generic_output.html',
+                {
+                    'system': system,
+                    'content': content,
+                },
+                RequestContext(request))
+    elif kv_length > 0:
+        link = '/core/keyvalue/keyvalue/{id}'.format(id=system.id)
+        content = """Unable to Delete system. <br />
+        Please <a href="{link}">Delete Key/Value Entries</a>
+        """.format(link=link)
+        return render_to_response(
+            'systems/generic_output.html',
+            {
+                'system': system,
+                'content': content,
+            },
+            RequestContext(request))
     return redirect(home)
 
 
@@ -684,7 +713,7 @@ def system_csv(request):
             writer.writerow([s.hostname, s.serial, s.asset_tag, s.server_model, s.allocation, s.system_rack, s.switch_ports, s.oob_ip])
         except:
             writer.writerow([s.hostname, s.serial, s.asset_tag, s.server_model, '', s.system_rack, s.switch_ports, s.oob_ip])
-        
+
 
     return response
 
@@ -715,7 +744,7 @@ def get_expanded_key_value_store(request, system_id):
     return HttpResponse(return_obj)
 
 
-    
+
 def new_rack_system_ajax(request, rack_id):
     from forms import RackSystemForm
     rack = get_object_or_404(models.SystemRack, pk=rack_id)
