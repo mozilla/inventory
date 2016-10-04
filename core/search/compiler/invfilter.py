@@ -23,6 +23,7 @@ from mozdns.view.models import View
 
 from core.registration.static.models import StaticReg
 from core.site.models import Site
+from core.hwadapter.models import HWAdapter
 from core.service.models import Service
 from core.network.models import Network
 from core.network.utils import calc_networks_str
@@ -46,6 +47,7 @@ searchables = (
     ('A', AddressRecord),
     ('CNAME', CNAME),
     ('DOMAIN', Domain),
+    ('HWADAPTER', HWAdapter),
     ('MX', MX),
     ('NS', Nameserver),
     ('PTR', PTR),
@@ -397,6 +399,8 @@ def build_service_single_qset(service):
         if name == 'SERVICE':
             result.append(service_q)
         elif name == 'SYS':
+            result.append(system_q)
+        elif name == 'ADAPTER':
             result.append(system_q)
         elif name == 'ALLOCATION':
             result.append(allocation_q)

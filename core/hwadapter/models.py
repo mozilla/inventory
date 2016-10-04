@@ -40,6 +40,15 @@ class HWAdapter(models.Model, ObjectUrlMixin, KVUrlMixin):
             ('mac', 'sreg'),
             ('sreg', 'name')
         )
+    def bind_render_record(self, pk=False, **kwargs):
+        template = "{hw_adapter_mac} {hw_adapter_ip} {system_hostname} {system_id}"
+        rdtype = kwargs.pop('rdtype', 'SREG')
+        return template.format(
+            hw_adapter_mac=self.mac,
+            hw_adapter_ip=self.sreg.ip_str,
+            system_hostname=self.sreg.system.hostname,
+            system_id=self.sreg.system.id,
+        )
 
     def __str__(self):
         return '{0}'.format(self.mac)
