@@ -400,8 +400,6 @@ def build_service_single_qset(service):
             result.append(service_q)
         elif name == 'SYS':
             result.append(system_q)
-        elif name == 'ADAPTER':
-            result.append(system_q)
         elif name == 'ALLOCATION':
             result.append(allocation_q)
         else:
