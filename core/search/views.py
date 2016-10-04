@@ -79,7 +79,7 @@ def search_dns_text(request):
         response_str = ""
         for type_ in [
                 'SOA', 'NS', 'MX', 'SRV', 'CNAME', 'SSHFP', 'TXT', 'A',
-                'PTR', 'NET', 'SITE', 'VLAN', 'SYS', 'SREG']:
+                'PTR', 'NET', 'SITE', 'VLAN', 'SYS', 'SREG', 'HWADAPTER']:
             response_str += render_rdtype(kwargs['objects'][type_])
         response_str += render_rdtype(kwargs['objects']['SREG'], reverse=True)
         return json.dumps({'text_response': response_str})
